@@ -8,7 +8,7 @@ const path = require("path");
 if (process.platform === "linux") app.commandLine.appendSwitch("enable-transparent-visuals");
 if (!app.requestSingleInstanceLock()) app.quit();
 
-let win = null, tray = null, coats = [], paused = false;
+let win = null, tray = null, coats = [], paused = false, laser = false;
 
 function fitToScreen() {
   if (!win) return;
@@ -22,6 +22,7 @@ function createWindow() {
     x, y, width, height,
     transparent: true, frame: false, resizable: false, movable: false, hasShadow: false,
     alwaysOnTop: true, skipTaskbar: true, fullscreenable: false, show: false,
+    acceptFirstMouse: true,                 // macOS: the first click pets the cat instead of just focusing the window
     backgroundColor: "#00000000",
     webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false },
   });
@@ -44,7 +45,15 @@ function buildMenu() {
       { type: "separator" },
       ...coats.map((c) => ({ label: c.name, click: () => send({ type: "add", coat: c.key }) })),
     ] },
-    { label: "Throw yarn", click: () => send({ type: "yarn" }) },
+    { label: "Toys", submenu: [
+      { label: "Ball of yarn", click: () => send({ type: "yarn" }) },
+      { label: "Wind-up mouse", click: () => send({ type: "mouse" }) },
+      { label: "Cardboard box", click: () => send({ type: "box" }) },
+      { label: "Laser pointer", type: "checkbox", checked: laser, click: (item) => { laser = item.checked; send({ type: "laser", on: laser }); } },
+      { type: "separator" },
+      { label: "Put the toys away", click: () => send({ type: "clear" }) },
+    ] },
+    { label: "Feed the cats", click: () => send({ type: "feed" }) },
     { label: "Remove a cat", click: () => send({ type: "remove" }) },
     { type: "separator" },
     { label: "Bigger", click: () => send({ type: "bigger" }) },
@@ -58,14 +67,17 @@ function buildMenu() {
 }
 
 function createTray() {
+  // 16 px icons with @2x versions next to them; on macOS a "Template" image adapts to the light/dark menu bar
   const icon = nativeImage.createFromPath(path.join(__dirname, "assets", process.platform === "darwin" ? "trayTemplate.png" : "tray.png"));
+  if (process.platform === "darwin") icon.setTemplateImage(true);
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
   tray.setToolTip("Desktop Cat");
   tray.setContextMenu(buildMenu());
-  tray.on("click", () => send({ type: "yarn" }));
+  if (process.platform !== "darwin") tray.on("click", () => send({ type: "yarn" }));   // on macOS a click just opens the menu
 }
 
 ipcMain.on("ignore", (_e, ignore) => { if (win) win.setIgnoreMouseEvents(!!ignore, { forward: true }); });
+ipcMain.on("laser", (_e, on) => { laser = !!on; if (tray) tray.setContextMenu(buildMenu()); });
 ipcMain.on("coats", (_e, list) => { coats = Array.isArray(list) ? list : []; if (tray) tray.setContextMenu(buildMenu()); });
 
 app.whenReady().then(() => {
