@@ -40,8 +40,8 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 | :-- | :-- |
 | **Click** a cat | Pet it — hearts and a soft purr (a sleeping cat wakes up and stretches) |
 | **Drag** a cat | Pick it up by the scruff; let go and it lands on its feet |
-| **Drag** a toy | Move the box, bowl or mouse; dangle or throw the yarn |
-| **Tray / menu-bar icon** | Add a cat (seven coats), toys, feed them, laser pointer, **bigger / smaller** (from tiny to large), hide them, start with your computer |
+| **Drag** a toy | Move the box, bowl or mouse; dangle the yarn, swing it and let go to throw it |
+| **Tray / menu-bar icon** | Add a cat (seven coats), toys, feed them, laser pointer, **cat size** and **toy size** (each from tiny to large), hide them, start with your computer |
 
 Seven coats: ginger tabby, black, white, grey tabby, calico, siamese and tuxedo.
 

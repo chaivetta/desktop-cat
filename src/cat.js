@@ -754,7 +754,7 @@
       ctx.save();
       ctx.imageSmoothingEnabled = false;
       const dy = inbox ? Math.round((4 + this.peek * 14) * s) : 0;
-      if (inbox) { ctx.beginPath(); ctx.rect(0, 0, w.W, this.y - 6 * s); ctx.clip(); }
+      if (inbox) { const rim = this.box ? this.box.y - 15 * w.toyScale : this.y - 6 * s; ctx.beginPath(); ctx.rect(0, 0, w.W, rim); ctx.clip(); }
       ctx.translate(Math.round(this.x), Math.round(this.y - GROUND * s + dy));
       if (this.facing < 0) ctx.scale(-1, 1);
       ctx.drawImage(this.canvas, Math.round(-SW * s / 2), 0, SW * s, SH * s);
@@ -778,10 +778,10 @@
       this.held = false; this.trail = []; this.color = ["#c8453c", "#3c7ac8", "#3ca068", "#c89a3c", "#8a4ac8"][Math.floor(Math.random() * 5)];
       this.canvas = document.createElement("canvas"); this.canvas.width = this.canvas.height = 15; this.ctx = this.canvas.getContext("2d");
     }
-    get r() { return 7 * this.world.scale; }
+    get r() { return 7 * this.world.toyScale; }
     hit(px, py) { return Math.hypot(px - this.x, py - this.y) < Math.max(22, this.r * 2.2); }
-    grab() { this.held = true; this.len = 46 * this.world.scale; this.cats("dangle"); }
-    release() { this.held = false; this.vx = clamp(this.vx, -1600, 1600); this.vy = clamp(this.vy, -1600, 1600); this.cats("yarn"); }
+    grab() { this.held = true; this.len = 46 * this.world.toyScale; this.cats("dangle"); }
+    release(v = { x: 0, y: 0 }) { this.held = false; this.vx = clamp(v.x * 0.9 + this.vx * 0.35, -2200, 2200); this.vy = clamp(v.y * 0.9 + this.vy * 0.35, -2200, 2200); this.spin = this.vx / 60; this.cats("yarn"); }
     click() { this.vy = -420; this.vx = rnd(-300, 300); this.cats("yarn"); }
     cats(goal) { this.world.cats.forEach((c) => { if (!["sleep", "held", "fall", "inbox", "eat"].includes(c.state)) c.set("chase", 9, { goal }); }); }
     update(dt) {
@@ -803,7 +803,7 @@
       this.trail.push([this.x, this.y + this.r * 0.6]); if (this.trail.length > 26) this.trail.shift();
     }
     render(ctx) {
-      const w = this.world, s = w.scale, g = this.ctx, c = hex(this.color), L = lighten(c, 0.3), D = darken(c, 0.35), O = darken(c, 0.6);
+      const w = this.world, s = w.toyScale, g = this.ctx, c = hex(this.color), L = lighten(c, 0.3), D = darken(c, 0.35), O = darken(c, 0.6);
       const img = g.createImageData(15, 15), d = img.data;
       for (let y = 0; y < 15; y++) for (let x = 0; x < 15; x++) {
         const dx = x - 7, dy = y - 7, r = Math.hypot(dx, dy); if (r > 7.2) continue;
@@ -834,13 +834,13 @@
       this.pal = { 1: { c: [150, 152, 160], lit: true }, 2: { c: [232, 150, 160] }, 3: { c: [20, 18, 22] }, 4: { c: [216, 176, 74], lit: true }, 5: { c: [110, 112, 120] } };
     }
     running() { return this.wound > 0 && !this.held; }
-    hit(px, py) { const s = this.world.scale; return Math.abs(px - this.x) < 11 * s && py > this.y - 12 * s && py < this.y + 3 * s; }
+    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < 11 * s && py > this.y - 12 * s && py < this.y + 3 * s; }
     grab() { this.held = true; }
-    release() { this.held = false; this.airT = 1; }
-    click() { this.wound = 25; this.speed = 110; this.world.burst(this.x, this.y - 12 * this.world.scale, "note", "#b08d57", 1); this.world.cats.forEach((c) => { if (!["sleep", "held", "fall", "inbox", "eat"].includes(c.state)) c.set("chase", 10, { goal: "mouse" }); }); }
+    release(v = { x: 0, y: 0 }) { this.held = false; this.airT = 1; this.vx = clamp(v.x * 0.8, -1800, 1800); this.vy = clamp(v.y * 0.8, -1800, 1800); }
+    click() { this.wound = 25; this.speed = 110; this.world.burst(this.x, this.y - 12 * this.world.toyScale, "note", "#b08d57", 1); this.world.cats.forEach((c) => { if (!["sleep", "held", "fall", "inbox", "eat"].includes(c.state)) c.set("chase", 10, { goal: "mouse" }); }); }
     kick(dir) { this.vx = dir * rnd(180, 320); this.vy = -rnd(320, 520); this.airT = 1; this.dir = dir; this.wound = Math.max(this.wound, 8); this.speed = 170; }
     update(dt) {
-      const w = this.world, s = w.scale, floor = w.floor;
+      const w = this.world, s = w.toyScale, floor = w.floor;
       if (this.held) {
         const nx = w.pointer.x, ny = w.pointer.y + 6 * s;
         this.vx = (nx - this.x) / Math.max(dt, 1 / 120); this.vy = (ny - this.y) / Math.max(dt, 1 / 120); this.x = nx; this.y = ny; this.rot = Math.sin(performance.now() / 120) * 0.3; return;
@@ -857,7 +857,7 @@
       const m = 12 * s; if (this.x < m) { this.x = m; this.dir = 1; this.vx = Math.abs(this.vx); } if (this.x > w.W - m) { this.x = w.W - m; this.dir = -1; this.vx = -Math.abs(this.vx); }
     }
     render(ctx) {
-      const w = this.world, s = w.scale, R = this.sp.R; R.clear();
+      const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
       const step = this.wound > 0 && this.airT <= 0 && !this.held ? (Math.sin(this.leg) > 0 ? 1 : 0) : 0;
       R.curve(4, 6, 1.5, 4, 0, 2 + step, 1.2, 1, 5);                // tail
       R.ellipse(9, 6.5, 5.6, 3.4, 1);                               // body
@@ -880,17 +880,17 @@
       this.sp = new Sprite(34, 22);
       this.pal = { 1: { c: [200, 155, 98], lit: true }, 2: { c: [150, 108, 62] }, 3: { c: [92, 64, 36] }, 4: { c: [176, 132, 80], lit: true }, 5: { c: [228, 214, 186] } };
     }
-    hit(px, py) { const s = this.world.scale; return Math.abs(px - this.x) < 16 * s && py > this.y - 22 * s && py < this.y + 2; }
+    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < 16 * s && py > this.y - 22 * s && py < this.y + 2; }
     grab() { this.held = true; }
     release() { this.held = false; }
     click() { if (this.occupant) this.occupant.hopOut(); }
     update(dt) {
       const w = this.world;
-      if (this.held) { this.x += (clamp(w.pointer.x, 16 * w.scale, w.W - 16 * w.scale) - this.x) * Math.min(1, dt * 14); this.y = Math.min(w.floor, w.pointer.y + 16 * w.scale); }
+      if (this.held) { this.x += (clamp(w.pointer.x, 16 * w.toyScale, w.W - 16 * w.toyScale) - this.x) * Math.min(1, dt * 14); this.y = Math.min(w.floor, w.pointer.y + 16 * w.toyScale); }
       else this.y += (w.floor - this.y) * Math.min(1, dt * 12);
     }
     render(ctx) {
-      const w = this.world, s = w.scale, R = this.sp.R; R.clear();
+      const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
       R.rect(2, 6, 30, 16, 1);                                        // front face
       R.rect(2, 6, 30, 2, 3);                                         // dark opening
       R.tri(2, 7, -1, 0, 9, 6, 4); R.tri(32, 7, 35, 0, 25, 6, 4);      // open flaps
@@ -908,16 +908,16 @@
       this.sp = new Sprite(20, 9);
       this.pal = { 1: { c: [72, 120, 170], lit: true }, 2: { c: [140, 88, 44], lit: true }, 3: { c: [240, 236, 228] }, 4: { c: [104, 64, 30] } };
     }
-    hit(px, py) { const s = this.world.scale; return Math.abs(px - this.x) < 12 * s && py > this.world.floor - 12 * s && py < this.world.floor + 2; }
+    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < 12 * s && py > this.world.floor - 12 * s && py < this.world.floor + 2; }
     grab() { this.held = true; }
     release() { this.held = false; }
     click() {
-      this.food = 1; this.refill++; this.world.burst(this.x, this.world.floor - 14 * this.world.scale, "note", "#b08d57", 2);
+      this.food = 1; this.refill++; this.world.burst(this.x, this.world.floor - 14 * this.world.toyScale, "note", "#b08d57", 2);
       this.world.cats.forEach((c) => { if (!["held", "fall", "inbox"].includes(c.state)) c.set("chase", 10, { goal: "bowl" }); });
     }
-    update(dt) { const w = this.world; if (this.held) this.x += (clamp(w.pointer.x, 12 * w.scale, w.W - 12 * w.scale) - this.x) * Math.min(1, dt * 14); }
+    update(dt) { const w = this.world; if (this.held) this.x += (clamp(w.pointer.x, 12 * w.toyScale, w.W - 12 * w.toyScale) - this.x) * Math.min(1, dt * 14); }
     render(ctx) {
-      const w = this.world, s = w.scale, R = this.sp.R; R.clear();
+      const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
       if (this.food > 0.02) {                                         // the kibble pile
         R.ellipse(10, 4.2, 2 + this.food * 5.5, 0.8 + this.food * 2.4, 2);
         for (let i = 0; i < 9; i++) { const kx = 10 + Math.round(Math.sin(i * 2.4) * (1 + this.food * 4.5)), ky = 4 - Math.round(Math.abs(Math.cos(i * 1.7)) * this.food * 2); if (R.get(kx, ky)) R.put(kx, ky, 4); }
@@ -945,7 +945,7 @@
     constructor(canvas, opts = {}) {
       World.current = this;                         // handy for poking at the cats from the devtools console
       this.canvas = canvas; this.ctx = canvas.getContext("2d");
-      this.scale = opts.scale || 3; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
+      this.scale = opts.scale || 3; this.toyScale = opts.toyScale || this.scale; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
       this.pointer = { x: -1e4, y: -1e4, seen: false }; this.drag = null; this.onHover = opts.onHover || (() => {});
       this.floorInset = opts.floorInset ?? 6; this.audio = null; this.last = performance.now();
       this.resize(); addEventListener("resize", () => this.resize());
@@ -960,6 +960,7 @@
     }
     removeCat() { const c = this.cats.pop(); if (c && c.box) c.box.occupant = null; }
     throwYarn(x, y) {
+      if (this.yarn && this.yarn.held) return;          // never snatch the yarn out of your hand
       this.yarn = new Yarn(this, x ?? this.spot(), y ?? this.floor - 260);
       this.yarn.vy = -200; this.yarn.vx = rnd(-360, 360); this.yarn.cats("yarn");
     }
@@ -994,7 +995,19 @@
       return null;
     }
     bindInput() {
-      const pos = (e) => { this.pointer.x = e.clientX; this.pointer.y = e.clientY; this.pointer.seen = true; this.pointer.movedAt = performance.now(); };
+      this.trace = [];
+      const pos = (e) => {
+        const now = performance.now();
+        this.pointer.x = e.clientX; this.pointer.y = e.clientY; this.pointer.seen = true; this.pointer.movedAt = now;
+        this.trace.push([now, e.clientX, e.clientY]); while (this.trace.length && now - this.trace[0][0] > 120) this.trace.shift();
+      };
+      // how fast the pointer was moving just before it let go (px/s)
+      this.pointerVel = () => {
+        const now = performance.now(), t = this.trace.filter((p) => now - p[0] < 120);
+        if (t.length < 2 || now - t[t.length - 1][0] > 80) return { x: 0, y: 0 };
+        const a = t[0], b = t[t.length - 1], dt = Math.max(0.016, (b[0] - a[0]) / 1000);
+        return { x: (b[1] - a[1]) / dt, y: (b[2] - a[2]) / dt };
+      };
       addEventListener("pointermove", (e) => {
         pos(e); const d = this.drag;
         if (d && !d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 6) {
@@ -1012,10 +1025,11 @@
       });
       addEventListener("pointerup", (e) => {
         pos(e); const d = this.drag; this.drag = null; if (!d) return;
-        if (d.cat) { if (!d.moved) d.cat.pet(); else { d.cat.set("fall", 5); d.cat.vx = rnd(-60, 60); d.cat.vy = 0; } }
+        const v = this.pointerVel();
+        if (d.cat) { if (!d.moved) d.cat.pet(); else { d.cat.set("fall", 5); d.cat.vx = clamp(v.x * 0.35, -500, 500); d.cat.vy = clamp(v.y * 0.35, -500, 300); } }
         if (d.toy) {
-          if (d.toy === this.yarn) { if (d.moved) d.toy.release(); else { d.toy.held = false; d.toy.click(); } }
-          else if (d.moved) d.toy.release(); else d.toy.click();
+          if (d.toy === this.yarn) { if (d.moved) d.toy.release(v); else { d.toy.held = false; d.toy.click(); } }
+          else if (d.moved) d.toy.release(v); else d.toy.click();
         }
         this.onHover(!!this.hitTest(e.clientX, e.clientY));
       });
@@ -1041,7 +1055,7 @@
       requestAnimationFrame((t) => this.frame(t));
     }
     renderLaser(ctx, now) {
-      const s = this.scale, p = this.pointer, j = Math.sin(now / 37) * 0.6;
+      const s = this.toyScale, p = this.pointer, j = Math.sin(now / 37) * 0.6;
       ctx.save();
       const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 7 * s); g.addColorStop(0, "rgba(255,60,60,.55)"); g.addColorStop(1, "rgba(255,60,60,0)");
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, 7 * s, 0, Math.PI * 2); ctx.fill();

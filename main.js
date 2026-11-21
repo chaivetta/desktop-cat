@@ -56,8 +56,14 @@ function buildMenu() {
     { label: "Feed the cats", click: () => send({ type: "feed" }) },
     { label: "Remove a cat", click: () => send({ type: "remove" }) },
     { type: "separator" },
-    { label: "Bigger", click: () => send({ type: "bigger" }) },
-    { label: "Smaller", click: () => send({ type: "smaller" }) },
+    { label: "Cat size", submenu: [
+      { label: "Bigger", click: () => send({ type: "bigger" }) },
+      { label: "Smaller", click: () => send({ type: "smaller" }) },
+    ] },
+    { label: "Toy size", submenu: [
+      { label: "Bigger", click: () => send({ type: "toysBigger" }) },
+      { label: "Smaller", click: () => send({ type: "toysSmaller" }) },
+    ] },
     { label: paused ? "Show cats" : "Hide cats", click: () => { paused = !paused; paused ? win.hide() : win.showInactive(); tray.setContextMenu(buildMenu()); } },
     { type: "separator" },
     { label: "Start with my computer", type: "checkbox", checked: app.getLoginItemSettings().openAtLogin,

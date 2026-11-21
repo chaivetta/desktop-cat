@@ -37,8 +37,12 @@
   </div>
   <div class="row">
     <button id="remove">Remove a cat</button>
-    <button id="smaller">Smaller</button>
-    <button id="bigger">Bigger</button>
+    <span style="opacity:.7;margin:0 2px 0 6px">Cats:</span>
+    <button id="smaller">−</button>
+    <button id="bigger">+</button>
+    <span style="opacity:.7;margin:0 2px 0 6px">Toys:</span>
+    <button id="toysSmaller">−</button>
+    <button id="toysBigger">+</button>
   </div>
 </div>
 <script src="cat.js"></script>
@@ -48,14 +52,14 @@
   const bridge = window.deskcat;                 // present only inside the Electron app
   const KEY = "desktop-cat:v1";
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; } };
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.map(c => c.coat), scale: world.scale })); } catch {} };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.map(c => c.coat), scale: world.scale, toyScale: world.toyScale })); } catch {} };
 
   if (!bridge) document.body.classList.add("demo");
   const saved = load() || { cats: ["ginger", "black"], scale: 3 };
 
   let hovering = false;
   const world = new World(document.getElementById("stage"), {
-    scale: saved.scale, floorInset: bridge ? 2 : Math.round(innerHeight * 0.22) - 40,
+    scale: saved.scale, toyScale: saved.toyScale || saved.scale, floorInset: bridge ? 2 : Math.round(innerHeight * 0.22) - 40,
     onHover: (h) => { if (bridge && h !== hovering) { hovering = h; bridge.setIgnore(!h); } }
   });
   if (!bridge) addEventListener("resize", () => { world.floorInset = Math.round(innerHeight * 0.22) - 40; world.resize(); });
@@ -72,6 +76,8 @@
     clear: () => { world.clearToys(); if (!bridge) document.getElementById("laser").textContent = "Laser"; else bridge.setLaser(false); },
     bigger: () => { world.scale = Math.min(SCALE_MAX, world.scale + 1); save(); },
     smaller: () => { world.scale = Math.max(SCALE_MIN, world.scale - 1); save(); },
+    toysBigger: () => { world.toyScale = Math.min(SCALE_MAX, world.toyScale + 1); save(); },
+    toysSmaller: () => { world.toyScale = Math.max(SCALE_MIN, world.toyScale - 1); save(); },
   };
 
   if (bridge) {
@@ -90,8 +96,10 @@
     document.getElementById("remove").onclick = act.remove;
     document.getElementById("bigger").onclick = act.bigger;
     document.getElementById("smaller").onclick = act.smaller;
+    document.getElementById("toysBigger").onclick = act.toysBigger;
+    document.getElementById("toysSmaller").onclick = act.toysSmaller;
     addEventListener("dblclick", (e) => { if (!world.hitTest(e.clientX, e.clientY) && !e.target.closest(".panel")) world.throwYarn(e.clientX, e.clientY); });
-    setTimeout(() => world.throwYarn(), 2500);
+    setTimeout(() => { if (!world.yarn) world.throwYarn(); }, 2500);
   }
 })();
 </script>
