@@ -7,15 +7,20 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 ## What they do
 
 - **Wander** along the top of your taskbar, and stop to **boop noses** when two cats meet
+- **Watch you** — bring the mouse pointer close and they turn their heads and follow it with their eyes
 - **Groom** — sit down and lick a paw
+- **Knead** — paws pressing in turn, eyes squeezed shut, before settling down
 - **Nap** — curl into a loaf with little *z*'s floating up; wake with a big **stretch** and a **yawn**
 - **Roll over** — belly up, paws kicking in the air
 - **Zoomies** — every so often, a sudden sprint from one side of the screen to the other
 - **Eat** — when you put food out, they trot over and tuck in, then groom
 - **Sit in boxes** — of course. They duck down and peek out over the edge
 - **Play** — chase, crouch with a bottom-wiggle, pounce, bat, stand up and swat
+- **Play-fight** — two cats square up, swat and hop at each other, then one bolts and the other chases it until it flops over in surrender
 
 ![Stretch, yawn, stand and swat, eat, boop, zoomies, hunting crouch](docs/moves.png)
+
+![Watching the pointer, kneading, play-fighting and the chase](docs/more.png)
 
 ## Toys
 
