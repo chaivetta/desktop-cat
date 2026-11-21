@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desktop Cat</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:transparent;user-select:none;-webkit-user-select:none}
+  canvas{position:fixed;inset:0;display:block;touch-action:none}
+  body.demo{background:linear-gradient(#f4efe6 0 78%,#d9c7a8 78% 100%)}
+  @media (prefers-color-scheme: dark){ body.demo{background:linear-gradient(#1e1a16 0 78%,#3a2f24 78% 100%)} }
+  .panel{position:fixed;left:16px;top:16px;right:16px;max-width:560px;font:15px/1.4 Georgia,serif;color:#1f1b16;
+         background:rgba(244,239,230,.92);border:1px solid #b08d57;padding:14px 16px;display:none}
+  @media (prefers-color-scheme: dark){ .panel{background:rgba(30,26,22,.92);color:#f1e8da} }
+  body.demo .panel{display:block}
+  .panel h1{font:italic 600 26px Georgia,serif;margin:0 0 4px}
+  .panel p{margin:0 0 10px;opacity:.75;font-style:italic}
+  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  .panel button{font:12px Georgia,serif;letter-spacing:.08em;border:1px solid #b08d57;background:transparent;color:inherit;padding:6px 10px;cursor:pointer}
+  .panel button:hover{background:rgba(176,141,87,.15)}
+  .sw{width:22px;height:22px;padding:0!important;border-radius:50%}
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div class="panel" id="panel">
+  <h1>Desktop Cat</h1>
+  <p>Click a cat to pet it, drag it to pick it up. Throw the yarn and watch them chase it. Double-click the floor for more yarn.</p>
+  <div class="row" id="coats"></div>
+  <div class="row">
+    <button id="yarn">Throw yarn</button>
+    <button id="remove">Remove a cat</button>
+    <button id="smaller">Smaller</button>
+    <button id="bigger">Bigger</button>
+  </div>
+</div>
+<script src="cat.js"></script>
+<script>
+(() => {
+  const { World, COATS, COAT_KEYS } = window.DesktopCat;
+  const bridge = window.deskcat;                 // present only inside the Electron app
+  const KEY = "desktop-cat:v1";
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; } };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.map(c => c.coat), scale: world.scale })); } catch {} };
+
+  if (!bridge) document.body.classList.add("demo");
+  const saved = load() || { cats: ["ginger", "black"], scale: 3 };
+
+  let hovering = false;
+  const world = new World(document.getElementById("stage"), {
+    scale: saved.scale, floorInset: bridge ? 2 : Math.round(innerHeight * 0.22) - 40,
+    onHover: (h) => { if (bridge && h !== hovering) { hovering = h; bridge.setIgnore(!h); } }
+  });
+  if (!bridge) addEventListener("resize", () => { world.floorInset = Math.round(innerHeight * 0.22) - 40; world.resize(); });
+  saved.cats.forEach((c, i) => setTimeout(() => { world.addCat(c); }, 350 * i));
+
+  const act = {
+    add: (coat) => { world.addCat(coat); save(); },
+    remove: () => { world.removeCat(); save(); },
+    yarn: () => world.throwYarn(),
+    bigger: () => { world.scale = Math.min(6, world.scale + 1); save(); },
+    smaller: () => { world.scale = Math.max(2, world.scale - 1); save(); },
+  };
+
+  if (bridge) {
+    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](cmd.coat); });
+    bridge.setCoats(COAT_KEYS.map(k => ({ key: k, name: COATS[k].name })));
+  } else {
+    const box = document.getElementById("coats");
+    box.insertAdjacentHTML("beforeend", "<span style='opacity:.7;margin-right:4px'>Add:</span>");
+    COAT_KEYS.forEach(k => {
+      const b = document.createElement("button"); b.className = "sw"; b.title = COATS[k].name;
+      b.style.background = `linear-gradient(135deg, ${COATS[k].body} 55%, ${COATS[k].accent} 55%)`;
+      b.onclick = () => act.add(k); box.appendChild(b);
+    });
+    document.getElementById("yarn").onclick = act.yarn;
+    document.getElementById("remove").onclick = act.remove;
+    document.getElementById("bigger").onclick = act.bigger;
+    document.getElementById("smaller").onclick = act.smaller;
+    addEventListener("dblclick", (e) => { if (!world.hitTest(e.clientX, e.clientY) && !e.target.closest(".panel")) world.throwYarn(e.clientX, e.clientY); });
+    setTimeout(() => world.throwYarn(), 2500);
+  }
+})();
+</script>
+</body>
+</html>
