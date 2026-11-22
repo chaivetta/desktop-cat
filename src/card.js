@@ -60,6 +60,10 @@
             <button class="cc-btn" type="button" data-a="play" style="--b:#d8f3e6"></button>
             <button class="cc-btn" type="button" data-a="photo" style="--b:#dcefff"></button>
           </section>
+          <section class="cc-sec cc-care"><div class="cc-label"><span class="cc-careT"></span><small class="cc-cleanL"></small></div>
+            <div class="cc-buffs"></div>
+            <div class="cc-carebtns"><button class="cc-pill" type="button" data-c="brush"></button><button class="cc-pill" type="button" data-c="bath"></button><button class="cc-pill red" type="button" data-c="med" hidden></button></div>
+          </section>
           <section class="cc-sec cc-danger">
             <button class="cc-link" type="button" data-r="ask"></button>
             <div class="cc-confirm" hidden><span></span><button class="cc-pill red" type="button" data-r="yes"></button><button class="cc-pill" type="button" data-r="no"></button></div>
@@ -140,7 +144,7 @@
       add.onclick = () => { if (opts.onAdopt) opts.onAdopt(); };
       box.appendChild(add);
       const tools = document.createElement("span"); tools.className = "cc-top";
-      for (const [e, fn, tt] of [["🛒", opts.onMarket, T().market], ["⚙️", opts.onSettings, T().settings]]) {
+      for (const [e, fn, tt] of [["🎮", opts.onGames, T().games], ["🛒", opts.onMarket, T().market], ["⚙️", opts.onSettings, T().settings]]) {
         if (!fn) continue;
         const b = document.createElement("button"); b.type = "button"; b.className = "cc-tab tool"; b.textContent = e; b.title = tt || "";
         b.onclick = () => fn(); tools.appendChild(b);
@@ -154,7 +158,7 @@
       if (!design) design = curD || Object.keys(W[kind])[0];
       const key = [lang, kind, design, cat.coat, JSON.stringify(cat.profile.acc || {}), L.tasksOn, L.wallet.stars, L.wallet.owned.length].join("|");
       if (key === wardKey) return; wardKey = key;
-      q(".cc-kinds").innerHTML = Object.keys(KINDS).map((k) => `<button type="button" class="cc-kind${k === kind ? " on" : ""}" data-k="${k}">${KINDS[k]} ${esc(t[k])} <small>${Object.keys(W[k]).filter((d) => !L.price(k, d)).length * 10}/100</small></button>`).join("");
+      q(".cc-kinds").innerHTML = Object.keys(KINDS).map((k) => `<button type="button" class="cc-kind${k === kind ? " on" : ""}" data-k="${k}">${KINDS[k]} ${esc(t[k])} </button>`).join("");
       q(".cc-wallet").textContent = t.wallet(L.wallet.stars);
       // design thumbnails: the cat wearing each one (in the colour it has on, or the first colour)
       const box = q(".cc-designs"); box.innerHTML = "";
@@ -292,8 +296,15 @@
       q(".cc-name").textContent = p.name;
       const days = Math.floor((now - p.born) / 864e5);
       q(".cc-sub").textContent = `${L.COAT_NAMES[p.coat] ? L.COAT_NAMES[p.coat][lang] : p.coat} · ${p.sex === "f" ? t.sexF : t.sexM} · ${t.age(days)}`;
-      const lone = q(".cc-lonely"), hungry = L.isHungry(p);
-      lone.hidden = !L.isLonely(p) && !hungry; lone.textContent = [hungry ? t.hungry : "", L.isLonely(p) ? t.lonely : ""].filter(Boolean).join(" · ");
+      const lone = q(".cc-lonely"), hungry = L.isHungry(p), grubby = L.clean(p) < 25;
+      const warn = [p.sick ? t.sickL : "", hungry ? t.hungry : "", L.isLonely(p) ? t.lonely : "", grubby ? t.grubby : ""].filter(Boolean);
+      lone.hidden = !warn.length; lone.textContent = warn.join(" · "); lone.classList.toggle("sick", !!p.sick);
+      // care: cleanliness, buffs from special meals, brush / bath / medicine
+      q(".cc-careT").textContent = `🧼 ${t.care}`; q(".cc-cleanL").textContent = t.cleanL(Math.round(L.clean(p)));
+      const bh = L.activeBuffs(p).map((b) => `<span class="cc-chip buff" title="${esc(t.buffN[b.k])}">${b.e} ${esc(t.buffN[b.k])} · ${b.left >= 1 ? Math.floor(b.left) + (L.lang === "tr" ? "sa" : "h") : Math.ceil(b.left * 60) + (L.lang === "tr" ? "dk" : "m")}</span>`).join("");
+      if (q(".cc-buffs").dataset.v !== bh) { q(".cc-buffs").innerHTML = bh; q(".cc-buffs").dataset.v = bh; }
+      q('[data-c="brush"]').textContent = t.brushB; q('[data-c="bath"]').textContent = `${t.bathB} · ${L.pantry.shampoo || 0}`;
+      const mb = q('[data-c="med"]'); mb.hidden = !p.sick; mb.textContent = `${t.medB} · ${L.pantry.medicine || 0}`;
 
       const st = L.stage(p); q(".cc-stage").textContent = `${st.e} ${st[lang]}`;
       const bd = q(".cc-bday"); bd.hidden = !L.isBirthday(p); bd.title = t.birthdayToday;
@@ -543,6 +554,23 @@
     q('[data-a="pet"]').onclick = (e) => { cat.pet(); floatUp("💗", e.currentTarget); q(".cc-portrait").classList.remove("bounce"); void cv.offsetWidth; q(".cc-portrait").classList.add("bounce"); update(); };
     q('[data-a="feed"]').onclick = (e) => { world.feed(); floatUp("🍗", e.currentTarget); };
     q('[data-a="play"]').onclick = (e) => { world.throwYarn(clamp(cat.x + (Math.random() - 0.5) * 300, 40, world.W - 40), world.floor - 220); floatUp("🧶", e.currentTarget); };
+    q(".cc-carebtns").onclick = (e) => {
+      const b = e.target.closest("[data-c]"); if (!b || !cat || !cat.profile) return; const p = cat.profile, t = T(), k = b.dataset.c;
+      if (k === "brush") {
+        if (!L.hasToy("brush")) { if (opts.onNeed) opts.onNeed("brush", t.needBrush); return; }
+        if (Date.now() - (p.brushedAt || 0) < 30 * 60e3) { floatUp("⏳", b); return; }
+        p.brushedAt = Date.now(); p.clean = Math.min(100, L.clean(p) + 30); L.addLove(cat, 3); L.write(p, "brush"); world.purr();
+        world.burst(cat.x, cat.y - 20 * cat.s, "spark", "#fff3a0", 4); floatUp("🪮", b);
+      } else if (k === "bath") {
+        if (!(L.pantry.shampoo > 0)) { if (opts.onNeed) opts.onNeed("shampoo"); return; }
+        L.pantry.shampoo--; p.clean = 100; L.addLove(cat, -6); L.write(p, "bath");
+        world.burst(cat.x, cat.y - 24 * cat.s, "spark", "#bfe6ff", 8); if (!["held", "fall"].includes(cat.state)) cat.set("arch", 1.4); floatUp("🫧", b);
+      } else if (k === "med") {
+        if (!(L.pantry.medicine > 0)) { if (opts.onNeed) opts.onNeed("medicine"); return; }
+        L.pantry.medicine--; L.cure(cat); floatUp("💊", b);
+      }
+      L.changed(); update();
+    };
     q('[data-a="photo"]').onclick = (e) => { floatUp("📸", e.currentTarget); photo(); };
     q(".cc-kinds").onclick = (e) => { const b = e.target.closest("[data-k]"); if (!b) return; kind = b.dataset.k; const cur = worn(kind); design = cur ? cur.split(":")[0] : null; wardKey = ""; renderWardrobe(); };
     q(".cc-swatches").onclick = (e) => { const b = e.target.closest("[data-s]"); if (b) wear(`${design}:${b.dataset.s}`); };
@@ -598,5 +626,18 @@
     return api;
   }
 
-  window.CatCard = { create };
+  // Settings, market and games open right beside the card, at the card's size and height (scaled with the card's zoom).
+  // Returns false when no card is open, so the panel can fall back to its corner.
+  function beside(root) {
+    const cc = document.querySelector(".cc"), body = cc && !cc.hidden ? cc.querySelector(".cc-card") : null;
+    if (!body || root.hidden) { root.style.transform = ""; return false; }
+    const z = parseFloat(getComputedStyle(cc).getPropertyValue("--z")) || 1, r = body.getBoundingClientRect();
+    root.style.transformOrigin = "0 0"; root.style.transform = `scale(${z})`;
+    root.style.setProperty("--maxh", `${r.height / z}px`); root.style.height = `${r.height / z}px`;
+    const w = root.offsetWidth * z, gap = 10;
+    const left = r.right + gap + w <= innerWidth - 4 ? r.right + gap : Math.max(4, r.left - gap - w);
+    root.style.left = `${left}px`; root.style.top = `${r.top}px`; root.style.right = "auto"; root.style.bottom = "auto";
+    return true;
+  }
+  window.CatCard = { create, beside };
 })();

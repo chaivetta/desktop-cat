@@ -30,6 +30,7 @@
 <script src="settings.js"></script>
 <script src="market.js"></script>
 <script src="weather.js"></script>
+<script src="games.js"></script>
 <script>
 (() => {
   const { World, COATS, COAT_KEYS, SCALE_MIN, SCALE_MAX } = window.DesktopCat;
@@ -125,6 +126,13 @@
     // using something from the cupboard
     useFood: (k) => {
       if (k === "catnip") return act.catnip();
+      if (k === "medicine" || k === "shampoo") {
+        const c = card.isOpen && card.cat && card.cat.profile ? card.cat : null;
+        if (!c) return market.open("mine", L.lang === "tr" ? "Önce bir kedinin kartını aç 🐱" : "Open a cat's card first 🐱");
+        if (k === "medicine") { if (!c.profile.sick) return; L.pantry.medicine--; L.cure(c); }
+        else { L.pantry.shampoo--; c.profile.clean = 100; L.addLove(c, -6); L.write(c.profile, "bath"); c.set("arch", 1.4); }
+        L.changed(); card.refresh(); return;
+      }
       if (k === "litter") return cleanLitter(world.furniture.filter((f) => f.kind === "litter").sort((a, b) => (b.item.dirty || 0) - (a.item.dirty || 0))[0]);
       preferMeal = k; world.feed(); preferMeal = null;
     },
@@ -189,8 +197,10 @@
     onSound: () => act.mute(),
     sound: () => world.purrOn || world.meowOn,
     voices: Voices,
-    onMarket: () => market.isOpen ? market.close() : (settings.close(), market.open()),
-    onSettings: () => settings.isOpen ? settings.close() : (market.close(), settings.open()),
+    onNeed: (k, msg) => market.open(k === "brush" ? "furniture" : "food", msg || (L.lang === "tr" ? "Bu marketten alınır 🛒" : "Get this in the market 🛒")),
+    onMarket: () => market.isOpen ? market.close() : (settings.close(), games.close(), market.open()),
+    onSettings: () => settings.isOpen ? settings.close() : (market.close(), games.close(), settings.open()),
+    onGames: () => games.isOpen ? games.close() : (market.close(), settings.close(), games.open()),
     onRemove: (c) => { world.removeCat(c); save(); card.refresh(); },
     onClose: () => { overUI = false; syncIgnore(); },
   });
@@ -249,7 +259,8 @@
     strays: (on) => { world.strayOn = typeof on === "boolean" ? on : !world.strayOn; save(); syncToggles(); },
     bird: () => world.addBird({ land: Math.random() < 0.6 }),
     stray: () => world.addStray(),
-    game: () => need("laser", () => act.playGame()),
+    game: () => games.open("laser"),
+    games: () => games.open(),
     playGame: () => { gameBox.hidden = true; card.close(); world.startGame(); const c = world.cats[0]; if (c) world.meow(c); },
     seasons: (on) => { world.seasonsOn = typeof on === "boolean" ? on : !world.seasonsOn; save(); syncToggles(); },
     breed: (on) => { L.breedOn = typeof on === "boolean" ? on : !L.breedOn; save(); syncToggles(); card.refresh(); },
@@ -286,6 +297,8 @@
     if (!bridge && !world.hitTest(e.clientX, e.clientY)) world.throwYarn(e.clientX, e.clientY);
   });
 
+  // 🎮 mini games
+  var games = window.CatGames.create({ world, playLaser: () => act.playGame(), onClose: () => { overUI = false; syncIgnore(); } });
   // the real weather outside: rain, snow, storms, fog, clouds (refreshed every 20 minutes)
   const weather = window.CatWeather.create({
     world, isOn: () => weatherOn, getLoc: () => weatherLoc, setLoc: (l) => { weatherLoc = l; save(); },

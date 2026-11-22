@@ -62,11 +62,13 @@ Right-click a cat to open its card, right above it. Drag it by its top or the av
 
 - **Status** — name (🎲 suggests one), ♀ or ♂, love hearts, growing up, two personality traits and a favourite toy, tricks to teach (twelve good lessons each, at most six lessons a day, and kittens are too little to learn), quick actions
 - **🎯 Tasks** — three little jobs a day per cat. Each pays coins; finishing all three pays a ⭐, and days in a row make a streak
-- **👗 Wardrobe** — 300 things to wear (100 hats, 100 collars & bows, 100 outfits). Every design is locked and bought with ⭐ stars, then comes in all ten colours
+- **👗 Wardrobe** — 20 hats, 20 collars & accessories and 20 outfits, each in ten colours. Every design is locked and bought with ⭐ stars
 - **📷 Memories** — the big moments kept as little polaroids, drawn as the cat looked that day, plus the family (parents, brothers and sisters, kittens) and how many days you've been together
 - **📖 Diary** — everything they've been up to
 - **🎙️ Cat sounds** — record your own meows (kitten, grown-up, old cat) and purrs with the microphone, or add sound files
 - **📸 Photo** — saves a polaroid PNG of your cat, outfit and all
+
+<img src="docs/wardrobe-new.png" width="640" alt="New designs: cowboy hat, viking helmet, halo, propeller cap, wizard hat; tie, medal, sailor collar, ruff, gem; checker, hearts, camo, hoodie, floral outfits">
 
 ## Growing up takes real care
 
@@ -86,13 +88,22 @@ Right-click a cat to open its card, right above it. Drag it by its top or the av
 | **🧸 Toys** | Only the yarn is free. The wind-up mouse, box, butterfly, feather wand, scratching post, wall shelf and laser pointer are bought once in the market (the laser hunt needs the laser) |
 | **🍗 Food** | Dry food (two meals for 10🪙), wet food, fish feasts, treats (they make teaching tricks easier), catnip and cat litter. The bowl only fills from your cupboard |
 | **🎒 Inventory** | The cupboard (put food in the bowl, drop catnip, clean the litter box) and every piece of furniture: place it, put it away, repair it or sell it |
+| **🍱 Special meals** | 22 dishes (salmon, shrimp, chicken soup, caviar, birthday cake…), each giving a buff for a few hours: **full** (hunger lasts twice as long), **glow** (love fades slower), **grow**, **healthy** (cures sickness), **energy**, **calm**, **shiny** (love ×1.5), **smart** (tricks are easier), **lucky**, **sleepy** and **royal**. Active buffs show on the card |
 | **🎁 Luck** | A free gift chest once a day, and a wheel of luck for 25🪙. Mostly coins and food; furniture, a star or a new outfit only very, very rarely (the odds are listed under the wheel) |
 
 ### Home
 
+<img src="docs/side-panels.png" width="640" alt="The market panel opens right beside the card, at the same size">
+
+The 🎮 games, 🛒 market and ⚙️ settings buttons sit on top of the card, and their panels open right beside it at the same size.
+
 ![Rug, cat bed, cat house, tunnel, cat tree, water fountain, aquarium, litter box and plant](docs/home.png)
 
 Buy as many of each as you like and drag them anywhere. Cats loaf and roll on the **rug**, nibble the **plant**, curl up on the **cushion** or in the **cat bed**, crawl into the **cat house** to sleep out of sight, dash through the **tunnel**, climb the two-level **cat tree**, drink from the **water fountain**, watch the fish in the **aquarium** and use the **litter box** (keep it clean and love lasts longer; click it to clean it with litter from the cupboard). Rugs, cushions, beds, the tunnel and the cat tree wear out with use and time; worn things look faded, broken ones are ignored until you repair them. The cat house, fountain, litter box, aquarium and plant never wear out.
+
+![Twenty more pieces: basket, heat pad, hammock, igloo, armchair, sofa, stool, bookshelf, cat grass, track ball, treat dispenser, ball pit, piano, mirror, fan, grandfather clock, TV, lamp, radio and statue](docs/furniture-new.png)
+
+Twenty more: they nap in the **basket**, **heat pad** (glows at night), **hammock**, **armchair** and **sofa**, hide in the **igloo**, climb the **stool** and **bookshelf**, nibble the **cat grass**, bat the **track ball**, **treat dispenser** and **ball pit**, walk on the **piano**, stare at the **mirror**, **fan**, **clock** pendulum and flickering **TV**, and doze by the **lamp** and the **radio** (music makes love fade a little slower). The **statue** is just for show.
 
 ### Visitors
 
@@ -100,11 +111,22 @@ Buy as many of each as you like and drag them anywhere. Cats loaf and roll on th
 
 Now and then **birds** fly past; the cats stop to watch, and if one lands for a peck they stalk it (it always gets away). Once in a while a shy **stray** turns up: it keeps its distance and the cats arch their backs at it, but feed it three times and it moves in, ready for a name.
 
-### Laser hunt
+### Care: sickness and grooming
+
+<img src="docs/care.png" width="300" alt="The card shows when a cat is sick or dirty, with brush, bath and medicine buttons">
+
+Hungry, lonely or dirty cats can get **sick**: they grumble, play less and love fades faster. Medicine (or a healthy meal) cures them. Cats also get **grubby** with time, play and fights; brush them (needs the brush from the market) or give them a bath with shampoo. Clean cats earn love faster.
+
+### 🎮 Mini games
+
+<img src="docs/games.png" width="300" alt="The games panel with the scratch card">
+
+- **Scratch card:** one free ticket a day, then 10🪙. Scratch the silver with your mouse; three matching symbols win coins, food, a special meal or (very rarely) a star
+- **Memory:** match the pairs in 60 seconds; fewer moves, more coins (15🪙 a day at most)
+- **Whack-a-mouse:** 25 seconds of mice popping out of holes (15🪙 a day at most)
+- **Laser hunt:** lead the cats onto the twinkling stars with the laser
 
 <img src="docs/game.png" width="640" alt="The laser hunt: lead the cats onto twinkling stars">
-
-A 30-second mini game: lead the cats onto the twinkling stars with the laser.
 
 ## More
 

@@ -6,7 +6,7 @@
       removeAll: "Tüm kedileri kaldır", sure: "Emin misin? Tekrar dokun",
       toys: "Oyuncaklar", yarn: "Yumak", mouse: "Kurmalı fare", box: "Kutu", feed: "Mama ver", catnip: "Kedi otu", butterfly: "Kelebek",
       post: "Tırmalama direği", shelf: "Duvar rafı", bird: "Kuş çağır", stray: "Sokak kedisi çağır", laser: "Lazer", wand: "Tüylü olta", clear: "Oyuncakları topla",
-      play: "Oyun", game: "🔴 Lazer avı oyna", best: (n) => `Rekor: ${n}`,
+      play: "Oyun", game: "🔴 Lazer avı oyna", games: "🎮 Mini oyunlar: kazı kazan, hafıza, fare, lazer", best: (n) => `Rekor: ${n}`,
       sizes: "Boyutlar", catSize: "Kedi boyu", toySize: "Oyuncak boyu", cardSize: "Kart boyu",
       sound: "Ses", purr: "Mırlama", meow: "Miyavlama",
       world: "Dünya", night: "Gece ve gündüz", auto: "Saate göre", day: "Gündüz", nightOn: "Gece",
@@ -22,7 +22,7 @@
       removeAll: "Remove all cats", sure: "Sure? Tap again",
       toys: "Toys", yarn: "Yarn", mouse: "Wind-up mouse", box: "Box", feed: "Feed", catnip: "Catnip", butterfly: "Butterfly",
       post: "Scratching post", shelf: "Wall shelf", bird: "Call a bird", stray: "Call a stray", laser: "Laser", wand: "Feather wand", clear: "Put toys away",
-      play: "Game", game: "🔴 Play laser hunt", best: (n) => `Best: ${n}`,
+      play: "Game", game: "🔴 Play laser hunt", games: "🎮 Mini games: scratch card, memory, mice, laser", best: (n) => `Best: ${n}`,
       sizes: "Sizes", catSize: "Cat size", toySize: "Toy size", cardSize: "Card size",
       sound: "Sound", purr: "Purring", meow: "Meowing",
       world: "World", night: "Day & night", auto: "Follow the clock", day: "Day", nightOn: "Night",
@@ -72,7 +72,7 @@
             </div>
             <div class="st-grid">${btn("clear", "🧺 " + s.clear, "ghost")}</div>
           </section>
-          <section><h3>🎮 ${esc(s.play)} <small class="st-best"></small></h3><div class="st-grid">${btn("game", s.game, "gold")}</div></section>
+          <section><h3>🎮 ${esc(s.play)} <small class="st-best"></small></h3><div class="st-grid">${btn("games", s.games, "gold")}</div></section>
           <section><h3>📏 ${esc(s.sizes)}</h3>${range("scale", s.catSize, DC.SCALE_MIN, DC.SCALE_MAX, 0.25)}${range("toyScale", s.toySize, DC.SCALE_MIN, DC.SCALE_MAX, 0.25)}${range("card", s.cardSize, 0.5, 1.1, 0.02)}</section>
           <section><h3>🔊 ${esc(s.sound)}</h3>${sw("purr", s.purr)}${sw("meow", s.meow)}</section>
           <section><h3>🌍 ${esc(s.world)}</h3>
@@ -111,7 +111,7 @@
       q('[data-a="laser"]').classList.toggle("on", !!world.laser); q('[data-a="wand"]').classList.toggle("on", !!world.wand);
       // toys you haven't bought yet show a lock (tapping one opens the market)
       for (const k of Object.keys(L.TOY_PRICES)) { const b = q(`[data-a="${k}"]`); if (b) b.classList.toggle("locked", !L.hasToy(k)); }
-      const gb = q('[data-a="game"]'); if (gb) gb.classList.toggle("locked", !L.hasToy("laser"));
+
       const full = n >= (L.MAX_CATS || 8); root.querySelectorAll(".st-coat").forEach((b) => { b.disabled = full; });
       const ra = q('[data-a="removeAll"]'); ra.textContent = `🧳 ${sure ? s.sure : s.removeAll}`; ra.classList.toggle("red", !!sure);
     }
@@ -121,14 +121,8 @@
       const bottom = Math.max(12, innerHeight - world.floor + 10);
       fab.hidden = world.cats.some((c) => c.profile);
       fab.style.bottom = `${bottom}px`;
-      const cc = document.querySelector(".cc"), r = cc && !cc.hidden ? cc.getBoundingClientRect() : null;
-      if (r && r.width && !root.hidden) {
-        const w = root.offsetWidth, h = root.offsetHeight, room = innerWidth - r.right - 12;
-        root.style.left = `${room >= w + 4 ? r.right + 12 : Math.max(8, r.left - 12 - w)}px`; root.style.right = "auto";
-        root.style.top = `${Math.max(8, Math.min(r.top, innerHeight - h - 8))}px`; root.style.bottom = "auto";
-        root.style.setProperty("--maxh", `${innerHeight - 16}px`); return;
-      }
-      root.style.left = "auto"; root.style.right = "14px"; root.style.top = "auto"; root.style.bottom = `${bottom + 52}px`;
+      if (window.CatCard.beside(root)) return;
+      root.style.height = ""; root.style.left = "auto"; root.style.right = "14px"; root.style.top = "auto"; root.style.bottom = `${bottom + 52}px`;
       root.style.setProperty("--maxh", `${Math.max(240, innerHeight - bottom - 80)}px`);
     }
     function open() { root.hidden = false; build(); place(); if (bridge && bridge.getLogin) bridge.getLogin().then((v) => { login = !!v; sync(); }); o.onOpen && o.onOpen(); }
@@ -145,7 +139,7 @@
       if (a === "close") return close();
       if (a === "wxAuto") { wxMsg = ""; o.weather.auto().then(sync); return; }
       if (a === "removeAll") { if (sure) { sure = 0; act.removeAll(); } else { sure = 1; setTimeout(() => { sure = 0; sync(); }, 3000); } return sync(); }
-      if (a === "game" || a === "cards" || a === "market") close();
+      if (a === "games" || a === "cards" || a === "market") close();
       if (a === "hide") { close(); return bridge && bridge.hide(); }
       if (a === "quit") return bridge && bridge.quit();
       if (act[a]) act[a]();

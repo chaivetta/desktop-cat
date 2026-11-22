@@ -492,18 +492,30 @@
     crown: { tr: "taç", en: "crown" }, cap: { tr: "kasket", en: "cap" }, witch: { tr: "cadı şapkası", en: "witch hat" },
     chef: { tr: "aşçı şapkası", en: "chef's hat" }, beret: { tr: "ressam beresi", en: "beret" }, santa: { tr: "Noel şapkası", en: "Santa hat" },
     flowers: { tr: "çiçek taç", en: "flower crown" },
+    cowboy: { tr: "kovboy şapkası", en: "cowboy hat" }, viking: { tr: "Viking miğferi", en: "viking helmet" }, halo: { tr: "melek halesi", en: "halo" },
+    propeller: { tr: "pervaneli kep", en: "propeller cap" }, grad: { tr: "mezuniyet kepi", en: "graduation cap" }, bucket: { tr: "balıkçı şapkası", en: "bucket hat" },
+    hairbow: { tr: "saç fiyongu", en: "hair bow" }, pirate: { tr: "korsan şapkası", en: "pirate hat" }, sunhat: { tr: "hasır şapka", en: "sun hat" },
+    wizard: { tr: "büyücü külahı", en: "wizard hat" },
   };
   const COLLARS = {
     plain: { tr: "tasma", en: "collar" }, bell: { tr: "zilli tasma", en: "bell collar" }, bowtie: { tr: "papyon", en: "bow tie" },
     bigbow: { tr: "kocaman fiyonk", en: "big bow" }, bandana: { tr: "bandana", en: "bandana" }, pearls: { tr: "inci kolye", en: "pearl necklace" },
     scarf: { tr: "atkı", en: "scarf" }, tag: { tr: "kalpli künye", en: "heart tag" }, studs: { tr: "çivili tasma", en: "studded collar" },
     lei: { tr: "çiçek kolye", en: "flower lei" },
+    tie: { tr: "kravat", en: "necktie" }, medal: { tr: "madalya", en: "medal" }, sailor: { tr: "denizci yakası", en: "sailor collar" },
+    ruff: { tr: "fırfırlı yaka", en: "ruff" }, gem: { tr: "taşlı gerdanlık", en: "gem choker" }, chain: { tr: "altın zincir", en: "gold chain" },
+    daisy: { tr: "papatya", en: "daisy" }, ribbon: { tr: "uzun kurdele", en: "long ribbon" }, cowl: { tr: "örgü boyunluk", en: "knit cowl" },
+    star: { tr: "yıldız kolye", en: "star pendant" },
   };
   const OUTFITS = {
     sweater: { tr: "kazak", en: "sweater" }, stripes: { tr: "çizgili tişört", en: "striped tee" }, dots: { tr: "puantiyeli elbise", en: "polka-dot dress" },
     plaid: { tr: "ekose gömlek", en: "plaid shirt" }, zigzag: { tr: "zikzak hırka", en: "zigzag cardigan" }, raincoat: { tr: "yağmurluk", en: "raincoat" },
     stars: { tr: "yıldızlı pijama", en: "starry pyjamas" }, diagonal: { tr: "çapraz çizgili forma", en: "sash jersey" },
     vertical: { tr: "dikey çizgili yelek", en: "pinstripe vest" }, overalls: { tr: "salopet", en: "dungarees" },
+    checker: { tr: "dama desenli kazak", en: "checkerboard jumper" }, hearts: { tr: "kalpli tişört", en: "heart tee" }, waves: { tr: "dalgalı mayo", en: "wave swimsuit" },
+    camo: { tr: "kamuflaj ceket", en: "camo jacket" }, argyle: { tr: "baklava desenli yelek", en: "argyle vest" }, hoodie: { tr: "kapüşonlu", en: "hoodie" },
+    floral: { tr: "çiçekli elbise", en: "floral dress" }, bold: { tr: "kalın çizgili forma", en: "rugby shirt" }, dash: { tr: "kesik çizgili pijama", en: "dashed pyjamas" },
+    pocket: { tr: "cepli tişört", en: "pocket tee" },
   };
   const WARDROBE = { schemes: SCHEMES, hat: HATS, collar: COLLARS, outfit: OUTFITS };
   const toneCache = {};
@@ -537,6 +549,16 @@
       case "diagonal": return (x + y) % 6 < 2 ? 2 : 1;
       case "vertical": return x % 3 === 0 ? 2 : 1;
       case "overalls": return y >= 29 || (y >= 22 && (x % 8 === 3)) ? 2 : 1;
+      case "checker": return ((x >> 1) + (y >> 1)) % 2 ? 2 : 1;
+      case "hearts": { const u = x % 6, v = y % 6; return (v === 1 && (u === 1 || u === 3)) || (v === 2 && u >= 1 && u <= 3) || (v === 3 && u === 2) ? 2 : 1; }
+      case "waves": return (y + Math.round(Math.sin(x * 0.9) * 1.2)) % 4 === 0 ? 2 : 1;
+      case "camo": { const k = Math.sin(x * 0.7) + Math.cos(y * 0.9) + Math.sin((x + y) * 0.4); return k > 0.7 ? 2 : 1; }
+      case "argyle": { const u = x % 8, v = y % 8; return Math.abs(u - 4) + Math.abs(v - 4) <= 2 ? 2 : (u === v || u + v === 8) ? 2 : 1; }
+      case "hoodie": return !t(x, y - 2) || (y >= 27 && y <= 29 && x % 10 >= 3 && x % 10 <= 7) ? 2 : 1;
+      case "floral": { const u = x % 5, v = (y + (x / 5 | 0) * 2) % 5; return (u === 2 && v !== 2 && (v === 1 || v === 3)) || (v === 2 && (u === 1 || u === 3)) ? 2 : 1; }
+      case "bold": return (y >> 2) % 2 ? 2 : 1;
+      case "dash": return y % 3 === 0 && x % 4 < 2 ? 2 : 1;
+      case "pocket": return !t(x, y + 1) || ((x % 12 >= 4 && x % 12 <= 7) && (y >= 25 && y <= 28) && (x % 12 === 4 || x % 12 === 7 || y === 28)) ? 2 : 1;
     }
     return 1;
   }
@@ -562,6 +584,18 @@
       case "chef": Rc(-4, 0, 8, 2, M.H2); E(-2.6, 4, 2.7, 2.5, M.H1); E(0.4, 5, 2.9, 2.9, M.H1); E(3, 3.8, 2.4, 2.3, M.H1); break;
       case "beret": E(-0.5, 1.2, 6, 1.9, M.H1); P(-0.5, 3.4, M.H1); P(0.5, 3.4, M.H2); for (let u = -5; u <= 4; u++) P(u, 0, M.H2); break;
       case "santa": T(-4.6, 1, 4.6, 1, -3.5, 8.5, M.H1); T(-4.4, 8, -1.2, 6.2, -7.5, 4.5, M.H1); Rc(-5, 0, 11, 2, M.H2); E(-7.5, 4, 1.7, 1.7, M.H2); break;
+      case "cowboy": Rc(-8, 0, 17, 1, M.H1); P(-8, 1, M.H1); P(8, 1, M.H1); Rc(-4, 1, 9, 4, M.H1); Rc(-4, 1, 9, 1, M.H2); P(0, 5, M.H1); P(-1, 4, M.H3); break;
+      case "viking": E(0, 0.8, 5, 3.6, M.H2, 0); for (let u = -5; u <= 5; u++) P(u, 0, M.H3);
+        R.limb(cx - d * 5, top - 1.5, cx - d * 8, top - 6, 1.3, M.H1, PART.HAT); R.limb(cx + d * 5, top - 1.5, cx + d * 8, top - 6, 1.3, M.H1, PART.HAT); break;
+      case "halo": for (let u = -4; u <= 4; u++) { P(u, 4.5 + (Math.abs(u) > 3 ? 0.6 : 0), M.H1); } P(-4.5, 5.2, M.H3); P(4.5, 5.2, M.H3); break;
+      case "propeller": E(0, 0.6, 5, 3.2, M.H1, 0); for (let u = -5; u <= 5; u++) P(u, 0, M.H2); P(0, 4, M.H3); P(0, 5, M.H3);
+        { const sp = Math.sin(performance.now() / 70); Rc(-Math.round(4 * Math.abs(sp)) - 1, 6, Math.round(8 * Math.abs(sp)) + 2, 1, M.H2); } break;
+      case "grad": Rc(-4, 0, 9, 3, M.H1); Rc(-7, 3, 15, 1, M.H1); Rc(-6, 4, 13, 1, M.H1); P(0, 5, M.H3); R.limb(cx, top - 5, cx + d * 5, top - 2, 0.8, M.H3, PART.HAT); P(5, 1, M.H3); P(5, 0, M.H3); break;
+      case "bucket": Rc(-7, 0, 15, 1, M.H1); Rc(-6, 1, 13, 1, M.H1); E(0, 2, 4.6, 3.4, M.H1, 1.5); Rc(-4, 2, 9, 1, M.H2); break;
+      case "hairbow": { const bu = h.front ? 2.5 : -1.5; E(bu - 2.4, 1.6, 2.2, 1.8, M.H1); E(bu + 2.4, 1.6, 2.2, 1.8, M.H1); E(bu, 1.6, 1, 1.1, M.H2); P(bu - 2.6, 1.6, M.H3); P(bu + 2.6, 1.6, M.H3); break; }
+      case "pirate": Rc(-6, 0, 13, 2, M.H1); T(-6.5, 1.5, 6.5, 1.5, 0, 6.5, M.H1); T(-7, 0, -5, 2, -8, 4, M.H1); T(7, 0, 5, 2, 8, 4, M.H1); E(0, 3.2, 1.2, 1.2, M.H2); P(-0.5, 3.4, M.H3); P(0.5, 3.4, M.H3); break;
+      case "sunhat": Rc(-9, 0, 19, 1, M.H1); Rc(-8, 1, 17, 1, M.H1); E(0, 2.3, 4.5, 2.8, M.H1, 1.5); Rc(-4.5, 2, 9, 1, M.H2); E(3.5, 3, 1.3, 1.3, M.H3); break;
+      case "wizard": Rc(-6, 0, 13, 1, M.H1); T(-4, 1, 4, 1, 1.5, 12, M.H1); P(-1, 3, M.H3); P(1, 6, M.H3); P(0, 9, M.H3); P(-2, 4, M.H2); P(2, 3, M.H2); P(1, 9.5, M.H2); break;
       case "flowers": for (let u = -5; u <= 5; u++) P(u, 0, M.H2); [[-4.2, M.H1], [-1.5, M.H3], [1.2, M.H1], [3.8, M.H3]].forEach(([u, m]) => { E(u, 1.4, 1.5, 1.4, m); P(u, 1.2, m === M.H1 ? M.H3 : M.H1); }); break;
     }
   }
@@ -576,10 +610,15 @@
         case "pearls": return i % 2 ? M.C2 : M.C3;
         case "lei": return [M.C1, M.C3, M.C2][i % 3];
         case "scarf": return i % 3 === 0 ? M.C2 : M.C1;
+        case "chain": return i % 2 ? M.C3 : M.C1;
+        case "cowl": return (i + row) % 2 ? M.C2 : M.C1;
+        case "ruff": return row === 0 ? M.C2 : i % 2 ? M.C1 : M.C2;
+        case "sailor": return row === 1 ? M.C2 : M.C1;
+        case "gem": return M.C2;
         default: return M.C1;
       }
     };
-    const rows = design === "scarf" ? 3 : design === "pearls" ? 1 : 2;
+    const rows = design === "scarf" || design === "cowl" || design === "ruff" ? 3 : design === "pearls" || design === "chain" || design === "gem" || design === "ribbon" ? 1 : 2;
     if (h.flip) return;
     if (h.low) {                                     // sleeping: the collar shows behind the head as a little stripe
       for (let y = Math.round(h.y - 3); y <= Math.round(h.y + 3); y++) for (let k = 0; k < Math.min(rows, 2); k++) B(Math.round(h.x - 6 - k), y, bandMat(y, k));
@@ -599,6 +638,16 @@
       case "scarf": if (!h.front) for (let k = 0; k < 6; k++) { D(h.x - d * 4, ny + 2 + k, k % 2 ? M.C2 : M.C1); D(h.x - d * 3, ny + 2 + k, M.C1); } break;
       case "tag": D(fx - 1, fy + 1, M.C3); D(fx + 1, fy + 1, M.C3); D(fx - 1, fy + 2, M.C3); D(fx, fy + 2, M.C3); D(fx + 1, fy + 2, M.C3); D(fx, fy + 3, M.C3); break;
       case "lei": R.ellipse(fx, fy + 1, 1.3, 1.3, M.C1, PART.COLLAR); D(fx, fy + 1, M.C3); break;
+      case "tie": D(fx, fy, M.C2); D(fx + 1, fy, M.C2); for (let k = 1; k < 7; k++) { D(fx, fy + k, M.C2); if (k > 1 && k < 6) D(fx + 1, fy + k, M.C2); } D(fx, fy + 2, M.C3); D(fx + 1, fy + 4, M.C3); break;
+      case "medal": D(fx, fy, M.C1); D(fx, fy + 1, M.C1); R.ellipse(fx + 0.5, fy + 3, 1.8, 1.8, M.C3, PART.COLLAR); D(fx, fy + 3, M.C2); break;
+      case "sailor": R.tri(fx - 3, fy - 1, fx + 4, fy - 1, fx + 0.5, fy + 4, M.C1, PART.COLLAR); D(fx, fy + 1, M.C3); D(fx + 1, fy + 1, M.C3); D(fx, fy + 2, M.C3); break;
+      case "ruff": break;
+      case "gem": D(fx, fy, M.C3); D(fx + 1, fy, M.C3); D(fx, fy + 1, M.C3); D(fx + 1, fy + 1, M.C1); break;
+      case "chain": R.ellipse(fx + 0.5, fy + 2, 1.2, 1.4, M.C3, PART.COLLAR); break;
+      case "daisy": for (const [u, v] of [[0, -1.6], [1.6, 0], [0, 1.6], [-1.6, 0]]) R.ellipse(fx + 0.5 + u, fy + 1 + v, 1, 1, M.C2, PART.COLLAR); D(fx, fy + 1, M.C3); D(fx + 1, fy + 1, M.C3); break;
+      case "ribbon": R.limb(fx, fy, fx - 1.5, fy + 7, 1.1, M.C1, PART.COLLAR); R.limb(fx + 1, fy, fx + 3, fy + 6.5, 1.1, M.C1, PART.COLLAR); D(fx, fy, M.C2); break;
+      case "cowl": break;
+      case "star": D(fx, fy, M.C1); D(fx, fy + 1, M.C3); D(fx - 1, fy + 2, M.C3); D(fx, fy + 2, M.C3); D(fx + 1, fy + 2, M.C3); D(fx, fy + 3, M.C3); D(fx - 1, fy + 4, M.C3); D(fx + 1, fy + 4, M.C3); break;
     }
   }
 
@@ -750,8 +799,8 @@
       if (state !== "sleep") this.belly = false;
       if (this.state === "inbox" && state !== "inbox" && this.box) { this.box.occupant = null; this.box = null; }
       if (this.bed && !["knead", "sleep", "stretch", "yawn"].includes(state)) { this.bed.occupant = null; this.bed = null; }
-      if (this.cushion && !(this.cushion.kind === "house" ? ["sleep", "knead"] : ["knead", "sleep", "stretch", "yawn", "loaf", "sit", "groom", "slowBlink", "happy"]).includes(state)) {
-        if (this.cushion.kind === "house") this.facing = Math.random() < 0.5 ? -1 : 1;    // pops out of the door
+      if (this.cushion && !(this.cushion.f.hide ? ["sleep", "knead"] : ["knead", "sleep", "stretch", "yawn", "loaf", "sit", "groom", "slowBlink", "happy"]).includes(state)) {
+        if (this.cushion.f.hide) this.facing = Math.random() < 0.5 ? -1 : 1;    // pops out of the door
         this.cushion.occupant = null; this.cushion = null;
       }
       if (this.perch && (state === "held" || state === "fall")) this.perch = null;
@@ -819,6 +868,12 @@
       if (bed) wt.sleep += 0.6;                       // a comfy bed makes a nap more tempting
       const shelf = w.shelves.find((sh) => sh.cats().length < sh.cap() && w.floor - sh.top < 220 * this.s);
       if (shelf) wt.shelf = 1.1;
+      const L_ = window.CatLife, P_ = this.profile;
+      if (L_ && P_) {                                    // what they ate, and how they feel
+        if (L_.hasBuff(P_, "energy")) { wt.zoom = (wt.zoom || 0) + 0.3; wt.tailChase = (wt.tailChase || 0) * 2; wt.pronk = (wt.pronk || 0) + 0.3; wt.sleep *= 0.5; }
+        if (L_.hasBuff(P_, "sleepy")) { wt.sleep *= 2; wt.loaf = (wt.loaf || 0) * 1.5; }
+        if (P_.sick) { wt.sleep *= 2; wt.loaf = (wt.loaf || 0) * 2; wt.walk *= 0.5; wt.zoom = 0; wt.pronk = 0; wt.tailChase = 0; }
+      }
       if (w.weather && ["rain", "storm", "snow", "drizzle"].includes(w.weather.kind)) { wt.sleep *= 1.6; wt.loaf = (wt.loaf || 0) * 1.6; wt.zoom = 0; }
       if (w.isNight()) { wt.sleep *= 3; wt.walk *= 0.4; wt.zoom = 0; wt.loaf *= 2; wt.tailChase = 0; wt.meerkat = 0; wt.pronk = 0; if (wt.fight) wt.fight *= 0.2; if (wt.shelf) wt.shelf *= 0.5; }
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
@@ -834,13 +889,15 @@
       const naps = w.furniture.filter((f) => f.f.nap != null && f.usable && !f.occupant && (!f.claimed || f.claimed === this)), nap = naps.length ? naps[Math.floor(Math.random() * naps.length)] : null;
       if (rug) wt.rug = 1.1;
       if (plant) wt.plant = 0.35;
-      if (nap) wt.cushion = (w.isNight() ? 2.5 : 1) * (nap.kind === "house" ? 1.3 : 1);
+      if (nap) wt.cushion = (w.isNight() ? 2.5 : 1) * (nap.f.hide ? 1.3 : 1);
       if (aq) wt.fish = 0.8;
+      const spots = w.furniture.filter((f) => f.usable && ["watch", "play", "nibble"].includes(f.f.role)), spot = spots.length ? spots[Math.floor(Math.random() * spots.length)] : null;
+      if (spot) wt.spot = 0.9;
       const tun = F("tunnel"), fnt = F("fountain"), lit = w.furniture.filter((f) => f.kind === "litter" && (f.item.dirty || 0) < 5);
       if (tun && !w.isNight()) wt.tunnel = this.size < 0.85 ? 1.2 : 0.6;
       if (fnt) wt.drink = Date.now() - (this.drankAt || 0) > 20 * 60e3 ? 1.2 : 0.2;
       const litBox = lit.length ? lit[Math.floor(Math.random() * lit.length)] : null; if (litBox && Date.now() - (this.litterAt || 0) > 30 * 60e3) wt.litter = 0.5;
-      if (w.furniture.some((f) => f.kind === "tree" && f.usable) && shelf) wt.shelf = (wt.shelf || 0) + 0.8;
+      if (w.furniture.some((f) => f.f.perch && f.usable) && shelf) wt.shelf = (wt.shelf || 0) + 0.8;
       // you've been away from the mouse for a while: come and curl up next to where you left it
       if (w.idleFor() > 480 && pt && pt.x > 0 && !wt.yarn && !wt.mouse && !wt.bowl) wt.you = 6;
       const known = this.profile && this.profile.tricks ? Object.keys(this.profile.tricks).filter((k) => this.profile.tricks[k] >= 5) : [];
@@ -868,6 +925,7 @@
       else if (n === "rug") { this.rugOff = rnd(-18, 18) * w.toyScale; this.set("chase", 14, { goal: "rug", fRef: rug }); }
       else if (n === "plant" || n === "fish") this.set("chase", 14, { goal: n, fRef: n === "plant" ? plant : aq });
       else if (n === "bird") this.set("chase", 10, { goal: "bird" });
+      else if (n === "spot") this.set("chase", 14, { goal: "spot", fRef: spot });
       else if (n === "tunnel") { this.tunSide = this.x < tun.x ? -1 : 1; this.set("chase", 12, { goal: "tunnel", fRef: tun }); }
       else if (n === "drink") this.set("chase", 14, { goal: "drink", fRef: fnt });
       else if (n === "litter") this.set("chase", 14, { goal: "litter", fRef: litBox });
@@ -896,6 +954,7 @@
         case "rug": { const f = this.fRef; return f && w.furniture.includes(f) ? clamp(f.x + (this.rugOff || 0), 20, w.W - 20) : null; }
         case "plant": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * 12 * w.toyScale : null; }
         case "tunnel": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x + this.tunSide * 27 * w.toyScale : null; }
+        case "spot": { const f = this.fRef; if (!f || !w.furniture.includes(f)) return null; return f.f.act === "roll" || f.f.act === "knead" ? f.x : f.x - (this.x < f.x ? 1 : -1) * (f.f.w / 2 * w.toyScale + 10 * this.s); }
         case "drink": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * (10 * w.toyScale + 12 * this.s) : null; }
         case "litter": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x : null; }
         case "cushion": { const f = this.fRef; return f && w.furniture.includes(f) && (!f.occupant || f.occupant === this) ? f.x : null; }
@@ -1146,7 +1205,7 @@
         case "drink": { if (Math.random() < dt * 3) w.burst(this.x + this.facing * 14 * s, this.y - 6 * s, "spark", "#7cc6f2", 1); if (this.stateT > this.dur) this.set("sit", rnd(1.5, 3)); break; }
         case "litter": {
           if (Math.random() < dt * 5) w.burst(this.x - this.facing * 10 * s, this.y - 2 * s, "dust", "rgba(220,200,150,.8)", 1);
-          if (this.stateT > this.dur) { const f = this.fRef; if (f && w.furniture.includes(f)) f.item.dirty = Math.min(6, (f.item.dirty || 0) + 1); this.set("walk", 4, { target: clamp(this.x + rnd(-80, 80), 30, w.W - 30) }); }
+          if (this.stateT > this.dur) { const f = this.fRef; if (f && w.furniture.includes(f)) f.item.dirty = Math.min(6, (f.item.dirty || 0) + 1); this.care("litter"); this.set("walk", 4, { target: clamp(this.x + rnd(-80, 80), 30, w.W - 30) }); }
           break;
         }
         case "arch": { if (Math.random() < dt * 3) w.burst(this.x + this.facing * 14 * s, this.y - 26 * s, "spark", "#ffffff", 1); if (this.stateT > this.dur) this.set("sit", rnd(1, 2)); break; }
@@ -1204,7 +1263,7 @@
       if (tx == null) { if (this.boxRef && this.boxRef.claimed === this) this.boxRef.claimed = null; this.set("sit", 1.5); return; }
       const dx = tx - this.x, g = this.goal;
       const reach = { yarn: 16, dangle: 9, mouse: 46, laser: 22, bowl: 3, box: 4, feather: 9, butterfly: 10, catnip: 6, bed: 4, post: 3, shelf: 4,
-        you: 6, rug: 5, plant: 4, cushion: 3, fish: 4, bird: 44, tunnel: 5, drink: 4, litter: 3 }[g] * s;
+        you: 6, rug: 5, plant: 4, cushion: 3, fish: 4, bird: 44, tunnel: 5, drink: 4, litter: 3, spot: 4 }[g] * s;
       if (Math.abs(dx) > reach) {
         this.facing = Math.sign(dx);
         const sp = ["bowl", "box", "bed", "post", "shelf", "you", "rug", "plant", "cushion", "fish"].includes(g) ? 60 : g === "bird" ? 70 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
@@ -1229,6 +1288,12 @@
         }
         else if (g === "shelf") { this.facing = Math.sign(this.shelfRef.x - this.x) || this.facing; this.set("prep", rnd(0.4, 0.8)); }
         else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); this.care("scratch"); }
+        else if (g === "spot") {
+          const f = this.fRef; f.use(); this.facing = Math.sign(f.x - this.x) || this.facing;
+          if (f.f.role === "watch") this.set("fishWatch", rnd(4, 9));
+          else if (f.f.role === "nibble") { this.set("nibble", rnd(2, 3)); this.care("catnip"); }
+          else { this.set(f.f.act === "knead" ? "knead" : f.f.act, rnd(2, 4), f.f.act === "bat" ? { swatted: true } : {}); this.care("play", { toyKey: f.kind }); if (f.kind === "piano") for (let i = 0; i < 4; i++) setTimeout(() => w.burst(f.x + rnd(-10, 10) * w.toyScale, w.floor - 18 * w.toyScale, "note", "#5b3a29", 1, { rise: true }), i * 400); }
+        }
         else if (g === "tunnel") { const f = this.fRef; f.use(); this.facing = -this.tunSide; this.set("tunnel", 3, { tunTo: f.x - this.tunSide * 27 * w.toyScale }); w.burst(this.x, this.y - 6 * s, "dust", "rgba(140,120,100,.6)", 2); }
         else if (g === "drink") { const f = this.fRef; this.facing = Math.sign(f.x - this.x) || this.facing; this.drankAt = Date.now(); this.set("drink", rnd(2.5, 4)); this.care("drink"); }
         else if (g === "litter") { this.litterAt = Date.now(); this.set("litter", rnd(2.5, 4)); }
@@ -1239,7 +1304,7 @@
           const f = this.fRef;
           if (f && !f.occupant) {
             f.occupant = this; f.claimed = null; this.cushion = f; this.x = f.x; f.use();
-            if (f.kind === "house") this.set("sleep", rnd(25, 60)); else this.set(Math.random() < 0.5 ? "loaf" : "knead", rnd(4, 9));
+            if (f.f.hide) this.set("sleep", rnd(25, 60)); else this.set(Math.random() < 0.5 ? "loaf" : "knead", rnd(4, 9));
             this.care("bed");
           } else this.think();
         }
@@ -1403,7 +1468,7 @@
     pose() {
       switch (this.state) {
         case "walk": return "walk";
-        case "chase": return ["bowl", "box", "bed", "post", "shelf", "rug", "plant", "cushion", "fish", "you", "drink", "litter"].includes(this.goal) ? "walk" : "run";
+        case "chase": return ["bowl", "box", "bed", "post", "shelf", "rug", "plant", "cushion", "fish", "you", "drink", "litter", "spot"].includes(this.goal) ? "walk" : "run";
         case "prep": return "crouch";
         case "spar": return (this.vy || this.y < this.world.floor) ? "leap" : this.act === "swipe" ? "swipe" : "spar";
         case "flee": case "pursue": return "run";
@@ -1421,7 +1486,7 @@
       }
     }
 
-    get hidden() { return !!(this.cushion && this.cushion.kind === "house") || this.state === "tunnel"; }
+    get hidden() { return !!(this.cushion && this.cushion.f.hide) || this.state === "tunnel"; }
     render(ctx) {
       const R = this.R; R.clear();
       if (this.hidden) return;                          // fast asleep inside the cat house
@@ -1936,8 +2001,29 @@
     cushion: { w: 30, h: 9, price: 50, nap: 5 },
     bed:     { w: 30, h: 13, price: 70, nap: 4 },
     aquarium:{ w: 30, h: 26, price: 120, durable: true },
-    house:   { w: 36, h: 34, price: 150, nap: 0, durable: true },
-    tree:    { w: 44, h: 80, price: 200 },
+    house:   { w: 36, h: 34, price: 150, nap: 0, hide: true, durable: true },
+    tree:    { w: 44, h: 80, price: 200, perch: [[-5, 35, 13], [6, 61, 14]] },
+    // role: watch (sit and stare, now and then a paw), play (act: the pose they do on it), nibble; decor just looks nice
+    basket:  { w: 28, h: 12, price: 40, nap: 3 },
+    heatpad: { w: 28, h: 6, price: 70, nap: 2 },
+    hammock: { w: 44, h: 30, price: 90, nap: 11 },
+    igloo:   { w: 30, h: 22, price: 110, nap: 0, hide: true },
+    armchair:{ w: 32, h: 26, price: 180, nap: 12 },
+    sofa:    { w: 56, h: 24, price: 220, nap: 11 },
+    stool:   { w: 18, h: 22, price: 35, perch: [[0, 22, 8]] },
+    bookshelf:{ w: 30, h: 62, price: 160, perch: [[0, 62, 14]], durable: true },
+    catgrass:{ w: 16, h: 16, price: 25, role: "nibble" },
+    track:   { w: 40, h: 10, price: 50, role: "play", act: "bat" },
+    dispenser:{ w: 14, h: 14, price: 45, role: "play", act: "bat" },
+    ballpit: { w: 44, h: 16, price: 120, role: "play", act: "roll" },
+    piano:   { w: 34, h: 16, price: 130, role: "play", act: "knead" },
+    mirror:  { w: 20, h: 40, price: 65, role: "watch", durable: true },
+    fan:     { w: 20, h: 34, price: 55, role: "watch", durable: true },
+    clock:   { w: 16, h: 52, price: 140, role: "watch", durable: true },
+    tv:      { w: 36, h: 30, price: 250, role: "watch", durable: true },
+    lamp:    { w: 14, h: 50, price: 60, role: "decor", durable: true },
+    radio:   { w: 24, h: 16, price: 85, role: "decor", durable: true },
+    statue:  { w: 20, h: 36, price: 300, role: "decor", durable: true },
     tunnel:  { w: 52, h: 16, price: 45 },
     fountain:{ w: 20, h: 24, price: 90, durable: true },
     litter:  { w: 30, h: 12, price: 35, durable: true },
@@ -1963,6 +2049,36 @@
     }
     else if (kind === "fountain") { R.ellipse(10, 20, 9.5, 3.6, 1); R.ellipse(10, 19, 7, 1.6, 3); R.rect(8, 8, 4, 11, 2); R.ellipse(10, 8, 6, 2, 1); R.ellipse(10, 7.6, 4, 0.9, 3); }
     else if (kind === "litter") { R.rect(0, 3, 30, 2, 2); R.rect(1, 5, 28, 7, 1); R.rect(3, 5, 24, 2, 3); }
+    else if (kind === "basket") { R.ellipse(14, 8, 13.5, 4, 1); R.ellipse(14, 5, 12, 1.6, 2); for (let x = 3; x < 26; x += 3) { R.put(x, 8, 2); R.put(x + 1, 10, 2); } }
+    else if (kind === "heatpad") { R.rect(1, 1, 26, 5, 1); R.rect(3, 2, 22, 1, 2); R.rect(3, 4, 22, 1, 2); R.put(27, 4, 3); R.put(28, 5, 3); }
+    else if (kind === "hammock") {
+      R.rect(1, 4, 3, 24, 1); R.rect(40, 4, 3, 24, 1); R.rect(0, 28, 6, 2, 1); R.rect(38, 28, 6, 2, 1);
+      for (let x = 5; x < 40; x++) { const y = 8 + Math.round(Math.sin(Math.PI * (x - 5) / 34) * 9); R.rect(x, y, 1, 3, x % 4 ? 2 : 3); }
+      R.put(4, 6, 3); R.put(39, 6, 3);
+    }
+    else if (kind === "igloo") { R.ellipse(15, 22, 15, 20, 1); for (const y of [8, 14]) R.rect(2, y, 26, 1, 2); for (const x of [8, 22]) R.rect(x, 3, 1, 5, 2); R.ellipse(15, 21, 5, 7, 3); }
+    else if (kind === "armchair") { R.rect(4, 0, 24, 13, 1); R.rect(3, 13, 26, 7, 2); R.rect(0, 8, 6, 13, 1); R.rect(26, 8, 6, 13, 1); R.rect(2, 21, 2, 5, 3); R.rect(28, 21, 2, 5, 3); R.rect(10, 4, 1, 6, 2); R.rect(21, 4, 1, 6, 2); }
+    else if (kind === "sofa") { R.rect(4, 0, 48, 12, 1); R.rect(2, 12, 52, 7, 2); R.rect(0, 6, 7, 14, 1); R.rect(49, 6, 7, 14, 1); R.rect(27, 12, 1, 7, 1); for (const x of [2, 27, 52]) R.rect(x, 20, 2, 4, 3); }
+    else if (kind === "stool") { R.rect(0, 0, 18, 4, 1); R.rect(2, 4, 2, 18, 2); R.rect(14, 4, 2, 18, 2); R.rect(2, 14, 14, 1, 2); }
+    else if (kind === "bookshelf") {
+      R.rect(0, 0, 30, 62, 1); R.rect(2, 2, 26, 58, 4); R.rect(2, 20, 26, 2, 1); R.rect(2, 40, 26, 2, 1);
+      [[3, 8], [8, 10], [14, 9], [21, 7]].forEach(([x, h], i) => { R.rect(x, 20 - h, 4, h, 5 + (i % 3)); R.rect(x + 1, 40 - h + 1, 3, h - 1, 5 + ((i + 1) % 3)); R.rect(x, 60 - h, 4, h, 5 + ((i + 2) % 3)); });
+    }
+    else if (kind === "catgrass") { R.rect(3, 10, 10, 6, 1); R.rect(2, 9, 12, 2, 1); for (const [x, h] of [[4, 7], [6, 9], [8, 8], [10, 9], [12, 6], [5, 5], [9, 6]]) R.tri(x - 1, 9, x + 1, 9, x + (x % 3) - 1, 9 - h, x % 2 ? 3 : 4); }
+    else if (kind === "track") { R.ellipse(20, 6, 19.5, 4, 1); R.ellipse(20, 5.6, 15, 2, 2); R.rect(2, 7, 36, 3, 1); }
+    else if (kind === "dispenser") { R.circle(7, 7, 6.5, 1); R.ellipse(5, 5, 2, 1.5, 2); R.put(8, 9, 3); R.put(10, 6, 3); R.put(4, 9, 3); }
+    else if (kind === "ballpit") { R.rect(0, 5, 44, 11, 1); R.rect(0, 5, 44, 2, 2); for (let i = 0; i < 26; i++) R.circle(3 + (i * 37) % 39, 4 + (i * 11) % 4, 1.8, 3 + (i % 4)); }
+    else if (kind === "piano") { R.rect(0, 0, 34, 10, 1); R.rect(1, 10, 32, 5, 2); for (let x = 3; x < 32; x += 4) if (x % 12 !== 11) R.rect(x, 10, 2, 3, 1); R.rect(1, 15, 2, 1, 1); R.rect(31, 15, 2, 1, 1); }
+    else if (kind === "mirror") { R.rect(0, 0, 20, 38, 1); R.rect(2, 2, 16, 34, 2); for (let k = 0; k < 6; k++) { R.put(5 + k, 10 - k, 3); R.put(8 + k, 18 - k, 3); } R.rect(4, 38, 12, 2, 1); }
+    else if (kind === "fan") { R.circle(10, 9, 8.5, 1); R.circle(10, 9, 7, 3); R.circle(10, 9, 1.6, 1); R.rect(9, 17, 2, 15, 2); R.ellipse(10, 32, 7, 2, 2); }
+    else if (kind === "clock") { R.rect(1, 0, 14, 52, 1); R.tri(1, 0, 15, 0, 8, -3, 1); R.circle(8, 9, 5, 2); R.put(8, 7, 3); R.put(8, 8, 3); R.put(9, 9, 3); R.rect(4, 19, 8, 26, 3); R.rect(0, 50, 16, 2, 1); }
+    else if (kind === "tv") { R.rect(0, 0, 36, 24, 1); R.rect(2, 2, 32, 20, 3); R.rect(14, 24, 8, 3, 1); R.rect(10, 27, 16, 3, 1); R.put(33, 23, 2); }
+    else if (kind === "lamp") { R.tri(4, 0, 10, 0, 7, 0, 1); R.rect(3, 0, 8, 2, 1); R.rect(2, 2, 10, 4, 1); R.rect(1, 6, 12, 5, 1); R.rect(6, 11, 2, 36, 2); R.ellipse(7, 48, 6, 2, 2); }
+    else if (kind === "radio") { R.rect(0, 3, 24, 13, 1); R.rect(2, 5, 11, 9, 2); for (let y = 6; y < 14; y += 2) for (let x = 3; x < 12; x += 2) R.put(x, y, 1); R.circle(18, 8, 2.2, 3); R.circle(18, 13, 1.4, 3); for (let k = 0; k < 4; k++) R.put(20 + k, 2 - k * 0.6, 2); }
+    else if (kind === "statue") {
+      R.rect(2, 26, 16, 10, 1); R.rect(1, 25, 18, 2, 1);
+      R.ellipse(10, 19, 6, 6.5, 2); R.circle(10, 9, 4.6, 2); R.tri(6, 7, 8, 6, 6.5, 2, 2); R.tri(12, 6, 14, 7, 13.5, 2, 2); R.limb(15, 22, 18, 12, 1.4, 2); R.put(9, 9, 3); R.put(11, 9, 3);
+    }
     else if (kind === "bed") { R.ellipse(15, 8, 14.5, 4.6, 1); R.ellipse(15, 7, 11, 2.6, 2); R.ellipse(15, 7.6, 9, 1.8, 3); R.rect(1, 9, 28, 3, 1); }
     else if (kind === "house") {
       R.tri(18, 0, 0, 13, 36, 13, 1); R.tri(18, 3, 4, 12, 32, 12, 2);                       // roof
@@ -1979,6 +2095,26 @@
     rug: { 1: { c: [178, 70, 78], lit: true }, 2: { c: [236, 200, 128] }, 3: { c: [96, 128, 176] } },
     plant: { 1: { c: [198, 106, 66], lit: true }, 2: { c: [168, 86, 52], lit: true }, 3: { c: [98, 172, 92], lit: true }, 4: { c: [62, 128, 66], lit: true } },
     cushion: { 1: { c: [128, 104, 206], lit: true }, 2: { c: [160, 138, 228] }, 3: { c: [236, 196, 92] } },
+    basket: { 1: { c: [196, 150, 96], lit: true }, 2: { c: [150, 108, 64] } },
+    heatpad: { 1: { c: [240, 160, 120], lit: true }, 2: { c: [255, 110, 80] }, 3: { c: [70, 60, 60] } },
+    hammock: { 1: { c: [150, 110, 76], lit: true }, 2: { c: [86, 180, 200], lit: true }, 3: { c: [250, 236, 200] } },
+    igloo: { 1: { c: [236, 244, 255], lit: true }, 2: { c: [190, 210, 236] }, 3: { c: [60, 80, 110] } },
+    armchair: { 1: { c: [92, 160, 120], lit: true }, 2: { c: [120, 190, 146], lit: true }, 3: { c: [90, 64, 44] } },
+    sofa: { 1: { c: [200, 98, 110], lit: true }, 2: { c: [226, 128, 138], lit: true }, 3: { c: [90, 64, 44] } },
+    stool: { 1: { c: [214, 160, 100], lit: true }, 2: { c: [176, 124, 72] } },
+    bookshelf: { 1: { c: [176, 120, 76], lit: true }, 4: { c: [92, 60, 40] }, 5: { c: [210, 80, 80], lit: true }, 6: { c: [80, 130, 200], lit: true }, 7: { c: [240, 200, 90], lit: true } },
+    catgrass: { 1: { c: [210, 120, 80], lit: true }, 3: { c: [120, 200, 90], lit: true }, 4: { c: [80, 160, 70] } },
+    track: { 1: { c: [250, 180, 60], lit: true }, 2: { c: [220, 140, 40] } },
+    dispenser: { 1: { c: [120, 200, 230], lit: true }, 2: { c: [220, 245, 255] }, 3: { c: [60, 90, 120] } },
+    ballpit: { 1: { c: [90, 170, 230], lit: true }, 2: { c: [60, 130, 200] }, 3: { c: [240, 90, 90], lit: true }, 4: { c: [250, 210, 70], lit: true }, 5: { c: [110, 200, 120], lit: true }, 6: { c: [180, 120, 230], lit: true } },
+    piano: { 1: { c: [60, 50, 60], lit: true }, 2: { c: [250, 248, 240] } },
+    mirror: { 1: { c: [210, 170, 90], lit: true }, 2: { c: [196, 226, 240], lit: true }, 3: { c: [250, 252, 255] } },
+    fan: { 1: { c: [190, 200, 210], lit: true }, 2: { c: [150, 160, 175] }, 3: { c: [236, 242, 248] } },
+    clock: { 1: { c: [140, 90, 56], lit: true }, 2: { c: [250, 244, 226] }, 3: { c: [60, 40, 30] } },
+    tv: { 1: { c: [70, 70, 80], lit: true }, 2: { c: [240, 90, 90] }, 3: { c: [30, 34, 44] } },
+    lamp: { 1: { c: [250, 220, 150], lit: true }, 2: { c: [110, 90, 70] } },
+    radio: { 1: { c: [200, 90, 70], lit: true }, 2: { c: [240, 220, 190] }, 3: { c: [80, 60, 50] } },
+    statue: { 1: { c: [200, 200, 205], lit: true }, 2: { c: [236, 190, 70], lit: true }, 3: { c: [120, 80, 20] } },
     tunnel: { 1: { c: [236, 140, 72], lit: true }, 2: { c: [200, 100, 52] }, 3: { c: [70, 40, 30] }, 4: { c: [255, 186, 120] } },
     fountain: { 1: { c: [236, 240, 246], lit: true }, 2: { c: [200, 214, 230], lit: true }, 3: { c: [96, 176, 232] } },
     litter: { 1: { c: [120, 190, 160], lit: true }, 2: { c: [86, 150, 124] }, 3: { c: [236, 214, 160] } },
@@ -1987,7 +2123,9 @@
     tree: { 1: { c: [218, 200, 176], lit: true }, 2: { c: [196, 166, 116] }, 3: { c: [166, 136, 92] }, 4: { c: [90, 70, 60] }, 5: { c: [255, 120, 160], lit: true } },
     aquarium: { 1: { c: [198, 228, 240], lit: true }, 2: { c: [110, 176, 222] }, 3: { c: [232, 206, 146] }, 4: { c: [70, 78, 98], lit: true }, 5: { c: [70, 150, 90] } },
   };
-  const FURN_OUTLINE = { rug: [96, 40, 44], plant: [70, 50, 34], cushion: [70, 50, 110], bed: [44, 74, 110], tunnel: [110, 60, 30], fountain: [60, 90, 120], litter: [50, 90, 70], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70] };
+  const FURN_OUTLINE = { rug: [96, 40, 44], plant: [70, 50, 34], cushion: [70, 50, 110], bed: [44, 74, 110], basket: [96, 64, 36], heatpad: [120, 60, 50], hammock: [80, 60, 44], igloo: [90, 110, 140], armchair: [44, 90, 64], sofa: [110, 50, 60], stool: [100, 70, 40],
+    bookshelf: [80, 50, 30], catgrass: [80, 60, 40], track: [140, 90, 30], dispenser: [50, 90, 120], ballpit: [40, 80, 130], piano: [30, 26, 30], mirror: [120, 90, 40], fan: [90, 100, 110],
+    clock: [70, 44, 26], tv: [30, 30, 36], lamp: [100, 80, 60], radio: [110, 50, 40], statue: [120, 90, 30], tunnel: [110, 60, 30], fountain: [60, 90, 120], litter: [50, 90, 70], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70] };
   function furnitureThumb(kind, ctx) {
     const f = FURN[kind], sp = new Sprite(f.w, f.h); paintFurniture(kind, sp.R);
     const img = sp.paint(FURN_PAL[kind], FURN_OUTLINE[kind]), W = ctx.canvas.width, H = ctx.canvas.height, k = Math.min((W - 4) / f.w, (H - 4) / f.h);
@@ -2010,7 +2148,7 @@
       this.item = item || { k: kind, cond: 100 };
       if (this.f.durable) this.item.cond = 100;
       this.sp = new Sprite(this.f.w, this.f.h); this.dirty = true; this.t = 0;
-      if (kind === "tree") this.platforms = [new Platform(this, -5, 35, 13), new Platform(this, 6, 61, 14)];
+      if (this.f.perch) this.platforms = this.f.perch.map(([dx, dy, hw]) => new Platform(this, dx, dy, hw));
       if (kind === "aquarium") this.fish = [{ x: 8, y: 9, d: 1, c: "#ff8a3d" }, { x: 20, y: 13, d: -1, c: "#ffd34d" }];
     }
     hit(px, py) { const s = this.world.toyScale, hw = this.f.w * s / 2; return Math.abs(px - this.x) < hw && py > this.y - this.f.h * s && py < this.y + 2; }
@@ -2030,7 +2168,7 @@
       if (!this.usable && this.occupant) { const o = this.occupant; this.occupant = null; if (o.cushion === this) { o.cushion = null; o.set("stretch", 1.4); } }
       if (this.held) this.x += (clamp(w.pointer.x, this.f.w * s / 2, w.W - this.f.w * s / 2) - this.x) * Math.min(1, dt * 14);
       if (this.occupant && (!w.cats.includes(this.occupant) || this.occupant.cushion !== this)) this.occupant = null;
-      if (this.kind === "house" && this.occupant && Math.random() < dt * 0.5) w.burst(this.x + 3 * s, this.y - 16 * s, "z", "#8a6b55", 1, { rise: true });
+      if (this.f.hide && this.occupant && Math.random() < dt * 0.5) w.burst(this.x + 3 * s, this.y - 16 * s, "z", "#8a6b55", 1, { rise: true });
       if (this.fish) for (const f of this.fish) { f.x += f.d * dt * 4; if (f.x < 4 || f.x > 25) f.d *= -1; f.y += Math.sin(this.t * 2 + f.x) * dt * 1.5; f.y = clamp(f.y, 7, 15); }
     }
     render(ctx) {
@@ -2046,6 +2184,19 @@
         const seed = this.kind.length * 7 + Math.round(this.x) % 5;
         for (let i = 0; i < (c <= 0 ? 7 : 4); i++) ctx.fillRect(x0 + ((seed * (i + 3) * 13) % Math.max(1, f.w - 3)) * s, y0 + ((seed * (i + 5) * 7) % Math.max(1, f.h - 2)) * s, s * (c <= 0 ? 2 : 1), s);
       }
+      if (this.kind === "tv" && c > 0) {                // the telly flickers
+        const ph = Math.floor(this.t * 3); const cols = ["#7fc8f8", "#ffd34d", "#ff8fab", "#9be59b"];
+        for (let i = 0; i < 4; i++) { ctx.fillStyle = cols[(ph + i) % 4]; ctx.fillRect(x0 + (3 + (i % 2) * 15) * s, y0 + (3 + (i >> 1) * 9) * s, 15 * s, 9 * s); }
+      }
+      if (this.kind === "clock") { const a = Math.sin(this.t * 2.2) * 0.5; ctx.strokeStyle = "#e0b84a"; ctx.lineWidth = s; ctx.beginPath(); ctx.moveTo(x0 + 8 * s, y0 + 20 * s); ctx.lineTo(x0 + (8 + Math.sin(a) * 14) * s, y0 + (20 + Math.cos(a) * 20) * s); ctx.stroke(); ctx.fillStyle = "#e0b84a"; ctx.beginPath(); ctx.arc(x0 + (8 + Math.sin(a) * 14) * s, y0 + (20 + Math.cos(a) * 20) * s, 2 * s, 0, 7); ctx.fill(); }
+      if (this.kind === "fan") { ctx.strokeStyle = "#8a96a6"; ctx.lineWidth = 2 * s; for (let i = 0; i < 3; i++) { const a = this.t * 14 + i * 2.1; ctx.beginPath(); ctx.moveTo(x0 + 10 * s, y0 + 9 * s); ctx.lineTo(x0 + (10 + Math.cos(a) * 6) * s, y0 + (9 + Math.sin(a) * 6) * s); ctx.stroke(); } }
+      if (this.kind === "track") { const a = this.t * 3; ctx.fillStyle = "#ff5a8a"; ctx.beginPath(); ctx.arc(x0 + (20 + Math.cos(a) * 17) * s, y0 + (5.5 + Math.sin(a) * 3) * s, 2 * s, 0, 7); ctx.fill(); }
+      if ((this.kind === "lamp" || this.kind === "heatpad") && w.isNight()) {
+        const lx = this.x, ly = this.kind === "lamp" ? y0 + 8 * s : this.y - 3 * s, r = (this.kind === "lamp" ? 90 : 30) * s / 3 * 2;
+        const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, r); g.addColorStop(0, this.kind === "lamp" ? "rgba(255,220,140,.45)" : "rgba(255,140,90,.35)"); g.addColorStop(1, "rgba(255,220,140,0)");
+        ctx.fillStyle = g; ctx.fillRect(lx - r, ly - r, r * 2, r * 2);
+      }
+      if (this.kind === "radio" && Math.random() < 0.012) w.burst(this.x + 4 * s, this.y - 16 * s, "note", "#b08d57", 1, { rise: true });
       if (this.kind === "fountain") {                   // a little arc of water
         ctx.fillStyle = "#7cc6f2"; const ph = (this.t * 6) % 1;
         for (let i = 0; i < 4; i++) { const k = (i / 4 + ph) % 1, dx = Math.round((k * 7) * s), dy = Math.round((-Math.sin(k * Math.PI) * 4 + k * 9) * s); ctx.fillRect(x0 + 12 * s + dx, y0 + 5 * s + dy, s, s); ctx.fillRect(x0 + 8 * s - dx - s, y0 + 5 * s + dy, s, s); }
@@ -2126,6 +2277,7 @@
   const GLYPH = {
     heart: ["01100110", "11111111", "11111111", "01111110", "00111100", "00011000"],
     what: ["0110", "1001", "0001", "0010", "0100", "0000", "0100"],
+    sick: ["0110", "1111", "1011", "1111", "0110"],
     sad: ["01100110", "11101111", "11011111", "01101110", "00110100", "00011000"],
     z: ["11111", "00010", "00100", "01000", "11111"],
     spark: ["00100", "00100", "11011", "00100", "00100"],
@@ -2448,8 +2600,6 @@
       addEventListener("blur", () => { const d = this.drag; if (!d) return; if (d.cat) d.cat.set("fall", 5); if (d.toy && d.toy.release) d.toy.release(); this.drag = null; });
     }
     frame(now) {
-      const busy = this.drag || this.laser || this.wand || this.game;
-      if (!busy && now - this.last < 1000 / 31) { requestAnimationFrame((t) => this.frame(t)); return; }
       const dt = Math.min(0.05, (now - this.last) / 1000); this.last = now;
       const ctx = this.ctx; ctx.clearRect(0, 0, this.W, this.H);
       if (this.yarn) this.yarn.update(dt);

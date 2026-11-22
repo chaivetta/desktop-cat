@@ -6,7 +6,7 @@
 }
 .st-fab:hover { opacity: 1; transform: rotate(30deg); }
 .st {
-  position: fixed; right: 14px; z-index: 41; width: 330px; max-height: var(--maxh, 70vh); display: flex; flex-direction: column;
+  position: fixed; right: 14px; z-index: 41; width: 356px; max-height: var(--maxh, 70vh); display: flex; flex-direction: column;
   border-radius: 22px; background: #fff7ec; color: #5b3a29; font: 700 13px/1.3 "Nunito", sans-serif; overflow: hidden;
   box-shadow: 0 0 0 3px #5b3a29, 0 6px 0 3px #5b3a29, 0 18px 40px rgba(60, 30, 10, .25); animation: st-in .18s ease-out;
 }

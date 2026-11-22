@@ -339,3 +339,11 @@
 
 .cc-top { margin-left: auto; display: flex; gap: 6px; padding-right: 4px; }
 .cc-tab.tool { width: 40px; height: 40px; font-size: 18px; background: #fff7ec; display: grid; place-items: center; align-self: center; }
+
+.cc-care .cc-buffs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 7px; }
+.cc-care .cc-buffs:empty { display: none; }
+.cc-chip.buff { --c: #fff1b8; font-size: 11px; }
+.cc-carebtns { display: flex; gap: 6px; flex-wrap: wrap; }
+.cc-carebtns .cc-pill { cursor: pointer; }
+.cc-carebtns .cc-pill[hidden] { display: none; }
+.cc-lonely.sick { background: #e7f6e3; color: #3f6b36; box-shadow: 0 0 0 2px #8fc985; }

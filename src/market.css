@@ -1,7 +1,7 @@
 /* 🛒 market: same storybook look as the cards and settings, a little shop window */
 .mk-fab { right: 64px; }
 .mk {
-  position: fixed; right: 14px; z-index: 42; width: 400px; max-width: calc(100vw - 28px); max-height: var(--maxh, 72vh); display: flex; flex-direction: column;
+  position: fixed; right: 14px; z-index: 42; width: 356px; max-height: var(--maxh, 72vh); display: flex; flex-direction: column;
   border-radius: 22px; background: #fff7ec; color: #5b3a29; font: 700 13px/1.3 "Nunito", sans-serif; overflow: hidden;
   box-shadow: 0 0 0 3px #5b3a29, 0 6px 0 3px #5b3a29, 0 18px 40px rgba(60, 30, 10, .25); animation: st-in .18s ease-out;
 }
@@ -91,3 +91,22 @@
 .mk-odds ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
 .mk-odds li { display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(91, 58, 41, .15); padding: 2px 0; }
 .mk-have { font: 700 18px 'Pixelify Sans', monospace; color: #2f9e6e; padding: 0 8px; }
+
+/* 🎮 games */
+.gm .mk-head { background: repeating-linear-gradient(90deg, #8fd3ff 0 18px, #eef8ff 18px 36px); }
+.gm-row { display: flex; justify-content: center; margin: 12px 0 4px; }
+.gm-ticket { position: relative; width: 240px; height: 240px; margin: 4px auto; border-radius: 18px; background: #fff7ec; box-shadow: 0 0 0 3px #5b3a29, 0 4px 0 3px #5b3a29; overflow: hidden; }
+.gm-ticket.empty { display: grid; place-items: center; font-size: 70px; background: repeating-linear-gradient(45deg, #fff1b8 0 14px, #ffe1ea 14px 28px); }
+.gm-grid { position: absolute; inset: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.gm-grid span { display: grid; place-items: center; font-size: 38px; border-radius: 12px; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .2); }
+.gm-ticket canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+.gm-score { text-align: center; font: 700 16px "Pixelify Sans", monospace; margin: 4px 0 8px; }
+.gm-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.gm-cards button { aspect-ratio: 1; border: 0; border-radius: 12px; cursor: pointer; font-size: 30px; background: #ffd0dc; box-shadow: 0 0 0 2px #5b3a29, 0 3px 0 2px #5b3a29; transition: transform .15s; }
+.gm-cards button.open { background: #fff; transform: rotateY(10deg); }
+.gm-cards button.found { background: #e4f8ee; box-shadow: 0 0 0 2px #6fd3a8; opacity: .8; }
+.gm-holes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.gm-holes button { position: relative; aspect-ratio: 1.3; border: 0; border-radius: 50%; cursor: pointer; overflow: hidden; background: radial-gradient(ellipse at 50% 70%, #3b2a20 0 45%, #8b6a4c 46% 60%, #c8a77c 61%); }
+.gm-holes button i { position: absolute; left: 50%; bottom: -60%; transform: translateX(-50%); font-style: normal; font-size: 34px; transition: bottom .12s; }
+.gm-holes button.up i { bottom: 18%; }
+.gm-holes button.hit { filter: brightness(1.5); }

@@ -3,15 +3,16 @@
   const STR = {
     tr: {
       title: "Market", food: "Mama", furniture: "Eşyalar", mine: "Envanter", earn: "Kazan", luck: "Şans",
-      pantryH: "Dolap", thingsH: "Eşyalar", use: { dry: "Kaba koy", wet: "Kaba koy", fish: "Kaba koy", catnip: "Yere at", litter: "Kum kabını temizle" },
+      pantryH: "Dolap", thingsH: "Eşyalar", use: { catnip: "Yere at", litter: "Kum kabını temizle", medicine: "Karttaki kediye ver", shampoo: "Karttaki kediyi yıka" }, useMeal: "Kaba koy",
+      basics: "Temel", specials: "Güçlendirici mamalar",
       treatNote: "Numara öğretirken kendiliğinden kullanılır", buyMore: "Al", none: "Yok",
       chest: "Günlük hediye kasası", chestHint: "Her gün bir kez ücretsiz", openChest: "🎁 Aç", tomorrow: (h) => `⏳ ${h} sonra yenisi`,
       wheel: "Şans çarkı", spin: (n) => `Çevir 🪙 ${n}`, odds: "Şanslar", oddsNote: "Büyük ödüller çok nadirdir.",
       prize: { nothing: "Bu sefer boş çıktı 🙈", coins: (n) => `${n} altın kazandın! 🪙`, star: "Bir yıldız! ⭐", food: (e, nm, n) => `${e} ${nm} (×${n}) dolaba eklendi`, furniture: (nm) => `🎉 İnanılmaz! Bir ${nm} kazandın, envanterde`, cloth: (nm) => `👑 Efsane! Yeni bir model açıldı: ${nm}` },
       seg: { nothing: "Boş", furniture: "Eşya", cloth: "Kıyafet", star: "Yıldız" },
       toysH: "Oyuncaklar", homeH: "Ev eşyaları", ownedToy: "Senin ✓",
-      toyE: { mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴" },
-      toys: { mouse: ["Kurmalı fare", "Kurunca koşturur, kediler avlar"], box: ["Karton kutu", "İçine girip saklanırlar"], butterfly: ["Kelebek", "Uçuşur, kediler peşinden koşar"],
+      toyE: { mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
+      toys: { brush: ["Kedi fırçası", "Kartta 'Tara' ile kedini tararsın; temizlik ve sevgi"], mouse: ["Kurmalı fare", "Kurunca koşturur, kediler avlar"], box: ["Karton kutu", "İçine girip saklanırlar"], butterfly: ["Kelebek", "Uçuşur, kediler peşinden koşar"],
         wand: ["Tüylü olta", "Farenle sallarsın, zıplayıp yakalamaya çalışırlar"], post: ["Tırmalama direği", "Tırnaklarını biler"], shelf: ["Duvar rafı", "Yükseğe zıplayıp otururlar"],
         laser: ["Lazer", "Kırmızı noktayı kovalarlar. Lazer avı oyunu için gerekli"] },
       coins: (n) => `🪙 ${n}`, stars: (n) => `⭐ ${n}`, buy: (n) => `🪙 ${n}`, inStock: (n) => `Dolapta: ${n}`, owned: (n) => `${n} tane var`,
@@ -22,10 +23,18 @@
         treat: ["Ödül maması", "Üç tane. Numara öğretirken kullanılır, öğrenmesi kolaylaşır."],
         catnip: ["Kedi otu", "Bir kullanımlık. Kediler çılgına döner."],
         litter: ["Kedi kumu", "Kum kabını üç kez temizlemeye yeter."],
+        medicine: ["İlaç", "Hasta bir kediyi iyileştirir."], shampoo: ["Kedi şampuanı", "İki banyo: tertemiz yapar ama kedi pek sevmez."],
+        chicken: ["Tavuk", "Tok: 12 saat daha uzun tok tutar."], sardine: ["Sardalya", "Zeki: 4 saat numara öğrenmesi kolaylaşır."], tuna: ["Ton balığı", "Sevgi kalkanı: 6 saat sevgisi azalmaz."],
+        mackerel: ["Uskumru", "Enerjik: 4 saat daha oyuncu."], liver: ["Ciğer", "Sağlıklı: 24 saat hastalanmaz, hastaysa iyileşir."], turkey: ["Hindi", "Huzurlu: 12 saat yalnızlık çekmez."],
+        beef: ["Dana kıyma", "Enerjik: 8 saat koşturur, zıplar."], salmon: ["Somon", "Hızlı büyüme: 8 saat iki kat büyür."], lamb: ["Kuzu", "Şanslı: 6 saat görevlerden iki kat altın."],
+        duck: ["Ördek", "Tok: bütün gün tok tutar."], shrimp: ["Karides", "Parlak: 6 saat ışıl ışıl, sevgisi daha hızlı dolar."], crab: ["Yengeç", "Şanslı: 12 saat görevlerden iki kat altın."],
+        rabbit: ["Tavşan", "Hızlı büyüme: 12 saat iki kat büyür."], milk: ["Kedi sütü", "Uykucu ama mutlu: biraz sevgi kazandırır."], egg: ["Yumurta", "Zeki: 2 saat."],
+        yogurt: ["Yoğurt", "Sağlıklı: 4 saat."], pumpkin: ["Balkabağı püresi", "Sağlıklı: 12 saat."], premium: ["Premium mama", "Üç öğünlük ekonomik paket."],
+        catcake: ["Kedi pastası", "Sevgi kalkanı 12 saat, bol sevgi."], caviar: ["Havyar", "Kraliyet: 12 saat sevgi kalkanı, hızlı büyüme ve zekâ birden."],
       },
       put: "Ortaya koy", store: "Kaldır", repair: (n) => `Tamir 🪙 ${n}`, sell: (n) => `Sat 🪙 ${n}`, out: "Ortada", stored: "Depoda", worn: "Eskimiş", broken: "Kırık",
       durable: "Eskimez", noItems: "Henüz eşyan yok. Eşyalar sekmesinden alabilirsin.", cond: "Durumu",
-      wearNote: "Halı, minder, yatak ve kedi ağacı kullandıkça ve zamanla eskir; kulübe, akvaryum ve saksı eskimez. Kırılan eşyayı kediler kullanmaz; tamir edebilir ya da satabilirsin.",
+      wearNote: "Çoğu eşya kullandıkça ve zamanla eskir; ✨ Eskimez yazanlar hariç. Kırılan eşyayı kediler kullanmaz; tamir edebilir ya da satabilirsin.",
       needMore: (n) => `${n} altın daha lazım`,
       ways: [
         ["🎯", "Görevler", "Her görev 1🪙, bir kedinin üç görevi de bitince +3🪙 ve 1⭐."],
@@ -38,15 +47,16 @@
     },
     en: {
       title: "Market", food: "Food", furniture: "Furniture", mine: "Inventory", earn: "Earn", luck: "Luck",
-      pantryH: "Cupboard", thingsH: "Things", use: { dry: "Fill the bowl", wet: "Fill the bowl", fish: "Fill the bowl", catnip: "Drop it", litter: "Clean the litter box" },
+      pantryH: "Cupboard", thingsH: "Things", use: { catnip: "Drop it", litter: "Clean the litter box", medicine: "Give to the open card's cat", shampoo: "Bath the open card's cat" }, useMeal: "Fill the bowl",
+      basics: "Basics", specials: "Special meals (buffs)",
       treatNote: "Used automatically while teaching tricks", buyMore: "Buy", none: "None",
       chest: "Daily gift chest", chestHint: "Free once a day", openChest: "🎁 Open", tomorrow: (h) => `⏳ next one in ${h}`,
       wheel: "Wheel of luck", spin: (n) => `Spin 🪙 ${n}`, odds: "Odds", oddsNote: "Big prizes are very rare.",
       prize: { nothing: "Nothing this time 🙈", coins: (n) => `You won ${n} coins! 🪙`, star: "A star! ⭐", food: (e, nm, n) => `${e} ${nm} (×${n}) added to the cupboard`, furniture: (nm) => `🎉 Amazing! You won a ${nm}, it's in your inventory`, cloth: (nm) => `👑 Legendary! A new design unlocked: ${nm}` },
       seg: { nothing: "Nothing", furniture: "Furniture", cloth: "Outfit", star: "Star" },
       toysH: "Toys", homeH: "Furniture", ownedToy: "Yours ✓",
-      toyE: { mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴" },
-      toys: { mouse: ["Wind-up mouse", "Scurries about; the cats hunt it"], box: ["Cardboard box", "They climb in and hide"], butterfly: ["Butterfly", "Flutters about; the cats chase it"],
+      toyE: { mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
+      toys: { brush: ["Cat brush", "Brush your cat from its card: cleaner and happier"], mouse: ["Wind-up mouse", "Scurries about; the cats hunt it"], box: ["Cardboard box", "They climb in and hide"], butterfly: ["Butterfly", "Flutters about; the cats chase it"],
         wand: ["Feather wand", "Swing it with your mouse; they leap for it"], post: ["Scratching post", "For sharpening claws"], shelf: ["Wall shelf", "They leap up and lounge on it"],
         laser: ["Laser pointer", "They chase the red dot. Needed for the laser hunt"] },
       coins: (n) => `🪙 ${n}`, stars: (n) => `⭐ ${n}`, buy: (n) => `🪙 ${n}`, inStock: (n) => `In the cupboard: ${n}`, owned: (n) => `you own ${n}`,
@@ -57,10 +67,18 @@
         treat: ["Treats", "Three of them. Used while teaching tricks, they learn faster."],
         catnip: ["Catnip", "One go. The cats go wild."],
         litter: ["Cat litter", "Enough to clean the litter box three times."],
+        medicine: ["Medicine", "Makes a sick cat better."], shampoo: ["Cat shampoo", "Two baths: spotless, but the cat isn't a fan."],
+        chicken: ["Chicken", "Full: stays full twice as long, 12 h."], sardine: ["Sardines", "Clever: learns tricks more easily, 4 h."], tuna: ["Tuna", "Love shield: love doesn't fade, 6 h."],
+        mackerel: ["Mackerel", "Energetic: more playful, 4 h."], liver: ["Liver", "Healthy: can't get ill for 24 h, and cures."], turkey: ["Turkey", "Calm: never lonely, 12 h."],
+        beef: ["Minced beef", "Energetic: runs and bounces, 8 h."], salmon: ["Salmon", "Growth boost: grows twice as fast, 8 h."], lamb: ["Lamb", "Lucky: double coins from tasks, 6 h."],
+        duck: ["Duck", "Full: full all day."], shrimp: ["Shrimp", "Shiny: sparkles, love fills faster, 6 h."], crab: ["Crab", "Lucky: double coins from tasks, 12 h."],
+        rabbit: ["Rabbit", "Growth boost: twice as fast, 12 h."], milk: ["Cat milk", "Sleepy but happy: a little love."], egg: ["Egg", "Clever: 2 h."],
+        yogurt: ["Yoghurt", "Healthy: 4 h."], pumpkin: ["Pumpkin purée", "Healthy: 12 h."], premium: ["Premium food", "A good-value bag of three meals."],
+        catcake: ["Cat cake", "Love shield for 12 h, and lots of love."], caviar: ["Caviar", "Royal: love shield, growth boost and cleverness for 12 h."],
       },
       put: "Place", store: "Put away", repair: (n) => `Repair 🪙 ${n}`, sell: (n) => `Sell 🪙 ${n}`, out: "Out", stored: "Stored", worn: "Worn", broken: "Broken",
       durable: "Never wears out", noItems: "You don't own anything yet. Have a look under Furniture.", cond: "Condition",
-      wearNote: "Rugs, cushions, beds and the cat tree wear out with use and over time; the cat house, aquarium and plant never do. Cats won't use something broken; repair it or sell it.",
+      wearNote: "Most things wear out with use and over time, except the ones marked ✨ Never wears out. Cats won't use something broken; repair it or sell it.",
       needMore: (n) => `${n} more coins needed`,
       ways: [
         ["🎯", "Tasks", "1🪙 per task, +3🪙 and 1⭐ when all three of a cat's tasks are done."],
@@ -95,8 +113,11 @@
       const tabs = [["food", "🍗", s.food], ["furniture", "🛋️", s.furniture], ["mine", "🎒", s.mine], ["luck", "🎁", s.luck], ["earn", "🪙", s.earn]];
       let body = "";
       if (tab === "food") {
-        body = `<div class="mk-pantry"><b>🧺 ${esc(s.pantry)}</b>${Object.keys(L.FOOD).map((f) => `<span title="${esc(s.foods[f][0])}">${L.FOOD[f].e} ${L.pantry[f] || 0}</span>`).join("")}</div>`
-          + `<div class="mk-grid">${Object.entries(L.FOOD).map(([f, d]) => card(`<div class="mk-emo">${d.e}</div>`, s.foods[f][0], s.foods[f][1], s.inStock(L.pantry[f] || 0), `<button type="button" class="mk-buy" data-food="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`, d.n > 1 ? `×${d.n}` : "")).join("")}</div>`;
+        const foodCard = ([f, d]) => card(`<div class="mk-emo">${d.e}</div>`, s.foods[f][0], s.foods[f][1], s.inStock(L.pantry[f] || 0), `<button type="button" class="mk-buy" data-food="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`, d.n > 1 ? `×${d.n}` : d.buff ? L.BUFFS[d.buff[0]] : "");
+        const keys = Object.keys(L.FOOD), cut = keys.indexOf("chicken"), all = Object.entries(L.FOOD);
+        body = `<div class="mk-pantry"><b>🧺 ${esc(s.pantry)}</b>${keys.filter((f) => L.pantry[f]).map((f) => `<span title="${esc(s.foods[f][0])}">${L.FOOD[f].e} ${L.pantry[f]}</span>`).join("")}</div>`
+          + `<h4 class="mk-h">🥣 ${esc(s.basics)}</h4><div class="mk-grid">${all.slice(0, cut).map(foodCard).join("")}</div>`
+          + `<h4 class="mk-h">✨ ${esc(s.specials)}</h4><div class="mk-grid">${all.slice(cut).map(foodCard).join("")}</div>`;
       } else if (tab === "furniture") {
         body = `<h4 class="mk-h">🧸 ${esc(s.toysH)}</h4><div class="mk-grid">${Object.entries(L.TOY_PRICES).map(([k, price]) => { const own = L.toys.includes(k), [nm, ds] = s.toys[k];
             return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? s.ownedToy : "", own ? `<span class="mk-have">✓</span>` : `<button type="button" class="mk-buy" data-toy="${k}"${L.wallet.coins < price ? " disabled" : ""}>${s.buy(price)}</button>`); }).join("")}</div>
@@ -104,8 +125,8 @@
           return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`); }).join("")}</div>`;
       } else if (tab === "mine") {
         // the cupboard: everything you've bought to eat or use, with what to do with it
-        body = `<h4 class="mk-h">🧺 ${esc(s.pantryH)}</h4><div class="mk-list">${Object.entries(L.FOOD).map(([f, d]) => { const n = L.pantry[f] || 0;
-            const act = f === "treat" ? `<small class="mk-tn">${esc(s.treatNote)}</small>` : `<button type="button" class="gold" data-use="${f}"${n ? "" : " disabled"}>${esc(s.use[f])}</button>`;
+        body = `<h4 class="mk-h">🧺 ${esc(s.pantryH)}</h4><div class="mk-list">${Object.entries(L.FOOD).filter(([f, d]) => !d.buff || L.pantry[f]).map(([f, d]) => { const n = L.pantry[f] || 0;
+            const act = f === "treat" ? `<small class="mk-tn">${esc(s.treatNote)}</small>` : `<button type="button" class="gold" data-use="${f}"${n ? "" : " disabled"}>${esc(s.use[f] || s.useMeal)}</button>`;
             return `<div class="mk-prow${n ? "" : " zero"}"><span class="mk-pe">${d.e}</span><div class="mk-info"><b>${esc(s.foods[f][0])}</b><small>×${n}</small></div><div class="mk-acts">${act}${n ? "" : `<button type="button" class="ghost" data-tab="food">${esc(s.buyMore)}</button>`}</div></div>`; }).join("")}</div>
           <h4 class="mk-h">🛋️ ${esc(s.thingsH)}</h4>`;
         body += H.items.length ? `<p class="mk-note">${esc(s.wearNote)}</p><div class="mk-list">${H.items.map((it) => {
@@ -180,14 +201,8 @@
       const bottom = Math.max(12, innerHeight - world.floor + 10);
       fab.hidden = world.cats.some((c) => c.profile);
       fab.style.bottom = `${bottom}px`;
-      const cc = document.querySelector(".cc"), r = cc && !cc.hidden ? cc.getBoundingClientRect() : null;
-      if (r && r.width && !root.hidden) {
-        const w = root.offsetWidth, h = root.offsetHeight, room = innerWidth - r.right - 12;
-        root.style.left = `${room >= w + 4 ? r.right + 12 : Math.max(8, r.left - 12 - w)}px`; root.style.right = "auto";
-        root.style.top = `${Math.max(8, Math.min(r.top, innerHeight - h - 8))}px`; root.style.bottom = "auto";
-        root.style.setProperty("--maxh", `${innerHeight - 16}px`); return;
-      }
-      root.style.left = "auto"; root.style.right = "14px"; root.style.top = "auto"; root.style.bottom = `${bottom + 52}px`;
+      if (window.CatCard.beside(root)) return;
+      root.style.height = ""; root.style.left = "auto"; root.style.right = "14px"; root.style.top = "auto"; root.style.bottom = `${bottom + 52}px`;
       root.style.setProperty("--maxh", `${Math.max(260, innerHeight - bottom - 80)}px`);
     }
     function open(which, msg) { if (which) tab = which; note = msg || ""; root.hidden = false; key = ""; render(); place(); o.onOpen && o.onOpen(); }
