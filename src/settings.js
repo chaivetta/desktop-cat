@@ -97,9 +97,19 @@
       const ra = q('[data-a="removeAll"]'); ra.textContent = `🧳 ${sure ? s.sure : s.removeAll}`; ra.classList.toggle("red", !!sure);
     }
 
+    // beside the cat card when it's open; otherwise in the corner above the floor
     function place() {
       const bottom = Math.max(12, innerHeight - world.floor + 10);
-      fab.style.bottom = `${bottom}px`; root.style.bottom = `${bottom + 52}px`;
+      fab.hidden = world.cats.some((c) => c.profile);
+      fab.style.bottom = `${bottom}px`;
+      const cc = document.querySelector(".cc"), r = cc && !cc.hidden ? cc.getBoundingClientRect() : null;
+      if (r && r.width && !root.hidden) {
+        const w = root.offsetWidth, h = root.offsetHeight, room = innerWidth - r.right - 12;
+        root.style.left = `${room >= w + 4 ? r.right + 12 : Math.max(8, r.left - 12 - w)}px`; root.style.right = "auto";
+        root.style.top = `${Math.max(8, Math.min(r.top, innerHeight - h - 8))}px`; root.style.bottom = "auto";
+        root.style.setProperty("--maxh", `${innerHeight - 16}px`); return;
+      }
+      root.style.left = "auto"; root.style.right = "14px"; root.style.top = "auto"; root.style.bottom = `${bottom + 52}px`;
       root.style.setProperty("--maxh", `${Math.max(240, innerHeight - bottom - 80)}px`);
     }
     function open() { root.hidden = false; build(); place(); if (bridge && bridge.getLogin) bridge.getLogin().then((v) => { login = !!v; sync(); }); o.onOpen && o.onOpen(); }

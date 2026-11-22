@@ -95,7 +95,7 @@
         </div>
         <div class="cc-foot">
           <span class="cc-born"></span>
-          <span class="cc-tools"><button class="cc-pin" type="button" data-title="pin" hidden>📍</button><button class="cc-snd" type="button" data-title="sound" hidden>🔊</button><button class="cc-mic" type="button" data-title="voices" hidden>🎙️</button><button class="cc-mkt" type="button">🛒</button><label class="cc-sizer" title=""><b>🔍</b><input type="range" min="0.5" max="1.1" step="0.02"></label>
+          <span class="cc-tools"><button class="cc-pin" type="button" data-title="pin" hidden>📍</button><button class="cc-snd" type="button" data-title="sound" hidden>🔊</button><button class="cc-mic" type="button" data-title="voices" hidden>🎙️</button><label class="cc-sizer" title=""><b>🔍</b><input type="range" min="0.5" max="1.1" step="0.02"></label>
           <span class="cc-lang"><button type="button" data-lang="tr">TR</button>·<button type="button" data-lang="en">EN</button></span></span>
         </div>
         <div class="cc-flash"></div>
@@ -139,6 +139,13 @@
       const add = document.createElement("button"); add.type = "button"; add.className = "cc-tab add"; add.textContent = "+"; add.title = T().adopt;
       add.onclick = () => { if (opts.onAdopt) opts.onAdopt(); };
       box.appendChild(add);
+      const tools = document.createElement("span"); tools.className = "cc-top";
+      for (const [e, fn, tt] of [["🛒", opts.onMarket, T().market], ["⚙️", opts.onSettings, T().settings]]) {
+        if (!fn) continue;
+        const b = document.createElement("button"); b.type = "button"; b.className = "cc-tab tool"; b.textContent = e; b.title = tt || "";
+        b.onclick = () => fn(); tools.appendChild(b);
+      }
+      box.appendChild(tools);
     }
     // ------------------------------------------------ the wardrobe: pick a kind, a design, then a colour
     const worn = (k) => (cat.profile.acc || {})[k] || null;
@@ -243,7 +250,7 @@
     function renderVoices(t) {
       const V = opts.voices; if (!V) return;
       q(".cc-vt").textContent = `🎙️ ${t.voices}`; q('[data-v="back"]').textContent = `← ${t.back}`; q(".cc-vhelp").textContent = t.voicesHelp;
-      const counts = V.counts(), html = [["kitten", "🍼"], ["adult", "👑"], ["elder", "🦉"]].map(([g, e]) =>
+      const counts = V.counts(), html = [["kitten", "🍼"], ["adult", "👑"], ["elder", "🦉"], ["purr", "😻"]].map(([g, e]) =>
         `<div class="cc-vrow" data-g="${g}"><b>${e} ${esc(t["voice_" + g])}</b><small>${esc(t.voiceN(counts[g] || 0))}</small>
           <button type="button" class="cc-pill rec${recG === g ? " on" : ""}" data-vt="rec" title="${esc(t.recTitle)}">${recG === g ? `⏹ ${recLeft}` : "🎤"}</button>
           <label class="cc-pill" title="${esc(t.addFiles)}">＋<input type="file" accept="audio/*" multiple hidden></label>
@@ -285,7 +292,7 @@
       q(".cc-sub").textContent = `${L.COAT_NAMES[p.coat] ? L.COAT_NAMES[p.coat][lang] : p.coat} · ${p.sex === "f" ? t.sexF : t.sexM} · ${t.age(days)}`;
       const lone = q(".cc-lonely"), hungry = L.isHungry(p);
       lone.hidden = !L.isLonely(p) && !hungry; lone.textContent = [hungry ? t.hungry : "", L.isLonely(p) ? t.lonely : ""].filter(Boolean).join(" · ");
-      q(".cc-mkt").title = t.market;
+
       const st = L.stage(p); q(".cc-stage").textContent = `${st.e} ${st[lang]}`;
       const bd = q(".cc-bday"); bd.hidden = !L.isBirthday(p); bd.title = t.birthdayToday;
       const hearts = Array.from({ length: 10 }, (_, i) => { const f = clamp((p.love - i * 10) / 10, 0, 1); return heart(f >= 0.9 ? 1 : f >= 0.4 ? 0.5 : 0); }).join("");
@@ -308,7 +315,7 @@
       if (pane === "mem") renderMemories(p, t);
       if (pane === "voice") renderVoices(t);
 
-      q('[data-a="pet"]').textContent = `💗 ${t.pet}`; q('[data-a="feed"]').textContent = `🍗 ${t.feed}`;
+      q('[data-a="pet"]').textContent = `💗 ${t.pet}`; q('[data-a="feed"]').textContent = `🍗 ${t.feed} · ${(L.pantry.dry || 0) + (L.pantry.wet || 0) + (L.pantry.fish || 0)}`;
       q('[data-a="play"]').textContent = `🧶 ${t.play}`; q('[data-a="photo"]').textContent = `📸 ${t.photo}`;
       q('[data-w="surprise"]').textContent = `🎲 ${t.surprise}`; q('[data-w="undress"]').textContent = `✖ ${t.undress}`;
       renderWardrobe();
@@ -322,7 +329,9 @@
       }
       q('[data-r="ask"]').textContent = `🧳 ${t.remove}`;
       q(".cc-confirm span").textContent = t.removeQ(p.name); q('[data-r="yes"]').textContent = t.yes; q('[data-r="no"]').textContent = t.no;
-      q(".cc-born").textContent = t.born(new Date(p.born).toLocaleDateString(lang === "tr" ? "tr-TR" : "en-GB", { day: "numeric", month: "long", year: "numeric" }));
+      const bday = new Date(p.born), loc = lang === "tr" ? "tr-TR" : "en-GB";
+      q(".cc-born").textContent = `🎂 ${bday.toLocaleDateString(loc, { day: "numeric", month: "short" })}`;
+      q(".cc-born").title = t.born(bday.toLocaleDateString(loc, { day: "numeric", month: "long", year: "numeric" }));
       q(".cc-sizer").title = t.size;
       root.querySelectorAll("[data-lang]").forEach((b) => b.classList.toggle("on", b.dataset.lang === lang));
       renderTabs();
@@ -383,18 +392,17 @@
       if (pane === b.dataset.p) return;
       pane = b.dataset.p; update(); q(".cc-body").scrollTop = 0; place();
     });
-    q(".cc-mkt").onclick = () => { if (opts.onMarket) opts.onMarket(); };
     q(".cc-mic").onclick = () => { pane = pane === "voice" ? "cat" : "voice"; update(); place(); };
     q('[data-v="back"]').onclick = () => { stopRec(); pane = "cat"; update(); place(); };
     q(".cc-vrows").addEventListener("change", async (e) => {
       const inp = e.target.closest("input[type=file]"); if (!inp || !inp.files.length) return;
       const g = inp.closest("[data-g]").dataset.g; await opts.voices.add(g, [...inp.files]); inp.value = ""; q(".cc-vrows").dataset.v = ""; update();
-      world.meow(fakeCat(g));
+      g === "purr" ? world.purr() : world.meow(fakeCat(g));
     });
     q(".cc-vrows").addEventListener("click", async (e) => {
       const b = e.target.closest("[data-vt]"); if (!b) return; const g = b.closest("[data-g]").dataset.g;
       if (b.dataset.vt === "rec") { recG === g ? stopRec() : startRec(g); return; }
-      if (b.dataset.vt === "test") world.meow(fakeCat(g));
+      if (b.dataset.vt === "test") g === "purr" ? world.purr() : world.meow(fakeCat(g));
       else { await opts.voices.clear(g); q(".cc-vrows").dataset.v = ""; update(); }
     });
     // drop sound files straight onto the card
@@ -419,7 +427,7 @@
         const group = recG; recG = null; recorder = null; q(".cc-vrows").dataset.v = ""; update();
         const wav = await tidyRecording(new Blob(chunks, { type: chunks[0] ? chunks[0].type : "audio/webm" }));
         if (!wav) { q(".cc-vhelp").textContent = T().recQuiet; return; }
-        await opts.voices.add(group, [wav]); q(".cc-vrows").dataset.v = ""; update(); world.meow(fakeCat(group));
+        await opts.voices.add(group, [wav]); q(".cc-vrows").dataset.v = ""; update(); group === "purr" ? world.purr() : world.meow(fakeCat(group));
       };
       recorder.start();
       recTimer = setInterval(() => { recLeft--; q(".cc-vrows").dataset.v = ""; update(); if (recLeft <= 0) stopRec(); }, 1000);
@@ -557,7 +565,8 @@
     q('[data-r="no"]').onclick = () => { q(".cc-confirm").hidden = true; q('[data-r="ask"]').hidden = false; };
     q('[data-r="yes"]').onclick = () => { const c = cat; q(".cc-confirm").hidden = true; q('[data-r="ask"]').hidden = false; if (opts.onRemove) opts.onRemove(c); };
     q(".cc-sizer input").value = size;
-    q(".cc-sizer input").addEventListener("input", (e) => { setSize(e.target.value); if (opts.onSize) opts.onSize(size); requestAnimationFrame(place); });
+    q(".cc-sizer input").addEventListener("change", (e) => { setSize(e.target.value); if (opts.onSize) opts.onSize(size); requestAnimationFrame(place); });
+    q(".cc-sizer input").addEventListener("pointerdown", (e) => e.stopPropagation());
     addEventListener("resize", () => { if (!root.hidden) place(); });
     root.querySelectorAll("[data-lang]").forEach((b) => b.onclick = () => { L.lang = b.dataset.lang; logKey = ""; tabKey = ""; wardKey = ""; update(); if (opts.onLang) opts.onLang(L.lang); });
     addEventListener("keydown", (e) => { if (e.key === "Escape" && !root.hidden) api.close(); });

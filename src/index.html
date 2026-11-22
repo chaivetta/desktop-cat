@@ -43,7 +43,7 @@
     const db = new Promise((ok) => {
       try { const r = indexedDB.open("desktop-cat", 1); r.onupgradeneeded = () => r.result.createObjectStore("voices"); r.onsuccess = () => ok(r.result); r.onerror = () => ok(null); } catch { ok(null); }
     });
-    const cache = { kitten: [], adult: [], elder: [] };
+    const cache = { kitten: [], adult: [], elder: [], purr: [] };
     const tx = async (mode, fn) => { const d = await db; if (!d) return null; return new Promise((ok) => { const t = d.transaction("voices", mode), st = t.objectStore("voices"), r = fn(st); t.oncomplete = () => ok(r && r.result); t.onerror = () => ok(null); }); };
     const push = (g) => world && world.setVoices(g, cache[g]);
     return {
@@ -53,7 +53,7 @@
         cache[g] = cache[g].slice(-12); await tx("readwrite", (st) => st.put(cache[g], g)); await push(g);
       },
       async clear(g) { cache[g] = []; await tx("readwrite", (st) => st.put([], g)); await push(g); },
-      counts() { return { kitten: cache.kitten.length, adult: cache.adult.length, elder: cache.elder.length }; },
+      counts() { return { kitten: cache.kitten.length, adult: cache.adult.length, elder: cache.elder.length, purr: cache.purr.length }; },
     };
   })();
 
@@ -69,6 +69,7 @@
   L.tasksOn = true; L.breedOn = saved.breedOn ?? true;
   if (saved.pantry) Object.assign(L.pantry, saved.pantry);
   if (saved.econ) L.econ = { ...L.econ, ...saved.econ };
+  if (saved.luck) L.luck = { ...L.luck, ...saved.luck };
   L.loadWallet(saved.wallet, saved.cats);
   // furniture: every piece you own, with its condition and where it stands (older saves kept counts per kind)
   const newId = () => Math.random().toString(36).slice(2, 9);
@@ -95,7 +96,7 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
-        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ,
+        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck,
         home: { items: L.home.items.map((it) => { const f = world.furniture.find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
   };
@@ -119,11 +120,25 @@
   var market = window.CatMarket.create({
     world,
     placeItem: (it) => { if (!world.furniture.some((f) => f.item === it)) { const f = world.placeFurniture(it.k, undefined, it); it.x = f.x / world.W; world.confetti(f.x, world.floor - 30, 16); } save(); },
+    // using something from the cupboard
+    useFood: (k) => {
+      if (k === "catnip") return act.catnip();
+      if (k === "litter") return cleanLitter(world.furniture.filter((f) => f.kind === "litter").sort((a, b) => (b.item.dirty || 0) - (a.item.dirty || 0))[0]);
+      preferMeal = k; world.feed(); preferMeal = null;
+    },
     storeItem: (it) => { const f = world.furniture.find((f) => f.item === it); if (f) world.removeFurniture(f); it.x = null; save(); },
     onClose: () => { overUI = false; syncIgnore(); },
   });
   // meals come out of the cupboard; when it's empty, the market opens on the food shelf
-  world.onFeed = () => { const k = L.takeMeal(); if (!k) { market.open("food", market.t().empty); return null; } save(); return k; };
+  let preferMeal = null;
+  world.onFeed = () => { const k = L.takeMeal(preferMeal); if (!k) { market.open("food", market.t().empty); return null; } save(); return k; };
+  // cleaning the litter box takes a scoop of litter from the cupboard
+  function cleanLitter(f) {
+    if (!f) return;
+    if ((L.pantry.litter || 0) <= 0) return market.open("food", L.lang === "tr" ? "Kedi kumu bitti! Buradan alabilirsin 🪣" : "Out of litter! You can buy some here 🪣");
+    L.pantry.litter--; f.item.dirty = 0; world.burst(f.x, world.floor - 14 * world.toyScale, "spark", "#bff0dd", 6); L.changed(); save();
+  }
+  world.onCleanLitter = cleanLitter;
   // a little "+🪙" where the coins came from
   L.onEarn = (n, at) => {
     const el = document.createElement("div"); el.className = "ui coinpop"; el.textContent = `+${n}🪙`;
@@ -172,7 +187,8 @@
     onSound: () => act.mute(),
     sound: () => world.purrOn || world.meowOn,
     voices: Voices,
-    onMarket: () => market.open(),
+    onMarket: () => market.isOpen ? market.close() : (settings.close(), market.open()),
+    onSettings: () => settings.isOpen ? settings.close() : (market.close(), settings.open()),
     onRemove: (c) => { world.removeCat(c); save(); card.refresh(); },
     onClose: () => { overUI = false; syncIgnore(); },
   });

@@ -93,6 +93,7 @@
     fish:   { e: "🐟", price: 25, n: 1, love: 12, grow: 0.01 },
     treat:  { e: "🍬", price: 6, n: 3, love: 10 },
     catnip: { e: "🌿", price: 8, n: 1 },
+    litter: { e: "🪣", price: 12, n: 3 },          // three clean-ups of the litter box
   };
   const HUNGRY_AFTER = 8 * 3.6e6;                      // a meal keeps a cat full for eight hours
   const GROW_PER_HOUR = 0.9 / 250;                     // ~250 hours of being fed and loved, with the app running, to grow up
@@ -125,6 +126,7 @@
     dress:   { xp: 1, love: 1, every: 10e3, log: 2 * 60e3 },
     photo:   { xp: 1, love: 2, every: 5e3, log: 60e3 },
     blink:   { xp: 2, love: 4, every: 60e3, log: 20 * 60e3 },
+    drink:   { xp: 1, love: 2, every: 60e3, log: 30 * 60e3 },
     greet:   { xp: 2, love: 5, every: 10 * 60e3, log: 10 * 60e3 },
     morning: { xp: 2, love: 3, every: 6 * 3.6e6, log: 6 * 3.6e6 },
     napNear: { xp: 1, love: 2, every: 20 * 60e3, log: 30 * 60e3 },
@@ -149,15 +151,15 @@
       trickFail: ["Kafası karıştı", "Şimdi canı istemedi", "Esnedi geçti", "Kuyruğunu salladı"], gone: "artık yok",
       home: "Ev", homeHint: "Yıldızlarla ev eşyası al; her birinden istediğin kadar alabilirsin. Yerleştirdiklerini sürükleyip istediğin yere koy.", place: "Koy", putAway: "Kaldır",
       ownedN: (o, p) => `${o} tane · ${p} ortada`,
-      furn: { bed: ["Kedi yatağı", "Yumuşacık, içinde kıvrılıp uyur"], house: ["Kedi kulübesi", "İçine girip saklanarak uyur"], rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
+      furn: { tunnel: ["Kedi tüneli", "İçinden koşa koşa geçer, saklanır"], fountain: ["Su çeşmesi", "Taze su; kediler gelip içer"], litter: ["Kum kabı", "Temiz tutarsan kediler daha mutlu; kirlenince tıkla, temizle"], bed: ["Kedi yatağı", "Yumuşacık, içinde kıvrılıp uyur"], house: ["Kedi kulübesi", "İçine girip saklanarak uyur"], rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
         tree: ["Kedi ağacı", "İki katlı, tepesine tırmanır"], aquarium: ["Akvaryum", "Balıkları izler, cama pati atar"] },
       game: "Lazer avı", gameHelp: "30 saniye: lazerle kedileri parlayan yıldızlara götür!", again: "Tekrar oyna", closeB: "Kapat",
-      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", bestL: (n) => `Rekor: ${n}`,
+      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", settings: "Ayarlar", bestL: (n) => `Rekor: ${n}`,
       sexF: "♀ Dişi", sexM: "♂ Erkek", lonely: "Kendini yalnız hissediyor 💔 Biraz ilgi lazım", leftHome: (n) => `${n} evden ayrıldı 💔`,
       strayTag: (n) => `Sokak kedisi ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Lazer avı · ⏱ ${t} · ⭐ ${n}`,
-      voices: "Miyav sesleri", back: "Geri", addFiles: "Ses ekle", voiceN: (n) => n ? `${n} kayıt` : "henüz yok",
-      voice_kitten: "Yavru", voice_adult: "Yetişkin", voice_elder: "Yaşlı",
-      voicesHelp: "🎤 ile mikrofona miyavla (kendin de olur, kedin de 😸), ya da ＋ ile ses dosyası ekle; dosyaları buraya sürükleyebilirsin de. Sessiz kısımları kendim kırpıyorum. Bir grup boşsa diğerinin sesi inceltilip kalınlaştırılarak kullanılır.",
+      voices: "Kedi sesleri", back: "Geri", addFiles: "Ses ekle", voiceN: (n) => n ? `${n} kayıt` : "henüz yok",
+      voice_kitten: "Yavru miyavı", voice_adult: "Yetişkin miyavı", voice_elder: "Yaşlı miyavı", voice_purr: "Mırlama",
+      voicesHelp: "🎤 ile mikrofona miyavla ya da mırla (kendin de olur, kedin de 😸), ya da ＋ ile ses dosyası ekle; dosyaları buraya sürükleyebilirsin de. Sessiz kısımları kendim kırpıyorum. Bir grup boşsa diğerinin sesi inceltilip kalınlaştırılarak kullanılır.",
       recTitle: "Mikrofonla kaydet (en fazla 5 saniye)", micNo: "Mikrofona ulaşamadım. Mikrofon izni verdiğinden emin ol.", recQuiet: "Hiç ses gelmedi, biraz daha yüksek miyavla 😸",
       wardrobe: "Dolap", hat: "Şapka", collar: "Tasma", outfit: "Kıyafet", none: "Hiçbiri", surprise: "Rastgele kombin", undress: "Hepsini çıkar",
       nothingOn: "Üstünde bir şey yok", photo: "Fotoğraf", remove: "Kediyi kaldır", removeQ: (n) => `${n} gitsin mi? Bu geri alınamaz.`, yes: "Evet, kaldır", no: "Vazgeç",
@@ -178,7 +180,7 @@
         trick: (a) => TRICKS[a.id] ? TRICKS[a.id].learnTr : "", elder: () => "Artık bilge bir kedi, burnunun etrafı kırlaştı",
         together: (a) => `Birlikte ${a.n} gün oldu!`, greet: (a) => a.long ? "Seni çok özlemiş, gelir gelmez karşıladı" : "Seni kapıda karşıladı",
         morning: () => "Günaydın! Gerinip seni selamladı", napNear: () => "Sen yokken yanında uyuyakaldı", memPhoto: () => "Birlikte bir fotoğraf",
-        strayIn: () => "Sokaktan geldi, artık burası onun evi",
+        strayIn: () => "Sokaktan geldi, artık burası onun evi", drink: () => "Çeşmeden kana kana su içti",
         lonely: () => "Kimse onunla ilgilenmedi, çok yalnız hissetti", left: (a) => `${a.n} kimse ilgilenmeyince evi terk etti`,
         task: (a) => `Görevi bitirdi: ${a.txt}`, tasksDone: () => "Bugünün bütün görevlerini bitirdi ⭐",
         bornOf: (a) => `${a.a} ve ${nin(a.b)} yavrusu olarak dünyaya geldi`, kitten: (a) => `${a.o} ile bir yavruları oldu: ${a.n}`,
@@ -198,15 +200,15 @@
       trickFail: ["Got confused", "Not in the mood", "Yawned instead", "Flicked its tail"], gone: "gone",
       home: "Home", homeHint: "Buy furniture with stars, as many of each as you like. Drag anything you've placed to move it.", place: "Place", putAway: "Put away",
       ownedN: (o, p) => `own ${o} · ${p} out`,
-      furn: { bed: ["Cat bed", "Soft and round, curls up in it"], house: ["Cat house", "Crawls inside to sleep, hidden away"], rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
+      furn: { tunnel: ["Cat tunnel", "Dashes through it and hides inside"], fountain: ["Water fountain", "Fresh water; the cats come for a drink"], litter: ["Litter box", "Keep it clean and the cats are happier; click it to clean"], bed: ["Cat bed", "Soft and round, curls up in it"], house: ["Cat house", "Crawls inside to sleep, hidden away"], rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
         tree: ["Cat tree", "Two levels to climb up to"], aquarium: ["Aquarium", "Watches the fish and paws at the glass"] },
       game: "Laser hunt", gameHelp: "30 seconds: use the laser to lead the cats onto the twinkling stars!", again: "Play again", closeB: "Close",
-      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", bestL: (n) => `Best: ${n}`,
+      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", settings: "Settings", bestL: (n) => `Best: ${n}`,
       sexF: "♀ Female", sexM: "♂ Male", lonely: "Feeling lonely 💔 needs some attention", leftHome: (n) => `${n} left home 💔`,
       strayTag: (n) => `Stray ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Laser hunt · ⏱ ${t} · ⭐ ${n}`,
-      voices: "Meow sounds", back: "Back", addFiles: "Add sounds", voiceN: (n) => n ? `${n} recording${n > 1 ? "s" : ""}` : "none yet",
-      voice_kitten: "Kitten", voice_adult: "Grown-up", voice_elder: "Old cat",
-      voicesHelp: "Meow into the mic with 🎤 (you or your cat 😸), or add sound files with ＋; you can also drop them here. Silence gets trimmed for you. If a group is empty, another group's sounds are used, pitched up or down.",
+      voices: "Cat sounds", back: "Back", addFiles: "Add sounds", voiceN: (n) => n ? `${n} recording${n > 1 ? "s" : ""}` : "none yet",
+      voice_kitten: "Kitten meow", voice_adult: "Grown-up meow", voice_elder: "Old cat meow", voice_purr: "Purr",
+      voicesHelp: "Meow or purr into the mic with 🎤 (you or your cat 😸), or add sound files with ＋; you can also drop them here. Silence gets trimmed for you. If a group is empty, another group's sounds are used, pitched up or down.",
       recTitle: "Record with the microphone (up to 5 seconds)", micNo: "Couldn't reach the microphone. Make sure it's allowed.", recQuiet: "Didn't hear anything, try a louder meow 😸",
       wardrobe: "Wardrobe", hat: "Hats", collar: "Collars", outfit: "Outfits", none: "None", surprise: "Surprise outfit", undress: "Take it all off",
       nothingOn: "Wearing nothing", photo: "Photo", remove: "Remove cat", removeQ: (n) => `Say goodbye to ${n}? This can't be undone.`, yes: "Yes, remove", no: "Keep",
@@ -227,7 +229,7 @@
         trick: (a) => TRICKS[a.id] ? TRICKS[a.id].learnEn : "", elder: () => "A wise old cat now, with a little grey round the nose",
         together: (a) => `${a.n} days together!`, greet: (a) => a.long ? "Missed you so much, ran to meet you" : "Came to say hello when you got back",
         morning: () => "Good morning! Stretched and said hi", napNear: () => "Fell asleep next to you while you were away", memPhoto: () => "A photo together",
-        strayIn: () => "Came in from the street; this is home now",
+        strayIn: () => "Came in from the street; this is home now", drink: () => "Had a good drink at the fountain",
         lonely: () => "Nobody paid it any attention and it felt very lonely", left: (a) => `${a.n} left home after being ignored`,
         task: (a) => `Finished a task: ${a.txt}`, tasksDone: () => "Finished all of today's tasks ⭐",
         bornOf: (a) => `Born to ${a.a} and ${a.b}`, kitten: (a) => `Had a kitten with ${a.o}: ${a.n}`,
@@ -235,7 +237,7 @@
     },
   };
   const LOG_ICON = { born: "🐣", named: "🏷️", fed: "🍗", pet: "💗", play: "🧶", bed: "🛏️", scratch: "🪵", catnip: "🌿", zoom: "💨",
-    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", strayIn: "🏡", lonely: "💔", left: "🚪", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
+    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", strayIn: "🏡", drink: "💧", lonely: "💔", left: "🚪", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
 
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -251,6 +253,31 @@
     onEarn: null,                                          // set by the page: a little "+🪙" where it happened
     earn(n, at) { n = Math.max(0, Math.round(n)); if (!n) return 0; L.wallet.coins += n; if (L.onEarn) L.onEarn(n, at); L.changed(); return n; },
     econToday() { const d = new Date().toDateString(); if (L.econ.day !== d) L.econ = { day: d, pc: 0, game: 0, gameStars: 0 }; return L.econ; },
+    // ---------------- luck: a free gift chest once a day, and a wheel that costs coins. Big prizes are very, very rare.
+    luck: { chestDay: "" },
+    CHEST: [["coins", 55, [5, 15]], ["dry", 20], ["wet", 8], ["treat", 6], ["catnip", 4], ["litter", 3], ["coins", 2.5, [30, 30]], ["star", 1], ["furniture", 0.4], ["cloth", 0.1]],
+    WHEEL_COST: 25,
+    WHEEL: [["nothing", 30], ["coins", 22, [5, 5]], ["coins", 14, [10, 10]], ["coins", 8, [20, 20]], ["coins", 2.4, [50, 50]], ["dry", 12], ["wet", 6], ["treat", 3], ["star", 1.5], ["furniture", 0.8], ["cloth", 0.3]],
+    roll(table) { const tot = table.reduce((a, r) => a + r[1], 0); let x = Math.random() * tot; for (let i = 0; i < table.length; i++) { x -= table[i][1]; if (x <= 0) return i; } return 0; },
+    // hand out a prize: returns what was won ({ k, n, item, design })
+    grant(row) {
+      const [k, , range] = row, out = { k };
+      if (k === "coins") { out.n = range[0] + Math.floor(Math.random() * (range[1] - range[0] + 1)); L.wallet.coins += out.n; }
+      else if (FOOD[k]) { out.n = FOOD[k].n; L.pantry[k] = (L.pantry[k] || 0) + out.n; }
+      else if (k === "star") { out.n = 1; L.wallet.stars += 1; }
+      else if (k === "furniture") {
+        const kinds = Object.keys(window.DesktopCat.FURN), f = kinds[Math.floor(Math.random() * kinds.length)];
+        out.item = { id: Math.random().toString(36).slice(2, 9), k: f, cond: 100, x: null }; L.home.items.push(out.item);
+      } else if (k === "cloth") {
+        const locked = []; for (const kind of Object.keys(PRICES)) for (const d of Object.keys(PRICES[kind])) if (L.price(kind, d)) locked.push([kind, d]);
+        if (locked.length) { const [kind, d] = locked[Math.floor(Math.random() * locked.length)]; L.wallet.owned.push(`${kind}:${d}`); out.design = [kind, d]; }
+        else { out.k = "coins"; out.n = 50; L.wallet.coins += 50; }
+      }
+      L.changed(); return out;
+    },
+    chestReady() { return L.luck.chestDay !== new Date().toDateString(); },
+    openChest() { if (!L.chestReady()) return null; L.luck.chestDay = new Date().toDateString(); return L.grant(L.CHEST[L.roll(L.CHEST)]); },
+    spinWheel() { if (L.wallet.coins < L.WHEEL_COST) return null; L.wallet.coins -= L.WHEEL_COST; const i = L.roll(L.WHEEL); return { i, prize: L.grant(L.WHEEL[i]) }; },
     buyFood(k) { const f = FOOD[k]; if (!f || L.wallet.coins < f.price) return false; L.wallet.coins -= f.price; L.pantry[k] = (L.pantry[k] || 0) + f.n; L.changed(); return true; },
     // the best meal in the cupboard (or a specific one); returns its kind, or null if the cupboard is bare
     takeMeal(k) { const order = k ? [k] : ["dry", "wet", "fish"]; const f = order.find((x) => (L.pantry[x] || 0) > 0); if (!f) return null; L.pantry[f]--; L.changed(); return f; },
@@ -542,7 +569,9 @@
       const p = cat.profile; if (!p) return;
       p.seen = Date.now();
       L.addXP(cat, dt / 120);
-      p.love = Math.max(0, p.love - dt * LOVE_FADE * (L.isHungry(p) ? 1.5 : 1));
+      const boxes = cat.world ? cat.world.furniture.filter((f) => f.kind === "litter") : [];
+      const litterK = !boxes.length ? 1 : boxes.some((f) => (f.item.dirty || 0) < 4) ? 0.8 : 1.4;     // clean box: love lasts longer; only dirty ones: it fades faster
+      p.love = Math.max(0, p.love - dt * LOVE_FADE * (L.isHungry(p) ? 1.5 : 1) * litterK);
       L.lonely(cat, dt);
       if (L.growing(p)) p.g = Math.min(1, L.growth(p) + dt / 3600 * GROW_PER_HOUR);
       cat.size = L.size(p);

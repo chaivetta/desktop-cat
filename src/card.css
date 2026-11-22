@@ -233,7 +233,7 @@
 .cc-log .empty { padding: 10px 0; text-align: center; opacity: .6; font-style: italic; grid-template-columns: 1fr; }
 
 .cc-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 16px 13px; font-size: 12px; border-top: 2px dotted rgba(91, 58, 41, .16); }
-.cc-born { opacity: .75; }
+.cc-born { opacity: .75; white-space: nowrap; }
 .cc-tools { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
 .cc-sizer { display: inline-flex; align-items: center; gap: 2px; padding: 1px 3px; border-radius: 999px; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .22); }
 .cc-sizer b { font-size: 11px; }
@@ -336,3 +336,6 @@
 .cc-item small.cc-own { margin-top: 3px; color: #2f9e6e; opacity: 1; }
 
 .cc-mkt { border: 0; background: none; cursor: pointer; font-size: 13px; padding: 0 2px; }
+
+.cc-top { margin-left: auto; display: flex; gap: 6px; padding-right: 4px; }
+.cc-tab.tool { width: 40px; height: 40px; font-size: 18px; background: #fff7ec; display: grid; place-items: center; align-self: center; }

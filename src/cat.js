@@ -395,6 +395,18 @@
       R.ellipse(39.5, 18 + k * 3, 1.6, 1.8, M.BODY, PART.LEG);
     },
     zoom(R, a) { POSES.run(R, a); },
+    // spooked: back arched high, tail puffed up, standing tall and sideways
+    arch(R, a) {
+      const puff = Math.sin(a.t * 18) > 0 ? 1 : 0;
+      R.curve(13, 22, 8, 12, 13, 5, 3, 3.4, M.BODY, PART.TAIL);
+      R.limb(17, 28, 16, GROUND - 1, 2.8, M.FAR, PART.LEG); R.limb(29, 28, 30, GROUND - 1, 2.8, M.FAR, PART.LEG);
+      R.ellipse(22, 22.5, 9.5, 5.2, M.BODY, PART.BODY); R.ellipse(16.5, 26, 4.5, 4, M.BODY, PART.BODY); R.ellipse(28, 26, 5, 4.4, M.BODY, PART.CHEST);
+      for (let x = 15; x <= 29; x += 2) R.put(x, 16.5 + Math.abs(x - 22) / 3 - puff, M.BODY, PART.BODY);   // fur standing on end
+      R.limb(15, 29, 14, GROUND - 1, 2.8, M.BODY, PART.LEG); R.limb(27, 29, 28, GROUND - 1, 2.8, M.BODY, PART.LEG);
+      headSide(R, 33, 24, { look: { x: 1, y: 0 } });
+    },
+    // fast asleep on its back, paws in the air: a cat that feels completely safe
+    bellyUp(R, a) { POSES.roll(R, { ...a, t: 0.26, blink: true, eyes: "closed" }); },
     // "loaf": paws tucked away under a round body, like a little bread
     loaf(R, a) {
       const tail = Math.sin(a.t * 0.9) * 0.6;
@@ -710,7 +722,7 @@
   const pick = (weights) => { let s = 0; for (const k in weights) s += weights[k]; let r = Math.random() * s; for (const k in weights) { r -= weights[k]; if (r <= 0) return k; } return Object.keys(weights)[0]; };
   const G = 1500;                                   // gravity, px/s²
 
-  const PERCH_OK = ["loaf", "slowBlink", "birdWatch", "meerkat", "sit", "groom", "lickFlank", "washFace", "legUp", "sleep", "knead", "stretch", "yawn", "happy", "boop", "roll", "prep"];
+  const PERCH_OK = ["arch", "loaf", "slowBlink", "birdWatch", "meerkat", "sit", "groom", "lickFlank", "washFace", "legUp", "sleep", "knead", "stretch", "yawn", "happy", "boop", "roll", "prep"];
   class Cat {
     constructor(world, coat, x) {
       this.world = world; this.coat = coat; this.P = buildPalette(coat);
@@ -734,6 +746,8 @@
     get pid() { return this.profile && this.profile.id; }
     care(kind, arg) { if (window.CatLife && this.profile) window.CatLife.care(this, kind, arg); }
     set(state, dur = 3, extra = {}) {
+      if (this.stray && ["chase", "hunt", "stand", "bat", "prep", "dangle"].includes(state) && !(state === "chase" && extra.goal === "bowl")) return;
+      if (state !== "sleep") this.belly = false;
       if (this.state === "inbox" && state !== "inbox" && this.box) { this.box.occupant = null; this.box = null; }
       if (this.bed && !["knead", "sleep", "stretch", "yawn"].includes(state)) { this.bed.occupant = null; this.bed = null; }
       if (this.cushion && !(this.cushion.kind === "house" ? ["sleep", "knead"] : ["knead", "sleep", "stretch", "yawn", "loaf", "sit", "groom", "slowBlink", "happy"]).includes(state)) {
@@ -821,6 +835,10 @@
       if (plant) wt.plant = 0.35;
       if (nap) wt.cushion = (w.isNight() ? 2.5 : 1) * (nap.kind === "house" ? 1.3 : 1);
       if (aq) wt.fish = 0.8;
+      const tun = F("tunnel"), fnt = F("fountain"), lit = w.furniture.filter((f) => f.kind === "litter" && (f.item.dirty || 0) < 5);
+      if (tun && !w.isNight()) wt.tunnel = this.size < 0.85 ? 1.2 : 0.6;
+      if (fnt) wt.drink = Date.now() - (this.drankAt || 0) > 20 * 60e3 ? 1.2 : 0.2;
+      const litBox = lit.length ? lit[Math.floor(Math.random() * lit.length)] : null; if (litBox && Date.now() - (this.litterAt || 0) > 30 * 60e3) wt.litter = 0.5;
       if (w.furniture.some((f) => f.kind === "tree" && f.usable) && shelf) wt.shelf = (wt.shelf || 0) + 0.8;
       // you've been away from the mouse for a while: come and curl up next to where you left it
       if (w.idleFor() > 480 && pt && pt.x > 0 && !wt.yarn && !wt.mouse && !wt.bowl) wt.you = 6;
@@ -849,6 +867,9 @@
       else if (n === "rug") { this.rugOff = rnd(-18, 18) * w.toyScale; this.set("chase", 14, { goal: "rug", fRef: rug }); }
       else if (n === "plant" || n === "fish") this.set("chase", 14, { goal: n, fRef: n === "plant" ? plant : aq });
       else if (n === "bird") this.set("chase", 10, { goal: "bird" });
+      else if (n === "tunnel") { this.tunSide = this.x < tun.x ? -1 : 1; this.set("chase", 12, { goal: "tunnel", fRef: tun }); }
+      else if (n === "drink") this.set("chase", 14, { goal: "drink", fRef: fnt });
+      else if (n === "litter") this.set("chase", 14, { goal: "litter", fRef: litBox });
       else if (n === "cushion") { nap.claimed = this; this.set("chase", 14, { goal: "cushion", fRef: nap }); }
       else if (n === "you") { this.napOff = rnd(-70, 70) * this.s / 3; this.set("chase", 20, { goal: "you" }); }
       else if (n === "showOff") this.doTrick(known[Math.floor(Math.random() * known.length)]);
@@ -873,6 +894,9 @@
         case "bird": { const b = w.landedBird(); return b ? b.x - Math.sign(b.x - this.x || 1) * 40 * this.s : null; }
         case "rug": { const f = this.fRef; return f && w.furniture.includes(f) ? clamp(f.x + (this.rugOff || 0), 20, w.W - 20) : null; }
         case "plant": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * 12 * w.toyScale : null; }
+        case "tunnel": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x + this.tunSide * 27 * w.toyScale : null; }
+        case "drink": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * (10 * w.toyScale + 12 * this.s) : null; }
+        case "litter": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x : null; }
         case "cushion": { const f = this.fRef; return f && w.furniture.includes(f) && (!f.occupant || f.occupant === this) ? f.x : null; }
         case "fish": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * (16 * w.toyScale + 12 * this.s) : null; }
         case "you": return w.pointer.x > 0 ? clamp(w.pointer.x + (this.napOff || 0), 20, w.W - 20) : null;
@@ -915,6 +939,12 @@
       const w = this.world, s = this.s, floor = w.floor;
       this.t += dt; this.stateT += dt; this.boopCool -= dt; this.fightCool -= dt; this.zoomCool = (this.zoomCool || 0) - dt;
       if (this.profile && window.CatLife) window.CatLife.tick(this, dt);
+      if (!this.stray && this.profile) {
+        const st = w.stray();
+        if (st && st !== this.hissedAt && Math.abs(st.x - this.x) < 110 * s && ["sit", "walk", "groom", "loaf", "sploot"].includes(this.state)) {
+          this.hissedAt = st; this.facing = Math.sign(st.x - this.x) || this.facing; this.set("arch", rnd(1.4, 2.2));
+        }
+      }
       if (this.leaving && this.profile && this.profile.love >= 30) {             // you won it back
         this.leaving = false; this.set("happy", 2.5, { eyes: null }); w.burst(this.x, this.y - 34 * s, "heart", "#e2557a", 4);
       }
@@ -1024,7 +1054,10 @@
         }
         case "knead": {
           if (Math.random() < dt * 0.8) w.burst(this.x + this.facing * 8 * s, this.y - 26 * s, "heart", "#e2557a", 1);
-          if (this.stateT > this.dur) { this.set("sleep", rnd(12, 30)); this.dream = pick(this.dreams()); }
+          if (this.stateT > this.dur) {
+            this.set("sleep", rnd(12, 30)); this.dream = pick(this.dreams());
+            this.belly = !this.bed && !this.cushion && !this.perch && this.profile && this.profile.love >= 80 && Math.random() < 0.4;
+          }
           break;
         }
         case "spar": this.updateSpar(dt); break;
@@ -1097,6 +1130,25 @@
           if (this.stateT > this.dur) { this.set("stretch", 1.4); if (Math.random() < 0.4) w.meow(this); }
           break;
         }
+        case "tunnel": {                                  // dashing through, out of sight
+          const f = this.fRef; if (!f || !w.furniture.includes(f)) { this.set("sit", 1); break; }
+          const d = this.tunTo - this.x; this.x += Math.sign(d) * Math.min(Math.abs(d), 120 * s * dt);
+          if (Math.random() < dt * 4) w.burst(f.x + rnd(-20, 20) * w.toyScale, floor - 8 * w.toyScale, "dust", "rgba(140,120,100,.5)", 1);
+          if (Math.abs(d) < 2) {
+            this.care("play", { toyKey: "tunnel" });
+            if (Math.random() < 0.35) { this.tunSide = -this.tunSide; this.set("chase", 6, { goal: "tunnel", fRef: f }); }   // again!
+            else this.set(Math.random() < 0.5 ? "pronk" : "happy", 1.6, Math.random() < 0.5 ? {} : { eyes: null });
+            if (this.state === "pronk") this.pronk(1);
+          }
+          break;
+        }
+        case "drink": { if (Math.random() < dt * 3) w.burst(this.x + this.facing * 14 * s, this.y - 6 * s, "spark", "#7cc6f2", 1); if (this.stateT > this.dur) this.set("sit", rnd(1.5, 3)); break; }
+        case "litter": {
+          if (Math.random() < dt * 5) w.burst(this.x - this.facing * 10 * s, this.y - 2 * s, "dust", "rgba(220,200,150,.8)", 1);
+          if (this.stateT > this.dur) { const f = this.fRef; if (f && w.furniture.includes(f)) f.item.dirty = Math.min(6, (f.item.dirty || 0) + 1); this.set("walk", 4, { target: clamp(this.x + rnd(-80, 80), 30, w.W - 30) }); }
+          break;
+        }
+        case "arch": { if (Math.random() < dt * 3) w.burst(this.x + this.facing * 14 * s, this.y - 26 * s, "spark", "#ffffff", 1); if (this.stateT > this.dur) this.set("sit", rnd(1, 2)); break; }
         case "nibble": {
           if (Math.random() < dt * 2) w.burst(this.x + this.facing * 14 * s, this.y - 8 * s, "spark", "#62a85e", 1);
           if (this.stateT > this.dur) this.set("sit", rnd(1.5, 3));
@@ -1151,7 +1203,7 @@
       if (tx == null) { if (this.boxRef && this.boxRef.claimed === this) this.boxRef.claimed = null; this.set("sit", 1.5); return; }
       const dx = tx - this.x, g = this.goal;
       const reach = { yarn: 16, dangle: 9, mouse: 46, laser: 22, bowl: 3, box: 4, feather: 9, butterfly: 10, catnip: 6, bed: 4, post: 3, shelf: 4,
-        you: 6, rug: 5, plant: 4, cushion: 3, fish: 4, bird: 44 }[g] * s;
+        you: 6, rug: 5, plant: 4, cushion: 3, fish: 4, bird: 44, tunnel: 5, drink: 4, litter: 3 }[g] * s;
       if (Math.abs(dx) > reach) {
         this.facing = Math.sign(dx);
         const sp = ["bowl", "box", "bed", "post", "shelf", "you", "rug", "plant", "cushion", "fish"].includes(g) ? 60 : g === "bird" ? 70 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
@@ -1176,6 +1228,9 @@
         }
         else if (g === "shelf") { this.facing = Math.sign(this.shelfRef.x - this.x) || this.facing; this.set("prep", rnd(0.4, 0.8)); }
         else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); this.care("scratch"); }
+        else if (g === "tunnel") { const f = this.fRef; f.use(); this.facing = -this.tunSide; this.set("tunnel", 3, { tunTo: f.x - this.tunSide * 27 * w.toyScale }); w.burst(this.x, this.y - 6 * s, "dust", "rgba(140,120,100,.6)", 2); }
+        else if (g === "drink") { const f = this.fRef; this.facing = Math.sign(f.x - this.x) || this.facing; this.drankAt = Date.now(); this.set("drink", rnd(2.5, 4)); this.care("drink"); }
+        else if (g === "litter") { this.litterAt = Date.now(); this.set("litter", rnd(2.5, 4)); }
         else if (g === "rug" && this.fRef && (this.fRef.use(), true)) this.set(pick({ loaf: 3, sploot: 2, roll: 2, knead: 1.2, groom: 1 }), rnd(4, 10));
         else if (g === "plant") { const f = this.fRef; f.use(); this.facing = Math.sign(f.x - this.x) || this.facing; this.set("nibble", rnd(1.5, 2.6)); }
         else if (g === "fish") { const f = this.fRef; f.use(); this.facing = Math.sign(f.x - this.x) || this.facing; this.set("fishWatch", rnd(4, 8)); }
@@ -1347,11 +1402,15 @@
     pose() {
       switch (this.state) {
         case "walk": return "walk";
-        case "chase": return ["bowl", "box", "bed", "post", "shelf"].includes(this.goal) ? "walk" : "run";
+        case "chase": return ["bowl", "box", "bed", "post", "shelf", "rug", "plant", "cushion", "fish", "you", "drink", "litter"].includes(this.goal) ? "walk" : "run";
         case "prep": return "crouch";
         case "spar": return (this.vy || this.y < this.world.floor) ? "leap" : this.act === "swipe" ? "swipe" : "spar";
         case "flee": case "pursue": return "run";
         case "sniff": return "eat";
+        case "drink": return "eat";
+        case "litter": return "crouch";
+        case "arch": return "arch";
+        case "sleep": return this.belly ? "bellyUp" : "sleep";
         case "nibble": return "eat";
         case "fishWatch": return Math.sin(this.stateT * 2.3) > 0.72 ? "bat" : "sit";
         case "birdWatch": return "meerkat";
@@ -1361,7 +1420,7 @@
       }
     }
 
-    get hidden() { return !!(this.cushion && this.cushion.kind === "house"); }
+    get hidden() { return !!(this.cushion && this.cushion.kind === "house") || this.state === "tunnel"; }
     render(ctx) {
       const R = this.R; R.clear();
       if (this.hidden) return;                          // fast asleep inside the cat house
@@ -1878,6 +1937,9 @@
     aquarium:{ w: 30, h: 26, price: 120, durable: true },
     house:   { w: 36, h: 34, price: 150, nap: 0, durable: true },
     tree:    { w: 44, h: 80, price: 200 },
+    tunnel:  { w: 52, h: 16, price: 45 },
+    fountain:{ w: 20, h: 24, price: 90, durable: true },
+    litter:  { w: 30, h: 12, price: 35, durable: true },
   };
   function paintFurniture(kind, R) {
     R.clear();
@@ -1893,6 +1955,13 @@
       R.rect(3, 40, 28, 5, 1); R.rect(13, 14, 30, 5, 1);                            // two platforms
       for (let y = 19; y < 27; y++) R.put(39, y, 4); R.circle(39, 28, 2.2, 5);      // a pom-pom on a string
     }
+    else if (kind === "tunnel") {
+      R.rect(4, 2, 44, 13, 1); R.ellipse(4, 8.5, 4, 6.5, 3); R.ellipse(48, 8.5, 3.6, 6.5, 2);
+      for (let x = 10; x < 44; x += 8) R.rect(x, 2, 2, 13, 2);
+      R.rect(4, 2, 44, 1, 4);
+    }
+    else if (kind === "fountain") { R.ellipse(10, 20, 9.5, 3.6, 1); R.ellipse(10, 19, 7, 1.6, 3); R.rect(8, 8, 4, 11, 2); R.ellipse(10, 8, 6, 2, 1); R.ellipse(10, 7.6, 4, 0.9, 3); }
+    else if (kind === "litter") { R.rect(0, 3, 30, 2, 2); R.rect(1, 5, 28, 7, 1); R.rect(3, 5, 24, 2, 3); }
     else if (kind === "bed") { R.ellipse(15, 8, 14.5, 4.6, 1); R.ellipse(15, 7, 11, 2.6, 2); R.ellipse(15, 7.6, 9, 1.8, 3); R.rect(1, 9, 28, 3, 1); }
     else if (kind === "house") {
       R.tri(18, 0, 0, 13, 36, 13, 1); R.tri(18, 3, 4, 12, 32, 12, 2);                       // roof
@@ -1909,12 +1978,15 @@
     rug: { 1: { c: [178, 70, 78], lit: true }, 2: { c: [236, 200, 128] }, 3: { c: [96, 128, 176] } },
     plant: { 1: { c: [198, 106, 66], lit: true }, 2: { c: [168, 86, 52], lit: true }, 3: { c: [98, 172, 92], lit: true }, 4: { c: [62, 128, 66], lit: true } },
     cushion: { 1: { c: [128, 104, 206], lit: true }, 2: { c: [160, 138, 228] }, 3: { c: [236, 196, 92] } },
+    tunnel: { 1: { c: [236, 140, 72], lit: true }, 2: { c: [200, 100, 52] }, 3: { c: [70, 40, 30] }, 4: { c: [255, 186, 120] } },
+    fountain: { 1: { c: [236, 240, 246], lit: true }, 2: { c: [200, 214, 230], lit: true }, 3: { c: [96, 176, 232] } },
+    litter: { 1: { c: [120, 190, 160], lit: true }, 2: { c: [86, 150, 124] }, 3: { c: [236, 214, 160] } },
     bed: { 1: { c: [92, 156, 214], lit: true }, 2: { c: [244, 226, 200] }, 3: { c: [255, 240, 222] } },
     house: { 1: { c: [214, 86, 86], lit: true }, 2: { c: [184, 64, 70] }, 3: { c: [222, 176, 120], lit: true }, 4: { c: [196, 148, 96] }, 5: { c: [58, 40, 34] }, 6: { c: [255, 210, 120] } },
     tree: { 1: { c: [218, 200, 176], lit: true }, 2: { c: [196, 166, 116] }, 3: { c: [166, 136, 92] }, 4: { c: [90, 70, 60] }, 5: { c: [255, 120, 160], lit: true } },
     aquarium: { 1: { c: [198, 228, 240], lit: true }, 2: { c: [110, 176, 222] }, 3: { c: [232, 206, 146] }, 4: { c: [70, 78, 98], lit: true }, 5: { c: [70, 150, 90] } },
   };
-  const FURN_OUTLINE = { rug: [96, 40, 44], plant: [70, 50, 34], cushion: [70, 50, 110], bed: [44, 74, 110], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70] };
+  const FURN_OUTLINE = { rug: [96, 40, 44], plant: [70, 50, 34], cushion: [70, 50, 110], bed: [44, 74, 110], tunnel: [110, 60, 30], fountain: [60, 90, 120], litter: [50, 90, 70], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70] };
   function furnitureThumb(kind, ctx) {
     const f = FURN[kind], sp = new Sprite(f.w, f.h); paintFurniture(kind, sp.R);
     const img = sp.paint(FURN_PAL[kind], FURN_OUTLINE[kind]), W = ctx.canvas.width, H = ctx.canvas.height, k = Math.min((W - 4) / f.w, (H - 4) / f.h);
@@ -1947,6 +2019,7 @@
     use() { if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - 1.5); }
     grab() { this.held = true; } release() { this.held = false; }
     click() {
+      if (this.kind === "litter" && this.item.dirty) { if (this.world.onCleanLitter) this.world.onCleanLitter(this); return; }
       const o = this.occupant; if (o && this.world.cats.includes(o)) { o.set("stretch", 1.4); return; }      // knock knock: whoever's napping wakes up
       this.world.burst(this.x, this.y - this.f.h * this.world.toyScale, "note", "#b08d57", 1);
     }
@@ -1971,6 +2044,14 @@
         ctx.fillStyle = c <= 0 ? "rgba(40,30,25,.75)" : "rgba(90,70,55,.45)";
         const seed = this.kind.length * 7 + Math.round(this.x) % 5;
         for (let i = 0; i < (c <= 0 ? 7 : 4); i++) ctx.fillRect(x0 + ((seed * (i + 3) * 13) % Math.max(1, f.w - 3)) * s, y0 + ((seed * (i + 5) * 7) % Math.max(1, f.h - 2)) * s, s * (c <= 0 ? 2 : 1), s);
+      }
+      if (this.kind === "fountain") {                   // a little arc of water
+        ctx.fillStyle = "#7cc6f2"; const ph = (this.t * 6) % 1;
+        for (let i = 0; i < 4; i++) { const k = (i / 4 + ph) % 1, dx = Math.round((k * 7) * s), dy = Math.round((-Math.sin(k * Math.PI) * 4 + k * 9) * s); ctx.fillRect(x0 + 12 * s + dx, y0 + 5 * s + dy, s, s); ctx.fillRect(x0 + 8 * s - dx - s, y0 + 5 * s + dy, s, s); }
+      }
+      if (this.kind === "litter" && this.item.dirty) {   // needs cleaning
+        ctx.fillStyle = "#7a5230"; for (let i = 0; i < Math.min(6, this.item.dirty * 1.5); i++) ctx.fillRect(x0 + (4 + (i * 7) % 22) * s, y0 + (5 + (i % 2)) * s, s * 1.5, s);
+        if (this.item.dirty >= 4 && Math.random() < 0.02) w.burst(this.x, this.y - 14 * s, "what", "#7a5230", 1);
       }
       if (this.fish && c > 0) for (const fi of this.fish) {                    // two little fish swimming about
         ctx.fillStyle = fi.c; const fx = x0 + Math.round(fi.x) * s, fy = y0 + Math.round(fi.y) * s;
@@ -2291,6 +2372,9 @@
     }
     purr() {
       if (!this.purrOn) return;
+      // your own purr recordings, if there are any
+      const V = (this.voices || {}).purr;
+      if (V && V.length) { try { const ac = this.audio, src = ac.createBufferSource(), g = ac.createGain(); src.buffer = V[Math.floor(Math.random() * V.length)]; src.playbackRate.value = rnd(0.96, 1.04); g.gain.value = 0.6; src.connect(g); g.connect(ac.destination); src.start(); return; } catch {} }
       try {
         this.audio = this.audio || new (window.AudioContext || window.webkitAudioContext)();
         const ac = this.audio, t0 = ac.currentTime, len = 1.4;
