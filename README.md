@@ -69,7 +69,7 @@ Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card
 - **Birthdays** — at one week, then 1, 2, 3 and 6 months, then every year: a cake with a candle, confetti, a party hat and a diary entry
 - **Daily tasks** — three little jobs a day for each cat (pet it five times, play with the yarn, take its photo…). Finish them for love, growing-up points and a ⭐; keep it up for a streak
 - **Best friends and kittens** — cats who keep booping, racing and play-fighting become best friends. Two happy grown-up friends sometimes have a kitten that looks like one of them
-- **Stars unlock the wardrobe** — every cat starts with two hats, two collars and two outfits. Each task pays 1⭐ (+2⭐ for finishing all three), and stars unlock the rest of the designs, in all ten colours. With tasks switched off, the whole wardrobe is open
+- **Stars unlock the wardrobe** — every cat starts with two hats, two collars and two outfits. Each task pays 1⭐ (+2⭐ for finishing all three), and stars unlock the rest of the designs, in all ten colours.
 - **Growing up day by day** — a new cat arrives at height 0.1 and grows 0.1 a day, fully grown after nine days. Months later it becomes a wise old cat with a grey muzzle who takes life a bit slower (and stays with you)
 - **Memories** — the big moments (arriving, growing up, birthdays, kittens, tricks, days together, your photos) are kept as little polaroids in the card, drawn as the cat looked that day
 - **Family** — parents, brothers and sisters and kittens, in the Memories tab

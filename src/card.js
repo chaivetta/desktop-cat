@@ -144,7 +144,7 @@
       const key = [lang, kind, design, cat.coat, JSON.stringify(cat.profile.acc || {}), L.tasksOn, L.wallet.stars, L.wallet.owned.length].join("|");
       if (key === wardKey) return; wardKey = key;
       q(".cc-kinds").innerHTML = Object.keys(KINDS).map((k) => `<button type="button" class="cc-kind${k === kind ? " on" : ""}" data-k="${k}">${KINDS[k]} ${esc(t[k])} <small>${Object.keys(W[k]).filter((d) => !L.price(k, d)).length * 10}/100</small></button>`).join("");
-      q(".cc-wallet").textContent = L.tasksOn ? t.wallet(L.wallet.stars) : "";
+      q(".cc-wallet").textContent = t.wallet(L.wallet.stars);
       // design thumbnails: the cat wearing each one (in the colour it has on, or the first colour)
       const box = q(".cc-designs"); box.innerHTML = "";
       const none = document.createElement("button"); none.type = "button"; none.className = "cc-design none" + (!cur ? " on" : ""); none.title = t.none; none.textContent = "⦸";
@@ -167,7 +167,7 @@
       if (cost) {
         q(".cc-lockname").textContent = `🔒 ${W[kind][design][lang]}`;
         const buy = q('[data-u="buy"]'); buy.textContent = t.unlock(cost); buy.disabled = L.wallet.stars < cost;
-        q(".cc-need").textContent = L.wallet.stars < cost ? t.need(cost - L.wallet.stars) : "";
+        q(".cc-need").textContent = L.wallet.stars >= cost ? "" : L.tasksOn ? t.need(cost - L.wallet.stars) : t.needTasks;
       }
       q(".cc-swatches").innerHTML = Object.entries(W.schemes).map(([k, sc]) =>
         `<button type="button" class="cc-swatch${design === curD && k === curS ? " on" : ""}" data-s="${k}" title="${esc(sc[lang])}" style="--a:${sc.c[0]};--b:${sc.c[1]};--c:${sc.c[2]}"></button>`).join("");

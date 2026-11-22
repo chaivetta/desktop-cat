@@ -126,7 +126,7 @@
       allDone: "Hepsi bitti! Yarın yenileri gelecek 🌙", stars: (n) => `⭐ ${n} yıldız`, streak: (n) => `🔥 ${n} gün üst üste`, friend: "Yakın arkadaşı",
       parents: (a, b) => `${a} ve ${nin(b)} yavrusu`, taskToast: "Görev tamam!",
       wallet: (n) => `⭐ ${n} yıldızın var`, earned: (n) => `bu kedi ${n}⭐ kazandırdı`, howStars: "Her görev 1⭐, hepsi bitince +2⭐",
-      locked: "Kilitli", unlock: (n) => `⭐ ${n} ile aç`, need: (n) => `${n} yıldız daha lazım, görevlere bak 🎯`, unlocked: "Açıldı!", showName: "İsmini başının üstünde göster",
+      locked: "Kilitli", unlock: (n) => `⭐ ${n} ile aç`, need: (n) => `${n} yıldız daha lazım, görevlere bak 🎯`, needTasks: "Yıldız kazanmak için ayarlardan görevleri aç 🎯", unlocked: "Açıldı!", showName: "İsmini başının üstünde göster",
       pet: "Sev", feed: "Mama ver", play: "Oyna", rename: "İsmini değiştir", dice: "Rastgele isim", ok: "Kaydet", close: "Kapat",
       adopt: "Yeni yavru", newKitten: "Yeni bir yavru geldi! Adını koyalım mı?", empty: "Henüz bir şey yazmadı…",
       grownUp: "Tamamen büyüdü", toNext: (n) => n < 1 ? "Yarın büyüyecek" : `${Math.ceil(n)} gün sonra büyüyecek`, height: (g) => `Boyu ${g.toFixed(1).replace(".", ",")}`,
@@ -165,7 +165,7 @@
       allDone: "All done! New ones tomorrow 🌙", stars: (n) => `⭐ ${n} star${n === 1 ? "" : "s"}`, streak: (n) => `🔥 ${n} days in a row`, friend: "Best friend",
       parents: (a, b) => `Kitten of ${a} and ${b}`, taskToast: "Task done!",
       wallet: (n) => `⭐ You have ${n} star${n === 1 ? "" : "s"}`, earned: (n) => `this cat earned ${n}⭐`, howStars: "1⭐ per task, +2⭐ for finishing all three",
-      locked: "Locked", unlock: (n) => `Unlock for ⭐ ${n}`, need: (n) => `${n} more star${n === 1 ? "" : "s"} needed, see the tasks 🎯`, unlocked: "Unlocked!", showName: "Show name above head",
+      locked: "Locked", unlock: (n) => `Unlock for ⭐ ${n}`, need: (n) => `${n} more star${n === 1 ? "" : "s"} needed, see the tasks 🎯`, needTasks: "Switch tasks on in the settings to earn stars 🎯", unlocked: "Unlocked!", showName: "Show name above head",
       pet: "Pet", feed: "Feed", play: "Play", rename: "Rename", dice: "Random name", ok: "Save", close: "Close",
       adopt: "New kitten", newKitten: "A new kitten arrived! Want to name it?", empty: "Nothing written yet…",
       grownUp: "All grown up", toNext: (n) => n < 1 ? "Grows tomorrow" : `Grows in ${Math.ceil(n)} days`, height: (g) => `Height ${g.toFixed(1)}`,
@@ -215,12 +215,11 @@
     PRICES,
     // load the wallet from a save; designs someone is already wearing stay theirs
     loadWallet(w, profiles) {
-      L.wallet = { stars: Math.max(0, +(w && w.stars) || 0), owned: Array.isArray(w && w.owned) ? w.owned.slice() : [] };
-      for (const p of profiles) for (const [k, id] of Object.entries(p.acc || {})) { const d = String(id).split(":")[0]; if (L.price(k, d)) L.wallet.owned.push(`${k}:${d}`); }
+      // v2: nothing comes unlocked for free any more, whether tasks are on or off (stars already earned are kept)
+      L.wallet = { v: 2, stars: Math.max(0, +(w && w.stars) || 0), owned: w && w.v === 2 && Array.isArray(w.owned) ? w.owned.slice() : [] };
     },
-    // what a design costs right now: 0 when it's free, already bought, or the tasks are switched off
+    // what a design costs right now: 0 when it's one of the free ones or already bought
     price(kind, d) {
-      if (!L.tasksOn) return 0;
       const c = (PRICES[kind] || {})[d] || 0;
       return c && !L.wallet.owned.includes(`${kind}:${d}`) ? c : 0;
     },
