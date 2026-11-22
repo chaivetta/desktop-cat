@@ -395,6 +395,68 @@
       R.ellipse(39.5, 18 + k * 3, 1.6, 1.8, M.BODY, PART.LEG);
     },
     zoom(R, a) { POSES.run(R, a); },
+    // "loaf": paws tucked away under a round body, like a little bread
+    loaf(R, a) {
+      const tail = Math.sin(a.t * 0.9) * 0.6;
+      R.ellipse(22, 31.5, 11, 6.3, M.BODY, PART.BODY);
+      R.ellipse(29, 30.5, 5.6, 6.2, M.BODY, PART.CHEST);
+      R.ellipse(32.5, GROUND - 1, 3, 1.3, M.BODY, PART.LEG);
+      R.curve(12, 35, 17, 39 + tail, 27, 38, 3, 2.4, M.BODY, PART.TAIL);      // tail wrapped round the front
+      headSide(R, 33, 21.5, { eyes: a.eyes || (a.blink ? "blink" : null), look: a.look });
+    },
+    // "sploot": flat on the floor, back legs stretched out behind like a frog
+    sploot(R, a) {
+      const sway = Math.sin(a.t * 1.3) * 1.5;
+      R.limb(15, 34, 4, 36.5, 2.8, M.FAR, PART.LEG);
+      R.limb(31, 35, 39, 36.5, 2.6, M.FAR, PART.LEG);
+      R.curve(13, 32, 9, 28 + sway, 6, 25, 3, 2.4, M.BODY, PART.TAIL);
+      R.ellipse(22, 33.5, 11, 4.4, M.BODY, PART.BODY);
+      R.ellipse(30, 33, 5.4, 4.4, M.BODY, PART.CHEST);
+      R.limb(16, 35, 4, GROUND - 0.5, 2.8, M.BODY, PART.LEG);
+      R.limb(32, 36, 40, GROUND - 0.5, 2.6, M.BODY, PART.LEG);
+      headSide(R, 35, 28.5, { eyes: a.eyes || (a.blink ? "blink" : null), look: a.look });
+    },
+    // up on the hind legs like a meerkat, looking this way and that
+    meerkat(R, a) {
+      const back = Math.sin(a.st * 1.6 + 0.5) > 0.55;
+      R.curve(15, 36, 8, 38, 5, 33, 3, 2.4, M.BODY, PART.TAIL);
+      R.limb(19, 31, 18, GROUND - 1, 3, M.FAR, PART.LEG);
+      R.ellipse(20, 33, 6.5, 4.8, M.BODY, PART.BODY);
+      R.limb(21, 31, 24, 19, 10, M.BODY, PART.CHEST);
+      R.limb(22, 33, 23, GROUND - 1, 3, M.BODY, PART.LEG);
+      R.rect(21, GROUND - 1, 5, 1, M.BODY, PART.LEG);
+      headSide(R, 25.5, 11, { dir: back ? -1 : 1, look: back ? { x: 0.5, y: -0.6 } : { x: 0.5, y: -0.6 }, eyes: a.blink ? "blink" : null });
+      R.limb(27, 19, 29, 22.5, 2.6, M.BODY, PART.LEG);                       // paws held up at the chest
+      R.ellipse(29.5, 23, 1.7, 1.4, M.BODY, PART.LEG);
+    },
+    // spinning round after its own tail
+    tailChase(R, a) {
+      const p = a.t * 14, c = Math.cos(p), hop = Math.sin(p) > 0 ? 1 : 0;
+      leg(R, 17, 30 - hop, GROUND - hop, M.FAR, -2 * c);
+      leg(R, 30, 30 - hop, GROUND - hop, M.FAR, 2 * c);
+      R.ellipse(23, 29 - hop, 10, 5.4, M.BODY, PART.BODY);
+      R.ellipse(29, 28.5 - hop, 5.4, 5.2, M.BODY, PART.CHEST);
+      leg(R, 15, 30 - hop, GROUND - hop, M.BODY, 2 * c);
+      leg(R, 28, 30 - hop, GROUND - hop, M.BODY, -2 * c);
+      R.curve(13, 27 - hop, 11, 15, 19 + Math.sin(p) * 1.5, 13, 3, 2.4, M.BODY, PART.TAIL);   // tail flicking just out of reach
+      headSide(R, 30, 20 - hop, { dir: -1, look: { x: 0.5, y: -0.5 } });
+    },
+    // a happy bounce: all four legs straight, back arched
+    pronk(R, a) {
+      R.curve(12, 25, 8, 17, 11, 11, 3, 2.4, M.BODY, PART.TAIL);
+      R.limb(17, 29, 16, GROUND - 2, 2.8, M.FAR, PART.LEG);
+      R.limb(29, 29, 30, GROUND - 2, 2.8, M.FAR, PART.LEG);
+      R.ellipse(22, 26, 10.5, 5.6, M.BODY, PART.BODY);
+      R.ellipse(29.5, 25.5, 5.6, 5.4, M.BODY, PART.CHEST);
+      R.limb(14, 29, 13, GROUND - 1, 2.8, M.BODY, PART.LEG);
+      R.limb(27, 29, 28, GROUND - 1, 2.8, M.BODY, PART.LEG);
+      headSide(R, 35, 19, { eyes: "happy" });
+    },
+    // a slow blink at you: cat for "I love you"
+    slowBlink(R, a) {
+      const k = a.st, shut = (k > 0.7 && k < 1.6) || (k > 2.2 && k < 3.1);
+      POSES.sit(R, { ...a, eyes: shut ? "closed" : null, look: null });
+    },
     boop(R, a) { POSES.sit(R, { ...a, eyes: "happy" }); },
     inbox(R, a) { POSES.sit(R, { ...a, eyes: a.peekEyes }); },
     hunt(R, a) { POSES.crouch(R, a); },
@@ -692,16 +754,21 @@
       if (w.laser) return this.set("chase", 30, { goal: "laser" });
       if (w.wand) return this.set("chase", 30, { goal: "feather" });
       if (this.perch) {                                // up on a shelf: lounge about, or hop down
-        const pw = { sit: 3, groom: 2, sleep: w.isNight() ? 4 : 1.3, down: 1.5 };
+        const pw = { sit: 3, groom: 2, loaf: 2, sleep: w.isNight() ? 4 : 1.3, down: 1.5 };
         if (this.mods) for (const k in pw) if (this.mods[k]) pw[k] *= this.mods[k];
         const n = pick(pw);
         if (n === "down") return this.hopDown();
         if (n === "sleep") return this.set("knead", rnd(2, 3));
+        if (n === "loaf") return this.set("loaf", rnd(6, 14));
         if (n === "groom") return this.set(pick({ groom: 3, lickFlank: 2, washFace: 2, legUp: 1.4 }), rnd(3, 6));
         return this.set("sit", rnd(4, 9));
       }
       if (Math.random() < 0.015 && !w.isNight()) w.meow(this);
-      const wt = { walk: 3, sit: 2, groom: 1.8, sleep: 1.1, roll: 1, zoom: this.zoomCool > 0 ? 0 : 0.12 };
+      const wt = { walk: 3, sit: 2, groom: 1.8, sleep: 1.1, roll: 1, zoom: this.zoomCool > 0 ? 0 : 0.12,
+        loaf: 1.2, sploot: 0.6, meerkat: 0.5, tailChase: this.size < 0.85 ? 0.45 : 0.2 };     // kittens chase their tails more
+      const love = this.profile ? this.profile.love : 50, pt = w.pointer;
+      if (love >= 70) wt.pronk = 0.3;
+      if (love >= 45 && pt && pt.seen && Math.abs(pt.x - this.x) < 450) wt.blink = 0.6;
       const y = w.yarn;
       if (y) { if (y.held) wt.dangle = 6; else if (Math.abs(y.x - this.x) < w.W * 0.7) wt.yarn = 5; }
       if (w.mouse && w.mouse.running()) wt.mouse = 6;
@@ -715,10 +782,10 @@
       if (bed) wt.sleep += 0.6;                       // a comfy bed makes a nap more tempting
       const shelf = w.shelves.find((sh) => sh.cats().length < sh.cap() && w.floor - sh.top < 220 * this.s);
       if (shelf) wt.shelf = 1.1;
-      if (w.isNight()) { wt.sleep *= 3; wt.walk *= 0.4; wt.zoom = 0; if (wt.fight) wt.fight *= 0.2; if (wt.shelf) wt.shelf *= 0.5; }
+      if (w.isNight()) { wt.sleep *= 3; wt.walk *= 0.4; wt.zoom = 0; wt.loaf *= 2; wt.tailChase = 0; wt.meerkat = 0; wt.pronk = 0; if (wt.fight) wt.fight *= 0.2; if (wt.shelf) wt.shelf *= 0.5; }
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
       if (foe) wt.fight = 0.6;
-      if (wt.yarn || wt.mouse || wt.dangle || wt.butterfly) { wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; }
+      if (wt.yarn || wt.mouse || wt.dangle || wt.butterfly) { wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; wt.loaf = wt.sploot = 0.2; }
       if (this.mods) for (const k in wt) if (this.mods[k]) wt[k] *= this.mods[k];      // personality
       const n = pick(wt);
       if (n === "walk") { const m = SW * this.s; this.set("walk", 12, { target: clamp(this.x + rnd(-420, 420), m, w.W - m) }); }
@@ -735,6 +802,12 @@
         w.burst((this.x + foe.x) / 2, this.y - 30 * this.s, "spark", "#f7e48c", 1);
       }
       else if (n === "roll") this.set("roll", rnd(3, 5.5));
+      else if (n === "loaf") this.set("loaf", rnd(6, 16));
+      else if (n === "sploot") this.set("sploot", rnd(5, 11));
+      else if (n === "meerkat") this.set("meerkat", rnd(2.2, 3.6));
+      else if (n === "tailChase") this.set("tailChase", rnd(2.2, 3.8), { spinT: 0 });
+      else if (n === "pronk") this.pronk(rnd(2, 4) | 0);
+      else if (n === "blink") { this.facing = Math.sign(pt.x - this.x) || this.facing; this.set("slowBlink", 3.4); }
       else if (n === "zoom") this.startZoom();
       else if (n === "box") { box.claimed = this; this.set("chase", 12, { goal: "box", boxRef: box }); }
       else this.set("chase", n === "dangle" ? 12 : 9, { goal: n });
@@ -956,6 +1029,27 @@
           if (this.stateT > this.dur) { this.set("stretch", 1.4); if (Math.random() < 0.4) w.meow(this); }
           break;
         }
+        case "tailChase": {
+          this.spinT -= dt;
+          if (this.spinT <= 0) { this.facing = -this.facing; this.spinT = rnd(0.16, 0.28); this.x += this.facing * 3 * s; }
+          if (Math.random() < dt * 3) w.burst(this.x, floor, "dust", "rgba(140,120,100,.6)", 1);
+          if (this.stateT > this.dur) { this.set("sit", rnd(1.5, 3), { eyes: null }); if (Math.random() < 0.4) this.set("yawn", 1); }
+          break;
+        }
+        case "pronk": {
+          this.vy += 1700 * dt; this.y += this.vy * dt; this.x += this.vx * dt;
+          if (this.y >= floor && this.vy > 0) {
+            this.y = floor; w.burst(this.x, floor, "dust", "rgba(140,120,100,.6)", 2);
+            if (--this.hops > 0) { this.vy = -rnd(230, 300) * Math.sqrt(s / 3); this.vx = rnd(-30, 30) * s; w.burst(this.x + this.facing * 8 * s, this.y - 30 * s, "heart", "#e2557a", 1); }
+            else { this.vy = 0; this.vx = 0; this.set("sit", rnd(2, 4), { eyes: null }); }
+          }
+          break;
+        }
+        case "slowBlink": {
+          if (w.pointer.seen) this.facing = Math.sign(w.pointer.x - this.x) || this.facing;
+          if (this.stateT > this.dur) { w.burst(this.x + this.facing * 8 * s, this.y - 32 * s, "heart", "#e2557a", 2); this.care("blink"); this.set("sit", rnd(2, 4)); }
+          break;
+        }
         case "stretch": if (this.stateT > this.dur) this.set("yawn", 1.1); break;
         case "yawn": if (this.stateT > this.dur) this.set("sit", rnd(1.5, 3), { eyes: null }); break;
         default:
@@ -966,7 +1060,7 @@
       this.partyT = (this.partyT || 0) - dt;
       if (this.bed) { this.x = this.bed.x; this.y = floor - 4 * w.toyScale; }
       else if (this.perch && !["held", "fall", "leap"].includes(this.state)) { this.x = this.perch.x + this.perchDx; this.y = this.perch.top; }
-      else if (!["held", "fall", "leap", "inbox"].includes(this.state) && !(this.state === "spar" && this.vy)) this.y = floor;
+      else if (!["held", "fall", "leap", "inbox", "pronk"].includes(this.state) && !(this.state === "spar" && this.vy)) this.y = floor;
       this.watchPointer(dt);
     }
 
@@ -1104,6 +1198,7 @@
         }
       }
     }
+    pronk(n) { this.set("pronk", 9); this.hops = Math.max(1, n); this.vy = -rnd(230, 300) * Math.sqrt(this.s / 3); this.vx = 0; this.y = this.world.floor - 1; }
     hopOut() {
       const b = this.box; if (b) b.occupant = null; this.box = null;
       this.state = "leap"; this.stateT = 0; this.dur = 3; this.goal = null;

@@ -46,6 +46,12 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 
 ![Scratching post, cat bed, catnip, feather wand and a race](docs/toys2.png)
 
+### Even more moves
+
+<img src="docs/moves3.png" width="640" alt="New moves: loaf, sploot, meerkat, chasing its tail, a happy bounce, and a slow blink">
+
+They loaf with their paws tucked in, sploot flat on the floor, stand up like a meerkat to look around, spin after their own tail (kittens especially), bounce about when they're very happy, and now and then give you a **slow blink**, which is cat for "I love you".
+
 ## Every cat has a card
 
 Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card, right above the cat. Inside, three tabs keep it short: **Status** (love, growing up, personality, quick actions), **Wardrobe** and **Diary**. The 🔍 − + buttons at the bottom make the card smaller or bigger. Drag it by its top or by the avatars to put it anywhere: park it in the lower half of the screen and it opens upwards, with the avatars underneath. 📍 sends it back above the cat.

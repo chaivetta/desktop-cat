@@ -6,8 +6,8 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const tint = (hex, t) => `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).map((v) => Math.round(v + (255 - v) * t)).join(",")})`;
   const CHIP = ["#ffe1ea", "#d8f3e6", "#e4dcff", "#fff1b8", "#dcefff"];
-  const POSE_OF = { sleep: "sleep", knead: "knead", groom: "groom", washFace: "washFace", lickFlank: "lickFlank", legUp: "legUp", roll: "roll", nip: "roll", eat: "eat", yawn: "yawn", stretch: "stretch", happy: "sit" };
-  const DX = { sleep: -1, roll: -3, eat: -1, stretch: -2, legUp: 3, knead: 2 };
+  const POSE_OF = { sleep: "sleep", knead: "knead", groom: "groom", washFace: "washFace", lickFlank: "lickFlank", legUp: "legUp", roll: "roll", nip: "roll", eat: "eat", yawn: "yawn", stretch: "stretch", happy: "sit", loaf: "loaf", sploot: "sploot", meerkat: "meerkat", tailChase: "tailChase", pronk: "pronk", slowBlink: "slowBlink" };
+  const DX = { sploot: -2, tailChase: -1, meerkat: 3, loaf: -1, sleep: -1, roll: -3, eat: -1, stretch: -2, legUp: 3, knead: 2 };
   const SIZES = [0.56, 0.66, 0.78, 0.9, 1];
   const KINDS = { hat: "🎩", collar: "🎀", outfit: "👕" };
   // where to look when showing a thumbnail of each kind of thing: the head, the neck, the whole cat

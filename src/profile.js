@@ -14,15 +14,15 @@
 
   // personality traits nudge what a cat likes to do (multipliers on its choices)
   const TRAITS = {
-    playful: { e: "🧶", tr: "Oyuncu", en: "Playful", mods: { yarn: 1.5, dangle: 1.5, mouse: 1.4, butterfly: 1.4, zoom: 2, fight: 1.4 } },
-    sleepy:  { e: "💤", tr: "Uykucu", en: "Sleepy", mods: { sleep: 2.2, zoom: 0.6 } },
-    cuddly:  { e: "💗", tr: "Sevgi pıtırcığı", en: "Cuddly", mods: { sleep: 1.2 }, love: 1.5 },
-    curious: { e: "🔍", tr: "Meraklı", en: "Curious", mods: { walk: 1.6, box: 2 } },
+    playful: { e: "🧶", tr: "Oyuncu", en: "Playful", mods: { yarn: 1.5, dangle: 1.5, mouse: 1.4, butterfly: 1.4, zoom: 2, fight: 1.4, tailChase: 2, pronk: 1.6 } },
+    sleepy:  { e: "💤", tr: "Uykucu", en: "Sleepy", mods: { sleep: 2.2, zoom: 0.6, loaf: 1.8, tailChase: 0.5 } },
+    cuddly:  { e: "💗", tr: "Sevgi pıtırcığı", en: "Cuddly", mods: { sleep: 1.2, blink: 2.2, loaf: 1.3 }, love: 1.5 },
+    curious: { e: "🔍", tr: "Meraklı", en: "Curious", mods: { walk: 1.6, box: 2, meerkat: 2.4 } },
     foodie:  { e: "🍗", tr: "Obur", en: "Foodie", mods: { bowl: 1.5, _eat: 1.6 } },
     tidy:    { e: "🫧", tr: "Titiz", en: "Tidy", mods: { groom: 2.2 } },
     rascal:  { e: "😼", tr: "Haylaz", en: "Rascal", mods: { fight: 2.5, zoom: 1.4, post: 1.6 } },
     hunter:  { e: "🐾", tr: "Avcı", en: "Hunter", mods: { mouse: 2, butterfly: 2, yarn: 1.3 } },
-    lazy:    { e: "🛋️", tr: "Tembel", en: "Lazy", mods: { walk: 0.5, sit: 1.6, roll: 1.4, zoom: 0.5 } },
+    lazy:    { e: "🛋️", tr: "Tembel", en: "Lazy", mods: { walk: 0.5, sit: 1.6, roll: 1.4, zoom: 0.5, loaf: 2, sploot: 2.2, meerkat: 0.4, tailChase: 0.3 } },
   };
   const CLASH = [["sleepy", "playful"], ["lazy", "playful"], ["lazy", "curious"], ["lazy", "rascal"], ["sleepy", "rascal"]];
 
@@ -95,6 +95,7 @@
     held:    { xp: 0, love: 0, every: 30e3, log: 10 * 60e3 },
     dress:   { xp: 1, love: 1, every: 10e3, log: 2 * 60e3 },
     photo:   { xp: 1, love: 2, every: 5e3, log: 60e3 },
+    blink:   { xp: 2, love: 4, every: 60e3, log: 20 * 60e3 },
     shelf:   { xp: 2, love: 1, every: 30e3, log: 10 * 60e3 },
   };
 
@@ -125,7 +126,7 @@
         race: (a) => `${a.o} ile yarıştı`, fight: (a) => `${a.o} ile şakadan dövüştü`, boop: (a) => `${a.o} ile burun buruna geldi`,
         box: () => "Kutuya saklandı", held: () => "Kucağa alındı", grew: (a) => `Büyüdü, artık ${a.stage}!`, lovemax: () => "Sevgi barı doldu! Sana bayılıyor",
         hello: () => "Seninle masaüstünde yaşamaya başladı",
-        dress: (a) => `${a.itemName} ${a.kind === "outfit" ? "giydi" : "taktı"}`, photo: () => "Fotoğrafı çekildi", shelf: () => "Rafa zıplayıp oturdu",
+        dress: (a) => `${a.itemName} ${a.kind === "outfit" ? "giydi" : "taktı"}`, photo: () => "Fotoğrafı çekildi", blink: () => "Sana yavaşça göz kırptı, kedi dilinde \"seni seviyorum\" demek", shelf: () => "Rafa zıplayıp oturdu",
         birthday: (a) => `${STR.tr.age1(a.days)} oldu! İyi ki doğdun`,
         task: (a) => `Görevi bitirdi: ${a.txt}`, tasksDone: () => "Bugünün bütün görevlerini bitirdi ⭐",
         bornOf: (a) => `${a.a} ve ${nin(a.b)} yavrusu olarak dünyaya geldi`, kitten: (a) => `${a.o} ile bir yavruları oldu: ${a.n}`,
@@ -154,7 +155,7 @@
         race: (a) => `Raced ${a.o}`, fight: (a) => `Play-fought with ${a.o}`, boop: (a) => `Booped noses with ${a.o}`,
         box: () => "Hid in a box", held: () => "Got picked up", grew: (a) => `Grew up — now a ${a.stage.toLowerCase()}!`, lovemax: () => "Love bar full! Adores you",
         hello: () => "Moved in on your desktop",
-        dress: (a) => `Put on the ${a.itemName}`, photo: () => "Had a photo taken", shelf: () => "Jumped up onto the shelf",
+        dress: (a) => `Put on the ${a.itemName}`, photo: () => "Had a photo taken", blink: () => "Gave you a slow blink. That's cat for \"I love you\"", shelf: () => "Jumped up onto the shelf",
         birthday: (a) => `${STR.en.age1(a.days)} today! Happy birthday`,
         task: (a) => `Finished a task: ${a.txt}`, tasksDone: () => "Finished all of today's tasks ⭐",
         bornOf: (a) => `Born to ${a.a} and ${a.b}`, kitten: (a) => `Had a kitten with ${a.o}: ${a.n}`,
@@ -162,7 +163,7 @@
     },
   };
   const LOG_ICON = { born: "🐣", named: "🏷️", fed: "🍗", pet: "💗", play: "🧶", bed: "🛏️", scratch: "🪵", catnip: "🌿", zoom: "💨",
-    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", bornOf: "🐣", kitten: "🍼" };
+    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", bornOf: "🐣", kitten: "🍼" };
 
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
