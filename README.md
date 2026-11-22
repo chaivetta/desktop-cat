@@ -101,7 +101,7 @@ You start with one **ginger tabby**. Every other coat (black, white, grey tabby,
 
 <img src="docs/side-panels.png" width="640" alt="The market panel opens right beside the card, at the same size">
 
-The 🎮 games, 🛒 market, 🎒 inventory and ⚙️ settings buttons sit together in one pill on top of the card, and their panels open right beside it at the same size.
+The 🎮 games, 🛒 market, 🎒 inventory and ⚙️ settings buttons sit on top of the card as round buttons, just like the cat portraits, and their panels open right beside it at the same size.
 
 ![Rug, cat bed, cat house, tunnel, cat tree, water fountain, aquarium, litter box and plant](docs/home.png)
 

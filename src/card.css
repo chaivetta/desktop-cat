@@ -348,8 +348,8 @@
 .cc-carebtns .cc-pill[hidden] { display: none; }
 .cc-lonely.sick { background: #e7f6e3; color: #3f6b36; box-shadow: 0 0 0 2px #8fc985; }
 
-/* the four tools sit together in one tidy pill */
-.cc-top { gap: 2px; padding: 3px; margin-right: 4px; border-radius: 99px; background: var(--paper); box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px var(--ink); align-self: center; }
-.cc-tab.tool { width: 34px; height: 34px; font-size: 16px; background: transparent; box-shadow: none; border-radius: 50%; }
-.cc-tab.tool:hover { background: #ffe9d6; transform: none; }
-.cc-tab.tool.on { background: #ffd0d7; transform: none; box-shadow: none; }
+/* the four tools: round buttons just like the cats' portraits */
+.cc-top { margin-left: auto; display: flex; gap: 9px; padding: 0 4px 0 0; align-self: center; background: none; box-shadow: none; }
+.cc-tab.tool { width: 46px; height: 46px; font-size: 21px; display: grid; place-items: center; background: var(--paper); border-radius: 50%; box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px var(--ink); }
+.cc-tab.tool:hover { transform: translateY(-2px); }
+.cc-tab.tool.on { background: #fff; box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px var(--pink), 0 3px 0 5px var(--ink); transform: translateY(-3px); }
