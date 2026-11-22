@@ -1629,7 +1629,7 @@
       this.canvas = canvas; this.ctx = canvas.getContext("2d");
       this.scale = opts.scale || 3; this.toyScale = opts.toyScale || this.scale; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
       this.wand = null; this.butterfly = null; this.catnip = null; this.catnipId = 0; this.bed = null; this.post = null;
-      this.shelves = []; this.cakes = []; this.sound = opts.sound ?? true; this.nightMode = opts.nightMode || "auto";
+      this.shelves = []; this.cakes = []; this.purrOn = opts.purrOn ?? true; this.meowOn = opts.meowOn ?? true; this.nightMode = opts.nightMode || "auto";
       this.pointer = { x: -1e4, y: -1e4, seen: false }; this.drag = null; this.onHover = opts.onHover || (() => {});
       this.floorInset = opts.floorInset ?? 6; this.audio = null; this.last = performance.now();
       this.resize(); addEventListener("resize", () => this.resize());
@@ -1698,26 +1698,47 @@
     burst(x, y, kind, color, n = 1, o = {}) {
       for (let i = 0; i < n; i++) this.parts.push({ x: x + rnd(-8, 8) * this.scale, y, vx: rnd(-30, 30), vy: o.rise ? -28 : rnd(-90, -40), life: kind === "z" ? 2.2 : 1.1, age: 0, kind, color });
     }
+    // a soft synthesised meow: a buzzy voice with a little vibrato, shaped by three "mouth" formants
+    // sliding from "mee" through "aa" to "ow", plus a breath of air. Kittens are higher and shorter.
     meow(cat) {
-      if (!this.sound) return;
+      if (!this.meowOn) return;
       try {
         this.audio = this.audio || new (window.AudioContext || window.webkitAudioContext)();
-        const ac = this.audio, t0 = ac.currentTime + 0.01, dur = rnd(0.38, 0.62);
-        const kit = cat && cat.size < 0.8, f0 = (kit ? 700 : 500) * rnd(0.92, 1.1);
-        const o = ac.createOscillator(); o.type = "sawtooth";
-        o.frequency.setValueAtTime(f0 * 0.78, t0); o.frequency.linearRampToValueAtTime(f0 * 1.18, t0 + dur * 0.35); o.frequency.linearRampToValueAtTime(f0 * 0.66, t0 + dur);
-        const f1 = ac.createBiquadFilter(); f1.type = "bandpass"; f1.Q.value = 5;                 // the "mee-ow" mouth shape
-        f1.frequency.setValueAtTime(700, t0); f1.frequency.linearRampToValueAtTime(1300, t0 + dur * 0.4); f1.frequency.linearRampToValueAtTime(650, t0 + dur);
-        const f2 = ac.createBiquadFilter(); f2.type = "bandpass"; f2.Q.value = 7; f2.frequency.value = 2600;
-        const g = ac.createGain(), g2 = ac.createGain(); g2.gain.value = 0.35;
-        g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.32, t0 + 0.05); g.gain.setValueAtTime(0.32, t0 + dur * 0.7); g.gain.linearRampToValueAtTime(0, t0 + dur);
-        o.connect(f1).connect(g); o.connect(f2).connect(g2).connect(g); g.connect(ac.destination);
-        o.start(t0); o.stop(t0 + dur + 0.05);
+        const ac = this.audio, t0 = ac.currentTime + 0.02, kit = cat && cat.size < 0.8;
+        const dur = rnd(0.5, 0.78) * (kit ? 0.78 : 1), base = (kit ? 800 : 540) * rnd(0.9, 1.12), end = t0 + dur;
+        const out = ac.createGain(); out.gain.value = 0.0001;
+        const o1 = ac.createOscillator(), o2 = ac.createOscillator(); o1.type = "sawtooth"; o2.type = "triangle";
+        const lfo = ac.createOscillator(), lfoG = ac.createGain(); lfo.frequency.value = rnd(5, 7); lfoG.gain.value = base * 0.018;
+        lfo.connect(lfoG); lfoG.connect(o1.frequency); lfoG.connect(o2.frequency);
+        for (const o of [o1, o2]) {
+          o.frequency.setValueAtTime(base * 0.82, t0);
+          o.frequency.exponentialRampToValueAtTime(base * 1.14, t0 + dur * 0.32);
+          o.frequency.exponentialRampToValueAtTime(base * 1.02, t0 + dur * 0.58);
+          o.frequency.exponentialRampToValueAtTime(base * 0.6, end);
+        }
+        const src = ac.createGain(), g2 = ac.createGain(); g2.gain.value = 0.7; o1.connect(src); o2.connect(g2).connect(src);
+        const soft = ac.createBiquadFilter(); soft.type = "lowpass"; soft.frequency.value = 3600; soft.Q.value = 0.4; src.connect(soft);
+        [[380, 980, 540, 8, 1], [2300, 1600, 950, 10, 0.5], [3200, 2750, 2450, 12, 0.22]].forEach(([a, b, c, Q, gain]) => {
+          const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = Q;
+          bp.frequency.setValueAtTime(a, t0); bp.frequency.linearRampToValueAtTime(b, t0 + dur * 0.42); bp.frequency.linearRampToValueAtTime(c, end);
+          const g = ac.createGain(); g.gain.value = gain * 2.6; soft.connect(bp).connect(g).connect(out);
+        });
+        const nb = ac.createBuffer(1, Math.ceil(ac.sampleRate * dur), ac.sampleRate), nd = nb.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+        const ns = ac.createBufferSource(), nf = ac.createBiquadFilter(), ng = ac.createGain();
+        ns.buffer = nb; nf.type = "bandpass"; nf.frequency.value = 2600; nf.Q.value = 0.8; ng.gain.value = 0.05; ns.connect(nf).connect(ng).connect(out);
+        const hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 260;
+        out.connect(hp).connect(ac.destination);
+        const peak = (kit ? 0.07 : 0.1) * (this.volume ?? 1);          // gentle: about as present as the purr
+        out.gain.setValueAtTime(0.0001, t0); out.gain.exponentialRampToValueAtTime(peak, t0 + 0.08);
+        out.gain.setValueAtTime(peak, t0 + dur * 0.45); out.gain.exponentialRampToValueAtTime(0.0001, end);
+        for (const o of [o1, o2, lfo]) { o.start(t0); o.stop(end + 0.05); }
+        ns.start(t0); ns.stop(end);
         if (cat) this.burst(cat.x + cat.facing * 12 * cat.s, cat.y - 30 * cat.s, "note", "#b08d57", 1);
       } catch {}
     }
     purr() {
-      if (!this.sound) return;
+      if (!this.purrOn) return;
       try {
         this.audio = this.audio || new (window.AudioContext || window.webkitAudioContext)();
         const ac = this.audio, t0 = ac.currentTime, len = 1.4;

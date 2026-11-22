@@ -8,7 +8,26 @@ const path = require("path");
 if (process.platform === "linux") app.commandLine.appendSwitch("enable-transparent-visuals");
 if (!app.requestSingleInstanceLock()) app.quit();
 
-let win = null, tray = null, coats = [], paused = false, laser = false, wand = false, sound = true, nightMode = "auto";
+let win = null, tray = null, coats = [], paused = false, laser = false, wand = false;
+let purrOn = true, meowOn = true, nightMode = "auto", lang = app.getLocale().toLowerCase().startsWith("tr") ? "tr" : "en";
+
+// the tray menu in both languages; the page tells us which one the cats speak
+const T = {
+  en: { add: "Add a cat", surprise: "Surprise me", toys: "Toys", yarn: "Ball of yarn", mouse: "Wind-up mouse", box: "Cardboard box", wand: "Feather wand",
+    laser: "Laser pointer", catnip: "Catnip", butterfly: "Butterfly", bed: "Cat bed", post: "Scratching post", shelf: "Wall shelf", clear: "Put the toys away",
+    cards: "Cat cards…", feed: "Feed the cats", remove: "Remove a cat", removeAll: "Remove all cats…", sounds: "Sounds", purr: "Purring", meow: "Meowing",
+    night: "Day & night", auto: "Follow the clock", day: "Always day", nightOn: "Always night", catSize: "Cat size", toySize: "Toy size", bigger: "Bigger",
+    smaller: "Smaller", show: "Show cats", hide: "Hide cats", language: "Language", login: "Start with my computer", quit: "Quit",
+    raYes: "Remove all", raNo: "Cancel", raQ: "Remove all your cats?", raD: "Their names, diaries and wardrobes will be gone. This can't be undone." },
+  tr: { add: "Kedi ekle", surprise: "Sürpriz yap", toys: "Oyuncaklar", yarn: "Yün yumağı", mouse: "Kurmalı fare", box: "Karton kutu", wand: "Tüylü olta",
+    laser: "Lazer", catnip: "Kedi otu", butterfly: "Kelebek", bed: "Kedi yatağı", post: "Tırmalama direği", shelf: "Duvar rafı", clear: "Oyuncakları topla",
+    cards: "Kedi kartları…", feed: "Kedileri besle", remove: "Bir kediyi kaldır", removeAll: "Tüm kedileri kaldır…", sounds: "Sesler", purr: "Mırlama", meow: "Miyavlama",
+    night: "Gece ve gündüz", auto: "Saate göre", day: "Hep gündüz", nightOn: "Hep gece", catSize: "Kedi boyu", toySize: "Oyuncak boyu", bigger: "Büyüt",
+    smaller: "Küçült", show: "Kedileri göster", hide: "Kedileri gizle", language: "Dil", login: "Bilgisayarla birlikte başlat", quit: "Çıkış",
+    raYes: "Hepsini kaldır", raNo: "Vazgeç", raQ: "Tüm kedilerin kaldırılsın mı?", raD: "İsimleri, günlükleri ve gardıropları silinecek. Bu geri alınamaz." },
+};
+const t = (k) => T[lang][k];
+const refreshMenu = () => { if (tray) tray.setContextMenu(buildMenu()); };
 
 function fitToScreen() {
   if (!win) return;
@@ -40,52 +59,57 @@ const send = (cmd) => win && win.webContents.send("cmd", cmd);
 
 function buildMenu() {
   return Menu.buildFromTemplate([
-    { label: "Add a cat", submenu: [
-      { label: "Surprise me", click: () => send({ type: "add" }) },
+    { label: t("add"), submenu: [
+      { label: t("surprise"), click: () => send({ type: "add" }) },
       { type: "separator" },
       ...coats.map((c) => ({ label: c.name, click: () => send({ type: "add", coat: c.key }) })),
     ] },
-    { label: "Toys", submenu: [
-      { label: "Ball of yarn", click: () => send({ type: "yarn" }) },
-      { label: "Wind-up mouse", click: () => send({ type: "mouse" }) },
-      { label: "Cardboard box", click: () => send({ type: "box" }) },
-      { label: "Feather wand", type: "checkbox", checked: wand, click: (item) => { wand = item.checked; send({ type: "wand", on: wand }); } },
-      { label: "Laser pointer", type: "checkbox", checked: laser, click: (item) => { laser = item.checked; send({ type: "laser", on: laser }); } },
-      { label: "Catnip", click: () => send({ type: "catnip" }) },
-      { label: "Butterfly", click: () => send({ type: "butterfly" }) },
+    { label: t("toys"), submenu: [
+      { label: t("yarn"), click: () => send({ type: "yarn" }) },
+      { label: t("mouse"), click: () => send({ type: "mouse" }) },
+      { label: t("box"), click: () => send({ type: "box" }) },
+      { label: t("wand"), type: "checkbox", checked: wand, click: (item) => { wand = item.checked; send({ type: "wand", on: wand }); } },
+      { label: t("laser"), type: "checkbox", checked: laser, click: (item) => { laser = item.checked; send({ type: "laser", on: laser }); } },
+      { label: t("catnip"), click: () => send({ type: "catnip" }) },
+      { label: t("butterfly"), click: () => send({ type: "butterfly" }) },
       { type: "separator" },
-      { label: "Cat bed", click: () => send({ type: "bed" }) },
-      { label: "Scratching post", click: () => send({ type: "post" }) },
-      { label: "Wall shelf", click: () => send({ type: "shelf" }) },
+      { label: t("bed"), click: () => send({ type: "bed" }) },
+      { label: t("post"), click: () => send({ type: "post" }) },
+      { label: t("shelf"), click: () => send({ type: "shelf" }) },
       { type: "separator" },
-      { label: "Put the toys away", click: () => send({ type: "clear" }) },
+      { label: t("clear"), click: () => send({ type: "clear" }) },
     ] },
-    { label: "Cat cards…", click: () => { win.showInactive(); send({ type: "cards" }); } },
-    { label: "Feed the cats", click: () => send({ type: "feed" }) },
-    { label: "Remove a cat", click: () => send({ type: "remove" }) },
-    { label: "Remove all cats…", click: async () => {
-      const r = await dialog.showMessageBox({ type: "question", buttons: ["Remove all", "Cancel"], defaultId: 1, cancelId: 1, message: "Remove all your cats?", detail: "Their names, diaries and wardrobes will be gone. This can't be undone." });
+    { label: t("cards"), click: () => { win.showInactive(); send({ type: "cards" }); } },
+    { label: t("feed"), click: () => send({ type: "feed" }) },
+    { label: t("remove"), click: () => send({ type: "remove" }) },
+    { label: t("removeAll"), click: async () => {
+      const r = await dialog.showMessageBox({ type: "question", buttons: [t("raYes"), t("raNo")], defaultId: 1, cancelId: 1, message: t("raQ"), detail: t("raD") });
       if (r.response === 0) send({ type: "removeAll" });
     } },
     { type: "separator" },
-    { label: "Sounds", type: "checkbox", checked: sound, click: (item) => { sound = item.checked; send({ type: "sound", on: sound }); } },
-    { label: "Day & night", submenu: ["auto", "day", "night"].map((m) => ({
-      label: { auto: "Follow the clock", day: "Always day", night: "Always night" }[m], type: "radio", checked: nightMode === m,
+    { label: t("sounds"), submenu: [
+      { label: t("purr"), type: "checkbox", checked: purrOn, click: (item) => { purrOn = item.checked; send({ type: "purr", on: purrOn }); } },
+      { label: t("meow"), type: "checkbox", checked: meowOn, click: (item) => { meowOn = item.checked; send({ type: "meow", on: meowOn }); } },
+    ] },
+    { label: t("night"), submenu: ["auto", "day", "night"].map((m) => ({
+      label: t({ auto: "auto", day: "day", night: "nightOn" }[m]), type: "radio", checked: nightMode === m,
       click: () => { nightMode = m; send({ type: "night", mode: m }); } })) },
+    { label: t("language"), submenu: [["tr", "Türkçe"], ["en", "English"]].map(([k, name]) => ({
+      label: name, type: "radio", checked: lang === k, click: () => { lang = k; refreshMenu(); send({ type: "lang", lang: k }); } })) },
     { type: "separator" },
-    { label: "Cat size", submenu: [
-      { label: "Bigger", click: () => send({ type: "bigger" }) },
-      { label: "Smaller", click: () => send({ type: "smaller" }) },
+    { label: t("catSize"), submenu: [
+      { label: t("bigger"), click: () => send({ type: "bigger" }) },
+      { label: t("smaller"), click: () => send({ type: "smaller" }) },
     ] },
-    { label: "Toy size", submenu: [
-      { label: "Bigger", click: () => send({ type: "toysBigger" }) },
-      { label: "Smaller", click: () => send({ type: "toysSmaller" }) },
+    { label: t("toySize"), submenu: [
+      { label: t("bigger"), click: () => send({ type: "toysBigger" }) },
+      { label: t("smaller"), click: () => send({ type: "toysSmaller" }) },
     ] },
-    { label: paused ? "Show cats" : "Hide cats", click: () => { paused = !paused; paused ? win.hide() : win.showInactive(); tray.setContextMenu(buildMenu()); } },
+    { label: paused ? t("show") : t("hide"), click: () => { paused = !paused; paused ? win.hide() : win.showInactive(); refreshMenu(); } },
     { type: "separator" },
-    { label: "Start with my computer", type: "checkbox", checked: app.getLoginItemSettings().openAtLogin,
+    { label: t("login"), type: "checkbox", checked: app.getLoginItemSettings().openAtLogin,
       click: (item) => app.setLoginItemSettings({ openAtLogin: item.checked }) },
-    { label: "Quit", click: () => app.quit() },
+    { label: t("quit"), click: () => app.quit() },
   ]);
 }
 
@@ -102,7 +126,10 @@ function createTray() {
 ipcMain.on("ignore", (_e, ignore) => { if (win) win.setIgnoreMouseEvents(!!ignore, { forward: true }); });
 ipcMain.on("laser", (_e, on) => { laser = !!on; if (tray) tray.setContextMenu(buildMenu()); });
 ipcMain.on("wand", (_e, on) => { wand = !!on; if (tray) tray.setContextMenu(buildMenu()); });
-ipcMain.on("settings", (_e, o) => { if (o) { sound = !!o.sound; nightMode = o.nightMode || "auto"; } if (tray) tray.setContextMenu(buildMenu()); });
+ipcMain.on("settings", (_e, o) => {
+  if (o) { purrOn = o.purrOn !== false; meowOn = o.meowOn !== false; nightMode = o.nightMode || "auto"; if (T[o.lang]) lang = o.lang; }
+  refreshMenu();
+});
 ipcMain.on("coats", (_e, list) => { coats = Array.isArray(list) ? list : []; if (tray) tray.setContextMenu(buildMenu()); });
 
 app.whenReady().then(() => {

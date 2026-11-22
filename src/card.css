@@ -25,6 +25,16 @@
 .cc[hidden] { display: none; }
 /* the whole card can be shrunk or enlarged (the 🔍 − + buttons) */
 .cc-z { width: 356px; zoom: var(--z); }
+.cc.up .cc-z { display: flex; flex-direction: column-reverse; }
+.cc.up .cc-tabs { padding: 12px 0 0 10px; }
+.cc-tabs, .cc-head { cursor: grab; touch-action: none; }
+.cc.dragging, .cc.dragging * { cursor: grabbing !important; }
+.cc.dragging .cc-card { box-shadow: 0 0 0 3px var(--ink), 0 0 0 7px #ffd9e4, 0 0 0 9px var(--ink), 12px 16px 0 9px rgba(91, 58, 41, .25); }
+.cc-pin { border: 0; background: none; cursor: pointer; font-size: 13px; padding: 0 2px; }
+.cc-pin[hidden] { display: none; }
+.cc-snd { border: 0; background: none; cursor: pointer; font-size: 13px; padding: 0 2px; }
+.cc-snd[hidden] { display: none; }
+.cc-snd.off { opacity: .55; }
 .cc * { box-sizing: border-box; }
 .cc button { font-family: inherit; color: var(--ink); }
 

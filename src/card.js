@@ -69,7 +69,7 @@
         </div>
         <div class="cc-foot">
           <span class="cc-born"></span>
-          <span class="cc-tools"><span class="cc-sizer" title=""><button type="button" data-z="-1">−</button><b>🔍</b><button type="button" data-z="1">+</button></span>
+          <span class="cc-tools"><button class="cc-pin" type="button" data-title="pin" hidden>📍</button><button class="cc-snd" type="button" data-title="sound" hidden>🔊</button><span class="cc-sizer" title=""><button type="button" data-z="-1">−</button><b>🔍</b><button type="button" data-z="1">+</button></span>
           <span class="cc-lang"><button type="button" data-lang="tr">TR</button>·<button type="button" data-lang="en">EN</button></span></span>
         </div>
         <div class="cc-flash"></div>
@@ -81,6 +81,8 @@
 
     let cat = null, raf = 0, last = 0, pt = 0, blinkT = 2, blink = false, lastLove = null, logKey = "", tabKey = "", tickT = 0;
     let kind = "hat", design = null, wardKey = "", size = SIZES.includes(opts.size) ? opts.size : 0.66;
+    // where you've put the card: null = follow the cat; { x, y, up } = left edge, and the top (or bottom when "up") edge
+    let pinned = opts.pos && Number.isFinite(opts.pos.x) ? opts.pos : null;
     const T = () => L.STR[L.lang];
     const setSize = (z) => { size = z; root.style.setProperty("--z", z); };
     setSize(size);
@@ -153,6 +155,8 @@
       root.style.setProperty("--tint", tint(DC.COATS[p.coat].body, 0.72));
       root.querySelectorAll("[data-t]").forEach((el) => { el.textContent = t[el.dataset.t]; });
       root.querySelectorAll("[data-title]").forEach((el) => { el.title = t[el.dataset.title]; });
+      const snd = q(".cc-snd"); snd.hidden = !opts.sound;
+      if (opts.sound) { const on = opts.sound(); snd.textContent = on ? "🔊" : "🔇"; snd.classList.toggle("off", !on); snd.title = on ? t.soundOff : t.soundOn; }
       const icons = { love: "💗", growth: "🌱", traits: "✨", diary: "📖", wardrobe: "👗" };
       root.querySelectorAll("[data-l]").forEach((el) => { el.textContent = `${icons[el.dataset.l]} ${t[el.dataset.l]}`; });
       q(".cc-name").textContent = p.name;
@@ -190,20 +194,59 @@
       root.querySelectorAll("[data-lang]").forEach((b) => b.classList.toggle("on", b.dataset.lang === lang));
       renderTabs();
     }
-    // always right above the cat, centred on it; if the screen is short the card scrolls inside instead
+    // Either right above the cat (until you move it), or wherever you dragged it. Put it in the lower half of
+    // the screen and it hangs from its bottom edge: the avatars go underneath and the card opens upwards.
     function place() {
-      const card = q(".cc-card");
+      const card = q(".cc-card"), tabsH = () => q(".cc-tabs").getBoundingClientRect().height;
       card.style.removeProperty("--maxh");
+      root.classList.toggle("up", !!(pinned && pinned.up));
+      q(".cc-pin").hidden = !pinned;
+      if (pinned) {
+        const room = pinned.up ? pinned.y - 12 : innerHeight - pinned.y - 12;
+        let r = root.getBoundingClientRect();
+        if (r.height > room && room > 140) { card.style.setProperty("--maxh", `${Math.floor((room - tabsH()) / size)}px`); r = root.getBoundingClientRect(); }
+        root.style.left = `${Math.round(clamp(pinned.x, 6, innerWidth - r.width - 6))}px`;
+        if (pinned.up) { root.style.top = "auto"; root.style.bottom = `${Math.round(clamp(innerHeight - pinned.y, 6, innerHeight - r.height - 6))}px`; }
+        else { root.style.bottom = "auto"; root.style.top = `${Math.round(clamp(pinned.y, 6, Math.max(6, innerHeight - r.height - 6)))}px`; }
+        return;
+      }
+      root.style.bottom = "auto";
       let r = root.getBoundingClientRect();
       const head = cat.y - 44 * cat.s, room = head - 14 - 12;
-      if (r.height > room && room > 160) {
-        const tabs = q(".cc-tabs").getBoundingClientRect().height;
-        card.style.setProperty("--maxh", `${Math.floor((room - tabs) / size)}px`);
-        r = root.getBoundingClientRect();
-      }
+      if (r.height > room && room > 160) { card.style.setProperty("--maxh", `${Math.floor((room - tabsH()) / size)}px`); r = root.getBoundingClientRect(); }
       root.style.left = `${Math.round(clamp(cat.x - r.width / 2, 12, innerWidth - r.width - 12))}px`;
       root.style.top = `${Math.round(clamp(head - 14 - r.height, 12, Math.max(12, innerHeight - r.height - 12)))}px`;
     }
+    // drag the card by its avatar strip or its header
+    let drag = null, swallowClick = false;
+    root.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      const onTabs = e.target.closest(".cc-tabs"), onHead = e.target.closest(".cc-head") && !e.target.closest("button, input, form, .cc-name");
+      if (!onTabs && !onHead) return;
+      const r = root.getBoundingClientRect();
+      drag = { sx: e.clientX, sy: e.clientY, l: r.left, t: r.top, moved: false, id: e.pointerId };
+    });
+    addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+      if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+      if (!drag.moved) { drag.moved = true; root.classList.add("dragging"); root.style.bottom = "auto"; root.classList.remove("up"); try { root.setPointerCapture(drag.id); } catch {} }
+      const r = root.getBoundingClientRect();
+      root.style.left = `${Math.round(clamp(drag.l + dx, 6 - r.width * 0.6, innerWidth - r.width * 0.4))}px`;
+      root.style.top = `${Math.round(clamp(drag.t + dy, 0, innerHeight - 40))}px`;
+    });
+    addEventListener("pointerup", () => {
+      if (!drag) return;
+      const d = drag; drag = null;
+      if (!d.moved) return;
+      root.classList.remove("dragging"); swallowClick = true; setTimeout(() => { swallowClick = false; }, 0);
+      const r = root.getBoundingClientRect(), up = r.top + r.height / 2 > innerHeight / 2;
+      pinned = { x: Math.round(r.left), y: Math.round(up ? Math.min(r.bottom, innerHeight - 6) : Math.max(r.top, 6)), up };
+      place(); if (opts.onPos) opts.onPos(pinned);
+    });
+    root.addEventListener("click", (e) => { if (swallowClick) { e.stopPropagation(); e.preventDefault(); swallowClick = false; } }, true);
+    q(".cc-snd").onclick = () => { if (opts.onSound) opts.onSound(); };
+    q(".cc-pin").onclick = () => { pinned = null; place(); if (opts.onPos) opts.onPos(null); };
     function floatUp(emoji, el) {
       const r = el.getBoundingClientRect(), rr = root.getBoundingClientRect();
       for (let i = 0; i < 4; i++) {
@@ -284,6 +327,7 @@
       const i = clamp(SIZES.indexOf(size) + Number(b.dataset.z), 0, SIZES.length - 1); setSize(SIZES[i]); if (opts.onSize) opts.onSize(size);
       requestAnimationFrame(place);
     });
+    addEventListener("resize", () => { if (!root.hidden) place(); });
     root.querySelectorAll("[data-lang]").forEach((b) => b.onclick = () => { L.lang = b.dataset.lang; logKey = ""; tabKey = ""; wardKey = ""; update(); if (opts.onLang) opts.onLang(L.lang); });
     addEventListener("keydown", (e) => { if (e.key === "Escape" && !root.hidden) api.close(); });
 

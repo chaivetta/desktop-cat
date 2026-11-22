@@ -17,7 +17,7 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 - **Sit in boxes** — of course. They duck down and peek out over the edge
 - **Play** — chase, crouch with a bottom-wiggle, pounce, bat, stand up and swat
 - **Day and night** — after 22:00 a little moon and twinkling stars come out and the cats get very sleepy; in the morning they stretch and yawn
-- **Meow** — little synthesised meows when you pet them, when food appears, when they wake up (turn sounds off from the tray)
+- **Meow** — little synthesised meows when you pet them, when food appears, when they wake up (purring and meowing can be switched off separately, from the tray or with 🔊 on the card)
 - **Play-fight** — two cats square up, swat and hop at each other, then one bolts and the other chases it until it flops over in surrender
 
 ![Stretch, yawn, stand and swat, eat, boop, zoomies, hunting crouch](docs/moves.png)
@@ -48,7 +48,7 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 
 ## Every cat has a card
 
-Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card, right above the cat. The 🔍 − + buttons at the bottom make the card smaller or bigger.
+Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card, right above the cat. The 🔍 − + buttons at the bottom make the card smaller or bigger. Drag it by its top or by the avatars to put it anywhere: park it in the lower half of the screen and it opens upwards, with the avatars underneath. 📍 sends it back above the cat.
 
 <img src="docs/card.png" width="360" align="right" alt="A cat card: portrait, love hearts, growing-up bar, personality, diary">
 
@@ -62,7 +62,7 @@ Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card
 - **Photo** — 📸 saves a little polaroid of your cat, outfit and all, as a PNG
 - **Birthdays** — at one week, then 1, 2, 3 and 6 months, then every year: a cake with a candle, confetti, a party hat and a diary entry
 - **Saying goodbye** — remove a cat from its card (it asks first), or all of them at once from the tray
-- **Turkish and English** — switch at the bottom of the card
+- **Turkish and English** — the whole app, tray menu included. Switch at the bottom of the card or under **Language** in the tray
 
 Everything is saved on your computer and remembered next time.
 
@@ -82,7 +82,7 @@ Everything is saved on your computer and remembered next time.
 | **Drag** a cat | Pick it up by the scruff; let go and it lands on its feet |
 | **Drag** a toy | Move the box, bowl or mouse; dangle the yarn, swing it and let go to throw it |
 | **Right-click** a cat | Open its card |
-| **Tray / menu-bar icon** | Cat cards, adopt a kitten (seven coats), remove one or all cats, toys, sounds on/off, day & night (follow the clock, always day, always night), feed them, laser pointer, **cat size** and **toy size** (each from tiny to large), hide them, start with your computer |
+| **Tray / menu-bar icon** | Cat cards, adopt a kitten (seven coats), remove one or all cats, toys, purring and meowing on/off, language (Türkçe / English), day & night (follow the clock, always day, always night), feed them, laser pointer, **cat size** and **toy size** (each from tiny to large), hide them, start with your computer |
 
 Seven coats: ginger tabby, black, white, grey tabby, calico, siamese and tuxedo.
 
