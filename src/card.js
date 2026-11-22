@@ -194,7 +194,8 @@
 
     // ------------------------------------------------ tricks: tap to teach, tap again once learned to ask for it
     function renderTricks(p, t) {
-      q(".cc-thint").textContent = t.learnHint;
+      const dToday = new Date().toDateString(), left = p.lessonDay === dToday ? 6 - (p.lessons || 0) : 6;
+      if (Date.now() > hintUntil) q(".cc-thint").textContent = L.stage(p).id === "kitten" ? t.tooYoung : left > 0 ? t.lessonsToday(left) : t.noMoreToday;
       const html = Object.entries(L.TRICKS).map(([id, tr]) => {
         const n = (p.tricks || {})[id] || 0, done = n >= L.LESSONS;
         return `<button type="button" class="cc-trick${done ? " done" : ""}" data-tr="${id}" title="${esc(done ? tr[lang()] : t.lessons(n, L.LESSONS))}">${tr.e} ${esc(tr[lang()])}${done ? "" : `<i style="--f:${n / L.LESSONS}"></i>`}</button>`;
@@ -202,6 +203,7 @@
       const box = q(".cc-trk"); if (box.dataset.v !== html) { box.innerHTML = html; box.dataset.v = html; }
     }
     const lang = () => L.lang;
+    let hintMsg = "", hintUntil = 0;
     // ------------------------------------------------ memories, family, days together
     let memKey = "";
     function renderMemories(p, t) {
@@ -473,6 +475,7 @@
     q(".cc-trk").onclick = (e) => {
       const b = e.target.closest("[data-tr]"); if (!b || !cat) return;
       const r = L.teach(cat, b.dataset.tr); if (!r) return;
+      if (r.blocked) { const t = T(); hintMsg = { young: t.tooYoung, day: t.noMoreToday, rest: t.resting }[r.blocked]; hintUntil = Date.now() + 3500; q(".cc-thint").textContent = hintMsg; floatUp("⏳", b); return; }
       cat.doTrick(b.dataset.tr, !r.ok);
       floatUp(r.ok ? (r.learned ? "🎓" : "✨") : "❔", b); update();
     };

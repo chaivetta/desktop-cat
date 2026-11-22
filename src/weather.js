@@ -34,16 +34,20 @@
       const r = j.results && j.results[0]; if (!r) return null;
       return { name: r.name + (r.country_code ? `, ${r.country_code}` : ""), lat: r.latitude, lon: r.longitude, auto: false };
     }
-    async function refresh() {
-      clearTimeout(timer); timer = setTimeout(refresh, 20 * 60e3);           // every 20 minutes
+    async function refresh(force) {
+      clearTimeout(timer); timer = setTimeout(refresh, 60 * 60e3);           // look at the clock once an hour, ask the service once a day
       if (!o.isOn()) { world.weather = null; o.onUpdate && o.onUpdate(null); return; }
+      // one reading a day is plenty (kept in the save, so restarting the app doesn't ask again)
+      const cached = o.getCache && o.getCache();
+      if (!force && cached && cached.day === new Date().toDateString() && (!o.getLoc() || cached.place === o.getLoc().name)) { last = cached; world.weather = last; o.onUpdate && o.onUpdate(last); return; }
       try {
         let loc = o.getLoc();
         if (!loc) { loc = await locate(); o.setLoc(loc); }
         const j = await getJSON(`${FORECAST}?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code,is_day,wind_speed_10m,wind_direction_10m`);
         const c = j.current || {};
         last = { kind: kindOf(+c.weather_code), code: +c.weather_code, temp: c.temperature_2m, wind: c.wind_speed_10m || 0,
-          windDir: (c.wind_direction_10m || 0) > 180 ? 1 : -1, place: loc.name, at: Date.now() };
+          windDir: (c.wind_direction_10m || 0) > 180 ? 1 : -1, place: loc.name, at: Date.now(), day: new Date().toDateString() };
+        o.setCache && o.setCache(last);
         world.weather = last;
       } catch (e) {
         last = last && Date.now() - last.at < 3 * 3.6e6 ? last : null;   // keep a recent reading if we're offline for a bit

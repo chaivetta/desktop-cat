@@ -67,8 +67,8 @@
             <div class="st-grid three">
               ${btn("yarn", "🧶 " + s.yarn)}${btn("mouse", "🐭 " + s.mouse)}${btn("box", "📦 " + s.box)}
               ${btn("feed", "🍗 " + s.feed)}${btn("catnip", "🌿 " + s.catnip)}${btn("butterfly", "🦋 " + s.butterfly)}
-              ${btn("post", "🪵 " + s.post)}${btn("shelf", "🪜 " + s.shelf)}${btn("bird", "🐦 " + s.bird)}
-              ${btn("laser", "🔴 " + s.laser, "tog")}${btn("wand", "🪶 " + s.wand, "tog")}${btn("stray", "🐈 " + s.stray)}
+              ${btn("post", "🪵 " + s.post)}${btn("shelf", "🪜 " + s.shelf)}${btn("laser", "🔴 " + s.laser, "tog")}
+              ${btn("wand", "🪶 " + s.wand, "tog")}
             </div>
             <div class="st-grid">${btn("clear", "🧺 " + s.clear, "ghost")}</div>
           </section>
@@ -109,6 +109,9 @@
       root.querySelectorAll("[data-seg=night] button").forEach((b) => b.classList.toggle("on", b.dataset.v === world.nightMode));
       root.querySelectorAll("[data-seg=lang] button").forEach((b) => b.classList.toggle("on", b.dataset.v === L.lang));
       q('[data-a="laser"]').classList.toggle("on", !!world.laser); q('[data-a="wand"]').classList.toggle("on", !!world.wand);
+      // toys you haven't bought yet show a lock (tapping one opens the market)
+      for (const k of Object.keys(L.TOY_PRICES)) { const b = q(`[data-a="${k}"]`); if (b) b.classList.toggle("locked", !L.hasToy(k)); }
+      const gb = q('[data-a="game"]'); if (gb) gb.classList.toggle("locked", !L.hasToy("laser"));
       const full = n >= (L.MAX_CATS || 8); root.querySelectorAll(".st-coat").forEach((b) => { b.disabled = full; });
       const ra = q('[data-a="removeAll"]'); ra.textContent = `🧳 ${sure ? s.sure : s.removeAll}`; ra.classList.toggle("red", !!sure);
     }

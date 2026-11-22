@@ -55,7 +55,9 @@
     roll: { e: "🙃", state: "roll", dur: 2.2, tr: "Yuvarlan", en: "Roll over", learnTr: "Yuvarlanmayı öğrendi!", learnEn: "Learned to roll over!" },
     jump: { e: "⬆️", state: "pronk", dur: 2, tr: "Zıpla", en: "Jump", learnTr: "Komutla zıplamayı öğrendi!", learnEn: "Learned to jump on cue!" },
   };
-  const LESSONS = 5;
+  // Tricks take patience: twelve good lessons, at most six lessons a day per cat, a short rest between tries,
+  // and a kitten is too little to learn anything yet.
+  const LESSONS = 12, LESSONS_PER_DAY = 6, LESSON_REST = 3 * 60e3;
   // days together worth a party (counted from your very first cat)
   const TOGETHER = [7, 30, 50, 100, 200, 300];
 
@@ -84,7 +86,7 @@
     dress:     { e: "👗", n: 1, on: "dress", tr: () => "Ona yeni bir şey giydir", en: () => "Dress it up" },
   };
   // Stars are hard-won: a cat's three tasks together are worth one star a day.
-  const TASK_REWARD = { xp: 6, love: 6, stars: 0, coins: 2 }, ALL_REWARD = { xp: 15, love: 10, stars: 1, coins: 5 };
+  const TASK_REWARD = { xp: 6, love: 6, stars: 0, coins: 1 }, ALL_REWARD = { xp: 15, love: 10, stars: 1, coins: 3 };
   // Two currencies: 🪙 coins (food and furniture, from tasks, the game and simply using your computer)
   // and ⭐ stars (the wardrobe, only from finishing all of a cat's tasks or a great game).
   const FOOD = {
@@ -96,7 +98,7 @@
     litter: { e: "🪣", price: 12, n: 3 },          // three clean-ups of the litter box
   };
   const HUNGRY_AFTER = 8 * 3.6e6;                      // a meal keeps a cat full for eight hours
-  const GROW_PER_HOUR = 0.9 / 250;                     // ~250 hours of being fed and loved, with the app running, to grow up
+  const GROW_PER_HOUR = 0.9 / 350;                     // ~250 hours of being fed and loved, with the app running, to grow up
   // Every design in the wardrobe is locked and bought with stars (it then comes in all ten colours).
   const PRICES = {
     hat: { beanie: 3, cap: 3, party: 5, beret: 5, witch: 7, chef: 7, tophat: 9, flowers: 9, santa: 11, crown: 15 },
@@ -147,7 +149,7 @@
       adopt: "Yeni yavru", newKitten: "Yeni bir yavru geldi! Adını koyalım mı?", empty: "Henüz bir şey yazmadı…",
       grownUp: "Tamamen büyüdü", toNext: (h) => `büyümesine ≈${Math.ceil(h)} saat bakım`, hungry: "🍽️ Karnı aç", notGrowing: "Büyümesi için tok ve mutlu olmalı", height: (g) => `Boyu ${g.toFixed(1).replace(".", ",")}`,
       memories: "Anılar", family: "Ailesi", parentsL: "Annesi ve babası", siblings: "Kardeşleri", kids: "Yavruları", noMem: "Anılar burada birikecek…",
-      together: (n) => `💞 Birlikte ${n} gündür`, tricks: "Numaralar", teach: "Öğret", lessons: (n, m) => `${n}/${m} ders`, learnHint: "Dokun, öğret",
+      together: (n) => `💞 Birlikte ${n} gündür`, tricks: "Numaralar", teach: "Öğret", lessons: (n, m) => `${n}/${m} ders`, learnHint: "Dokun, öğret", lessonsToday: (n) => `bugün ${n} ders hakkı`, tooYoung: "Önce biraz büyümeli 🍼", noMoreToday: "Bugünlük yeter, yarın devam 🌙", resting: "Biraz dinlensin, sonra tekrar dene ⏳",
       trickFail: ["Kafası karıştı", "Şimdi canı istemedi", "Esnedi geçti", "Kuyruğunu salladı"], gone: "artık yok",
       home: "Ev", homeHint: "Yıldızlarla ev eşyası al; her birinden istediğin kadar alabilirsin. Yerleştirdiklerini sürükleyip istediğin yere koy.", place: "Koy", putAway: "Kaldır",
       ownedN: (o, p) => `${o} tane · ${p} ortada`,
@@ -196,7 +198,7 @@
       adopt: "New kitten", newKitten: "A new kitten arrived! Want to name it?", empty: "Nothing written yet…",
       grownUp: "All grown up", toNext: (h) => `≈${Math.ceil(h)} hours of care to grow`, hungry: "🍽️ Hungry", notGrowing: "Needs to be fed and happy to grow", height: (g) => `Height ${g.toFixed(1)}`,
       memories: "Memories", family: "Family", parentsL: "Parents", siblings: "Siblings", kids: "Kittens", noMem: "Memories will gather here…",
-      together: (n) => `💞 Together for ${n} days`, tricks: "Tricks", teach: "Teach", lessons: (n, m) => `${n}/${m} lessons`, learnHint: "Tap to teach",
+      together: (n) => `💞 Together for ${n} days`, tricks: "Tricks", teach: "Teach", lessons: (n, m) => `${n}/${m} lessons`, learnHint: "Tap to teach", lessonsToday: (n) => `${n} lesson${n === 1 ? "" : "s"} left today`, tooYoung: "Too little to learn yet 🍼", noMoreToday: "That's enough for today, more tomorrow 🌙", resting: "Let it rest a little, then try again ⏳",
       trickFail: ["Got confused", "Not in the mood", "Yawned instead", "Flicked its tail"], gone: "gone",
       home: "Home", homeHint: "Buy furniture with stars, as many of each as you like. Drag anything you've placed to move it.", place: "Place", putAway: "Put away",
       ownedN: (o, p) => `own ${o} · ${p} out`,
@@ -281,7 +283,11 @@
     buyFood(k) { const f = FOOD[k]; if (!f || L.wallet.coins < f.price) return false; L.wallet.coins -= f.price; L.pantry[k] = (L.pantry[k] || 0) + f.n; L.changed(); return true; },
     // the best meal in the cupboard (or a specific one); returns its kind, or null if the cupboard is bare
     takeMeal(k) { const order = k ? [k] : ["dry", "wet", "fish"]; const f = order.find((x) => (L.pantry[x] || 0) > 0); if (!f) return null; L.pantry[f]--; L.changed(); return f; },
-    home: { items: [] },                  // every piece of furniture you own: { id, k, cond (0-100), x (share of the screen width, or null when stored) }
+    home: { items: [] },
+    toys: ["yarn"],                       // toys you've bought (the yarn is free); see TOY_PRICES
+    TOY_PRICES: { mouse: 30, box: 20, butterfly: 40, wand: 50, post: 60, shelf: 45, laser: 80 },
+    hasToy(k) { return !L.TOY_PRICES[k] || L.toys.includes(k); },
+    buyToy(k) { const p = L.TOY_PRICES[k]; if (!p || L.toys.includes(k) || L.wallet.coins < p) return false; L.wallet.coins -= p; L.toys.push(k); L.changed(); return true; },                  // every piece of furniture you own: { id, k, cond (0-100), x (share of the screen width, or null when stored) }
     game: { best: 0, day: "", stars: 0 },      // stars from tasks, shared by all cats, and the wardrobe designs bought with them
     PRICES,
     // load the wallet from a save; designs someone is already wearing stay theirs
@@ -437,15 +443,22 @@
       const p = cat.profile, tr = TRICKS[id]; if (!tr) return null;
       p.tricks = p.tricks || {};
       const n = p.tricks[id] || 0, learned = n >= LESSONS;
+      if (!learned) {
+        if (L.stage(p).id === "kitten") return { blocked: "young" };
+        const d = new Date().toDateString(); if (p.lessonDay !== d) { p.lessonDay = d; p.lessons = 0; }
+        if (p.lessons >= LESSONS_PER_DAY) return { blocked: "day" };
+        if (Date.now() - (p.lessonAt || 0) < LESSON_REST) return { blocked: "rest" };
+        p.lessons++; p.lessonAt = Date.now();
+      }
       // a treat from the cupboard makes the lesson go much better
       const treat = !learned && (L.pantry.treat || 0) > 0; if (treat) L.pantry.treat--;
-      const ok = learned || Math.random() < 0.25 + n * 0.08 + p.love / 500 + (treat ? 0.3 : 0);
+      const ok = learned || Math.random() < 0.12 + n * 0.03 + p.love / 900 + (treat ? 0.22 : 0);
       if (ok && !learned) {
         p.tricks[id] = n + 1; L.addXP(cat, 4); L.addLove(cat, 2);
         if (n + 1 >= LESSONS) { L.write(p, "trick", { id }); L.remember(p, "trick", { id }); if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 24); }
         L.changed();
       }
-      return { ok, learned: (p.tricks[id] || 0) >= LESSONS, n: p.tricks[id] || 0 };
+      return { ok, learned: (p.tricks[id] || 0) >= LESSONS, n: p.tricks[id] || 0, left: LESSONS_PER_DAY - (p.lessons || 0) };
     },
     // ------------------------------------------------ days together
     togetherDays() { return Math.floor((Date.now() - L.since) / 864e5); },

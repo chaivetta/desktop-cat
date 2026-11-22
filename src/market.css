@@ -90,3 +90,4 @@
 .mk-odds small { display: block; text-align: center; opacity: .6; margin: 4px 0; }
 .mk-odds ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
 .mk-odds li { display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(91, 58, 41, .15); padding: 2px 0; }
+.mk-have { font: 700 18px 'Pixelify Sans', monospace; color: #2f9e6e; padding: 0 8px; }

@@ -2448,6 +2448,8 @@
       addEventListener("blur", () => { const d = this.drag; if (!d) return; if (d.cat) d.cat.set("fall", 5); if (d.toy && d.toy.release) d.toy.release(); this.drag = null; });
     }
     frame(now) {
+      const busy = this.drag || this.laser || this.wand || this.game;
+      if (!busy && now - this.last < 1000 / 31) { requestAnimationFrame((t) => this.frame(t)); return; }
       const dt = Math.min(0.05, (now - this.last) / 1000); this.last = now;
       const ctx = this.ctx; ctx.clearRect(0, 0, this.W, this.H);
       if (this.yarn) this.yarn.update(dt);
@@ -2513,7 +2515,7 @@
       for (const d of drops) {
         d.y += d.v * dt; d.x += wind * 160 * dt; const len = wx.kind === "drizzle" ? 4 * k : 7 * k;
         ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - wind * len * 0.5, d.y - len);
-        if (d.y >= this.floor - 2 && Math.random() < 0.3) this.burst(d.x, this.floor, "dust", "rgba(140,170,215,.6)", 1);
+        if (d.y >= this.floor - 2 && Math.random() < 0.08 && this.parts.length < 160) this.burst(d.x, this.floor, "dust", "rgba(140,170,215,.6)", 1);
       }
       ctx.stroke(); ctx.restore();
       // storms: now and then the room lights up, thunder rumbles and the cats jump

@@ -60,3 +60,6 @@
 .st-city { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; }
 .st-city input { min-width: 0; border: 0; border-radius: 10px; padding: 7px 9px; font: 700 12px "Nunito", sans-serif; color: #5b3a29; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .3); outline: none; }
 .st-city input:focus { box-shadow: 0 0 0 2px #ff8fab; }
+
+.st-b.locked { opacity: .55; position: relative; }
+.st-b.locked::after { content: "🔒"; position: absolute; top: -6px; right: -4px; font-size: 12px; }

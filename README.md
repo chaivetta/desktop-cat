@@ -28,6 +28,9 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 
 ## Toys
 
+Only the yarn comes free; the rest are bought in the 🛒 market.
+
+
 | Toy | |
 | :-- | :-- |
 | **Ball of yarn** | Throw it and they chase it. **Hold it** by the ball and they stand up to swat it and leap for it; pounce on it and it squirts away |
@@ -57,7 +60,7 @@ Right-click a cat to open its card, right above it. Drag it by its top or the av
 
 ![The card's tabs: status, daily tasks, the wardrobe, memories](docs/card-tabs.png)
 
-- **Status** — name (🎲 suggests one), ♀ or ♂, love hearts, growing up, two personality traits and a favourite toy, tricks to teach, quick actions
+- **Status** — name (🎲 suggests one), ♀ or ♂, love hearts, growing up, two personality traits and a favourite toy, tricks to teach (twelve good lessons each, at most six lessons a day, and kittens are too little to learn), quick actions
 - **🎯 Tasks** — three little jobs a day per cat. Each pays coins; finishing all three pays a ⭐, and days in a row make a streak
 - **👗 Wardrobe** — 300 things to wear (100 hats, 100 collars & bows, 100 outfits). Every design is locked and bought with ⭐ stars, then comes in all ten colours
 - **📷 Memories** — the big moments kept as little polaroids, drawn as the cat looked that day, plus the family (parents, brothers and sisters, kittens) and how many days you've been together
@@ -67,7 +70,7 @@ Right-click a cat to open its card, right above it. Drag it by its top or the av
 
 ## Growing up takes real care
 
-- A new cat arrives at height **0.1** and only grows while the app is running, it isn't **hungry** (a meal lasts eight hours) and it feels **loved** (love 30+): about **250 hours** of that to become a grown-up. Kitten 🍼 → young cat 🐱 → grown-up 👑 → after a year, a wise old cat 🦉 with a grey muzzle who takes life slower
+- A new cat arrives at height **0.1** and only grows while the app is running, it isn't **hungry** (a meal lasts eight hours) and it feels **loved** (love 30+): about **350 hours** of that to become a grown-up. Kitten 🍼 → young cat 🐱 → grown-up 👑 → after a year, a wise old cat 🦉 with a grey muzzle who takes life slower
 - **Hearts fade** when nobody pays attention, faster when the cat is hungry. A lonely kitten or young cat may pack up and walk out (pet it on the way and it may stay); grown-ups stay, and a wise old cat only very rarely leaves
 - **Boys and girls** — a kitten needs a mother and a father who are both happy and good friends; a litter is one, two or three kittens
 - **Birthdays** at one week, 1, 2, 3 and 6 months and every year: cake, candle, confetti and a party hat
@@ -78,8 +81,9 @@ Right-click a cat to open its card, right above it. Drag it by its top or the av
 
 | | |
 | :-- | :-- |
-| **🪙 Coins** | Earned from tasks (2🪙 each, +5🪙 for all three), the laser hunt (1🪙 per star caught, 40 a day at most) and simply using your computer (1🪙 every 10 active minutes, 30 a day at most). Spent on food and furniture |
+| **🪙 Coins** | Earned slowly: tasks (1🪙 each, +3🪙 for all three), the laser hunt (1🪙 for every two stars caught, 25 a day at most) and simply using your computer (1🪙 every 15 active minutes, 20 a day at most). Spent on food, toys and furniture |
 | **⭐ Stars** | Only from finishing all of a cat's tasks, or a laser-hunt score of 20+ (once a day). Spent on the wardrobe |
+| **🧸 Toys** | Only the yarn is free. The wind-up mouse, box, butterfly, feather wand, scratching post, wall shelf and laser pointer are bought once in the market (the laser hunt needs the laser) |
 | **🍗 Food** | Dry food (two meals for 10🪙), wet food, fish feasts, treats (they make teaching tricks easier), catnip and cat litter. The bowl only fills from your cupboard |
 | **🎒 Inventory** | The cupboard (put food in the bowl, drop catnip, clean the litter box) and every piece of furniture: place it, put it away, repair it or sell it |
 | **🎁 Luck** | A free gift chest once a day, and a wheel of luck for 25🪙. Mostly coins and food; furniture, a star or a new outfit only very, very rarely (the odds are listed under the wheel) |
@@ -105,7 +109,7 @@ A 30-second mini game: lead the cats onto the twinkling stars with the laser.
 ## More
 
 - **It knows you** — the cats come to say hello when you get back, say good morning, curl up next to your mouse when you've been away, and dream while they sleep. Very happy cats sleep belly-up
-- **Real weather** — the sky over your desk follows the weather where you are (from [Open-Meteo](https://open-meteo.com), free, no account): rain, drizzle, snow, fog, drifting clouds, and storms with lightning, a low rumble of thunder and startled cats. On rainy days the cats get sleepy and the birds stay away. Your place is worked out roughly from your internet connection, or type a city in ⚙️ Settings; switch it off to follow the seasons instead
+- **Real weather** — the sky over your desk follows the weather where you are (from [Open-Meteo](https://open-meteo.com), free, no account, checked once a day): rain, drizzle, snow, fog, drifting clouds, and storms with lightning, a low rumble of thunder and startled cats. On rainy days the cats get sleepy and the birds stay away. Your place is worked out roughly from your internet connection, or type a city in ⚙️ Settings; switch it off to follow the seasons instead
 - **Seasons** — snow in winter, blossom in spring, fireflies on summer nights, falling leaves in autumn
 - **Carry things** — hold the yarn by the ball, pick up the food bowl and put it anywhere (shake it and kibble spills)
 - **Turkish and English** — the whole app
