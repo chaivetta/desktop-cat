@@ -103,6 +103,7 @@
   }
   if (saved.lang) L.lang = saved.lang;
   L.tasksOn = saved.tasksOn ?? true; L.breedOn = saved.breedOn ?? true;
+  L.loadWallet(saved.wallet, saved.cats);
   saved.cats.forEach(L.welcomeBack);
 
   let world, cardPos = saved.cardPos || null;
@@ -110,7 +111,7 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
-        tasksOn: L.tasksOn, breedOn: L.breedOn }));
+        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet }));
     } catch {}
   };
   let saveT = 0; L.onChange = () => { clearTimeout(saveT); saveT = setTimeout(save, 400); card && card.refresh(); };

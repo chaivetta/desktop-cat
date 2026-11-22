@@ -63,6 +63,7 @@ Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card
 - **Birthdays** — at one week, then 1, 2, 3 and 6 months, then every year: a cake with a candle, confetti, a party hat and a diary entry
 - **Daily tasks** — three little jobs a day for each cat (pet it five times, play with the yarn, take its photo…). Finish them for love, growing-up points and a ⭐; keep it up for a streak
 - **Best friends and kittens** — cats who keep booping, racing and play-fighting become best friends. Two happy grown-up friends sometimes have a kitten that looks like one of them
+- **Stars unlock the wardrobe** — every cat starts with two hats, two collars and two outfits. Each task pays 1⭐ (+2⭐ for finishing all three), and stars unlock the rest of the designs, in all ten colours. With tasks switched off, the whole wardrobe is open
 - Tasks and kittens are optional: switch them off from the tray menu (or the demo page)
 - **Saying goodbye** — remove a cat from its card (it asks first), or all of them at once from the tray
 - **Turkish and English** — the whole app, tray menu included. Switch at the bottom of the card or under **Language** in the tray

@@ -68,10 +68,11 @@
           </div>
           <div class="cc-pane" data-pane="ward" hidden>
           <section class="cc-sec cc-ward">
-            <div class="cc-label"><span>👕 <small class="cc-wearing"></small></span></div>
+            <div class="cc-label"><span>👕 <small class="cc-wearing"></small></span><small class="cc-wallet"></small></div>
             <div class="cc-kinds"></div>
             <div class="cc-designs"></div>
             <div class="cc-swatches"></div>
+            <div class="cc-unlock" hidden><span class="cc-lockname"></span><button class="cc-pill gold" type="button" data-u="buy"></button><small class="cc-need"></small></div>
             <div class="cc-wbtns"><button class="cc-pill" type="button" data-w="surprise"></button><button class="cc-pill" type="button" data-w="undress"></button></div>
           </section>
           </div>
@@ -131,23 +132,34 @@
     function renderWardrobe() {
       const t = T(), lang = L.lang, cur = worn(kind), curD = cur ? cur.split(":")[0] : null, curS = cur ? cur.split(":")[1] : null;
       if (!design) design = curD || Object.keys(W[kind])[0];
-      const key = [lang, kind, design, cat.coat, JSON.stringify(cat.profile.acc || {})].join("|");
+      const key = [lang, kind, design, cat.coat, JSON.stringify(cat.profile.acc || {}), L.tasksOn, L.wallet.stars, L.wallet.owned.length].join("|");
       if (key === wardKey) return; wardKey = key;
-      q(".cc-kinds").innerHTML = Object.keys(KINDS).map((k) => `<button type="button" class="cc-kind${k === kind ? " on" : ""}" data-k="${k}">${KINDS[k]} ${esc(t[k])} <small>100</small></button>`).join("");
+      q(".cc-kinds").innerHTML = Object.keys(KINDS).map((k) => `<button type="button" class="cc-kind${k === kind ? " on" : ""}" data-k="${k}">${KINDS[k]} ${esc(t[k])} <small>${Object.keys(W[k]).filter((d) => !L.price(k, d)).length * 10}/100</small></button>`).join("");
+      q(".cc-wallet").textContent = L.tasksOn ? t.wallet(L.wallet.stars) : "";
       // design thumbnails: the cat wearing each one (in the colour it has on, or the first colour)
       const box = q(".cc-designs"); box.innerHTML = "";
       const none = document.createElement("button"); none.type = "button"; none.className = "cc-design none" + (!cur ? " on" : ""); none.title = t.none; none.textContent = "⦸";
       none.onclick = () => wear(null); box.appendChild(none);
       Object.keys(W[kind]).forEach((d) => {
         const b = document.createElement("button"); b.type = "button";
-        b.className = "cc-design" + (d === curD ? " on" : "") + (d === design && d !== curD ? " pick" : ""); b.title = W[kind][d][lang];
+        const cost = L.price(kind, d);
+        b.className = "cc-design" + (d === curD ? " on" : "") + (d === design && d !== curD ? " pick" : "") + (cost ? " locked" : ""); b.title = W[kind][d][lang] + (cost ? ` · 🔒 ${cost}⭐` : "");
         const k = document.createElement("canvas"); k.width = 44; k.height = 44; b.appendChild(k);
         const acc = { ...(cat.profile.acc || {}) }; acc[kind] = `${d}:${d === curD && curS ? curS : "cherry"}`;
         if (kind !== "outfit") delete acc.outfit;
         DC.portrait(k.getContext("2d"), cat.coat, { ...THUMB[kind], acc });
-        b.onclick = () => { design = d; wear(`${d}:${d === curD && curS ? curS : (curS || "cherry")}`); };
+        if (cost) { const lk = document.createElement("span"); lk.className = "cc-lk"; lk.textContent = `🔒${cost}`; b.appendChild(lk); }
+        b.onclick = () => { design = d; if (L.price(kind, d)) { wardKey = ""; renderWardrobe(); return; } wear(`${d}:${d === curD && curS ? curS : (curS || "cherry")}`); };
         box.appendChild(b);
       });
+      // a locked design picked: show what it costs instead of the colours
+      const cost = L.price(kind, design), ub = q(".cc-unlock");
+      ub.hidden = !cost; q(".cc-swatches").hidden = !!cost;
+      if (cost) {
+        q(".cc-lockname").textContent = `🔒 ${W[kind][design][lang]}`;
+        const buy = q('[data-u="buy"]'); buy.textContent = t.unlock(cost); buy.disabled = L.wallet.stars < cost;
+        q(".cc-need").textContent = L.wallet.stars < cost ? t.need(cost - L.wallet.stars) : "";
+      }
       q(".cc-swatches").innerHTML = Object.entries(W.schemes).map(([k, sc]) =>
         `<button type="button" class="cc-swatch${design === curD && k === curS ? " on" : ""}" data-s="${k}" title="${esc(sc[lang])}" style="--a:${sc.c[0]};--b:${sc.c[1]};--c:${sc.c[2]}"></button>`).join("");
       const a = cat.profile.acc || {}, names = ["hat", "collar", "outfit"].map((k) => a[k] && L.itemName(k, a[k])).filter(Boolean);
@@ -170,7 +182,7 @@
         return `<li class="${done ? "done" : ""}"><span class="ico">${d.e}</span><span class="txt">${esc(L.taskText(k.id))}<i style="--f:${f}"></i></span><b>${done ? "✓" : `${k.n}/${d.n}`}</b></li>`;
       }).join("") + (ts.all ? `<li class="all">${esc(t.allDone)}</li>` : "");
       const ul = q(".cc-tasks ul"); if (ul.dataset.v !== html) { ul.innerHTML = html; ul.dataset.v = html; }
-      q(".cc-tfoot").textContent = [t.stars(p.stars || 0), p.streak > 1 ? t.streak(p.streak) : ""].filter(Boolean).join("  ·  ");
+      q(".cc-tfoot").innerHTML = `<b>${esc(t.wallet(L.wallet.stars))}</b><span>${esc([t.earned(p.stars || 0), p.streak > 1 ? t.streak(p.streak) : ""].filter(Boolean).join("  ·  "))}</span><small>${esc(t.howStars)}</small>`;
     }
     function update() {
       if (!cat || !cat.profile) return;
@@ -352,10 +364,17 @@
     q('[data-w="surprise"]').onclick = (e) => {
       const p = cat.profile, pickK = (o) => { const ks = Object.keys(o); return ks[Math.floor(Math.random() * ks.length)]; };
       p.acc = {};
-      for (const k of ["hat", "collar", "outfit"]) if (Math.random() < 0.75) p.acc[k] = `${pickK(W[k])}:${pickK(W.schemes)}`;
-      if (!Object.keys(p.acc).length) p.acc.hat = `${pickK(W.hat)}:${pickK(W.schemes)}`;
+      const open = (k) => Object.fromEntries(Object.entries(W[k]).filter(([d]) => !L.price(k, d)));   // only what's unlocked
+      for (const k of ["hat", "collar", "outfit"]) if (Math.random() < 0.75) p.acc[k] = `${pickK(open(k))}:${pickK(W.schemes)}`;
+      if (!Object.keys(p.acc).length) p.acc.hat = `${pickK(open("hat"))}:${pickK(W.schemes)}`;
       L.care(cat, "dress", { kind: Object.keys(p.acc)[0], item: Object.values(p.acc)[0] });
       design = p.acc[kind] ? p.acc[kind].split(":")[0] : null; wardKey = ""; tabKey = ""; L.changed(); update(); floatUp("✨", e.currentTarget);
+    };
+    q('[data-u="buy"]').onclick = (e) => {
+      if (!L.buy(kind, design)) return;
+      floatUp("⭐", e.currentTarget);
+      world.confetti(cat.x, cat.y - 30 * cat.s, 18);
+      wardKey = ""; wear(`${design}:cherry`);
     };
     q('[data-w="undress"]').onclick = () => { cat.profile.acc = {}; design = null; wardKey = ""; tabKey = ""; L.changed(); update(); };
     q('[data-r="ask"]').onclick = () => { q(".cc-confirm").hidden = false; q('[data-r="ask"]').hidden = true; };

@@ -68,7 +68,14 @@
     photo:     { e: "📸", n: 1, on: "photo", tr: () => "Fotoğrafını çek", en: () => "Take its photo" },
     dress:     { e: "👗", n: 1, on: "dress", tr: () => "Ona yeni bir şey giydir", en: () => "Dress it up" },
   };
-  const TASK_REWARD = { xp: 14, love: 8 }, ALL_REWARD = { xp: 30, love: 15 };
+  const TASK_REWARD = { xp: 14, love: 8, stars: 1 }, ALL_REWARD = { xp: 30, love: 15, stars: 2 };
+  // the wardrobe starts with two designs of each kind; the rest are bought with stars from the tasks
+  // (a design comes in all ten colours once it's yours). With tasks switched off, everything is open.
+  const PRICES = {
+    hat: { beanie: 0, cap: 0, party: 3, beret: 3, witch: 4, chef: 4, tophat: 5, flowers: 5, santa: 6, crown: 8 },
+    collar: { plain: 0, bowtie: 0, bell: 3, bandana: 3, scarf: 3, tag: 4, studs: 4, bigbow: 5, lei: 5, pearls: 8 },
+    outfit: { sweater: 0, stripes: 0, dots: 4, plaid: 4, zigzag: 4, overalls: 5, raincoat: 5, vertical: 5, diagonal: 6, stars: 8 },
+  };
   const MAX_CATS = 8, KIT_COOL = 12 * 3.6e6;           // breeding: at most 8 cats, a parent rests 12 hours between litters
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 
@@ -98,11 +105,13 @@
     tr: {
       love: "Sevgi", growth: "Büyüme", traits: "Karakteri", fav: "En sevdiği", diary: "Günlük", paneCat: "Durum", tasks: "Görevler", tasksToday: "Bugünün görevleri", newTasks: "Yeni görevler gece yarısı",
       allDone: "Hepsi bitti! Yarın yenileri gelecek 🌙", stars: (n) => `⭐ ${n} yıldız`, streak: (n) => `🔥 ${n} gün üst üste`, friend: "Yakın arkadaşı",
-      parents: (a, b) => `${a} ve ${nin(b)} yavrusu`, taskToast: "Görev tamam!", showName: "İsmini başının üstünde göster",
+      parents: (a, b) => `${a} ve ${nin(b)} yavrusu`, taskToast: "Görev tamam!",
+      wallet: (n) => `⭐ ${n} yıldızın var`, earned: (n) => `bu kedi ${n}⭐ kazandırdı`, howStars: "Her görev 1⭐, hepsi bitince +2⭐",
+      locked: "Kilitli", unlock: (n) => `⭐ ${n} ile aç`, need: (n) => `${n} yıldız daha lazım, görevlere bak 🎯`, unlocked: "Açıldı!", showName: "İsmini başının üstünde göster",
       pet: "Sev", feed: "Mama ver", play: "Oyna", rename: "İsmini değiştir", dice: "Rastgele isim", ok: "Kaydet", close: "Kapat",
       adopt: "Yeni yavru", newKitten: "Yeni bir yavru geldi! Adını koyalım mı?", empty: "Henüz bir şey yazmadı…",
       grownUp: "Tamamen büyüdü", toNext: (n) => `${n} puan sonra büyüyecek`,
-      wardrobe: "Dolap", hat: "Şapka", collar: "Tasma & papyon", outfit: "Kıyafet", none: "Hiçbiri", surprise: "Rastgele kombin", undress: "Hepsini çıkar",
+      wardrobe: "Dolap", hat: "Şapka", collar: "Tasma", outfit: "Kıyafet", none: "Hiçbiri", surprise: "Rastgele kombin", undress: "Hepsini çıkar",
       nothingOn: "Üstünde bir şey yok", photo: "Fotoğraf", remove: "Kediyi kaldır", removeQ: (n) => `${n} gitsin mi? Bu geri alınamaz.`, yes: "Evet, kaldır", no: "Vazgeç",
       size: "Kart boyutu", pin: "Kedinin üstüne geri taşı", soundOff: "Sesleri kapat", soundOn: "Sesleri aç", birthdayToday: "Bugün doğum günü!", photoOf: (n, d, st) => `${n} · ${d} · ${st}`,
       age1: (d) => d < 30 ? "1 haftalık" : d < 365 ? `${Math.round(d / 30)} aylık` : `${Math.round(d / 365)} yaşında`,
@@ -125,11 +134,13 @@
     en: {
       love: "Love", growth: "Growing up", traits: "Personality", fav: "Favourite", diary: "Diary", paneCat: "Status", tasks: "Tasks", tasksToday: "Today's tasks", newTasks: "New tasks at midnight",
       allDone: "All done! New ones tomorrow 🌙", stars: (n) => `⭐ ${n} star${n === 1 ? "" : "s"}`, streak: (n) => `🔥 ${n} days in a row`, friend: "Best friend",
-      parents: (a, b) => `Kitten of ${a} and ${b}`, taskToast: "Task done!", showName: "Show name above head",
+      parents: (a, b) => `Kitten of ${a} and ${b}`, taskToast: "Task done!",
+      wallet: (n) => `⭐ You have ${n} star${n === 1 ? "" : "s"}`, earned: (n) => `this cat earned ${n}⭐`, howStars: "1⭐ per task, +2⭐ for finishing all three",
+      locked: "Locked", unlock: (n) => `Unlock for ⭐ ${n}`, need: (n) => `${n} more star${n === 1 ? "" : "s"} needed, see the tasks 🎯`, unlocked: "Unlocked!", showName: "Show name above head",
       pet: "Pet", feed: "Feed", play: "Play", rename: "Rename", dice: "Random name", ok: "Save", close: "Close",
       adopt: "New kitten", newKitten: "A new kitten arrived! Want to name it?", empty: "Nothing written yet…",
       grownUp: "All grown up", toNext: (n) => `${n} more points to grow`,
-      wardrobe: "Wardrobe", hat: "Hats", collar: "Collars & bows", outfit: "Outfits", none: "None", surprise: "Surprise outfit", undress: "Take it all off",
+      wardrobe: "Wardrobe", hat: "Hats", collar: "Collars", outfit: "Outfits", none: "None", surprise: "Surprise outfit", undress: "Take it all off",
       nothingOn: "Wearing nothing", photo: "Photo", remove: "Remove cat", removeQ: (n) => `Say goodbye to ${n}? This can't be undone.`, yes: "Yes, remove", no: "Keep",
       size: "Card size", pin: "Put it back above the cat", soundOff: "Mute the cats", soundOn: "Turn sounds on", birthdayToday: "Birthday today!", photoOf: (n, d, st) => `${n} · ${d} · ${st}`,
       age1: (d) => d < 30 ? "1 week old" : d < 365 ? `${Math.round(d / 30)} months old` : `${Math.round(d / 365)} year${d >= 730 ? "s" : ""} old`,
@@ -160,6 +171,23 @@
     lang: (navigator.language || "en").toLowerCase().startsWith("tr") ? "tr" : "en",
     NAMES, TRAITS, TOYS, STAGES, ADULT, STR, LOG_ICON, COAT_NAMES, TASKS, MAX_CATS,
     tasksOn: true, breedOn: true,         // both can be switched off in the settings
+    wallet: { stars: 0, owned: [] },      // stars from tasks, shared by all cats, and the wardrobe designs bought with them
+    PRICES,
+    // load the wallet from a save; designs someone is already wearing stay theirs
+    loadWallet(w, profiles) {
+      L.wallet = { stars: Math.max(0, +(w && w.stars) || 0), owned: Array.isArray(w && w.owned) ? w.owned.slice() : [] };
+      for (const p of profiles) for (const [k, id] of Object.entries(p.acc || {})) { const d = String(id).split(":")[0]; if (L.price(k, d)) L.wallet.owned.push(`${k}:${d}`); }
+    },
+    // what a design costs right now: 0 when it's free, already bought, or the tasks are switched off
+    price(kind, d) {
+      if (!L.tasksOn) return 0;
+      const c = (PRICES[kind] || {})[d] || 0;
+      return c && !L.wallet.owned.includes(`${kind}:${d}`) ? c : 0;
+    },
+    buy(kind, d) {
+      const c = L.price(kind, d); if (!c || L.wallet.stars < c) return false;
+      L.wallet.stars -= c; L.wallet.owned.push(`${kind}:${d}`); L.changed(); return true;
+    },
     onChange: null,                     // set by the page: called when anything worth saving happens
     t(k) { return STR[L.lang][k]; },
     randomName(taken = []) {
@@ -280,11 +308,12 @@
         k.t = now; k.n++; hit = true;
         if (k.n >= d.n) {
           L.addXP(cat, TASK_REWARD.xp); L.addLove(cat, TASK_REWARD.love); L.write(p, "task", { task: k.id });
+          L.wallet.stars += TASK_REWARD.stars; p.stars = (p.stars || 0) + TASK_REWARD.stars;
           const w = cat.world, s = cat.s; if (w) { w.burst(cat.x, cat.y - 34 * s, "spark", "#ffd34d", 4); w.burst(cat.x, cat.y - 30 * s, "heart", "#e2557a", 2); }
         }
       }
       if (hit && !ts.all && ts.list.every((k) => k.n >= TASKS[k.id].n)) {
-        ts.all = true; p.stars = (p.stars || 0) + 1; p.streak = (p.streak || 0) + 1;
+        ts.all = true; p.stars = (p.stars || 0) + ALL_REWARD.stars; L.wallet.stars += ALL_REWARD.stars; p.streak = (p.streak || 0) + 1;
         L.addXP(cat, ALL_REWARD.xp); L.addLove(cat, ALL_REWARD.love); L.write(p, "tasksDone");
         if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 30);
       }

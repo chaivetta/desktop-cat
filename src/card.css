@@ -177,10 +177,10 @@
 .cc-ward .cc-label small { max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cc-kinds { display: flex; gap: 6px; margin-bottom: 9px; }
 .cc-kind {
-  flex: 1; padding: 6px 4px; border: 0; border-radius: 11px; cursor: pointer; background: #fff; white-space: nowrap;
+  flex: 1; min-width: 0; padding: 5px 3px; border: 0; border-radius: 11px; cursor: pointer; background: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
   font: 800 11.5px "Nunito", sans-serif; box-shadow: 0 0 0 2px rgba(91, 58, 41, .3);
 }
-.cc-kind small { opacity: .5; font-size: 10px; }
+.cc-kind small { display: block; margin-top: 1px; opacity: .55; font-size: 10px; }
 .cc-kind.on { background: #ffe1ea; box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px var(--ink); transform: translateY(-2px); }
 .cc-designs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; margin-bottom: 10px; }
 .cc-design {
@@ -260,3 +260,19 @@
 .cc-tasks li.all { display: block; text-align: center; background: #fff1b8; box-shadow: 0 0 0 2px var(--ink); animation: cc-bump .6s; }
 .cc-tfoot { margin-top: 9px; text-align: center; font: 700 13px "Pixelify Sans", monospace; opacity: .8; }
 .cc-panes button[hidden] { display: none; }
+
+/* locked wardrobe designs */
+.cc-design { position: relative; }
+.cc-design.locked canvas { filter: grayscale(1) brightness(1.08); opacity: .5; }
+.cc-lk { position: absolute; right: 2px; bottom: 2px; padding: 0 4px; border-radius: 99px; background: #fff1b8; font: 700 10.5px "Pixelify Sans", monospace; box-shadow: 0 0 0 1.5px var(--ink); white-space: nowrap; }
+.cc-unlock { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; padding: 9px 11px; border-radius: 13px; background: #fff8e1; box-shadow: 0 0 0 2px rgba(91, 58, 41, .2); }
+.cc-unlock[hidden], .cc-swatches[hidden] { display: none; }
+.cc-lockname { flex: 1; font: 700 13px "Pixelify Sans", monospace; text-transform: capitalize; }
+.cc-pill.gold { background: #ffd34d; }
+.cc-pill.gold:disabled { opacity: .5; cursor: default; }
+.cc-need { flex-basis: 100%; font-size: 11.5px; font-weight: 800; opacity: .7; }
+.cc-label .cc-wallet { font: 700 12.5px "Pixelify Sans", monospace; opacity: 1; }
+.cc-tfoot { display: grid; gap: 3px; }
+.cc-tfoot b { font-size: 15px; }
+.cc-tfoot span { font-size: 12px; opacity: .8; }
+.cc-tfoot small { font: 800 11px "Nunito", sans-serif; opacity: .6; }
