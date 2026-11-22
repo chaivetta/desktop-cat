@@ -123,6 +123,8 @@
   L.home.items.forEach((it) => { if (it.x != null) world.placeFurniture(it.k, it.x * world.W, it); });
   // the market: food and furniture for coins
   var market = window.CatMarket.create({
+    openInventory: (msg) => { market.close(); games.close(); settings.close(); inventory.open("mine", msg); },
+    openMarket: (tab) => { inventory.close(); market.open(tab); },
     world,
     placeItem: (it) => { if (!world.furniture.some((f) => f.item === it)) { const f = world.placeFurniture(it.k, undefined, it); it.x = f.x / world.W; world.confetti(f.x, world.floor - 30, 16); } save(); },
     // using something from the cupboard
@@ -130,7 +132,7 @@
       if (k === "catnip") return act.catnip();
       if (k === "medicine" || k === "shampoo") {
         const c = card.isOpen && card.cat && card.cat.profile ? card.cat : null;
-        if (!c) return market.open("mine", L.lang === "tr" ? "Önce bir kedinin kartını aç 🐱" : "Open a cat's card first 🐱");
+        if (!c) return inventory.open("mine", L.lang === "tr" ? "Önce bir kedinin kartını aç 🐱" : "Open a cat's card first 🐱");
         if (k === "medicine") { if (!c.profile.sick) return; L.pantry.medicine--; L.cure(c); }
         else { L.pantry.shampoo--; c.profile.clean = 100; L.addLove(c, -6); L.write(c.profile, "bath"); c.set("arch", 1.4); }
         L.changed(); card.refresh(); return;
@@ -217,9 +219,10 @@
     sound: () => world.purrOn || world.meowOn,
     voices: Voices,
     onNeed: (k, msg) => market.open(k === "brush" ? "toys" : "food", msg || (L.lang === "tr" ? "Bu marketten alınır 🛒" : "Get this in the market 🛒")),
-    onMarket: () => market.isOpen ? market.close() : (settings.close(), games.close(), market.open()),
-    onSettings: () => settings.isOpen ? settings.close() : (market.close(), games.close(), settings.open()),
-    onGames: () => games.isOpen ? games.close() : (market.close(), settings.close(), games.open()),
+    onMarket: () => only(market),
+    onInventory: () => only(inventory),
+    onSettings: () => only(settings),
+    onGames: () => only(games),
     onRemove: (c) => { world.removeCat(c); save(); card.refresh(); },
     onClose: () => { overUI = false; syncIgnore(); },
   });
@@ -321,6 +324,12 @@
   });
 
   // 🎮 mini games
+  // 🎒 the inventory: the cupboard and your things, in a panel of its own (same wiring as the market)
+  var inventory = window.CatMarket.create({ ...market.opts, only: "mine" });
+  // one panel beside the card at a time: tapping its button again closes it
+  function only(p) { const open = p.isOpen; [market, inventory, settings, games].forEach((x) => x.close()); if (!open) p.open(); }
+  // the open panel's button stays lit on the card
+  setInterval(() => document.querySelectorAll(".cc-top .cc-tab.tool").forEach((b, i) => b.classList.toggle("on", !![games, market, inventory, settings][i] && [games, market, inventory, settings][i].isOpen)), 300);
   // 🧳 guest cats from the neighbours
   var guests = window.CatGuests.create({ world, save: () => save() }); window.CatGuests.now = guests;
   var games = window.CatGames.create({ world, playLaser: () => act.playGame(), onClose: () => { overUI = false; syncIgnore(); } });

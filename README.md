@@ -91,7 +91,7 @@ You start with one **ginger tabby**. Every other coat (black, white, grey tabby,
 | **⭐ Stars** | Only from finishing all of a cat's tasks, or a laser-hunt score of 20+ (once a day). Spent on the wardrobe |
 | **🧸 Toys** | All toys live in the market's 🧸 Toys tab. Only the yarn is free; the wind-up mouse, box, butterfly, feather wand, scratching post, wall shelf, laser pointer and brush are bought once with coins, then taken out (or switched on) from the same tab |
 | **🍗 Food** | Dry food (two meals for 10🪙), wet food, fish feasts, treats (they make teaching tricks easier), catnip and cat litter. The bowl only fills from your cupboard |
-| **🎒 Inventory** | The cupboard (put food in the bowl, drop catnip, clean the litter box) and every piece of furniture: place it, put it away, repair it or sell it |
+| **🎒 Inventory** | Its own panel (🎒 on the card): the cupboard (put food in the bowl, drop catnip, clean the litter box) and every piece of furniture: place it, put it away, repair it or sell it |
 | **🍱 Special meals** | 22 dishes (salmon, shrimp, chicken soup, caviar, birthday cake…), each giving a buff for a few hours: **full** (hunger lasts twice as long), **glow** (love fades slower), **grow**, **healthy** (cures sickness), **energy**, **calm**, **shiny** (love ×1.5), **smart** (tricks are easier), **lucky**, **sleepy** and **royal**. Active buffs show on the card |
 | **🎁 Luck** | A free gift chest once a day, and a wheel of luck for 25🪙. Mostly coins and food; furniture, a star or a new outfit only very, very rarely (the odds are listed under the wheel) |
 
@@ -99,7 +99,7 @@ You start with one **ginger tabby**. Every other coat (black, white, grey tabby,
 
 <img src="docs/side-panels.png" width="640" alt="The market panel opens right beside the card, at the same size">
 
-The 🎮 games, 🛒 market and ⚙️ settings buttons sit on top of the card, and their panels open right beside it at the same size.
+The 🎮 games, 🛒 market, 🎒 inventory and ⚙️ settings buttons sit together in one pill on top of the card, and their panels open right beside it at the same size.
 
 ![Rug, cat bed, cat house, tunnel, cat tree, water fountain, aquarium, litter box and plant](docs/home.png)
 
@@ -135,10 +135,12 @@ Hungry, lonely or dirty cats can get **sick**: they grumble, play less and love 
 
 <img src="docs/games.png" width="300" alt="The games panel with the scratch card">
 
-- **Scratch card:** one free ticket a day, then 10🪙. Scratch the silver with your mouse; three matching symbols win coins, food, a special meal or (very rarely) a star
-- **Memory:** match the pairs in 60 seconds; fewer moves, more coins (15🪙 a day at most)
-- **Whack-a-mouse:** 25 seconds of mice popping out of holes (15🪙 a day at most)
-- **Laser hunt:** lead the cats onto the twinkling stars with the laser
+Nothing is free: every game costs coins to play, and most of the time you win back less than you put in.
+
+- **Scratch card:** 25🪙 a ticket. Scratch the silver with your mouse; three matching symbols win coins (up to 250), food, a special meal or (very rarely) a star. Most tickets lose
+- **Memory:** 8🪙 to play. Match the pairs in 60 seconds; finish in few moves for up to 16🪙 (15🪙 a day at most)
+- **Whack-a-mouse:** 6🪙 to play. 25 seconds of mice popping out of holes, 1🪙 for every two (15🪙 a day at most)
+- **Laser hunt:** 10🪙 to play (needs the laser). Lead the cats onto the twinkling stars
 
 <img src="docs/game.png" width="640" alt="The laser hunt: lead the cats onto twinkling stars">
 

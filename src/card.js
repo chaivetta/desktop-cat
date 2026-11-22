@@ -144,7 +144,7 @@
       add.onclick = () => { if (opts.onAdopt) opts.onAdopt(); };
       box.appendChild(add);
       const tools = document.createElement("span"); tools.className = "cc-top";
-      for (const [e, fn, tt] of [["🎮", opts.onGames, T().games], ["🛒", opts.onMarket, T().market], ["⚙️", opts.onSettings, T().settings]]) {
+      for (const [e, fn, tt] of [["🎮", opts.onGames, T().games], ["🛒", opts.onMarket, T().market], ["🎒", opts.onInventory, T().inventory], ["⚙️", opts.onSettings, T().settings]]) {
         if (!fn) continue;
         const b = document.createElement("button"); b.type = "button"; b.className = "cc-tab tool"; b.textContent = e; b.title = tt || "";
         b.onclick = () => fn(); tools.appendChild(b);

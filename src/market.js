@@ -115,7 +115,7 @@
     const root = document.createElement("div");
     root.className = "ui mk"; root.hidden = true;
     document.body.append(fab, root);
-    let tab = "cats", coatSel = "ginger", note = "", key = "", result = "", spinning = false, wheelAngle = 0;
+    let tab = o.only || "cats", coatSel = "ginger", note = "", key = "", result = "", spinning = false, wheelAngle = 0;
     const t = () => STR[L.lang] || STR.en;
 
     const repairCost = (it) => Math.ceil(DC.FURN[it.k].price * 0.5 * (1 - it.cond / 100));
@@ -126,7 +126,8 @@
       const s = t(), H = L.home, E = L.econToday();
       const k = [L.lang, tab, coatSel, (L.wallet.coats || []).join(), o.catCount ? o.catCount() : 0, o.toyOn ? ["laser", "wand"].map(o.toyOn).join() : "", L.toys.join(), note, result, L.luck.chestDay, spinning, L.wallet.coins, L.wallet.stars, JSON.stringify(L.pantry), H.items.map((i) => `${i.id}${Math.round(i.cond)}${i.x != null}`).join()].join("|");
       if (k === key) return; key = k;
-      const tabs = [["cats", "🐱", s.catsT], ["food", "🍗", s.food], ["toys", "🧸", s.toysT], ["furniture", "🛋️", s.furniture], ["mine", "🎒", s.mine], ["luck", "🎁", s.luck], ["earn", "🪙", s.earn]];
+      // the inventory has its own panel (🎒 on the card); the market keeps the shop tabs
+      const tabs = o.only ? [] : [["cats", "🐱", s.catsT], ["food", "🍗", s.food], ["toys", "🧸", s.toysT], ["furniture", "🛋️", s.furniture], ["luck", "🎁", s.luck], ["earn", "🪙", s.earn]];
       let body = "";
       if (tab === "food") {
         const foodCard = ([f, d]) => card(`<div class="mk-emo">${d.e}</div>`, s.foods[f][0], s.foods[f][1], s.inStock(L.pantry[f] || 0), `<button type="button" class="mk-buy" data-food="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`, d.n > 1 ? `×${d.n}` : d.buff ? L.BUFFS[d.buff[0]] : "");
@@ -179,8 +180,8 @@
         body = `<div class="mk-ways">${s.ways.map(([e, h, d]) => `<div class="mk-way"><span>${e}</span><div><b>${esc(h)}</b><small>${esc(d)}</small></div></div>`).join("")}</div><p class="mk-today">${esc(s.today(E.pc, E.game))}</p>${L.guests ? `<p class="mk-today">🧳 ${L.lang === "tr" ? "Bakıcı ünün" : "Sitter rating"}: ${"★".repeat(Math.max(0, Math.round(L.guests.rep / 2)))}${"☆".repeat(5 - Math.max(0, Math.round(L.guests.rep / 2)))} · ${L.lang === "tr" ? "bakılan" : "looked after"}: ${L.guests.done}</p>` : ""}`;
       }
       root.innerHTML = `
-        <div class="mk-head"><b>🛒 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">${s.coins(L.wallet.coins)}</span><span class="star">${s.stars(L.wallet.stars)}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
-        <div class="mk-tabs">${tabs.map(([id, e, l]) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${e}</span>${esc(l)}</button>`).join("")}</div>
+        <div class="mk-head"><b>${o.only ? "🎒 " + esc(s.mine) : "🛒 " + esc(s.title)}</b><span class="mk-wal"><span class="coin">${s.coins(L.wallet.coins)}</span><span class="star">${s.stars(L.wallet.stars)}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
+        ${o.only ? "" : `<div class="mk-tabs">${tabs.map(([id, e, l]) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${e}</span>${esc(l)}</button>`).join("")}</div>`}
         ${note ? `<div class="mk-flash">${esc(note)}</div>` : ""}
         <div class="mk-body">${body}</div>`;
       root.querySelectorAll("canvas[data-f]").forEach((c) => DC.furnitureThumb(c.dataset.f, c.getContext("2d")));
@@ -251,19 +252,20 @@
     // beside the cat card when it's open; otherwise in the corner above the floor
     function place() {
       const bottom = Math.max(12, innerHeight - world.floor + 10);
-      fab.hidden = world.cats.some((c) => c.profile);
+      fab.hidden = !!o.only || world.cats.some((c) => c.profile);
       fab.style.bottom = `${bottom}px`;
       if (window.CatCard.beside(root)) return;
       root.style.height = ""; root.style.left = "auto"; root.style.right = "14px"; root.style.top = "auto"; root.style.bottom = `${bottom + 52}px`;
       root.style.setProperty("--maxh", `${Math.max(260, innerHeight - bottom - 80)}px`);
     }
-    function open(which, msg) { if (which) tab = which; note = msg || ""; root.hidden = false; key = ""; render(); place(); o.onOpen && o.onOpen(); }
+    function open(which, msg) { if (o.only) which = o.only; if (!o.only && which === "mine") return o.openInventory && o.openInventory(msg); if (which) tab = which; note = msg || ""; root.hidden = false; key = ""; render(); place(); o.onOpen && o.onOpen(); }
     function close() { root.hidden = true; note = ""; o.onClose && o.onClose(); }
     fab.onclick = () => (root.hidden ? open() : close());
 
     root.addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b || b.disabled) return;
       if (b.dataset.a === "close") return close();
+      if (b.dataset.tab && o.only) { close(); return o.openMarket && o.openMarket(b.dataset.tab); }
       if (b.dataset.tab) { tab = b.dataset.tab; note = ""; result = ""; return render(); }
       if (b.dataset.use) { o.useFood(b.dataset.use); pop(b, L.FOOD[b.dataset.use].e); key = ""; return render(); }
       if (b.dataset.chest) {
@@ -308,7 +310,7 @@
     addEventListener("resize", place);
     place();
     setInterval(() => { place(); if (!root.hidden) render(); }, 1000);
-    return { open, close, render: () => { key = ""; if (!root.hidden) render(); }, get isOpen() { return !root.hidden; }, t };
+    return { opts: o, open, close, render: () => { key = ""; if (!root.hidden) render(); }, get isOpen() { return !root.hidden; }, t };
   }
   window.CatMarket = { create };
 })();
