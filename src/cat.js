@@ -2709,7 +2709,7 @@
       if (this.strayOn && !this.isNight() && !this.stray()) { this.strayT -= dt; if (this.strayT <= 0) { this.strayT = rnd(1200, 2700); if (this.cats.filter((c) => c.profile).length < 8) this.addStray(); } }
       this.cats.forEach((c) => c.update(dt));
       if (this.isNight()) this.renderNight(ctx, now);
-      if (this.seasonsOn !== false) this.renderSeason(ctx, dt, now);
+      if (this.seasonsOn !== false) this.renderSeason(ctx, dt, now); else if (this.renderWeather(ctx, dt, now) === false && this.seasonOverride === "winter") this.seasonOverride = null;   // real weather shows even with the seasons off
       this.furniture.forEach((f) => f.render(ctx));
       if (this.post) this.post.render(ctx);
       this.shelves.forEach((sh) => sh.render(ctx));
@@ -2732,21 +2732,61 @@
     }
     // the time of year, outside the cats' window: snow in winter, blossom in spring, fireflies on summer nights, leaves in autumn
     season() { const m = new Date().getMonth(); return m === 11 || m <= 1 ? "winter" : m <= 4 ? "spring" : m <= 7 ? "summer" : "autumn"; }
+    isDayish() { return !this.isNight(); }
+    // one cloud, drawn small and blown up so it stays pixel-crisp: a row of round puffs on a flat-ish bottom,
+    // a dark outline, a soft blue (or grey) belly, and sometimes a sleepy face with pink cheeks
+    cloudSprite(c, grey) {
+      const key = c.seed + (grey ? "g" : "w"); let img = this.cloudImgs.get(key); if (img) return img;
+      const W = Math.round(c.w) + 4, H = Math.round(c.w * 0.62) + 4, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+      const g = cv.getContext("2d"), bx = 2, by = 2, w = W - 4, h = H - 4;
+      let r = c.seed; const rr = () => { r = (r * 9301 + 49297) % 233280 / 233280; return r; };
+      const puffs = [], m = 3 + Math.floor(rr() * 2);
+      for (let i = 0; i < m; i++) { const t = (i + 0.5) / m, big = 1 - Math.abs(t - 0.5) * 1.1; puffs.push([bx + w * t, by + h * (0.62 - big * 0.28) + rr() * 2, h * (0.24 + big * 0.22) + rr() * 1.5]); }
+      const shape = (grow) => { g.beginPath(); for (const [x, y, pr] of puffs) { g.moveTo(x + pr + grow, y); g.arc(x, y, pr + grow, 0, Math.PI * 2); }
+        g.moveTo(bx + h * 0.3, by + h * 0.72); g.roundRect(bx + h * 0.08 - grow, by + h * 0.45 - grow, w - h * 0.16 + grow * 2, h * 0.5 + grow * 2, h * 0.25 + grow); };
+      g.fillStyle = grey ? "#4a4a5e" : "#5b3a29"; shape(1); g.fill();                         // outline
+      g.fillStyle = grey ? "#b9bfcc" : "#ffffff"; shape(0); g.fill();                         // body
+      g.save(); shape(0); g.clip(); g.fillStyle = grey ? "#9aa1b2" : "#d6ecfb"; g.fillRect(0, by + h * 0.74, W, H); g.fillStyle = grey ? "#d4d8e2" : "#fff"; g.fillRect(bx + w * 0.22, by + h * 0.2, 2, 1); g.restore();
+      if (c.face && w > 20) {
+        const cx = bx + w / 2, cy = by + h * 0.62; g.fillStyle = "#5b3a29";
+        if (grey) { g.fillRect(cx - 5, cy, 2, 1); g.fillRect(cx + 3, cy, 2, 1); g.fillRect(cx - 1, cy + 3, 2, 1); }      // sleepy, a bit glum
+        else { g.fillRect(cx - 5, cy - 1, 1, 2); g.fillRect(cx + 4, cy - 1, 1, 2); g.fillRect(cx - 1, cy + 2, 1, 1); g.fillRect(cx, cy + 2, 1, 1); g.fillRect(cx - 2, cy + 1, 1, 1); g.fillRect(cx + 1, cy + 1, 1, 1);
+          g.fillStyle = "#ffb3c6"; g.fillRect(cx - 8, cy + 1, 2, 1); g.fillRect(cx + 6, cy + 1, 2, 1); }
+      }
+      this.cloudImgs.set(key, cv); return cv;
+    }
+    // a pastel rainbow on cloudy and drizzly days, coming and going every few minutes, its feet tucked into two little clouds
+    renderRainbow(ctx, now, k, top) {
+      const cyc = (now / 1000) % 600, a = cyc < 240 ? Math.min(1, cyc / 8, (240 - cyc) / 8) : 0; if (a <= 0) return;
+      const R = Math.min(this.W * 0.15, 180), cx = this.W * 0.72, cy = Math.max(top + R + 10, this.floor - 190);
+      const cols = ["#ff7a8f", "#ffaa5e", "#ffe066", "#7fdc84", "#6cc4ff", "#b48bff"], bw = Math.max(k * 2, Math.round(R / 22));
+      ctx.save(); ctx.globalAlpha = 0.85 * a; ctx.imageSmoothingEnabled = false;
+      cols.forEach((col, i) => { ctx.strokeStyle = col; ctx.lineWidth = bw; ctx.beginPath(); ctx.arc(cx, cy, R - i * bw, Math.PI, 0); ctx.stroke(); });
+      ctx.globalAlpha = a;
+      for (const sx of [-1, 1]) { const img = this.cloudSprite({ seed: 0.31 + (sx > 0 ? 0.2 : 0), w: 30, face: sx > 0 }, false); const x = cx + sx * (R - 3 * bw) - img.width * k / 2; ctx.drawImage(img, Math.round(x), Math.round(cy - img.height * k * 0.55), img.width * k, img.height * k); }
+      ctx.restore();
+    }
     // ---------------- real weather (set by the page from a weather service): rain, storms, snow, fog, clouds, wind
     // kinds: clear, cloud, fog, drizzle, rain, storm, snow
     renderWeather(ctx, dt, now) {
       const wx = this.weather; if (!wx) return false;
       const k = Math.max(2, Math.round(this.scale * 0.7)), wind = Math.max(-1, Math.min(1, (wx.wind || 0) / 40)) * (wx.windDir || 1);
-      // clouds drift along the top for anything but a clear sky
-      if (wx.kind !== "clear") {
-        const cl = this.clouds = this.clouds || Array.from({ length: 4 }, (_, i) => ({ x: Math.random() * this.W, y: 30 + i * 34 + Math.random() * 30, w: 60 + Math.random() * 90 }));
-        ctx.save(); ctx.fillStyle = ["rain", "storm"].includes(wx.kind) ? "rgba(150,156,170,.55)" : "rgba(255,255,255,.75)";
-        for (const c of cl) {
-          c.x += (8 + 30 * Math.abs(wind)) * (wind < 0 ? -1 : 1) * dt; if (c.x > this.W + 120) c.x = -c.w - 60; if (c.x < -c.w - 120) c.x = this.W + 60;
-          const x = Math.round(c.x / k) * k, y = Math.round(c.y / k) * k, h = k * 3;
-          ctx.fillRect(x, y, c.w, h * 2); ctx.fillRect(x + k * 3, y - h, c.w * 0.55, h); ctx.fillRect(x + c.w * 0.35, y - h * 1.6, c.w * 0.35, h);
-        }
-        ctx.restore();
+      // cartoon clouds float in a band above the cats' floor: puffy, outlined, some with sleepy little faces
+      const grey = ["rain", "storm"].includes(wx.kind), n = wx.kind === "clear" ? 2 : grey ? 6 : wx.kind === "fog" ? 3 : 5;
+      if (!this.clouds || this.cloudKey !== wx.kind + this.W) {
+        this.cloudKey = wx.kind + this.W;
+        this.clouds = Array.from({ length: n }, (_, i) => ({ x: (i + Math.random() * 0.6) * this.W / n, y: rnd(0, 1), w: wx.kind === "clear" ? rnd(28, 36) : rnd(34, 60), seed: Math.random(), face: Math.random() < 0.5, bob: rnd(0, 6) }));
+        this.cloudImgs = new Map();
+      }
+      const top = Math.max(20, this.floor - 330), band = Math.min(150, this.floor - top - 150);
+      if (this.isDayish() && ["cloud", "drizzle", "rain"].includes(wx.kind)) this.renderRainbow(ctx, now, k, top);
+      for (const c of this.clouds) {
+        c.x += (6 + 26 * Math.abs(wind)) * (wind < 0 ? -1 : 1) * dt;
+        const pw = c.w * k; if (c.x > this.W + pw) c.x = -pw; if (c.x < -pw * 2) c.x = this.W + pw * 0.2;
+        const img = this.cloudSprite(c, grey);
+        const y = top + c.y * band + Math.sin(now / 1400 + c.bob) * k;
+        ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalAlpha = grey ? 0.95 : 0.92;
+        ctx.drawImage(img, Math.round(c.x / k) * k, Math.round(y / k) * k, img.width * k, img.height * k); ctx.restore();
       }
       if (wx.kind === "fog") {
         const g = ctx.createLinearGradient(0, this.floor - 260, 0, this.floor); g.addColorStop(0, "rgba(235,238,242,0)"); g.addColorStop(1, "rgba(235,238,242,.55)");
