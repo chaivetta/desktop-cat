@@ -2390,7 +2390,7 @@
       this.scale = opts.scale || 3; this.toyScale = opts.toyScale || this.scale; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
       this.wand = null; this.butterfly = null; this.catnip = null; this.catnipId = 0; this.bed = null; this.post = null;
       this.shelves = []; this.cakes = []; this.purrOn = opts.purrOn ?? true; this.meowOn = opts.meowOn ?? true; this.nightMode = opts.nightMode || "auto"; this.seasonsOn = opts.seasonsOn ?? true;
-      this.birds = []; this.birdT = rnd(40, 120); this.birdsOn = opts.birdsOn ?? true; this.furniture = [];
+      this.birds = []; this.birdT = rnd(40, 120); this.sky = []; this.cloudT = rnd(25, 70); this.starT = rnd(20, 60); this.cloudImgs = new Map(); this.birdsOn = opts.birdsOn ?? true; this.furniture = [];
       this.strayOn = opts.strayOn ?? true; this.strayT = rnd(600, 1500); this.game = null;
       this.pointer = { x: -1e4, y: -1e4, seen: false }; this.drag = null; this.onHover = opts.onHover || (() => {});
       this.floorInset = opts.floorInset ?? 6; this.audio = null; this.last = performance.now();
@@ -2709,6 +2709,7 @@
       if (this.strayOn && !this.isNight() && !this.stray()) { this.strayT -= dt; if (this.strayT <= 0) { this.strayT = rnd(1200, 2700); if (this.cats.filter((c) => c.profile).length < 8) this.addStray(); } }
       this.cats.forEach((c) => c.update(dt));
       if (this.isNight()) this.renderNight(ctx, now);
+      this.renderSky(ctx, dt);
       if (this.seasonsOn !== false) this.renderSeason(ctx, dt, now); else if (this.renderWeather(ctx, dt, now) === false && this.seasonOverride === "winter") this.seasonOverride = null;   // real weather shows even with the seasons off
       this.furniture.forEach((f) => f.render(ctx));
       if (this.post) this.post.render(ctx);
@@ -2782,28 +2783,52 @@
     }
     // ---------------- real weather (set by the page from a weather service): rain, storms, snow, fog, clouds, wind
     // kinds: clear, cloud, fog, drizzle, rain, storm, snow
+    // ---------------- the sky along the very top of the screen: a cloud drifts past now and then (like the birds),
+    // more often and greyer when the real weather is cloudy or wet; on clear nights, once in a while, a shooting star
+    renderSky(ctx, dt) {
+      const wx = this.weather, kind = wx ? wx.kind : "", k = Math.max(1, Math.round(this.toyScale));
+      const wind = wx ? Math.max(-1, Math.min(1, (wx.wind || 0) / 40)) * (wx.windDir || 1) : 0.3, dir = wind < 0 ? -1 : 1;
+      const grey = kind === "rain" || kind === "storm", night = this.isNight();
+      this.cloudT -= dt;
+      if (this.cloudT <= 0) {
+        // how long until the next one: rare on clear days, often when it's cloudy, rainy or stormy
+        const gap = { clear: [300, 720], "": [240, 600], cloud: [45, 140], drizzle: [40, 110], rain: [25, 80], storm: [18, 55], snow: [50, 150], fog: [120, 300] }[kind] || [240, 600];
+        this.cloudT = rnd(gap[0], gap[1]);
+        const q = Math.random(), bow = !grey && !night && kind !== "fog" && kind !== "snow";
+        const c = { w: Math.round(rnd(18, 27)), seed: Math.random(), bob: rnd(0, 6), mood: night || Math.random() < 0.25 ? "sleepy" : "happy", deco: bow && q < 0.2 ? "drip" : bow && q < 0.32 ? "arc" : "", grey };
+        c.x = dir > 0 ? -(c.w + 40) * k : this.W + 10 * k; c.y = rnd(4, 60); c.v = (12 + 24 * Math.abs(wind) + rnd(0, 8)) * dir;
+        if (this.sky.length < 6) this.sky.push(c);
+        if (this.cloudImgs.size > 40) this.cloudImgs.clear();
+      }
+      for (const c of this.sky) {
+        c.x += c.v * dt; c.t = (c.t || 0) + dt;
+        const img = this.cloudSprite(c, c.grey), y = c.y + Math.sin(c.t * 0.9 + c.bob) * k;
+        ctx.save(); ctx.imageSmoothingEnabled = false; if (night) ctx.filter = "brightness(.8)";
+        ctx.drawImage(img, Math.round(c.x / k) * k, Math.round(y / k) * k, img.width * k, img.height * k); ctx.restore();
+        // a grey cloud lets a few drops fall right under it
+        if (c.grey && Math.random() < dt * 6) this.burst(c.x + rnd(0.3, 0.7) * img.width * k, y + img.height * k, "dust", "rgba(110,140,200,.8)", 1);
+      }
+      this.sky = this.sky.filter((c) => (c.v > 0 ? c.x < this.W + 20 : c.x > -(c.w + 60) * k));
+      // shooting stars: only at night and when the sky isn't overcast
+      if (night && !["cloud", "rain", "storm", "drizzle", "fog", "snow"].includes(kind)) {
+        this.starT -= dt;
+        if (this.starT <= 0) { this.starT = rnd(45, 160); const d = Math.random() < 0.5 ? -1 : 1; this.stars = this.stars || []; this.stars.push({ x: rnd(this.W * 0.15, this.W * 0.85), y: rnd(10, 90), vx: d * rnd(380, 520), vy: rnd(120, 190), life: 1.1, trail: [] }); }
+      }
+      if (this.stars && this.stars.length) {
+        ctx.save();
+        for (const st of this.stars) {
+          st.life -= dt; st.trail.unshift([st.x, st.y]); st.trail.length = Math.min(st.trail.length, 16); if (Math.random() < dt * 20) this.burst(st.x, st.y, "spark", "#fff3a0", 1); st.x += st.vx * dt; st.y += st.vy * dt;
+          const a = Math.max(0, Math.min(1, st.life * 2));
+          ctx.lineCap = "round";
+          for (let i = 1; i < st.trail.length; i++) { const [x0, y0] = st.trail[i - 1], [x1, y1] = st.trail[i]; ctx.globalAlpha = a * (1 - i / 16); ctx.strokeStyle = i < 4 ? "#fffbe0" : "#ffd84d"; ctx.lineWidth = Math.max(1, k * 1.4 * (1 - i / 18)); ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); }
+          ctx.globalAlpha = a; ctx.fillStyle = "#fff"; ctx.fillRect(Math.round(st.x / k) * k - k, Math.round(st.y / k) * k, k * 3, k); ctx.fillRect(Math.round(st.x / k) * k, Math.round(st.y / k) * k - k, k, k * 3);
+        }
+        ctx.restore(); this.stars = this.stars.filter((st) => st.life > 0);
+      }
+    }
     renderWeather(ctx, dt, now) {
       const wx = this.weather; if (!wx) return false;
       const k = Math.max(2, Math.round(this.scale * 0.7)), wind = Math.max(-1, Math.min(1, (wx.wind || 0) / 40)) * (wx.windDir || 1);
-      // cartoon clouds float in a band above the cats' floor: puffy, outlined, some with sleepy little faces
-      const grey = ["rain", "storm"].includes(wx.kind), n = wx.kind === "clear" ? 2 : grey ? 6 : wx.kind === "fog" ? 3 : 5;
-      if (!this.clouds || this.cloudKey !== wx.kind + this.W) {
-        this.cloudKey = wx.kind + this.W;
-        const bow = !grey && wx.kind !== "fog";
-        this.clouds = Array.from({ length: n }, (_, i) => { const q = Math.random(); return { x: (i + Math.random() * 0.6) * this.W / n, y: rnd(0, 1), w: Math.round(rnd(18, 27)), seed: Math.random(), bob: rnd(0, 6),
-          mood: Math.random() < 0.25 ? "sleepy" : "happy", deco: bow && q < 0.22 ? "drip" : bow && q < 0.36 ? "arc" : "" }; });
-        this.cloudImgs = new Map();
-      }
-      const top = Math.max(20, this.floor - 440), band = Math.min(120, this.floor - top - 300);
-      for (const c of this.clouds) {
-        const k = Math.max(1, Math.round(this.toyScale));                         // the same pixel size as the birds and toys
-        c.x += (6 + 26 * Math.abs(wind)) * (wind < 0 ? -1 : 1) * dt;
-        const pw = (c.w + 2) * k; if (c.x > this.W + pw) c.x = -pw; if (c.x < -pw * 2) c.x = this.W + pw * 0.2;
-        const img = this.cloudSprite(c, grey);
-        const y = top + c.y * band + Math.sin(now / 1400 + c.bob) * k;
-        ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalAlpha = 1;
-        ctx.drawImage(img, Math.round(c.x / k) * k, Math.round(y / k) * k, img.width * k, img.height * k); ctx.restore();
-      }
       if (wx.kind === "fog") {
         const g = ctx.createLinearGradient(0, this.floor - 260, 0, this.floor); g.addColorStop(0, "rgba(235,238,242,0)"); g.addColorStop(1, "rgba(235,238,242,.55)");
         ctx.fillStyle = g; ctx.fillRect(0, this.floor - 260, this.W, 262); return true;

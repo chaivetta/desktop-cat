@@ -113,6 +113,10 @@ Twenty more: they nap in the **basket**, **heat pad** (glows at night), **hammoc
 
 And twelve more: they run in the **cat wheel**, hide in the **cardboard castle** (and climb on top) and the **teepee**, nap on the **beanbag**, the **cardboard lounger** and the **rocking chair**, doze in front of the crackling **fireplace** (a warm home keeps love longer, more so in winter), watch the sky through the **window** (moon and stars at night), stare at the **lava lamp**, bat the baubles on the twinkling **Christmas tree** and scratch the **cactus**. The **automatic feeder** fills an empty bowl from your cupboard when someone's hungry, once every 8 hours.
 
+### The sky
+
+Every few minutes a little kawaii cloud drifts along the very top of the screen, like the birds: rarely on clear days, often when the real weather is cloudy, and grey and grumpy (dripping a few drops) when it rains. Some trail a rainbow or sit in front of one. On clear nights, once in a while, a shooting star streaks across.
+
 ### 🧳 Guest cats
 
 <img src="docs/guest.png" width="520" alt="A neighbour asks you to look after their cat for a day">
