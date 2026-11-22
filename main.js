@@ -9,7 +9,7 @@ if (process.platform === "linux") app.commandLine.appendSwitch("enable-transpare
 if (!app.requestSingleInstanceLock()) app.quit();
 
 let win = null, tray = null, coats = [], paused = false, laser = false, wand = false;
-let purrOn = true, meowOn = true, tasksOn = true, breedOn = true, seasonsOn = true, nightMode = "auto", lang = app.getLocale().toLowerCase().startsWith("tr") ? "tr" : "en";
+let purrOn = true, meowOn = true, tasksOn = true, breedOn = true, seasonsOn = true, birdsOn = true, strayOn = true, nightMode = "auto", lang = app.getLocale().toLowerCase().startsWith("tr") ? "tr" : "en";
 
 // the tray menu in both languages; the page tells us which one the cats speak
 const T = {
@@ -17,13 +17,13 @@ const T = {
     laser: "Laser pointer", catnip: "Catnip", butterfly: "Butterfly", bed: "Cat bed", post: "Scratching post", shelf: "Wall shelf", clear: "Put the toys away",
     cards: "Cat cards…", feed: "Feed the cats", remove: "Remove a cat", removeAll: "Remove all cats…", sounds: "Sounds", purr: "Purring", meow: "Meowing",
     night: "Day & night", auto: "Follow the clock", day: "Always day", nightOn: "Always night", catSize: "Cat size", toySize: "Toy size", bigger: "Bigger",
-    smaller: "Smaller", tasks: "Daily tasks", breed: "Kittens", seasons: "Seasons (snow, leaves…)", show: "Show cats", hide: "Hide cats", language: "Language", login: "Start with my computer", quit: "Quit",
+    smaller: "Smaller", tasks: "Daily tasks", breed: "Kittens", seasons: "Seasons (snow, leaves…)", birds: "Birds flying past", strays: "Stray cats visiting", game: "Play: laser hunt", bird: "Call a bird", stray: "Call a stray cat", show: "Show cats", hide: "Hide cats", language: "Language", login: "Start with my computer", quit: "Quit",
     raYes: "Remove all", raNo: "Cancel", raQ: "Remove all your cats?", raD: "Their names, diaries and wardrobes will be gone. This can't be undone." },
   tr: { add: "Kedi ekle", surprise: "Sürpriz yap", toys: "Oyuncaklar", yarn: "Yün yumağı", mouse: "Kurmalı fare", box: "Karton kutu", wand: "Tüylü olta",
     laser: "Lazer", catnip: "Kedi otu", butterfly: "Kelebek", bed: "Kedi yatağı", post: "Tırmalama direği", shelf: "Duvar rafı", clear: "Oyuncakları topla",
     cards: "Kedi kartları…", feed: "Kedileri besle", remove: "Bir kediyi kaldır", removeAll: "Tüm kedileri kaldır…", sounds: "Sesler", purr: "Mırlama", meow: "Miyavlama",
     night: "Gece ve gündüz", auto: "Saate göre", day: "Hep gündüz", nightOn: "Hep gece", catSize: "Kedi boyu", toySize: "Oyuncak boyu", bigger: "Büyüt",
-    smaller: "Küçült", tasks: "Günlük görevler", breed: "Yavrulama", seasons: "Mevsimler (kar, yaprak…)", show: "Kedileri göster", hide: "Kedileri gizle", language: "Dil", login: "Bilgisayarla birlikte başlat", quit: "Çıkış",
+    smaller: "Küçült", tasks: "Günlük görevler", breed: "Yavrulama", seasons: "Mevsimler (kar, yaprak…)", birds: "Geçen kuşlar", strays: "Gelen sokak kedileri", game: "Oyna: Lazer avı", bird: "Kuş çağır", stray: "Sokak kedisi çağır", show: "Kedileri göster", hide: "Kedileri gizle", language: "Dil", login: "Bilgisayarla birlikte başlat", quit: "Çıkış",
     raYes: "Hepsini kaldır", raNo: "Vazgeç", raQ: "Tüm kedilerin kaldırılsın mı?", raD: "İsimleri, günlükleri ve gardıropları silinecek. Bu geri alınamaz." },
 };
 const t = (k) => T[lang][k];
@@ -77,8 +77,12 @@ function buildMenu() {
       { label: t("post"), click: () => send({ type: "post" }) },
       { label: t("shelf"), click: () => send({ type: "shelf" }) },
       { type: "separator" },
+      { label: t("bird"), click: () => send({ type: "bird" }) },
+      { label: t("stray"), click: () => send({ type: "stray" }) },
+      { type: "separator" },
       { label: t("clear"), click: () => send({ type: "clear" }) },
     ] },
+    { label: t("game"), click: () => { win.showInactive(); send({ type: "game" }); } },
     { label: t("cards"), click: () => { win.showInactive(); send({ type: "cards" }); } },
     { label: t("feed"), click: () => send({ type: "feed" }) },
     { label: t("remove"), click: () => send({ type: "remove" }) },
@@ -93,6 +97,8 @@ function buildMenu() {
     ] },
     { label: t("tasks"), type: "checkbox", checked: tasksOn, click: (item) => { tasksOn = item.checked; send({ type: "tasks", on: tasksOn }); } },
     { label: t("breed"), type: "checkbox", checked: breedOn, click: (item) => { breedOn = item.checked; send({ type: "breed", on: breedOn }); } },
+    { label: t("birds"), type: "checkbox", checked: birdsOn, click: (item) => { birdsOn = item.checked; send({ type: "birds", on: birdsOn }); } },
+    { label: t("strays"), type: "checkbox", checked: strayOn, click: (item) => { strayOn = item.checked; send({ type: "strays", on: strayOn }); } },
     { label: t("seasons"), type: "checkbox", checked: seasonsOn, click: (item) => { seasonsOn = item.checked; send({ type: "seasons", on: seasonsOn }); } },
     { label: t("night"), submenu: ["auto", "day", "night"].map((m) => ({
       label: t({ auto: "auto", day: "day", night: "nightOn" }[m]), type: "radio", checked: nightMode === m,
@@ -130,7 +136,7 @@ ipcMain.on("ignore", (_e, ignore) => { if (win) win.setIgnoreMouseEvents(!!ignor
 ipcMain.on("laser", (_e, on) => { laser = !!on; if (tray) tray.setContextMenu(buildMenu()); });
 ipcMain.on("wand", (_e, on) => { wand = !!on; if (tray) tray.setContextMenu(buildMenu()); });
 ipcMain.on("settings", (_e, o) => {
-  if (o) { purrOn = o.purrOn !== false; meowOn = o.meowOn !== false; nightMode = o.nightMode || "auto"; if (T[o.lang]) lang = o.lang; tasksOn = o.tasksOn !== false; breedOn = o.breedOn !== false; seasonsOn = o.seasonsOn !== false; }
+  if (o) { purrOn = o.purrOn !== false; meowOn = o.meowOn !== false; nightMode = o.nightMode || "auto"; if (T[o.lang]) lang = o.lang; tasksOn = o.tasksOn !== false; breedOn = o.breedOn !== false; seasonsOn = o.seasonsOn !== false; birdsOn = o.birdsOn !== false; strayOn = o.strayOn !== false; }
   refreshMenu();
 });
 ipcMain.on("coats", (_e, list) => { coats = Array.isArray(list) ? list : []; if (tray) tray.setContextMenu(buildMenu()); });

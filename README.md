@@ -70,13 +70,18 @@ Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card
 - **Daily tasks** — three little jobs a day for each cat (pet it five times, play with the yarn, take its photo…). Finish them for love, growing-up points and a ⭐; keep it up for a streak
 - **Best friends and kittens** — cats who keep booping, racing and play-fighting become best friends. Two happy grown-up friends sometimes have a kitten that looks like one of them
 - **Stars unlock the wardrobe** — every cat starts with two hats, two collars and two outfits. Each task pays 1⭐ (+2⭐ for finishing all three), and stars unlock the rest of the designs, in all ten colours.
-- **Growing up day by day** — a new cat arrives at height 0.1 and grows 0.1 a day, fully grown after nine days. Months later it becomes a wise old cat with a grey muzzle who takes life a bit slower (and stays with you)
+- **Growing up day by day** — a new cat arrives at height 0.1 and grows a little every day, fully grown after about 45 days. At six months it becomes a wise old cat with a grey muzzle who takes life a bit slower (and stays with you)
 - **Memories** — the big moments (arriving, growing up, birthdays, kittens, tricks, days together, your photos) are kept as little polaroids in the card, drawn as the cat looked that day
 - **Family** — parents, brothers and sisters and kittens, in the Memories tab
 - **Tricks** — teach give-a-paw, spin, stand up, roll over and jump; a few good lessons and it knows them for good (and shows off now and then)
 - **It knows you** — comes to say hello when you get back, says good morning, curls up next to your mouse when you've been away, and dreams while it sleeps
 - **Seasons** — snow in winter, blossom in spring, fireflies on summer nights, falling leaves in autumn (can be switched off)
 - **Real meows** — record them right in the app with the microphone (🎤), or add sound files (🎙️ on the card), separately for kittens, grown-ups and old cats; record your own cat or use free CC0 sounds. Without them the built-in synthesised meow plays
+- **Home** — spend stars on a rug, a potted plant, a cushion, a two-level cat tree and an aquarium (Home tab on the card). Cats loaf on the rug, nibble the plant, claim the cushion, climb the tree and watch the fish; drag them anywhere
+- **Birds** — now and then birds fly past; the cats stop to watch, and if one lands for a peck, they stalk it (it always gets away)
+- **Stray cats** — a shy stray turns up once in a while and keeps its distance. Feed it three times and it moves in, ready for a name
+- **Laser hunt** — a 30-second mini game: lead the cats onto twinkling stars with the laser. Good scores and new records earn stars
+- **Carry things** — hold the yarn by the ball itself, and pick up the food bowl and put it anywhere (shake it and kibble spills)
 - Tasks and kittens are optional: switch them off from the tray menu (or the demo page)
 - **Saying goodbye** — remove a cat from its card (it asks first), or all of them at once from the tray
 - **Turkish and English** — the whole app, tray menu included. Switch at the bottom of the card or under **Language** in the tray

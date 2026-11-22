@@ -710,7 +710,7 @@
   const pick = (weights) => { let s = 0; for (const k in weights) s += weights[k]; let r = Math.random() * s; for (const k in weights) { r -= weights[k]; if (r <= 0) return k; } return Object.keys(weights)[0]; };
   const G = 1500;                                   // gravity, px/s²
 
-  const PERCH_OK = ["sit", "groom", "lickFlank", "washFace", "legUp", "sleep", "knead", "stretch", "yawn", "happy", "boop", "roll", "prep"];
+  const PERCH_OK = ["loaf", "slowBlink", "birdWatch", "meerkat", "sit", "groom", "lickFlank", "washFace", "legUp", "sleep", "knead", "stretch", "yawn", "happy", "boop", "roll", "prep"];
   class Cat {
     constructor(world, coat, x) {
       this.world = world; this.coat = coat; this.P = buildPalette(coat);
@@ -736,6 +736,7 @@
     set(state, dur = 3, extra = {}) {
       if (this.state === "inbox" && state !== "inbox" && this.box) { this.box.occupant = null; this.box = null; }
       if (this.bed && !["knead", "sleep", "stretch", "yawn"].includes(state)) { this.bed.occupant = null; this.bed = null; }
+      if (this.cushion && !["knead", "sleep", "stretch", "yawn", "loaf", "sit", "groom", "slowBlink", "happy"].includes(state)) { this.cushion.occupant = null; this.cushion = null; }
       if (this.perch && (state === "held" || state === "fall")) this.perch = null;
       if (this.perch && !PERCH_OK.includes(state) && state !== "leap") {
         // asked to do something that needs the floor: hop down first, then carry on from there
@@ -755,8 +756,19 @@
     }
 
     // ------------------------------------------------ deciding what to do next
+    // a shy stray: keeps its distance, comes for food, leaves after a while unless it learns to trust you
+    strayThink() {
+      const w = this.world, st = this.stray, m = SW * this.s;
+      if (st.leaving) return this.set("walk", 30, { target: st.side < 0 ? m : w.W - m });
+      if (w.bowl && w.bowl.food > 0.05 && this.fed !== w.bowl.refill && !w.bowl.held) return this.set("chase", 12, { goal: "bowl" });
+      const n = pick({ sit: 3, groom: 2, loaf: 1.5, walk: 1.2 });
+      if (n === "walk") this.set("walk", 10, { target: clamp(st.home + rnd(-120, 120), m, w.W - m) });
+      else if (n === "groom") this.set(pick({ groom: 3, washFace: 2, lickFlank: 1 }), rnd(3, 5));
+      else this.set(n, rnd(3, 8));
+    }
     think() {
       const w = this.world;
+      if (this.stray) return this.strayThink();
       if (w.laser) return this.set("chase", 30, { goal: "laser" });
       if (w.wand) return this.set("chase", 30, { goal: "feather" });
       if (this.perch) {                                // up on a shelf: lounge about, or hop down
@@ -796,6 +808,13 @@
       if (this.profile && window.CatLife && window.CatLife.isElder(this.profile)) {                              // wise old cats take it easy
         wt.sleep *= 1.6; wt.walk *= 0.7; wt.zoom = 0; wt.tailChase *= 0.3; wt.loaf *= 1.6; if (wt.pronk) wt.pronk *= 0.4; if (wt.fight) wt.fight *= 0.4;
       }
+      const F = (k) => w.furniture.find((f) => f.kind === k);
+      if (w.landedBird()) wt.bird = 7;
+      if (F("rug")) wt.rug = 1.1;
+      if (F("plant")) wt.plant = 0.35;
+      const cush = F("cushion"); if (cush && !cush.occupant) wt.cushion = w.isNight() ? 2.5 : 1;
+      if (F("aquarium")) wt.fish = 0.8;
+      if (F("tree") && shelf) wt.shelf = (wt.shelf || 0) + 0.8;
       // you've been away from the mouse for a while: come and curl up next to where you left it
       if (w.idleFor() > 480 && pt && pt.x > 0 && !wt.yarn && !wt.mouse && !wt.bowl) wt.you = 6;
       const known = this.profile && this.profile.tricks ? Object.keys(this.profile.tricks).filter((k) => this.profile.tricks[k] >= 5) : [];
@@ -820,6 +839,9 @@
       else if (n === "meerkat") this.set("meerkat", rnd(2.2, 3.6));
       else if (n === "tailChase") this.set("tailChase", rnd(2.2, 3.8), { spinT: 0 });
       else if (n === "pronk") this.pronk(rnd(2, 4) | 0);
+      else if (n === "rug") { this.rugOff = rnd(-18, 18) * w.toyScale; this.set("chase", 14, { goal: "rug" }); }
+      else if (n === "plant" || n === "fish" || n === "bird") this.set("chase", n === "bird" ? 10 : 14, { goal: n });
+      else if (n === "cushion") { cush.claimed = this; this.set("chase", 14, { goal: "cushion" }); }
       else if (n === "you") { this.napOff = rnd(-70, 70) * this.s / 3; this.set("chase", 20, { goal: "you" }); }
       else if (n === "showOff") this.doTrick(known[Math.floor(Math.random() * known.length)]);
       else if (n === "blink") { this.facing = Math.sign(pt.x - this.x) || this.facing; this.set("slowBlink", 3.4); }
@@ -835,11 +857,16 @@
         case "mouse": return w.mouse && w.mouse.running() ? w.mouse.x : null;
         case "laser": return w.laser && w.pointer.seen ? w.pointer.x : null;
         case "bowl": {
-          if (!w.bowl || w.bowl.food <= 0.02) return null;
+          if (!w.bowl || w.bowl.food <= 0.02 || w.bowl.held || w.bowl.y < w.floor - 2) return w.bowl && w.bowl.food > 0.02 ? this.x : null;
           const side = this.x < w.bowl.x ? -1 : 1; return w.bowl.x + side * 15 * s;
         }
         case "box": return this.boxRef && w.boxes.includes(this.boxRef) && !this.boxRef.occupant ? this.boxRef.x : null;
         case "feather": return w.wand && w.pointer.seen ? w.wand.x : null;
+        case "bird": { const b = w.landedBird(); return b ? b.x - Math.sign(b.x - this.x || 1) * 40 * this.s : null; }
+        case "rug": { const f = w.furniture.find((f) => f.kind === "rug"); return f ? clamp(f.x + (this.rugOff || 0), 20, w.W - 20) : null; }
+        case "plant": { const f = w.furniture.find((f) => f.kind === "plant"); return f ? f.x - (this.x < f.x ? 1 : -1) * 12 * w.toyScale : null; }
+        case "cushion": { const f = w.furniture.find((f) => f.kind === "cushion"); return f && (!f.occupant || f.occupant === this) ? f.x : null; }
+        case "fish": { const f = w.furniture.find((f) => f.kind === "aquarium"); return f ? f.x - (this.x < f.x ? 1 : -1) * (16 * w.toyScale + 12 * this.s) : null; }
         case "you": return w.pointer.x > 0 ? clamp(w.pointer.x + (this.napOff || 0), 20, w.W - 20) : null;
         case "butterfly": return w.butterfly ? w.butterfly.x : null;
         case "catnip": return w.catnip && !w.catnip.held ? w.catnip.x : null;
@@ -863,6 +890,7 @@
         case "feather": return w.wand ? { x: w.wand.x, y: w.wand.cy } : null;
         case "butterfly": return w.butterfly ? { x: w.butterfly.x, y: w.butterfly.y } : null;
         case "mouse": return w.mouse ? { x: w.mouse.x + w.mouse.dir * w.mouse.speed * 0.4, y: w.mouse.y } : null;
+        case "bird": { const b = w.landedBird(); return b ? { x: b.x, y: b.y } : null; }
         default: return w.yarn ? { x: w.yarn.x, y: w.yarn.y } : null;
       }
     }
@@ -879,6 +907,14 @@
       const w = this.world, s = this.s, floor = w.floor;
       this.t += dt; this.stateT += dt; this.boopCool -= dt; this.fightCool -= dt; this.zoomCool = (this.zoomCool || 0) - dt;
       if (this.profile && window.CatLife) window.CatLife.tick(this, dt);
+      if (this.stray) {
+        const st = this.stray; st.life -= dt;
+        if (st.life <= 0 && !st.leaving && !["eat", "held", "fall"].includes(this.state)) { st.leaving = true; this.set("walk", 30, { target: st.side < 0 ? SW * s / 2 : w.W - SW * s / 2 }); }
+        const p = w.pointer;
+        if (st.trust < 2 && p.seen && Math.abs(p.x - this.x) < 80 && Math.abs(p.y - (this.y - 15 * s)) < 90 && !["walk", "eat", "held", "fall", "chase"].includes(this.state)) {
+          this.set("walk", 3, { target: clamp(this.x + Math.sign(this.x - p.x || 1) * 160, SW * s / 2, w.W - SW * s / 2) });   // too close! backs off
+        }
+      }
       this.blinkT -= dt; if (this.blinkT <= 0) { this.blink = !this.blink; this.blinkT = this.blink ? 0.14 : rnd(2, 6); }
       if ((w.laser || w.wand) && !["chase", "leap", "stand", "held", "fall", "hunt"].includes(this.state)) this.think();
       if (this.bed && w.bed !== this.bed) this.bed = null;
@@ -886,6 +922,7 @@
       switch (this.state) {
         case "walk": {
           const dx = this.target - this.x;
+          if (this.stray && this.stray.leaving && Math.abs(dx) < 6) { w.removeCat(this); return; }
           if (Math.abs(dx) < 4) { this.think(); break; }
           this.facing = Math.sign(dx); this.x += this.facing * 34 * s * dt; this.phase = (this.phase + dt * 1.4) % 1;
           this.tryBoop();
@@ -957,10 +994,11 @@
         case "eat": {
           const b = w.bowl;
           if (!b) { this.set("sit", 2); break; }
+          if (b.held || b.y < floor - 2 || Math.abs(b.x - this.x) > 26 * s) { this.set("chase", 10, { goal: "bowl" }); break; }   // the bowl moved: follow it
           this.facing = Math.sign(b.x - this.x) || this.facing;
           b.food = Math.max(0, b.food - 0.045 * dt);
           if (Math.random() < dt * 1.2) w.burst(b.x, floor - 6 * s, "crumb", "#8a5a2b", 1);
-          if (this.stateT > this.dur || b.food <= 0) { this.fed = b.refill; this.set("groom", rnd(2.5, 4)); w.burst(this.x, this.y - 30 * s, "heart", "#e2557a", 1); }
+          if (this.stateT > this.dur || b.food <= 0) { if (this.stray && this.fed !== b.refill) w.strayFed(this); this.fed = b.refill; this.set("groom", rnd(2.5, 4)); w.burst(this.x, this.y - 30 * s, "heart", "#e2557a", 1); }
           break;
         }
         case "inbox": {
@@ -1048,6 +1086,17 @@
           if (this.stateT > this.dur) { this.set("stretch", 1.4); if (Math.random() < 0.4) w.meow(this); }
           break;
         }
+        case "nibble": {
+          if (Math.random() < dt * 2) w.burst(this.x + this.facing * 14 * s, this.y - 8 * s, "spark", "#62a85e", 1);
+          if (this.stateT > this.dur) this.set("sit", rnd(1.5, 3));
+          break;
+        }
+        case "fishWatch": case "birdWatch": {
+          const f = this.state === "fishWatch" && w.furniture.find((f) => f.kind === "aquarium");
+          if (this.state === "fishWatch" && !f) { this.set("sit", 1); break; }
+          if (this.stateT > this.dur) { const bw = this.state === "birdWatch"; this.set("sit", rnd(1.5, 3)); if (bw && Math.random() < 0.3) this.set("meerkat", 1.5); }
+          break;
+        }
         case "tailChase": {
           this.spinT -= dt;
           if (this.spinT <= 0) { this.facing = -this.facing; this.spinT = rnd(0.16, 0.28); this.x += this.facing * 3 * s; }
@@ -1077,7 +1126,9 @@
       const m = SW * s / 2; this.x = clamp(this.x, m, w.W - m);
       if (this.perch && !w.shelves.includes(this.perch)) { this.perch = null; this.set("fall", 5); this.vx = 0; this.vy = 0; }
       this.partyT = (this.partyT || 0) - dt;
+      if (this.cushion && !w.furniture.includes(this.cushion)) this.cushion = null;
       if (this.bed) { this.x = this.bed.x; this.y = floor - 4 * w.toyScale; }
+      else if (this.cushion) { this.x = this.cushion.x; this.y = floor - 5 * w.toyScale; }
       else if (this.perch && !["held", "fall", "leap"].includes(this.state)) { this.x = this.perch.x + this.perchDx; this.y = this.perch.top; }
       else if (!["held", "fall", "leap", "inbox", "pronk"].includes(this.state) && !(this.state === "spar" && this.vy)) this.y = floor;
       this.watchPointer(dt);
@@ -1088,16 +1139,18 @@
       const tx = this.goalX();
       if (tx == null) { if (this.boxRef && this.boxRef.claimed === this) this.boxRef.claimed = null; this.set("sit", 1.5); return; }
       const dx = tx - this.x, g = this.goal;
-      const reach = { yarn: 16, dangle: 9, mouse: 46, laser: 22, bowl: 3, box: 4, feather: 9, butterfly: 10, catnip: 6, bed: 4, post: 3, shelf: 4 }[g] * s;
+      const reach = { yarn: 16, dangle: 9, mouse: 46, laser: 22, bowl: 3, box: 4, feather: 9, butterfly: 10, catnip: 6, bed: 4, post: 3, shelf: 4,
+        you: 6, rug: 5, plant: 4, cushion: 3, fish: 4, bird: 44 }[g] * s;
       if (Math.abs(dx) > reach) {
         this.facing = Math.sign(dx);
-        const sp = ["bowl", "box", "bed", "post", "shelf"].includes(g) ? 60 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
+        const sp = ["bowl", "box", "bed", "post", "shelf", "you", "rug", "plant", "cushion", "fish"].includes(g) ? 60 : g === "bird" ? 70 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
         this.x += this.facing * Math.min(sp * s * dt, Math.abs(dx)); this.phase = (this.phase + dt * (sp > 120 ? 3.4 : sp > 70 ? 2.6 : 1.8)) % 1;
       } else {
         if (g === "yarn") {
           const y = w.yarn;
           if (y.y > floor - 30 * s) { if (Math.abs(y.vx) < 220 && Math.random() < 0.55) this.set("hunt", rnd(0.5, 1.1)); else this.set("bat", 0.7, { swatted: false }); }
         } else if (g === "mouse") this.set("hunt", rnd(0.25, 0.6));
+        else if (g === "bird") { this.set("hunt", rnd(0.8, 1.6)); }
         else if (["dangle", "laser", "feather", "butterfly"].includes(g)) {
           const am = this.aim(), h = floor - am.y;
           if ((g === "laser" || (g === "butterfly" && w.butterfly.resting)) && h < 34 * s) this.set("hunt", rnd(0.3, 0.8));
@@ -1112,6 +1165,13 @@
         }
         else if (g === "shelf") { this.facing = Math.sign(this.shelfRef.x - this.x) || this.facing; this.set("prep", rnd(0.4, 0.8)); }
         else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); this.care("scratch"); }
+        else if (g === "rug") this.set(pick({ loaf: 3, sploot: 2, roll: 2, knead: 1.2, groom: 1 }), rnd(4, 10));
+        else if (g === "plant") { const f = w.furniture.find((f) => f.kind === "plant"); this.facing = Math.sign(f.x - this.x) || this.facing; this.set("nibble", rnd(1.5, 2.6)); }
+        else if (g === "fish") { const f = w.furniture.find((f) => f.kind === "aquarium"); this.facing = Math.sign(f.x - this.x) || this.facing; this.set("fishWatch", rnd(4, 8)); }
+        else if (g === "cushion") {
+          const f = w.furniture.find((f) => f.kind === "cushion");
+          if (f && !f.occupant) { f.occupant = this; f.claimed = null; this.cushion = f; this.x = f.x; this.set(Math.random() < 0.5 ? "loaf" : "knead", rnd(4, 9)); } else this.think();
+        }
         else if (g === "you") { this.set("knead", rnd(1.5, 2.5)); this.care("napNear"); }
         else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7) * ((this.mods && this.mods._eat) || 1)); this.care("fed"); }
         else if (g === "box") {
@@ -1136,6 +1196,7 @@
           if (Math.random() < 0.5) setTimeout(() => w.meow(this), 120);
         }
       }
+      const bd = w.landedBird(); if (bd && Math.abs(bd.x - this.x) < 50 * s) { bd.scare(); this.care("play", { toyKey: "bird" }); }
       const m = w.mouse;
       if (m && !m.held && m.airT <= 0 && Math.abs(m.x - (this.x + f * 8 * s)) < 22 * s) { m.kick(f); w.burst(m.x, m.y - 6 * s, "spark", "#f7e48c", 3); this.care("play", { toyKey: "mouse" }); }
     }
@@ -1276,6 +1337,9 @@
         case "spar": return (this.vy || this.y < this.world.floor) ? "leap" : this.act === "swipe" ? "swipe" : "spar";
         case "flee": case "pursue": return "run";
         case "sniff": return "eat";
+        case "nibble": return "eat";
+        case "fishWatch": return Math.sin(this.stateT * 2.3) > 0.72 ? "bat" : "sit";
+        case "birdWatch": return "meerkat";
         case "nip": return "roll";
         case "happy": return "sit";
         default: return this.state in POSES ? this.state : "sit";
@@ -1305,7 +1369,7 @@
       if (this.facing < 0) ctx.scale(-1, 1);
       ctx.drawImage(this.canvas, Math.round(-SW * s / 2), 0, SW * s, SH * s);
       ctx.restore();
-      if (this.profile && this.profile.showName && w.showNames !== false) this.drawTag(ctx, R, dy);
+      if ((this.profile && this.profile.showName || this.stray) && w.showNames !== false) this.drawTag(ctx, R, dy);
       this.drawDream(ctx);
     }
 
@@ -1316,7 +1380,8 @@
       find: for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) if (R.m[y * SW + x]) { top = y; break find; }
       const target = this.y - GROUND * s + dy + top * s - 4;
       this.tagY = this.tagY == null || Math.abs(this.tagY - target) > 80 ? target : this.tagY + (target - this.tagY) * 0.18;
-      const name = this.profile.name, fs = Math.round(clamp(8 + w.scale * 2.4, 11, 20)), love = this.profile.love >= 80;
+      const L = window.CatLife, name = this.profile ? this.profile.name : L ? L.t("strayTag")(this.stray.trust) : "?";
+      const fs = Math.round(clamp(8 + w.scale * 2.4, 11, 20)), love = !!this.profile && this.profile.love >= 80;
       ctx.save();
       ctx.font = `700 ${fs}px "Pixelify Sans", ui-monospace, monospace`;
       const hp = Math.max(1, Math.round(fs / 9)), hw = love ? 8 * hp + 4 : 0, padX = Math.round(fs * 0.55), h = Math.round(fs * 1.5);
@@ -1337,6 +1402,10 @@
 
     pet() {
       const w = this.world, s = this.s;
+      if (this.stray && this.stray.trust < 2) {            // not ready for that yet
+        w.burst(this.x, this.y - 40 * s, "what", "#8a6b55", 1);
+        return this.set("walk", 3, { target: clamp(this.x + (Math.random() < 0.5 ? -1 : 1) * 160, SW * s / 2, w.W - SW * s / 2) });
+      }
       this.care("pet"); if (Math.random() < 0.35) setTimeout(() => w.meow(this), 300);
       if (this.state === "inbox") { this.peekTo = 0; this.peekT = 2.5; w.burst(this.x, this.y - 40 * s, "heart", "#e2557a", 2); w.purr(); return; }
       if (this.state === "sleep") { this.set("stretch", 1.4); w.burst(this.x, this.y - 30 * s, "note", "#b08d57", 1); return; }
@@ -1355,21 +1424,20 @@
     }
     get r() { return 7 * this.world.toyScale; }
     hit(px, py) { return Math.hypot(px - this.x, py - this.y) < Math.max(22, this.r * 2.2); }
-    grab() { this.held = true; this.len = 46 * this.world.toyScale; this.cats("dangle"); }
+    grab() { this.held = true; this.cats("dangle"); }
     release(v = { x: 0, y: 0 }) { this.held = false; this.vx = clamp(v.x * 0.9 + this.vx * 0.35, -2200, 2200); this.vy = clamp(v.y * 0.9 + this.vy * 0.35, -2200, 2200); this.spin = this.vx / 60; this.cats("yarn"); }
     click() { this.vy = -420; this.vx = rnd(-300, 300); this.cats("yarn"); }
     cats(goal) { this.world.cats.forEach((c) => { if (!["sleep", "held", "fall", "inbox", "eat"].includes(c.state)) c.set("chase", 9, { goal }); }); }
     update(dt) {
       const w = this.world, floor = w.floor - this.r;
-      this.vy += 1800 * dt; this.x += this.vx * dt; this.y += this.vy * dt;
-      if (this.held) {                     // pendulum on a string from the pointer
-        const ax = w.pointer.x, ay = w.pointer.y, dx = this.x - ax, dy = this.y - ay, d = Math.hypot(dx, dy) || 1;
-        if (d > this.len) {
-          const nx = dx / d, ny = dy / d; this.x = ax + nx * this.len; this.y = ay + ny * this.len;
-          const vr = this.vx * nx + this.vy * ny; if (vr > 0) { this.vx -= vr * nx; this.vy -= vr * ny; }
-        }
-        this.vx *= Math.pow(0.55, dt); this.vy *= Math.pow(0.55, dt);
+      if (this.held) {                     // held by the ball itself, right under your pointer; the loose end swings below
+        const nx = clamp(w.pointer.x, this.r, w.W - this.r), ny = Math.min(w.pointer.y, floor), k = 1 / Math.max(dt, 1 / 120);
+        this.vx = (nx - this.x) * k; this.vy = (ny - this.y) * k; this.x = nx; this.y = ny;
+        this.rot += this.vx * dt / this.r * 0.5; this.swing = (this.swing || 0) + (this.vx * 0.0015 - (this.swing || 0)) * Math.min(1, dt * 6);
+        this.trail.push([this.x, this.y + this.r * 0.6]); if (this.trail.length > 26) this.trail.shift();
+        return;
       }
+      this.vy += 1800 * dt; this.x += this.vx * dt; this.y += this.vy * dt;
       if (this.y > floor) { this.y = floor; if (Math.abs(this.vy) > 90) this.vy *= -0.45; else this.vy = 0; this.vx *= Math.pow(0.18, dt); }
       if (this.x < this.r) { this.x = this.r; this.vx = Math.abs(this.vx) * 0.6; }
       if (this.x > w.W - this.r) { this.x = w.W - this.r; this.vx = -Math.abs(this.vx) * 0.6; }
@@ -1393,7 +1461,10 @@
       g.putImageData(img, 0, 0);
       ctx.save(); ctx.strokeStyle = this.color; ctx.lineWidth = Math.max(2, s * 0.9); ctx.lineCap = "round"; ctx.globalAlpha = 0.9;
       ctx.beginPath();
-      if (this.held) { ctx.moveTo(w.pointer.x, w.pointer.y); ctx.quadraticCurveTo((w.pointer.x + this.x) / 2 + this.vx * 0.02, (w.pointer.y + this.y) / 2, this.x, this.y - this.r * 0.8); }
+      if (this.held) {                     // a loose end of yarn dangling from the ball
+        const t = performance.now() / 1000, sw = -(this.swing || 0) * 40 * s + Math.sin(t * 3) * 2 * s;
+        ctx.moveTo(this.x, this.y + this.r * 0.7); ctx.quadraticCurveTo(this.x + sw * 0.4, this.y + 16 * s, this.x + sw, this.y + 30 * s);
+      }
       else this.trail.forEach(([x, y], i) => { const wob = Math.sin(i * 0.9) * s; i ? ctx.lineTo(x + wob, Math.min(y + wob, w.floor)) : ctx.moveTo(x, y); });
       ctx.stroke(); ctx.restore();
       ctx.save(); ctx.globalAlpha = 0.22; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, this.r * 1.1, 2 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
@@ -1479,18 +1550,29 @@
 
   class Bowl {
     constructor(world, x) {
-      this.world = world; this.x = x; this.food = 1; this.refill = 1; this.held = false;
+      this.world = world; this.x = x; this.y = world.floor; this.vy = 0; this.food = 1; this.refill = 1; this.held = false;
       this.sp = new Sprite(20, 9);
       this.pal = { 1: { c: [72, 120, 170], lit: true }, 2: { c: [140, 88, 44], lit: true }, 3: { c: [240, 236, 228] }, 4: { c: [104, 64, 30] } };
     }
-    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < 12 * s && py > this.world.floor - 12 * s && py < this.world.floor + 2; }
+    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < 12 * s && py > this.y - 12 * s && py < this.y + 2; }
     grab() { this.held = true; }
-    release() { this.held = false; }
+    release() { this.held = false; this.vy = 0; }
     click() {
       this.food = 1; this.refill++; this.world.burst(this.x, this.world.floor - 14 * this.world.toyScale, "note", "#b08d57", 2);
       this.world.cats.forEach((c, i) => { if (!["held", "fall", "inbox"].includes(c.state)) { c.set("chase", 10, { goal: "bowl" }); if (i < 2) setTimeout(() => this.world.meow(c), 150 + i * 450 + Math.random() * 300); } });
     }
-    update(dt) { const w = this.world; if (this.held) this.x += (clamp(w.pointer.x, 12 * w.toyScale, w.W - 12 * w.toyScale) - this.x) * Math.min(1, dt * 14); }
+    // pick it up and carry it anywhere; let go and it drops back to the floor (spilling a little if you shake it)
+    update(dt) {
+      const w = this.world, s = w.toyScale;
+      if (this.held) {
+        const nx = clamp(w.pointer.x, 12 * s, w.W - 12 * s), ny = clamp(w.pointer.y + 6 * s, 40, w.floor), vx = (nx - this.x) / Math.max(dt, 1 / 120);
+        this.x = nx; this.y = ny;
+        if (Math.abs(vx) > 700 && this.food > 0.05 && Math.random() < dt * 8) { this.food -= 0.02; w.burst(this.x, this.y - 6 * s, "crumb", "#8a5a2b", 1); }
+        return;
+      }
+      if (this.y < w.floor) { this.vy += G * dt; this.y += this.vy * dt; if (this.y >= w.floor) { this.y = w.floor; this.vy = 0; w.burst(this.x, w.floor, "dust", "rgba(140,120,100,.6)", 2); } }
+      else this.y = w.floor;
+    }
     render(ctx) {
       const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
       if (this.food > 0.02) {                                         // the kibble pile
@@ -1501,8 +1583,8 @@
       for (let y = 5; y <= 8; y++) R.rect(1 + (y - 4), y, 18 - 2 * (y - 4), 1, 1);
       R.rect(4, 6, 12, 1, 3);                                          // painted band
       const img = this.sp.paint(this.pal, [40, 52, 70]);
-      ctx.save(); ctx.globalAlpha = 0.2; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, 10 * s, 1.6 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round(this.x - 10 * s), Math.round(w.floor - 9 * s), 20 * s, 9 * s); ctx.restore();
+      ctx.save(); ctx.globalAlpha = 0.2 * (1 - Math.min(0.8, (w.floor - this.y) / 400)); ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, 10 * s, 1.6 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round(this.x - 10 * s), Math.round(this.y - 9 * s), 20 * s, 9 * s); ctx.restore();
     }
   }
 
@@ -1714,6 +1796,139 @@
   }
 
   // A little wall shelf you can put anywhere on screen. Cats leap up onto it and lounge about.
+  // ---------------------------------------------------------------- birds: now and then one flies past; some land for a peck
+  class Bird {
+    constructor(world, dir, y, land) {
+      this.world = world; this.dir = dir; const ts = world.toyScale;
+      this.x = dir > 0 ? -20 : world.W + 20; this.base = y; this.y = y; this.vx = dir * rnd(110, 160) * ts / 3; this.vy = 0;
+      this.t = rnd(0, 6); this.state = "fly"; this.landX = land ? rnd(world.W * 0.15, world.W * 0.85) : null; this.peckT = 0; this.seen = new Set();
+      this.col = [[124, 104, 88], [96, 112, 140], [150, 96, 72], [88, 88, 96]][Math.floor(Math.random() * 4)];
+      this.sp = new Sprite(14, 11);
+    }
+    scare() {
+      if (this.state === "away") return;
+      this.state = "away"; this.vy = -rnd(220, 300); this.dir = Math.random() < 0.5 ? -1 : 1; this.vx = this.dir * rnd(170, 230) * this.world.toyScale / 3;
+      this.world.burst(this.x, this.y - 6, "spark", "#c9b8a4", 2);
+    }
+    update(dt) {
+      const w = this.world, ts = w.toyScale; this.t += dt;
+      if (this.state === "fly") {
+        this.x += this.vx * dt; this.y = this.base + Math.sin(this.t * 2.6) * 7 * ts / 3;
+        if (this.landX != null && Math.abs(this.x - this.landX) < 30) this.state = "land";
+      } else if (this.state === "land") {
+        this.x += this.vx * 0.4 * dt; this.y += Math.max(90, (w.floor - this.y) * 1.6) * dt;
+        if (this.y >= w.floor) { this.y = w.floor; this.state = "peck"; this.peckT = rnd(6, 12); }
+      } else if (this.state === "peck") {
+        this.peckT -= dt;
+        if (Math.random() < dt * 0.8) { this.dir = Math.random() < 0.5 ? -1 : 1; this.x += this.dir * 6 * ts; }   // little hops
+        const p = w.pointer, near = w.cats.some((c) => Math.abs(c.x - this.x) < (["hunt", "leap", "chase"].includes(c.state) && c.goal === "bird" ? 22 : 60) * c.s && !["sleep", "loaf"].includes(c.state));
+        if (this.peckT <= 0 || near || (p.seen && Math.hypot(p.x - this.x, p.y - this.y) < 50)) this.scare();
+      } else { this.x += this.vx * dt; this.vy -= 60 * dt; this.y += this.vy * dt; }
+      // cats notice it going over
+      if (this.state !== "peck") for (const c of w.cats) {
+        if (this.seen.has(c) || Math.abs(c.x - this.x) > 240) continue; this.seen.add(c);
+        if (["sit", "walk", "groom", "loaf", "sploot", "roll", "lickFlank", "washFace"].includes(c.state) && Math.random() < 0.7) {
+          c.facing = Math.sign(this.x + this.vx - c.x) || c.facing; c.set("birdWatch", rnd(2, 3.5));
+          if (Math.random() < 0.4) w.meow(c);
+        }
+      }
+    }
+    gone() { return this.x < -60 || this.x > this.world.W + 60 || this.y < -60; }
+    render(ctx) {
+      const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
+      const flap = this.state === "peck" ? 0 : Math.sin(this.t * 22) > 0 ? 1 : 2, peck = this.state === "peck" && Math.sin(this.t * 7) > 0.6;
+      R.tri(1, 5, 4, 5, 0, 8, 1);                                         // tail
+      R.ellipse(6.5, 6.5, 4, 2.6, 1); R.ellipse(6.8, 7.6, 2.8, 1.2, 2);   // body, belly
+      const hy = peck ? 7 : 4.2; R.circle(10.2, hy, 2, 1); R.put(12.4, hy, 3); R.put(10.6, hy - 0.6, 4);   // head, beak, eye
+      if (flap === 1) R.tri(4, 5, 8, 5, 5, 0, 5); else if (flap === 2) R.tri(4, 6, 8, 6, 6, 10.5, 5); else R.ellipse(6, 5.6, 2.6, 1.2, 5);
+      if (this.state === "peck") { R.put(6, 10, 3); R.put(8, 10, 3); }
+      const c = this.col, img = this.sp.paint({ 1: { c, lit: true }, 2: { c: [222, 204, 176] }, 3: { c: [232, 170, 64] }, 4: { c: [20, 18, 22] }, 5: { c: darken(c, 0.25) } }, darken(c, 0.6));
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(Math.round(this.x), Math.round(this.y - 10 * s)); if (this.dir < 0) ctx.scale(-1, 1);
+      ctx.drawImage(img, -7 * s, 0, 14 * s, 11 * s); ctx.restore();
+    }
+  }
+
+  // ---------------------------------------------------------------- furniture you buy with stars
+  // rug, potted plant, cushion, cat tree and a little aquarium; drag them anywhere along the floor
+  const FURN = {
+    rug:     { w: 60, h: 6, price: 6 },
+    plant:   { w: 18, h: 30, price: 4 },
+    cushion: { w: 30, h: 9, price: 5 },
+    tree:    { w: 44, h: 80, price: 10 },
+    aquarium:{ w: 30, h: 26, price: 8 },
+  };
+  function paintFurniture(kind, R) {
+    R.clear();
+    if (kind === "rug") { R.ellipse(30, 3, 29.5, 2.8, 1); R.ellipse(30, 3, 23, 1.9, 2); R.ellipse(30, 3, 14, 1.1, 3); for (let x = 9; x < 52; x += 6) R.put(x, 3, 2); }
+    else if (kind === "plant") {
+      R.tri(9, 1, 6, 13, 12, 13, 3); R.tri(2, 7, 9, 17, 6, 19, 4); R.tri(16, 6, 9, 17, 12, 19, 4); R.tri(4, 3, 9, 15, 7, 17, 3); R.tri(14, 2, 9, 16, 11, 17, 3);
+      R.rect(2, 19, 14, 2, 2); for (let y = 21; y < 30; y++) R.rect(3 + Math.floor((y - 21) / 4), y, 12 - 2 * Math.floor((y - 21) / 4), 1, 1);
+    }
+    else if (kind === "cushion") { R.ellipse(15, 5, 14.5, 3.8, 1); R.ellipse(15, 4.2, 10, 1.6, 2); for (const x of [7, 15, 23]) R.put(x, 5, 3); R.put(0, 7, 3); R.put(29, 7, 3); }
+    else if (kind === "tree") {
+      R.rect(4, 75, 36, 5, 1);                                                      // carpeted base
+      for (let y = 18; y < 75; y++) R.rect(19, y, 6, 1, y % 3 ? 2 : 3);             // sisal-rope trunk
+      R.rect(3, 40, 28, 5, 1); R.rect(13, 14, 30, 5, 1);                            // two platforms
+      for (let y = 19; y < 27; y++) R.put(39, y, 4); R.circle(39, 28, 2.2, 5);      // a pom-pom on a string
+    }
+    else if (kind === "aquarium") {
+      R.rect(0, 2, 30, 2, 4); R.rect(1, 4, 28, 16, 1); R.rect(2, 6, 26, 12, 2); R.rect(2, 17, 26, 3, 3); R.rect(0, 20, 30, 6, 4);
+      for (const [x, h] of [[6, 6], [9, 4], [22, 7]]) for (let y = 17 - h; y < 17; y++) R.put(x + (y % 2), y, 5);
+    }
+  }
+  const FURN_PAL = {
+    rug: { 1: { c: [178, 70, 78], lit: true }, 2: { c: [236, 200, 128] }, 3: { c: [96, 128, 176] } },
+    plant: { 1: { c: [198, 106, 66], lit: true }, 2: { c: [168, 86, 52], lit: true }, 3: { c: [98, 172, 92], lit: true }, 4: { c: [62, 128, 66], lit: true } },
+    cushion: { 1: { c: [128, 104, 206], lit: true }, 2: { c: [160, 138, 228] }, 3: { c: [236, 196, 92] } },
+    tree: { 1: { c: [218, 200, 176], lit: true }, 2: { c: [196, 166, 116] }, 3: { c: [166, 136, 92] }, 4: { c: [90, 70, 60] }, 5: { c: [255, 120, 160], lit: true } },
+    aquarium: { 1: { c: [198, 228, 240], lit: true }, 2: { c: [110, 176, 222] }, 3: { c: [232, 206, 146] }, 4: { c: [70, 78, 98], lit: true }, 5: { c: [70, 150, 90] } },
+  };
+  const FURN_OUTLINE = { rug: [96, 40, 44], plant: [70, 50, 34], cushion: [70, 50, 110], tree: [96, 74, 52], aquarium: [44, 52, 70] };
+  function furnitureThumb(kind, ctx) {
+    const f = FURN[kind], sp = new Sprite(f.w, f.h); paintFurniture(kind, sp.R);
+    const img = sp.paint(FURN_PAL[kind], FURN_OUTLINE[kind]), W = ctx.canvas.width, H = ctx.canvas.height, k = Math.min((W - 4) / f.w, (H - 4) / f.h);
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round((W - f.w * k) / 2), Math.round(H - f.h * k - 2), f.w * k, f.h * k);
+  }
+  // a platform on the cat tree: cats perch on it just like on a wall shelf
+  class Platform {
+    constructor(tree, dx, dy, hw) { this.tree = tree; this.dx = dx; this.dy = dy; this.w2 = hw; this.isPlatform = true; this.world = tree.world; }
+    get x() { return this.tree.x + this.dx * this.world.toyScale; }
+    get top() { return this.tree.y - this.dy * this.world.toyScale; }
+    get hw() { return this.w2 * this.world.toyScale; }
+    cap() { return 1; }
+    cats() { return this.world.cats.filter((c) => c.perch === this); }
+    hit() { return false; }
+    update() {} render() {}
+  }
+  class Furniture {
+    constructor(world, kind, x) {
+      this.world = world; this.kind = kind; this.x = x; this.y = world.floor; this.held = false; this.occupant = null; this.f = FURN[kind];
+      this.sp = new Sprite(this.f.w, this.f.h); this.dirty = true; this.t = 0;
+      if (kind === "tree") this.platforms = [new Platform(this, -5, 35, 13), new Platform(this, 6, 61, 14)];
+      if (kind === "aquarium") this.fish = [{ x: 8, y: 9, d: 1, c: "#ff8a3d" }, { x: 20, y: 13, d: -1, c: "#ffd34d" }];
+    }
+    hit(px, py) { const s = this.world.toyScale, hw = this.f.w * s / 2; return Math.abs(px - this.x) < hw && py > this.y - this.f.h * s && py < this.y + 2; }
+    grab() { this.held = true; } release() { this.held = false; } click() { this.world.burst(this.x, this.y - this.f.h * this.world.toyScale, "note", "#b08d57", 1); }
+    update(dt) {
+      const w = this.world, s = w.toyScale; this.t += dt; this.y = w.floor;
+      if (this.held) this.x += (clamp(w.pointer.x, this.f.w * s / 2, w.W - this.f.w * s / 2) - this.x) * Math.min(1, dt * 14);
+      if (this.fish) for (const f of this.fish) { f.x += f.d * dt * 4; if (f.x < 4 || f.x > 25) f.d *= -1; f.y += Math.sin(this.t * 2 + f.x) * dt * 1.5; f.y = clamp(f.y, 7, 15); }
+    }
+    render(ctx) {
+      const w = this.world, s = w.toyScale, f = this.f;
+      if (this.dirty) { paintFurniture(this.kind, this.sp.R); this.img = this.sp.paint(FURN_PAL[this.kind], FURN_OUTLINE[this.kind]); this.dirty = false; }
+      const x0 = Math.round(this.x - f.w * s / 2), y0 = Math.round(this.y - f.h * s + (this.kind === "rug" ? 2 * s : 0));
+      if (this.kind !== "rug") { ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, f.w * s * 0.45, 1.8 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(this.img, x0, y0, f.w * s, f.h * s);
+      if (this.fish) for (const fi of this.fish) {                    // two little fish swimming about
+        ctx.fillStyle = fi.c; const fx = x0 + Math.round(fi.x) * s, fy = y0 + Math.round(fi.y) * s;
+        ctx.fillRect(fx, fy, 3 * s, 2 * s); ctx.fillRect(fx + (fi.d > 0 ? -s : 3 * s), fy - (Math.sin(this.t * 9) > 0 ? 0 : s / 2), s, 2 * s);
+        ctx.fillStyle = "#222"; ctx.fillRect(fx + (fi.d > 0 ? 2 * s : 0), fy, s, s);
+      }
+      ctx.restore();
+    }
+  }
+
   class Shelf {
     constructor(world, x, top) {
       this.world = world; this.x = x; this.top = top; this.held = false;
@@ -1792,11 +2007,86 @@
       this.scale = opts.scale || 3; this.toyScale = opts.toyScale || this.scale; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
       this.wand = null; this.butterfly = null; this.catnip = null; this.catnipId = 0; this.bed = null; this.post = null;
       this.shelves = []; this.cakes = []; this.purrOn = opts.purrOn ?? true; this.meowOn = opts.meowOn ?? true; this.nightMode = opts.nightMode || "auto"; this.seasonsOn = opts.seasonsOn ?? true;
+      this.birds = []; this.birdT = rnd(40, 120); this.birdsOn = opts.birdsOn ?? true; this.furniture = [];
+      this.strayOn = opts.strayOn ?? true; this.strayT = rnd(600, 1500); this.game = null;
       this.pointer = { x: -1e4, y: -1e4, seen: false }; this.drag = null; this.onHover = opts.onHover || (() => {});
       this.floorInset = opts.floorInset ?? 6; this.audio = null; this.last = performance.now();
       this.resize(); addEventListener("resize", () => this.resize());
       this.bindInput();
       requestAnimationFrame((t) => this.frame(t));
+    }
+    stray() { return this.cats.find((c) => c.stray); }
+    addStray() {
+      if (this.stray()) return this.stray();
+      const side = Math.random() < 0.5 ? -1 : 1, coat = COAT_KEYS[Math.floor(Math.random() * COAT_KEYS.length)];
+      const c = new Cat(this, coat, side < 0 ? 30 : this.W - 30);
+      c.stray = { trust: 0, life: rnd(420, 600), side, home: rnd(this.W * 0.2, this.W * 0.8) }; c.size = 0.8;
+      c.y = this.floor; c.set("walk", 20, { target: c.stray.home }); this.cats.push(c);
+      return c;
+    }
+    // fed three times and it's yours
+    strayFed(c) {
+      const st = c.stray; st.trust++; st.life = Math.max(st.life, 360); st.leaving = false;
+      this.burst(c.x, c.y - 34 * c.s, "heart", "#e2557a", 2 + st.trust);
+      if (st.trust >= 3) { c.stray = null; c.size = 1; this.confetti(c.x, c.y - 30 * c.s, 30); this.meow(c); if (this.onAdoptStray) this.onAdoptStray(c); }
+    }
+    // ---------------- laser mini game: lead the cats onto the twinkling stars with the laser, 30 seconds
+    startGame() {
+      if (this.game) return;
+      this.game = { t: 30, score: 0, targets: [], spawnT: 0 }; this.setLaser(true); this.setWand(false);
+    }
+    stopGame(silent) {
+      const g = this.game; if (!g) return; this.game = null; this.setLaser(false);
+      if (!silent && this.onGameEnd) this.onGameEnd(g.score);
+    }
+    updateGame(dt) {
+      const g = this.game; if (!g) return;
+      const ts = this.toyScale; g.t -= dt; g.spawnT -= dt;
+      if (g.t <= 0) return this.stopGame();
+      g.targets.forEach((t) => (t.life -= dt)); g.targets = g.targets.filter((t) => t.life > 0);
+      if (g.targets.length < (g.t < 15 ? 2 : 1) && g.spawnT <= 0) { g.targets.push({ x: this.spot(), life: rnd(5, 8), ph: rnd(0, 6) }); g.spawnT = 0.6; }
+      for (const c of this.cats) {
+        if (!["chase", "leap", "hunt", "stand"].includes(c.state)) continue;
+        const px = c.x + c.facing * 12 * c.s;
+        const hit = g.targets.find((t) => Math.abs(t.x - px) < 16 * ts && c.y > this.floor - 40 * c.s);
+        if (hit) {
+          g.score++; g.targets = g.targets.filter((t) => t !== hit);
+          this.burst(hit.x, this.floor - 10 * ts, "spark", "#ffd34d", 5); this.burst(c.x, c.y - 34 * c.s, "heart", "#e2557a", 1);
+          if (c.profile) c.care("play", { toyKey: "laser" });
+        }
+      }
+    }
+    renderGame(ctx, now) {
+      const g = this.game; if (!g) return;
+      const ts = this.toyScale, L = window.CatLife;
+      for (const t of g.targets) {                              // twinkling stars on the floor
+        const k = Math.max(2, Math.round(ts)), pulse = 1 + Math.sin(now / 160 + t.ph) * 0.25, x = Math.round(t.x), y = Math.round(this.floor - 10 * ts);
+        ctx.save(); ctx.globalAlpha = Math.min(1, t.life * 2); ctx.fillStyle = "#ffd34d";
+        const r = Math.round(3 * pulse); ctx.fillRect(x - k / 2, y - r * k, k, (2 * r + 1) * k); ctx.fillRect(x - r * k, y - k / 2, (2 * r + 1) * k, k);
+        ctx.fillStyle = "#fff6c8"; ctx.fillRect(x - k / 2, y - k / 2, k, k); ctx.restore();
+      }
+      const label = L ? L.t("gameHud")(Math.ceil(g.t), g.score) : `🔴 ${Math.ceil(g.t)}s · ⭐ ${g.score}`;
+      ctx.save(); ctx.font = '700 20px "Pixelify Sans", ui-monospace, monospace'; const wd = ctx.measureText(label).width + 36, x0 = Math.round(this.W / 2 - wd / 2), y0 = 18;
+      ctx.fillStyle = "rgba(255,247,236,.96)"; ctx.strokeStyle = "#5b3a29"; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x0, y0, wd, 40, 20); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#5b3a29"; ctx.textBaseline = "middle"; ctx.textAlign = "center"; ctx.fillText(label, this.W / 2, y0 + 21); ctx.restore();
+    }
+    landedBird() { return this.birds.find((b) => b.state === "peck"); }
+    addBird(o = {}) {
+      const dir = Math.random() < 0.5 ? 1 : -1, n = o.n || (Math.random() < 0.35 ? rnd(2, 4) | 0 : 1), y = this.floor - rnd(200, Math.min(520, this.floor - 60));
+      for (let i = 0; i < n; i++) { const b = new Bird(this, dir, y + rnd(-30, 30), i === 0 && (o.land ?? Math.random() < 0.3)); b.x -= dir * i * rnd(30, 60); this.birds.push(b); }
+    }
+    placeFurniture(kind, x) {
+      let f = this.furniture.find((f) => f.kind === kind); if (f) return f;
+      f = new Furniture(this, kind, x ?? this.spot()); this.furniture.push(f);
+      if (f.platforms) this.shelves.push(...f.platforms);
+      this.furniture.sort((a, b) => (a.kind === "rug" ? -1 : 0) - (b.kind === "rug" ? -1 : 0));
+      return f;
+    }
+    removeFurniture(kind) {
+      const f = this.furniture.find((f) => f.kind === kind); if (!f) return;
+      if (f.platforms) { this.shelves = this.shelves.filter((s) => !f.platforms.includes(s)); this.cats.forEach((c) => { if (f.platforms.includes(c.perch)) { c.perch = null; c.set("fall", 5); } }); }
+      this.cats.forEach((c) => { if (c.cushion === f) { c.cushion = null; c.set("sit", 2); } });
+      this.furniture = this.furniture.filter((x) => x !== f);
     }
     idleFor() { return this.pointer.movedAt ? (performance.now() - this.pointer.movedAt) / 1000 : 0; }
     // back at the computer after a while (or the app just opened after hours away): the cats come to say hello
@@ -1846,7 +2136,7 @@
       return !!this.wand;
     }
     addButterfly() { this.butterfly = new Butterfly(this); }
-    addShelf() { if (this.shelves.length >= 3) this.shelves.shift(); this.shelves.push(new Shelf(this, this.spot(), this.floor - rnd(110, 170) * this.toyScale)); }
+    addShelf() { const real = this.shelves.filter((s) => !s.isPlatform); if (real.length >= 3) this.shelves = this.shelves.filter((s) => s !== real[0]); this.shelves.push(new Shelf(this, this.spot(), this.floor - rnd(110, 170) * this.toyScale)); }
     removeAllCats() { [...this.cats].forEach((c) => this.removeCat(c)); }
     // "auto" follows the clock: from 22:00 to 07:00 it's night and the cats get sleepy
     isNight() { if (this.nightMode === "night") return true; if (this.nightMode === "day") return false; const h = new Date().getHours(); return h >= 22 || h < 7; }
@@ -1870,7 +2160,7 @@
       this.butterfly = null; this.catnip = null;
       if (this.bed && this.bed.occupant) this.bed.occupant.set("sit", 2); this.bed = null;
       if (this.post && this.post.user) this.post.user.set("sit", 2); this.post = null;
-      this.shelves = []; this.cakes = [];
+      this.shelves = this.shelves.filter((s) => s.isPlatform); this.cakes = [];
       this.boxes.forEach((b) => { if (b.occupant) b.occupant.hopOut(); }); this.boxes = [];
     }
     burst(x, y, kind, color, n = 1, o = {}) {
@@ -1956,6 +2246,7 @@
       if (this.yarn && this.yarn.hit(x, y)) return { toy: this.yarn };
       if (this.mouse && this.mouse.hit(x, y)) return { toy: this.mouse };
       if (this.butterfly && this.butterfly.hit(x, y)) return { toy: this.butterfly };
+      if (this.bowl && this.bowl.hit(x, y)) return { toy: this.bowl };              // before the cats crowding round it
       for (let i = this.cats.length - 1; i >= 0; i--) if (this.cats[i].hit(x, y)) return { cat: this.cats[i] };
       for (let i = this.boxes.length - 1; i >= 0; i--) if (this.boxes[i].hit(x, y)) return { toy: this.boxes[i] };
       if (this.bowl && this.bowl.hit(x, y)) return { toy: this.bowl };
@@ -1964,6 +2255,7 @@
       if (this.post && this.post.hit(x, y)) return { toy: this.post };
       for (const c of this.cakes) if (c.hit(x, y)) return { toy: c };
       for (let i = this.shelves.length - 1; i >= 0; i--) if (this.shelves[i].hit(x, y)) return { toy: this.shelves[i] };
+      for (let i = this.furniture.length - 1; i >= 0; i--) if (this.furniture[i].hit(x, y)) return { toy: this.furniture[i] };
       return null;
     }
     bindInput() {
@@ -2018,10 +2310,15 @@
       if (this.mouse) this.mouse.update(dt);
       if (this.bowl) this.bowl.update(dt);
       this.boxes.forEach((b) => b.update(dt));
-      for (const t of [this.wand, this.butterfly, this.catnip, this.bed, this.post, ...this.shelves, ...this.cakes]) if (t) t.update(dt);
+      for (const t of [this.wand, this.butterfly, this.catnip, this.bed, this.post, ...this.shelves, ...this.cakes, ...this.furniture]) if (t) t.update(dt);
+      if (this.birdsOn && !this.isNight()) { this.birdT -= dt; if (this.birdT <= 0) { this.addBird(); this.birdT = rnd(150, 420); } }
+      this.birds.forEach((b) => b.update(dt)); this.birds = this.birds.filter((b) => !b.gone());
+      this.updateGame(dt);
+      if (this.strayOn && !this.isNight() && !this.stray()) { this.strayT -= dt; if (this.strayT <= 0) { this.strayT = rnd(1200, 2700); if (this.cats.filter((c) => c.profile).length < 8) this.addStray(); } }
       this.cats.forEach((c) => c.update(dt));
       if (this.isNight()) this.renderNight(ctx, now);
       if (this.seasonsOn !== false) this.renderSeason(ctx, dt, now);
+      this.furniture.forEach((f) => f.render(ctx));
       if (this.post) this.post.render(ctx);
       this.shelves.forEach((sh) => sh.render(ctx));
       this.cakes.forEach((c) => c.render(ctx));
@@ -2034,8 +2331,10 @@
       [...this.cats].filter((c) => c.state !== "inbox" && !c.bed).sort((a, b) => (a.state === "held") - (b.state === "held")).forEach((c) => c.render(ctx));
       if (this.yarn && this.yarn.held) this.yarn.render(ctx);
       if (this.butterfly) this.butterfly.render(ctx);
+      this.birds.forEach((b) => b.render(ctx));
       if (this.wand) this.wand.render(ctx);
       if (this.laser && this.pointer.seen) this.renderLaser(ctx, now);
+      this.renderGame(ctx, now);
       this.renderParticles(ctx, dt);
       requestAnimationFrame((t) => this.frame(t));
     }
@@ -2108,5 +2407,5 @@
     }
   }
 
-  window.DesktopCat = { World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE };
+  window.DesktopCat = { World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE, FURN, furnitureThumb };
 })();

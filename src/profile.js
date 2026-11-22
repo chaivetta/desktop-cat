@@ -37,7 +37,7 @@
     post: { e: "🪵", tr: "Tırmalama direği", en: "Scratching post", goals: ["post"] },
   };
 
-  // Growing up follows the calendar: 0.1 on the first day, +0.1 a day, fully grown (1.0) after nine days.
+  // Growing up follows the calendar: 0.1 on the first day, fully grown (1.0) after about 45 days.
   // Much later a cat becomes a wise old one: a grey muzzle and a slower pace, but it stays with you.
   const STAGES = [
     { id: "kitten", min: 0, e: "🍼", tr: "Yavru", en: "Kitten" },
@@ -45,7 +45,7 @@
     { id: "adult", min: 1, e: "👑", tr: "Yetişkin", en: "Grown-up" },
     { id: "elder", min: 1, e: "🦉", tr: "Bilge", en: "Wise old cat" },
   ];
-  const ADULT = 360, GROW_PER_DAY = 0.1, ELDER_DAYS = 120;
+  const ADULT = 360, GROW_PER_DAY = 0.9 / 45, ELDER_DAYS = 180;      // about 45 days to grow up, wise and old at six months
 
   // tricks you can teach: a few good lessons and it knows it for good
   const TRICKS = {
@@ -133,6 +133,12 @@
       memories: "Anılar", family: "Ailesi", parentsL: "Annesi ve babası", siblings: "Kardeşleri", kids: "Yavruları", noMem: "Anılar burada birikecek…",
       together: (n) => `💞 Birlikte ${n} gündür`, tricks: "Numaralar", teach: "Öğret", lessons: (n, m) => `${n}/${m} ders`, learnHint: "Dokun, öğret",
       trickFail: ["Kafası karıştı", "Şimdi canı istemedi", "Esnedi geçti", "Kuyruğunu salladı"], gone: "artık yok",
+      home: "Ev", homeHint: "Yıldızlarla ev eşyası al. Yerleştirdiklerini sürükleyip istediğin yere koyabilirsin.", place: "Yerleştir", putAway: "Kaldır",
+      furn: { rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
+        tree: ["Kedi ağacı", "İki katlı, tepesine tırmanır"], aquarium: ["Akvaryum", "Balıkları izler, cama pati atar"] },
+      game: "Lazer avı", gameHelp: "30 saniye: lazerle kedileri parlayan yıldızlara götür!", again: "Tekrar oyna", closeB: "Kapat",
+      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun yıldızları doldu, yarın yine gel 🌙", bestL: (n) => `Rekor: ${n}`,
+      strayTag: (n) => `Sokak kedisi ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Lazer avı · ⏱ ${t} · ⭐ ${n}`,
       voices: "Miyav sesleri", back: "Geri", addFiles: "Ses ekle", voiceN: (n) => n ? `${n} kayıt` : "henüz yok",
       voice_kitten: "Yavru", voice_adult: "Yetişkin", voice_elder: "Yaşlı",
       voicesHelp: "🎤 ile mikrofona miyavla (kendin de olur, kedin de 😸), ya da ＋ ile ses dosyası ekle; dosyaları buraya sürükleyebilirsin de. Sessiz kısımları kendim kırpıyorum. Bir grup boşsa diğerinin sesi inceltilip kalınlaştırılarak kullanılır.",
@@ -156,6 +162,7 @@
         trick: (a) => TRICKS[a.id] ? TRICKS[a.id].learnTr : "", elder: () => "Artık bilge bir kedi, burnunun etrafı kırlaştı",
         together: (a) => `Birlikte ${a.n} gün oldu!`, greet: (a) => a.long ? "Seni çok özlemiş, gelir gelmez karşıladı" : "Seni kapıda karşıladı",
         morning: () => "Günaydın! Gerinip seni selamladı", napNear: () => "Sen yokken yanında uyuyakaldı", memPhoto: () => "Birlikte bir fotoğraf",
+        strayIn: () => "Sokaktan geldi, artık burası onun evi",
         task: (a) => `Görevi bitirdi: ${a.txt}`, tasksDone: () => "Bugünün bütün görevlerini bitirdi ⭐",
         bornOf: (a) => `${a.a} ve ${nin(a.b)} yavrusu olarak dünyaya geldi`, kitten: (a) => `${a.o} ile bir yavruları oldu: ${a.n}`,
       },
@@ -172,6 +179,12 @@
       memories: "Memories", family: "Family", parentsL: "Parents", siblings: "Siblings", kids: "Kittens", noMem: "Memories will gather here…",
       together: (n) => `💞 Together for ${n} days`, tricks: "Tricks", teach: "Teach", lessons: (n, m) => `${n}/${m} lessons`, learnHint: "Tap to teach",
       trickFail: ["Got confused", "Not in the mood", "Yawned instead", "Flicked its tail"], gone: "gone",
+      home: "Home", homeHint: "Buy furniture with stars. Drag anything you've placed to move it.", place: "Place", putAway: "Put away",
+      furn: { rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
+        tree: ["Cat tree", "Two levels to climb up to"], aquarium: ["Aquarium", "Watches the fish and paws at the glass"] },
+      game: "Laser hunt", gameHelp: "30 seconds: use the laser to lead the cats onto the twinkling stars!", again: "Play again", closeB: "Close",
+      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game stars for today, come back tomorrow 🌙", bestL: (n) => `Best: ${n}`,
+      strayTag: (n) => `Stray ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Laser hunt · ⏱ ${t} · ⭐ ${n}`,
       voices: "Meow sounds", back: "Back", addFiles: "Add sounds", voiceN: (n) => n ? `${n} recording${n > 1 ? "s" : ""}` : "none yet",
       voice_kitten: "Kitten", voice_adult: "Grown-up", voice_elder: "Old cat",
       voicesHelp: "Meow into the mic with 🎤 (you or your cat 😸), or add sound files with ＋; you can also drop them here. Silence gets trimmed for you. If a group is empty, another group's sounds are used, pitched up or down.",
@@ -195,13 +208,14 @@
         trick: (a) => TRICKS[a.id] ? TRICKS[a.id].learnEn : "", elder: () => "A wise old cat now, with a little grey round the nose",
         together: (a) => `${a.n} days together!`, greet: (a) => a.long ? "Missed you so much, ran to meet you" : "Came to say hello when you got back",
         morning: () => "Good morning! Stretched and said hi", napNear: () => "Fell asleep next to you while you were away", memPhoto: () => "A photo together",
+        strayIn: () => "Came in from the street; this is home now",
         task: (a) => `Finished a task: ${a.txt}`, tasksDone: () => "Finished all of today's tasks ⭐",
         bornOf: (a) => `Born to ${a.a} and ${a.b}`, kitten: (a) => `Had a kitten with ${a.o}: ${a.n}`,
       },
     },
   };
   const LOG_ICON = { born: "🐣", named: "🏷️", fed: "🍗", pet: "💗", play: "🧶", bed: "🛏️", scratch: "🪵", catnip: "🌿", zoom: "💨",
-    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
+    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", strayIn: "🏡", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
 
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -211,7 +225,9 @@
     NAMES, TRAITS, TOYS, STAGES, ADULT, STR, LOG_ICON, COAT_NAMES, TASKS, MAX_CATS, TRICKS, LESSONS,
     since: Date.now(), togetherDone: 0,  // the day your first cat arrived, and how many "days together" parties so far
     tasksOn: true, breedOn: true,         // both can be switched off in the settings
-    wallet: { stars: 0, owned: [] },      // stars from tasks, shared by all cats, and the wardrobe designs bought with them
+    wallet: { stars: 0, owned: [] },
+    home: { owned: [], placed: {} },      // furniture bought with stars, and where it stands (x as a share of the screen width)
+    game: { best: 0, day: "", stars: 0 },      // stars from tasks, shared by all cats, and the wardrobe designs bought with them
     PRICES,
     // load the wallet from a save; designs someone is already wearing stay theirs
     loadWallet(w, profiles) {

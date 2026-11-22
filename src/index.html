@@ -22,6 +22,14 @@
   .sw{width:22px;height:22px;padding:0!important;border-radius:50%}
   .panel button.hl{border-color:#ff8fab;background:#ffe1ea;color:#5b3a29}
   .panel h1 .lang{float:right;font:600 12px Georgia,serif;letter-spacing:.1em;margin-top:4px}
+  .gamebox{position:fixed;left:50%;top:80px;transform:translateX(-50%);z-index:50;min-width:280px;padding:16px 20px;border-radius:18px;background:#fff7ec;color:#5b3a29;
+    font:700 15px "Nunito",sans-serif;text-align:center;box-shadow:0 0 0 3px #5b3a29,0 6px 0 3px #5b3a29}
+  .gamebox[hidden]{display:none}
+  .gamebox b{font:700 20px "Pixelify Sans",monospace}
+  .gamebox p{margin:8px 0}
+  .gamebox small{display:block;opacity:.7;margin-bottom:6px}
+  .gamebox div{display:flex;gap:8px;justify-content:center;margin-top:8px}
+  .gamebox button{font:800 13px "Nunito",sans-serif;padding:7px 14px;border:0;border-radius:99px;background:#ffd34d;color:#5b3a29;cursor:pointer;box-shadow:0 0 0 2px #5b3a29,0 3px 0 2px #5b3a29}
 </style>
 </head>
 <body>
@@ -58,6 +66,13 @@
     <button id="tasks"></button>
     <button id="breed"></button>
     <button id="seasons"></button>
+    <button id="birds"></button>
+    <button id="strays"></button>
+  </div>
+  <div class="row">
+    <button id="game" class="hl" data-i="game"></button>
+    <button id="bird" data-i="bird"></button>
+    <button id="stray" data-i="stray"></button>
   </div>
   <div class="row">
     <span data-i="catSize" style="opacity:.7;margin:0 2px 0 0"></span>
@@ -85,12 +100,12 @@
       adopt: "Adopt:", yarn: "Yarn", mouse: "Wind-up mouse", box: "Box", feed: "Feed", laser: "Laser", wand: "Feather wand", catnip: "Catnip", butterfly: "Butterfly",
       bed: "Cat bed", post: "Scratching post", shelf: "Wall shelf", clear: "Put toys away", cards: "Cat cards", remove: "Remove a cat", removeAll: "Remove all cats",
       sure: "Sure? Click again", purr: "Purring", meow: "Meowing", on: "on", off: "off", night: "Night", auto: "follow the clock", day: "always day", nightOn: "always night",
-      catSize: "Cat size:", toySize: "Toy size:", tasks: "Daily tasks", breed: "Kittens", seasons: "Seasons" },
+      catSize: "Cat size:", toySize: "Toy size:", tasks: "Daily tasks", breed: "Kittens", seasons: "Seasons", birds: "Birds", strays: "Stray cats", game: "🔴 Laser hunt", bird: "Call a bird", stray: "Call a stray" },
     tr: { intro: "Sevmek için kediye tıkla, kucağa almak için sürükle. Kartını açmak için kediye sağ tıkla. Bir oyuncak çıkar; çoğunu sürükleyebilirsin.",
       adopt: "Sahiplen:", yarn: "Yumak", mouse: "Kurmalı fare", box: "Kutu", feed: "Mama ver", laser: "Lazer", wand: "Tüylü olta", catnip: "Kedi otu", butterfly: "Kelebek",
       bed: "Kedi yatağı", post: "Tırmalama direği", shelf: "Duvar rafı", clear: "Oyuncakları topla", cards: "Kedi kartları", remove: "Bir kediyi kaldır", removeAll: "Tüm kedileri kaldır",
       sure: "Emin misin? Tekrar tıkla", purr: "Mırlama", meow: "Miyavlama", on: "açık", off: "kapalı", night: "Gece", auto: "saate göre", day: "hep gündüz", nightOn: "hep gece",
-      catSize: "Kedi boyu:", toySize: "Oyuncak boyu:", tasks: "Günlük görevler", breed: "Yavrulama", seasons: "Mevsimler" },
+      catSize: "Kedi boyu:", toySize: "Oyuncak boyu:", tasks: "Günlük görevler", breed: "Yavrulama", seasons: "Mevsimler", birds: "Kuşlar", strays: "Sokak kedileri", game: "🔴 Lazer avı", bird: "Kuş çağır", stray: "Sokak kedisi çağır" },
   };
   const ui = (k) => UI[L.lang][k];
 
@@ -124,6 +139,8 @@
   if (saved.lang) L.lang = saved.lang;
   L.tasksOn = saved.tasksOn ?? true; L.breedOn = saved.breedOn ?? true;
   L.loadWallet(saved.wallet, saved.cats);
+  if (saved.home) L.home = { owned: saved.home.owned || [], placed: saved.home.placed || {} };
+  if (saved.game) L.game = { best: 0, day: "", stars: 0, ...saved.game };
   // "days together" count from your very first cat
   L.since = saved.since || Math.min(Date.now(), ...saved.cats.map((p) => p.born || Date.now())); L.togetherDone = saved.togetherDone || 0;
   // how long you were away, and whether this is the first visit of the day
@@ -136,7 +153,8 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
-        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
+        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn,
+        home: { owned: L.home.owned, placed: Object.fromEntries(world.furniture.map((f) => [f.kind, +(f.x / world.W).toFixed(4)])) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
   };
   let saveT = 0; L.onChange = () => { clearTimeout(saveT); saveT = setTimeout(save, 400); card && card.refresh(); };
@@ -146,13 +164,33 @@
   let hovering = false, overCat = false, overUI = false;
   const syncIgnore = () => { const h = overCat || overUI; if (bridge && h !== hovering) { hovering = h; bridge.setIgnore(!h); } };
   world = new World(document.getElementById("stage"), {
-    scale: saved.scale, toyScale: saved.toyScale || saved.scale, purrOn: saved.purrOn ?? saved.sound ?? true, meowOn: saved.meowOn ?? saved.sound ?? true, nightMode: saved.nightMode || "auto", seasonsOn: saved.seasonsOn ?? true, floorInset: bridge ? 2 : Math.round(innerHeight * 0.22) - 40,
+    scale: saved.scale, toyScale: saved.toyScale || saved.scale, purrOn: saved.purrOn ?? saved.sound ?? true, meowOn: saved.meowOn ?? saved.sound ?? true, nightMode: saved.nightMode || "auto", seasonsOn: saved.seasonsOn ?? true, birdsOn: saved.birdsOn ?? true, strayOn: saved.strayOn ?? true, floorInset: bridge ? 2 : Math.round(innerHeight * 0.22) - 40,
     onHover: (h) => { overCat = h; syncIgnore(); }
   });
   addEventListener("pointermove", (e) => { overUI = !!(e.target.closest && e.target.closest(".ui")); syncIgnore(); }, true);
   if (!bridge) addEventListener("resize", () => { world.floorInset = Math.round(innerHeight * 0.22) - 40; world.resize(); });
   saved.cats.forEach((p, i) => setTimeout(() => { world.addCat(null, p); }, 350 * i));
   Voices.load();
+  // furniture back where you left it
+  Object.entries(L.home.placed).forEach(([k, fx]) => { if (L.home.owned.includes(k) && DesktopCat.FURN[k]) world.placeFurniture(k, fx * world.W); });
+  // a stray who's been fed three times moves in
+  world.onAdoptStray = (c) => {
+    const p = L.make(c.coat, { taken: world.cats.filter((x) => x.profile).map((x) => x.profile.name), g0: 0.6, love: 55, quiet: true });
+    p.log = []; L.write(p, "strayIn"); L.remember(p, "strayIn");
+    c.profile = p; c.mods = L.mods(p); c.size = L.size(p); save();
+    setTimeout(() => card.open(c, { naming: true }), 900);
+  };
+  // the laser game: stars for a good score (up to six a day from the game), and a record to beat
+  const gameBox = document.createElement("div"); gameBox.className = "ui gamebox"; gameBox.hidden = true; document.body.appendChild(gameBox);
+  world.onGameEnd = (score) => {
+    const t = L.STR[L.lang], today = new Date().toDateString(); if (L.game.day !== today) { L.game.day = today; L.game.stars = 0; }
+    const best = score > (L.game.best || 0); if (best) L.game.best = score;
+    let st = (score >= 15 ? 3 : score >= 10 ? 2 : score >= 5 ? 1 : 0) + (best && score >= 5 ? 1 : 0);
+    const capped = st > 0 && L.game.stars >= 6; st = Math.max(0, Math.min(st, 6 - L.game.stars)); L.game.stars += st; L.wallet.stars += st;
+    gameBox.innerHTML = `<b>🔴 ${t.game}</b><p>${t.gameOver(score, st, best)}</p>${capped ? `<small>${t.gameCap}</small>` : ""}<small>${t.bestL(L.game.best)}</small><div><button data-g="again">${t.again}</button><button data-g="close">${t.closeB}</button></div>`;
+    gameBox.hidden = false; if (st) world.confetti(innerWidth / 2, 120, 40); L.changed(); save();
+  };
+  gameBox.addEventListener("click", (e) => { const b = e.target.closest("[data-g]"); if (!b) return; gameBox.hidden = true; if (b.dataset.g === "again") act.game(); overUI = false; syncIgnore(); });
 
   var card = window.CatCard.create(world, {
     size: saved.cardSize,
@@ -199,7 +237,7 @@
   function syncToggles() {
     if (bridge) {
       bridge.setLaser(world.laser); bridge.setWand(!!world.wand);
-      bridge.setSettings({ purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode, lang: L.lang, tasksOn: L.tasksOn, breedOn: L.breedOn, seasonsOn: world.seasonsOn });
+      bridge.setSettings({ purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode, lang: L.lang, tasksOn: L.tasksOn, breedOn: L.breedOn, seasonsOn: world.seasonsOn, birdsOn: world.birdsOn, strayOn: world.strayOn });
       return;
     }
     const on = (v) => ui(v ? "on" : "off");
@@ -211,6 +249,8 @@
     document.getElementById("tasks").textContent = `🎯 ${ui("tasks")}: ${on(L.tasksOn)}`;
     document.getElementById("breed").textContent = `🍼 ${ui("breed")}: ${on(L.breedOn)}`;
     document.getElementById("seasons").textContent = `❄️ ${ui("seasons")}: ${on(world.seasonsOn)}`;
+    document.getElementById("birds").textContent = `🐦 ${ui("birds")}: ${on(world.birdsOn)}`;
+    document.getElementById("strays").textContent = `🐈 ${ui("strays")}: ${on(world.strayOn)}`;
   }
   // one language for everything: the page, the cards and the tray menu
   function applyLang() {
@@ -237,6 +277,11 @@
     // the card's 🔊 button: everything off, or everything back on
     mute: () => { const any = world.purrOn || world.meowOn; world.purrOn = world.meowOn = !any; save(); syncToggles(); card.refresh(); },
     tasks: (on) => { L.tasksOn = typeof on === "boolean" ? on : !L.tasksOn; save(); syncToggles(); card.refresh(); },
+    birds: (on) => { world.birdsOn = typeof on === "boolean" ? on : !world.birdsOn; save(); syncToggles(); },
+    strays: (on) => { world.strayOn = typeof on === "boolean" ? on : !world.strayOn; save(); syncToggles(); },
+    bird: () => world.addBird({ land: Math.random() < 0.6 }),
+    stray: () => world.addStray(),
+    game: () => { gameBox.hidden = true; card.close(); world.startGame(); const c = world.cats[0]; if (c) world.meow(c); },
     seasons: (on) => { world.seasonsOn = typeof on === "boolean" ? on : !world.seasonsOn; save(); syncToggles(); },
     breed: (on) => { L.breedOn = typeof on === "boolean" ? on : !L.breedOn; save(); syncToggles(); card.refresh(); },
     lang: (l) => { L.lang = l === "tr" || l === "en" ? l : L.lang === "tr" ? "en" : "tr"; applyLang(); card.refresh(); save(); },
@@ -269,7 +314,7 @@
   });
 
   if (bridge) {
-    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](["laser", "wand", "purr", "meow", "tasks", "breed", "seasons"].includes(cmd.type) ? cmd.on : cmd.type === "night" ? cmd.mode : cmd.type === "lang" ? cmd.lang : cmd.coat); });
+    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](["laser", "wand", "purr", "meow", "tasks", "breed", "seasons", "birds", "strays"].includes(cmd.type) ? cmd.on : cmd.type === "night" ? cmd.mode : cmd.type === "lang" ? cmd.lang : cmd.coat); });
     applyLang();
   } else {
     const box = document.getElementById("coats");
@@ -278,7 +323,7 @@
       b.style.background = `linear-gradient(135deg, ${COATS[k].body} 55%, ${COATS[k].accent} 55%)`;
       b.onclick = () => act.add(k); box.appendChild(b);
     });
-    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "shelf", "clear", "cards", "remove", "purr", "meow", "night", "lang", "tasks", "breed", "seasons"].forEach(id => document.getElementById(id).onclick = () => act[id]());
+    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "shelf", "clear", "cards", "remove", "purr", "meow", "night", "lang", "tasks", "breed", "seasons", "birds", "strays", "game", "bird", "stray"].forEach(id => document.getElementById(id).onclick = () => act[id]());
     // removing every cat asks twice
     const ra = document.getElementById("removeAll");
     ra.onclick = () => {

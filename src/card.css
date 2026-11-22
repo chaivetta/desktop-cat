@@ -316,3 +316,11 @@
 .cc-vrow .cc-pill:disabled { opacity: .4; cursor: default; }
 
 .cc-pill.rec.on { background: #ff6f91; color: #fff; animation: cc-bump 1s infinite; }
+
+/* home shop */
+.cc-item { display: grid; grid-template-columns: 64px 1fr auto; gap: 9px; align-items: center; padding: 6px 10px 6px 6px; margin-bottom: 7px; border-radius: 13px; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .16); }
+.cc-item.own { background: #f4fbf7; }
+.cc-item canvas { width: 64px; height: 56px; border-radius: 10px; background: #fff3e3; image-rendering: pixelated; }
+.cc-item b { display: block; font: 700 13.5px "Pixelify Sans", monospace; }
+.cc-item small { font-size: 11px; font-weight: 700; opacity: .65; line-height: 1.25; display: block; }
+.cc-item .cc-pill:disabled { opacity: .45; cursor: default; }

@@ -44,7 +44,7 @@
         </div>
         <div class="cc-banner" hidden></div>
         <div class="cc-panes" role="tablist">
-          <button type="button" role="tab" data-p="cat"></button><button type="button" role="tab" data-p="tasks"></button><button type="button" role="tab" data-p="ward"></button><button type="button" role="tab" data-p="log"></button><button type="button" role="tab" data-p="mem"></button>
+          <button type="button" role="tab" data-p="cat"></button><button type="button" role="tab" data-p="tasks"></button><button type="button" role="tab" data-p="ward"></button><button type="button" role="tab" data-p="log"></button><button type="button" role="tab" data-p="mem"></button><button type="button" role="tab" data-p="home"></button>
         </div>
         <div class="cc-body">
           <div class="cc-pane" data-pane="cat">
@@ -81,6 +81,9 @@
           <div class="cc-together"></div>
           <section class="cc-sec cc-fam" hidden><div class="cc-label"><span data-l="family"></span></div><div class="cc-famrows"></div></section>
           <section class="cc-sec"><div class="cc-label"><span data-l="memories"></span><small class="cc-memn"></small></div><div class="cc-album"></div></section>
+          </div>
+          <div class="cc-pane" data-pane="home" hidden>
+          <section class="cc-sec cc-shop"><div class="cc-label"><span class="cc-ht"></span><small class="cc-hwallet"></small></div><p class="cc-vhelp cc-hhelp"></p><div class="cc-items"></div></section>
           </div>
           <div class="cc-pane" data-pane="voice" hidden>
           <section class="cc-sec cc-voice"><div class="cc-label"><span class="cc-vt"></span><button class="cc-pill" type="button" data-v="back"></button></div><p class="cc-vhelp"></p><div class="cc-vrows"></div></section>
@@ -224,6 +227,18 @@
       });
     }
     // ------------------------------------------------ your own meow recordings
+    // ------------------------------------------------ furniture: buy with stars, place or put away
+    function renderHome(t) {
+      q(".cc-ht").textContent = `🏠 ${t.home}`; q(".cc-hwallet").textContent = t.wallet(L.wallet.stars); q(".cc-hhelp").textContent = t.homeHint;
+      const H = L.home, html = Object.keys(DC.FURN).map((k) => {
+        const own = H.owned.includes(k), placed = !!world.furniture.find((f) => f.kind === k), price = DC.FURN[k].price, [nm, ds] = t.furn[k];
+        const btn = own ? `<button type="button" class="cc-pill${placed ? "" : " gold"}" data-fu="${placed ? "away" : "place"}">${esc(placed ? t.putAway : t.place)}</button>`
+          : `<button type="button" class="cc-pill gold" data-fu="buy"${L.wallet.stars < price ? " disabled" : ""}>⭐ ${price}</button>`;
+        return `<div class="cc-item${own ? " own" : ""}" data-k="${k}"><canvas width="64" height="56" data-f="${k}"></canvas><div><b>${esc(nm)}</b><small>${esc(ds)}</small></div>${btn}</div>`;
+      }).join("");
+      const box = q(".cc-items"); if (box.dataset.v === html) return; box.innerHTML = html; box.dataset.v = html;
+      box.querySelectorAll("canvas[data-f]").forEach((k) => DC.furnitureThumb(k.dataset.f, k.getContext("2d")));
+    }
     function renderVoices(t) {
       const V = opts.voices; if (!V) return;
       q(".cc-vt").textContent = `🎙️ ${t.voices}`; q('[data-v="back"]').textContent = `← ${t.back}`; q(".cc-vhelp").textContent = t.voicesHelp;
@@ -259,7 +274,7 @@
       root.querySelectorAll("[data-l]").forEach((el) => { el.textContent = `${icons[el.dataset.l]} ${t[el.dataset.l]}`; });
       if (pane === "tasks" && !L.tasksOn) pane = "cat";
       q('[data-p="tasks"]').hidden = !L.tasksOn;
-      const pn = { cat: ["🐾", t.paneCat], tasks: ["🎯", t.tasks], ward: ["👗", t.wardrobe], log: ["📖", t.diary], mem: ["📷", t.memories] };
+      const pn = { cat: ["🐾", t.paneCat], tasks: ["🎯", t.tasks], ward: ["👗", t.wardrobe], log: ["📖", t.diary], mem: ["📷", t.memories], home: ["🏠", t.home] };
       // the open tab shows its name, the others just their icon
       root.querySelectorAll("[data-p]").forEach((b) => { const on = b.dataset.p === pane; b.textContent = on ? `${pn[b.dataset.p][0]} ${pn[b.dataset.p][1]}` : pn[b.dataset.p][0]; b.title = pn[b.dataset.p][1]; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
       q(".cc-mic").hidden = !opts.voices; q(".cc-mic").title = t.voices || "";
@@ -288,6 +303,7 @@
       renderTricks(p, t);
       if (pane === "mem") renderMemories(p, t);
       if (pane === "voice") renderVoices(t);
+      if (pane === "home") renderHome(t);
       q('[data-a="pet"]').textContent = `💗 ${t.pet}`; q('[data-a="feed"]').textContent = `🍗 ${t.feed}`;
       q('[data-a="play"]').textContent = `🧶 ${t.play}`; q('[data-a="photo"]').textContent = `📸 ${t.photo}`;
       q('[data-w="surprise"]').textContent = `🎲 ${t.surprise}`; q('[data-w="undress"]').textContent = `✖ ${t.undress}`;
@@ -431,6 +447,16 @@
       } catch { return null; }
     }
     const fakeCat = (g) => ({ size: g === "kitten" ? 0.4 : 1, profile: { g0: g === "kitten" ? 0.1 : 1, gT: Date.now(), born: g === "elder" ? 0 : Date.now() } });
+    q(".cc-items").onclick = (e) => {
+      const b = e.target.closest("[data-fu]"); if (!b) return; const k = b.closest("[data-k]").dataset.k, H = L.home;
+      if (b.dataset.fu === "buy") {
+        const price = DC.FURN[k].price; if (L.wallet.stars < price || H.owned.includes(k)) return;
+        L.wallet.stars -= price; H.owned.push(k); floatUp("⭐", b);
+        const f = world.placeFurniture(k); world.confetti(f.x, world.floor - 30, 20);
+      } else if (b.dataset.fu === "place") world.placeFurniture(k);
+      else world.removeFurniture(k);
+      L.changed(); q(".cc-items").dataset.v = ""; update();
+    };
     q(".cc-trk").onclick = (e) => {
       const b = e.target.closest("[data-tr]"); if (!b || !cat) return;
       const r = L.teach(cat, b.dataset.tr); if (!r) return;
