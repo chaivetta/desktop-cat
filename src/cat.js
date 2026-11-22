@@ -663,6 +663,7 @@
       if (this.partyT > 0) return { ...(a || {}), hat: a && a.hat ? a.hat : "party:candy" };
       return a && (a.hat || a.collar || a.outfit) ? a : null;
     }
+    get pid() { return this.profile && this.profile.id; }
     care(kind, arg) { if (window.CatLife && this.profile) window.CatLife.care(this, kind, arg); }
     set(state, dur = 3, extra = {}) {
       if (this.state === "inbox" && state !== "inbox" && this.box) { this.box.occupant = null; this.box = null; }
@@ -730,7 +731,7 @@
         const d = rnd(4, 6.5);
         this.fightCool = foe.fightCool = rnd(40, 80);
         this.set("spar", d, { foe, act: "stance", actT: rnd(0.2, 0.6) }); foe.set("spar", d, { foe: this, act: "stance", actT: rnd(0.3, 0.8) });
-        this.care("fight", { o: foe.name }); foe.care("fight", { o: this.name });
+        this.care("fight", { o: foe.name, oid: foe.pid }); foe.care("fight", { o: this.name, oid: this.pid });
         w.burst((this.x + foe.x) / 2, this.y - 30 * this.s, "spark", "#f7e48c", 1);
       }
       else if (n === "roll") this.set("roll", rnd(3, 5.5));
@@ -781,7 +782,7 @@
       this.set("zoom", d, { target, laps: 0 }); this.care("zoom"); this.zoomCool = rnd(240, 480);
       if (!race) return;
       const buddy = w.cats.find((o) => o !== this && ["sit", "walk", "groom"].includes(o.state) && Math.abs(o.x - this.x) < 110 * this.s);
-      if (buddy && Math.random() < 0.25) { buddy.zoomCool = rnd(240, 480); buddy.set("zoom", d, { target, laps: 0 }); this.care("race", { o: buddy.name }); buddy.care("race", { o: this.name }); }   // a race!
+      if (buddy && Math.random() < 0.25) { buddy.zoomCool = rnd(240, 480); buddy.set("zoom", d, { target, laps: 0 }); this.care("race", { o: buddy.name, oid: buddy.pid }); buddy.care("race", { o: this.name, oid: this.pid }); }   // a race!
     }
 
     // ------------------------------------------------ physics + behaviour
@@ -1097,7 +1098,7 @@
         if (Math.abs(dx) < 22 * this.s && Math.sign(dx) === this.facing) {
           this.facing = Math.sign(dx); o.facing = -this.facing;
           this.set("boop", 1.6); o.set("boop", 1.6); this.boopCool = o.boopCool = rnd(25, 45);
-          this.care("boop", { o: o.name }); o.care("boop", { o: this.name });
+          this.care("boop", { o: o.name, oid: o.pid }); o.care("boop", { o: this.name, oid: this.pid });
           this.world.burst((this.x + o.x) / 2, this.y - 28 * this.s, "heart", "#e2557a", 2);
           return;
         }

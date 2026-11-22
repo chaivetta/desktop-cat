@@ -44,7 +44,7 @@
         </div>
         <div class="cc-banner" hidden></div>
         <div class="cc-panes" role="tablist">
-          <button type="button" role="tab" data-p="cat"></button><button type="button" role="tab" data-p="ward"></button><button type="button" role="tab" data-p="log"></button>
+          <button type="button" role="tab" data-p="cat"></button><button type="button" role="tab" data-p="tasks"></button><button type="button" role="tab" data-p="ward"></button><button type="button" role="tab" data-p="log"></button>
         </div>
         <div class="cc-body">
           <div class="cc-pane" data-pane="cat">
@@ -62,6 +62,9 @@
             <button class="cc-link" type="button" data-r="ask"></button>
             <div class="cc-confirm" hidden><span></span><button class="cc-pill red" type="button" data-r="yes"></button><button class="cc-pill" type="button" data-r="no"></button></div>
           </section>
+          </div>
+          <div class="cc-pane" data-pane="tasks" hidden>
+          <section class="cc-sec cc-tasks"><div class="cc-label"><span class="cc-tt"></span><small class="cc-tnext"></small></div><ul></ul><div class="cc-tfoot"></div></section>
           </div>
           <div class="cc-pane" data-pane="ward" hidden>
           <section class="cc-sec cc-ward">
@@ -157,6 +160,18 @@
       wardKey = ""; tabKey = ""; L.changed(); update();
     }
 
+    function renderTasks(p, t) {
+      const ts = L.tasks(p);
+      q(".cc-tt").textContent = `🎯 ${t.tasksToday}`;
+      q(".cc-tnext").textContent = ts.all ? "" : t.newTasks;
+      const html = ts.list.map((k) => {
+        const d = L.TASKS[k.id]; if (!d) return "";
+        const done = k.n >= d.n, f = Math.min(1, k.n / d.n);
+        return `<li class="${done ? "done" : ""}"><span class="ico">${d.e}</span><span class="txt">${esc(L.taskText(k.id))}<i style="--f:${f}"></i></span><b>${done ? "✓" : `${k.n}/${d.n}`}</b></li>`;
+      }).join("") + (ts.all ? `<li class="all">${esc(t.allDone)}</li>` : "");
+      const ul = q(".cc-tasks ul"); if (ul.dataset.v !== html) { ul.innerHTML = html; ul.dataset.v = html; }
+      q(".cc-tfoot").textContent = [t.stars(p.stars || 0), p.streak > 1 ? t.streak(p.streak) : ""].filter(Boolean).join("  ·  ");
+    }
     function update() {
       if (!cat || !cat.profile) return;
       if (!world.cats.includes(cat)) { const next = world.cats.find((c) => c.profile); return next ? api.open(next) : api.close(); }
@@ -168,7 +183,9 @@
       if (opts.sound) { const on = opts.sound(); snd.textContent = on ? "🔊" : "🔇"; snd.classList.toggle("off", !on); snd.title = on ? t.soundOff : t.soundOn; }
       const icons = { love: "💗", growth: "🌱", traits: "✨", diary: "📖", wardrobe: "👗" };
       root.querySelectorAll("[data-l]").forEach((el) => { el.textContent = `${icons[el.dataset.l]} ${t[el.dataset.l]}`; });
-      const pn = { cat: ["🐾", t.paneCat], ward: ["👗", t.wardrobe], log: ["📖", t.diary] };
+      if (pane === "tasks" && !L.tasksOn) pane = "cat";
+      q('[data-p="tasks"]').hidden = !L.tasksOn;
+      const pn = { cat: ["🐾", t.paneCat], tasks: ["🎯", t.tasks], ward: ["👗", t.wardrobe], log: ["📖", t.diary] };
       root.querySelectorAll("[data-p]").forEach((b) => { const on = b.dataset.p === pane; b.textContent = `${pn[b.dataset.p][0]} ${pn[b.dataset.p][1]}`; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
       root.querySelectorAll("[data-pane]").forEach((d) => { d.hidden = d.dataset.pane !== pane; });
       q(".cc-name").textContent = p.name;
@@ -186,7 +203,11 @@
       q(".cc-steps").innerHTML = L.STAGES.map((s) => `<span class="${p.xp >= s.min ? "on" : ""}" style="left:${s.min / L.ADULT * 100}%" title="${esc(s[lang])}">${s.e}</span>`).join("");
       q(".cc-chips").innerHTML = p.traits.map((k, i) => `<span class="cc-chip" style="--c:${CHIP[(i * 2 + p.id.charCodeAt(0)) % CHIP.length]}">${L.TRAITS[k].e} ${esc(L.TRAITS[k][lang])}</span>`).join("")
         + `<span class="cc-chip fav">${L.TOYS[p.fav].e} ${esc(t.fav)}: ${esc(L.TOYS[p.fav][lang])}</span>`;
+      const bf = L.bestFriend(p, world.cats), par = (p.parents || []).map((id) => world.cats.find((c) => c.profile && c.profile.id === id));
+      if (bf) q(".cc-chips").innerHTML += `<span class="cc-chip" style="--c:#ffd9e4">💞 ${esc(t.friend)}: ${esc(bf.profile.name)}</span>`;
+      if (par.length === 2 && par[0] && par[1]) q(".cc-chips").innerHTML += `<span class="cc-chip" style="--c:#fff1b8">🐣 ${esc(t.parents(par[0].profile.name, par[1].profile.name))}</span>`;
       q(".cc-toggle input").checked = !!p.showName;
+      if (L.tasksOn) renderTasks(p, t);
       q('[data-a="pet"]').textContent = `💗 ${t.pet}`; q('[data-a="feed"]').textContent = `🍗 ${t.feed}`;
       q('[data-a="play"]').textContent = `🧶 ${t.play}`; q('[data-a="photo"]').textContent = `📸 ${t.photo}`;
       q('[data-w="surprise"]').textContent = `🎲 ${t.surprise}`; q('[data-w="undress"]').textContent = `✖ ${t.undress}`;

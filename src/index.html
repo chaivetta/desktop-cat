@@ -55,6 +55,10 @@
     <button id="night"></button>
   </div>
   <div class="row">
+    <button id="tasks"></button>
+    <button id="breed"></button>
+  </div>
+  <div class="row">
     <span data-i="catSize" style="opacity:.7;margin:0 2px 0 0"></span>
     <button id="smaller">−</button>
     <button id="bigger">+</button>
@@ -80,12 +84,12 @@
       adopt: "Adopt:", yarn: "Yarn", mouse: "Wind-up mouse", box: "Box", feed: "Feed", laser: "Laser", wand: "Feather wand", catnip: "Catnip", butterfly: "Butterfly",
       bed: "Cat bed", post: "Scratching post", shelf: "Wall shelf", clear: "Put toys away", cards: "Cat cards", remove: "Remove a cat", removeAll: "Remove all cats",
       sure: "Sure? Click again", purr: "Purring", meow: "Meowing", on: "on", off: "off", night: "Night", auto: "follow the clock", day: "always day", nightOn: "always night",
-      catSize: "Cat size:", toySize: "Toy size:" },
+      catSize: "Cat size:", toySize: "Toy size:", tasks: "Daily tasks", breed: "Kittens" },
     tr: { intro: "Sevmek için kediye tıkla, kucağa almak için sürükle. Kartını açmak için kediye sağ tıkla. Bir oyuncak çıkar; çoğunu sürükleyebilirsin.",
       adopt: "Sahiplen:", yarn: "Yumak", mouse: "Kurmalı fare", box: "Kutu", feed: "Mama ver", laser: "Lazer", wand: "Tüylü olta", catnip: "Kedi otu", butterfly: "Kelebek",
       bed: "Kedi yatağı", post: "Tırmalama direği", shelf: "Duvar rafı", clear: "Oyuncakları topla", cards: "Kedi kartları", remove: "Bir kediyi kaldır", removeAll: "Tüm kedileri kaldır",
       sure: "Emin misin? Tekrar tıkla", purr: "Mırlama", meow: "Miyavlama", on: "açık", off: "kapalı", night: "Gece", auto: "saate göre", day: "hep gündüz", nightOn: "hep gece",
-      catSize: "Kedi boyu:", toySize: "Oyuncak boyu:" },
+      catSize: "Kedi boyu:", toySize: "Oyuncak boyu:", tasks: "Günlük görevler", breed: "Yavrulama" },
   };
   const ui = (k) => UI[L.lang][k];
 
@@ -98,13 +102,15 @@
     saved = { cats: L.migrate(old.cats || []), scale: old.scale || 3, toyScale: old.toyScale || old.scale || 3 };
   }
   if (saved.lang) L.lang = saved.lang;
+  L.tasksOn = saved.tasksOn ?? true; L.breedOn = saved.breedOn ?? true;
   saved.cats.forEach(L.welcomeBack);
 
   let world, cardPos = saved.cardPos || null;
   const save = () => {
     try {
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
-        lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode }));
+        lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
+        tasksOn: L.tasksOn, breedOn: L.breedOn }));
     } catch {}
   };
   let saveT = 0; L.onChange = () => { clearTimeout(saveT); saveT = setTimeout(save, 400); card && card.refresh(); };
@@ -138,11 +144,24 @@
   const checkBirthdays = () => world.cats.forEach((c) => { if (c.profile && L.birthdayDue(c.profile)) world.celebrate(c); });
   setTimeout(checkBirthdays, 350 * saved.cats.length + 2500); setInterval(checkBirthdays, 60000);
 
+  // kittens: two happy grown-up friends sometimes have one (checked every minute, if switched on)
+  function haveKitten(force) {
+    const r = L.tryBreed(world, force); if (!r) return null;
+    const [a, b] = r.parents, s = world.scale;
+    const c = world.addCat(null, r.profile);
+    c.x = (a.x + b.x) / 2; c.y = world.floor - 40 * s;
+    [a, b].forEach((p) => { world.burst(p.x, p.y - 32 * p.s, "heart", "#e2557a", 4); if (!["held", "fall", "leap", "inbox", "sleep"].includes(p.state) && !p.bed && !p.perch) p.set("happy", 3, { eyes: null }); });
+    world.confetti(c.x, world.floor - 30 * s, 28); world.meow(c); save();
+    return c;
+  }
+  setInterval(() => haveKitten(false), 60000);
+  window.DesktopCatDemo = { haveKitten };
+
   // laser and feather wand are on/off toys; keep the buttons (or the tray menu) in step
   function syncToggles() {
     if (bridge) {
       bridge.setLaser(world.laser); bridge.setWand(!!world.wand);
-      bridge.setSettings({ purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode, lang: L.lang });
+      bridge.setSettings({ purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode, lang: L.lang, tasksOn: L.tasksOn, breedOn: L.breedOn });
       return;
     }
     const on = (v) => ui(v ? "on" : "off");
@@ -151,6 +170,8 @@
     document.getElementById("purr").textContent = `${ui("purr")}: ${on(world.purrOn)}`;
     document.getElementById("meow").textContent = `${ui("meow")}: ${on(world.meowOn)}`;
     document.getElementById("night").textContent = `${ui("night")}: ${ui({ auto: "auto", day: "day", night: "nightOn" }[world.nightMode])}`;
+    document.getElementById("tasks").textContent = `🎯 ${ui("tasks")}: ${on(L.tasksOn)}`;
+    document.getElementById("breed").textContent = `🍼 ${ui("breed")}: ${on(L.breedOn)}`;
   }
   // one language for everything: the page, the cards and the tray menu
   function applyLang() {
@@ -176,6 +197,8 @@
     meow: (on) => { world.meowOn = typeof on === "boolean" ? on : !world.meowOn; save(); syncToggles(); if (world.meowOn) world.meow(world.cats[0]); },
     // the card's 🔊 button: everything off, or everything back on
     mute: () => { const any = world.purrOn || world.meowOn; world.purrOn = world.meowOn = !any; save(); syncToggles(); card.refresh(); },
+    tasks: (on) => { L.tasksOn = typeof on === "boolean" ? on : !L.tasksOn; save(); syncToggles(); card.refresh(); },
+    breed: (on) => { L.breedOn = typeof on === "boolean" ? on : !L.breedOn; save(); syncToggles(); card.refresh(); },
     lang: (l) => { L.lang = l === "tr" || l === "en" ? l : L.lang === "tr" ? "en" : "tr"; applyLang(); card.refresh(); save(); },
     night: (mode) => { const order = ["auto", "night", "day"]; world.nightMode = order.includes(mode) ? mode : order[(order.indexOf(world.nightMode) + 1) % 3]; save(); syncToggles(); },
     cards: () => { const c = card.cat && world.cats.includes(card.cat) ? card.cat : world.cats.find((c) => c.profile); if (c) card.open(c); else act.add(); },
@@ -206,7 +229,7 @@
   });
 
   if (bridge) {
-    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](["laser", "wand", "purr", "meow"].includes(cmd.type) ? cmd.on : cmd.type === "night" ? cmd.mode : cmd.type === "lang" ? cmd.lang : cmd.coat); });
+    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](["laser", "wand", "purr", "meow", "tasks", "breed"].includes(cmd.type) ? cmd.on : cmd.type === "night" ? cmd.mode : cmd.type === "lang" ? cmd.lang : cmd.coat); });
     applyLang();
   } else {
     const box = document.getElementById("coats");
@@ -215,7 +238,7 @@
       b.style.background = `linear-gradient(135deg, ${COATS[k].body} 55%, ${COATS[k].accent} 55%)`;
       b.onclick = () => act.add(k); box.appendChild(b);
     });
-    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "shelf", "clear", "cards", "remove", "purr", "meow", "night", "lang"].forEach(id => document.getElementById(id).onclick = () => act[id]());
+    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "shelf", "clear", "cards", "remove", "purr", "meow", "night", "lang", "tasks", "breed"].forEach(id => document.getElementById(id).onclick = () => act[id]());
     // removing every cat asks twice
     const ra = document.getElementById("removeAll");
     ra.onclick = () => {

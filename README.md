@@ -61,6 +61,9 @@ Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card
 - **Wardrobe** — 300 things to wear: 100 hats, 100 collars & bows, 100 outfits (ten designs each, in ten colour schemes). They stay on in every pose, even asleep. 🎲 picks a surprise outfit
 - **Photo** — 📸 saves a little polaroid of your cat, outfit and all, as a PNG
 - **Birthdays** — at one week, then 1, 2, 3 and 6 months, then every year: a cake with a candle, confetti, a party hat and a diary entry
+- **Daily tasks** — three little jobs a day for each cat (pet it five times, play with the yarn, take its photo…). Finish them for love, growing-up points and a ⭐; keep it up for a streak
+- **Best friends and kittens** — cats who keep booping, racing and play-fighting become best friends. Two happy grown-up friends sometimes have a kitten that looks like one of them
+- Tasks and kittens are optional: switch them off from the tray menu (or the demo page)
 - **Saying goodbye** — remove a cat from its card (it asks first), or all of them at once from the tray
 - **Turkish and English** — the whole app, tray menu included. Switch at the bottom of the card or under **Language** in the tray
 

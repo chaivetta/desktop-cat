@@ -50,6 +50,28 @@
     tuxedo: { tr: "Smokin", en: "Tuxedo" },
   };
 
+  // little daily tasks: three a day per cat, picked from these; each one listens for a care() event
+  const TASKS = {
+    pet:       { e: "💗", n: 5, on: "pet", tr: (n) => `${n} kez sev`, en: (n) => `Pet ${n} times` },
+    fed:       { e: "🍗", n: 1, on: "fed", tr: () => "Karnını doyur", en: () => "Give dinner" },
+    yarn:      { e: "🧶", n: 3, on: "play:yarn", tr: (n) => `Yumağa ${n} kez pati atsın`, en: (n) => `Bat the yarn ${n} times` },
+    mouse:     { e: "🐭", n: 2, on: "play:mouse", tr: (n) => `Kurmalı fareyi ${n} kez yakalasın`, en: (n) => `Catch the wind-up mouse ${n} times` },
+    feather:   { e: "🪶", n: 3, on: "play:feather", tr: (n) => `Tüylü oltaya ${n} kez saldırsın`, en: (n) => `Pounce on the feather ${n} times` },
+    butterfly: { e: "🦋", n: 2, on: "play:butterfly", tr: (n) => `Kelebeği ${n} kez kovalasın`, en: (n) => `Chase the butterfly ${n} times` },
+    laser:     { e: "🔴", n: 4, on: "play:laser", tr: () => "Lazerin peşinden koşsun", en: () => "Chase the laser dot" },
+    catnip:    { e: "🌿", n: 1, on: "catnip", tr: () => "Kedi otuyla şenlensin", en: () => "Have some catnip" },
+    bed:       { e: "🛏️", n: 1, on: "bed", tr: () => "Yatağında şekerleme yapsın", en: () => "Nap in the cat bed" },
+    scratch:   { e: "🪵", n: 1, on: "scratch", tr: () => "Tırnaklarını direkte bilesin", en: () => "Use the scratching post" },
+    box:       { e: "📦", n: 1, on: "box", tr: () => "Bir kutuya saklansın", en: () => "Hide in a box" },
+    shelf:     { e: "🪜", n: 1, on: "shelf", tr: () => "Rafa zıplasın", en: () => "Jump up onto a shelf" },
+    held:      { e: "🤲", n: 2, on: "held", tr: (n) => `${n} kez kucağına al`, en: (n) => `Pick it up ${n} times` },
+    photo:     { e: "📸", n: 1, on: "photo", tr: () => "Fotoğrafını çek", en: () => "Take its photo" },
+    dress:     { e: "👗", n: 1, on: "dress", tr: () => "Ona yeni bir şey giydir", en: () => "Dress it up" },
+  };
+  const TASK_REWARD = { xp: 14, love: 8 }, ALL_REWARD = { xp: 30, love: 15 };
+  const MAX_CATS = 8, KIT_COOL = 12 * 3.6e6;           // breeding: at most 8 cats, a parent rests 12 hours between litters
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+
   // what happens when: xp and love rewards, how often they can be earned, how often they get written in the diary
   const RULES = {
     pet:     { xp: 3, love: 7, every: 4e3, log: 3 * 60e3 },
@@ -69,9 +91,14 @@
     shelf:   { xp: 2, love: 1, every: 30e3, log: 10 * 60e3 },
   };
 
+  // Turkish genitive: Pamuk'un, Toffee'nin, Duman'ın
+  const nin = (n) => { const v = (String(n).toLocaleLowerCase("tr").match(/[aeıioöuü]/g) || ["e"]).pop();
+    return `${n}'${/[aeıioöuüAEIİOÖUÜ]$/.test(n) ? "n" : ""}${{ a: "ın", ı: "ın", e: "in", i: "in", o: "un", u: "un", ö: "ün", ü: "ün" }[v]}`; };
   const STR = {
     tr: {
-      love: "Sevgi", growth: "Büyüme", traits: "Karakteri", fav: "En sevdiği", diary: "Günlük", paneCat: "Durum", showName: "İsmini başının üstünde göster",
+      love: "Sevgi", growth: "Büyüme", traits: "Karakteri", fav: "En sevdiği", diary: "Günlük", paneCat: "Durum", tasks: "Görevler", tasksToday: "Bugünün görevleri", newTasks: "Yeni görevler gece yarısı",
+      allDone: "Hepsi bitti! Yarın yenileri gelecek 🌙", stars: (n) => `⭐ ${n} yıldız`, streak: (n) => `🔥 ${n} gün üst üste`, friend: "Yakın arkadaşı",
+      parents: (a, b) => `${a} ve ${nin(b)} yavrusu`, taskToast: "Görev tamam!", showName: "İsmini başının üstünde göster",
       pet: "Sev", feed: "Mama ver", play: "Oyna", rename: "İsmini değiştir", dice: "Rastgele isim", ok: "Kaydet", close: "Kapat",
       adopt: "Yeni yavru", newKitten: "Yeni bir yavru geldi! Adını koyalım mı?", empty: "Henüz bir şey yazmadı…",
       grownUp: "Tamamen büyüdü", toNext: (n) => `${n} puan sonra büyüyecek`,
@@ -91,10 +118,14 @@
         hello: () => "Seninle masaüstünde yaşamaya başladı",
         dress: (a) => `${a.itemName} ${a.kind === "outfit" ? "giydi" : "taktı"}`, photo: () => "Fotoğrafı çekildi", shelf: () => "Rafa zıplayıp oturdu",
         birthday: (a) => `${STR.tr.age1(a.days)} oldu! İyi ki doğdun`,
+        task: (a) => `Görevi bitirdi: ${a.txt}`, tasksDone: () => "Bugünün bütün görevlerini bitirdi ⭐",
+        bornOf: (a) => `${a.a} ve ${nin(a.b)} yavrusu olarak dünyaya geldi`, kitten: (a) => `${a.o} ile bir yavruları oldu: ${a.n}`,
       },
     },
     en: {
-      love: "Love", growth: "Growing up", traits: "Personality", fav: "Favourite", diary: "Diary", paneCat: "Status", showName: "Show name above head",
+      love: "Love", growth: "Growing up", traits: "Personality", fav: "Favourite", diary: "Diary", paneCat: "Status", tasks: "Tasks", tasksToday: "Today's tasks", newTasks: "New tasks at midnight",
+      allDone: "All done! New ones tomorrow 🌙", stars: (n) => `⭐ ${n} star${n === 1 ? "" : "s"}`, streak: (n) => `🔥 ${n} days in a row`, friend: "Best friend",
+      parents: (a, b) => `Kitten of ${a} and ${b}`, taskToast: "Task done!", showName: "Show name above head",
       pet: "Pet", feed: "Feed", play: "Play", rename: "Rename", dice: "Random name", ok: "Save", close: "Close",
       adopt: "New kitten", newKitten: "A new kitten arrived! Want to name it?", empty: "Nothing written yet…",
       grownUp: "All grown up", toNext: (n) => `${n} more points to grow`,
@@ -114,18 +145,21 @@
         hello: () => "Moved in on your desktop",
         dress: (a) => `Put on the ${a.itemName}`, photo: () => "Had a photo taken", shelf: () => "Jumped up onto the shelf",
         birthday: (a) => `${STR.en.age1(a.days)} today! Happy birthday`,
+        task: (a) => `Finished a task: ${a.txt}`, tasksDone: () => "Finished all of today's tasks ⭐",
+        bornOf: (a) => `Born to ${a.a} and ${a.b}`, kitten: (a) => `Had a kitten with ${a.o}: ${a.n}`,
       },
     },
   };
   const LOG_ICON = { born: "🐣", named: "🏷️", fed: "🍗", pet: "💗", play: "🧶", bed: "🛏️", scratch: "🪵", catnip: "🌿", zoom: "💨",
-    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", shelf: "🪜", birthday: "🎂" };
+    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", bornOf: "🐣", kitten: "🍼" };
 
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   const L = {
     lang: (navigator.language || "en").toLowerCase().startsWith("tr") ? "tr" : "en",
-    NAMES, TRAITS, TOYS, STAGES, ADULT, STR, LOG_ICON, COAT_NAMES,
+    NAMES, TRAITS, TOYS, STAGES, ADULT, STR, LOG_ICON, COAT_NAMES, TASKS, MAX_CATS,
+    tasksOn: true, breedOn: true,         // both can be switched off in the settings
     onChange: null,                     // set by the page: called when anything worth saving happens
     t(k) { return STR[L.lang][k]; },
     randomName(taken = []) {
@@ -175,6 +209,7 @@
     text(entry) {
       const f = STR[L.lang].log[entry.k]; if (!f) return "";
       const a = { ...entry.a };
+      if (a.task && TASKS[a.task]) a.txt = L.taskText(a.task);
       if (a.toyKey && TOYS[a.toyKey]) a.toy = TOYS[a.toyKey][L.lang];
       if (a.stageKey) { const st = STAGES.find((s) => s.id === a.stageKey); if (st) a.stage = st[L.lang]; }
       if (a.item) a.itemName = L.itemName(a.kind, a.item);
@@ -214,6 +249,79 @@
         L.addXP(cat, r.xp); L.addLove(cat, love);
       }
       if (now - (p.lastL[key] || 0) > r.log) { p.lastL[key] = now; L.write(p, kind, arg); L.changed(); }
+      if (arg.oid && ["boop", "race", "fight"].includes(kind)) { p.bond = p.bond || {}; p.bond[arg.oid] = Math.min(50, (p.bond[arg.oid] || 0) + (kind === "fight" ? 0.5 : 1)); }
+      if (L.tasksOn) L.taskEvent(cat, kind + (arg.toyKey ? ":" + arg.toyKey : ""));
+    },
+
+    // ------------------------------------------------ daily tasks
+    taskText(id) { const d = TASKS[id]; return d ? d[L.lang](d.n) : ""; },
+    // today's three tasks (new ones every day); one of them is often about its favourite toy
+    tasks(p) {
+      const d = today();
+      if (!p.tasks || p.tasks.day !== d) {
+        const keys = Object.keys(TASKS), pick = [];
+        const favTask = { yarn: "yarn", mouse: "mouse", feather: "feather", butterfly: "butterfly", laser: "laser", catnip: "catnip", box: "box", post: "scratch" }[p.fav];
+        if (favTask && Math.random() < 0.6) pick.push(favTask);
+        if (!pick.includes("pet") && Math.random() < 0.5) pick.push("pet");
+        while (pick.length < 3) { const k = pickOne(keys); if (!pick.includes(k)) pick.push(k); }
+        const prev = p.tasks, yesterday = new Date(Date.now() - 864e5);
+        const yd = `${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}`;
+        if (!(prev && prev.day === yd && prev.all)) p.streak = 0;
+        p.tasks = { day: d, list: pick.map((id) => ({ id, n: 0 })), all: false };
+      }
+      return p.tasks;
+    },
+    taskEvent(cat, on) {
+      const p = cat.profile, ts = L.tasks(p), now = Date.now();
+      let hit = false;
+      for (const k of ts.list) {
+        const d = TASKS[k.id]; if (!d || d.on !== on || k.n >= d.n) continue;
+        if (now - (k.t || 0) < 1500) continue;           // the laser fires every frame: count at most one every 1.5 s
+        k.t = now; k.n++; hit = true;
+        if (k.n >= d.n) {
+          L.addXP(cat, TASK_REWARD.xp); L.addLove(cat, TASK_REWARD.love); L.write(p, "task", { task: k.id });
+          const w = cat.world, s = cat.s; if (w) { w.burst(cat.x, cat.y - 34 * s, "spark", "#ffd34d", 4); w.burst(cat.x, cat.y - 30 * s, "heart", "#e2557a", 2); }
+        }
+      }
+      if (hit && !ts.all && ts.list.every((k) => k.n >= TASKS[k.id].n)) {
+        ts.all = true; p.stars = (p.stars || 0) + 1; p.streak = (p.streak || 0) + 1;
+        L.addXP(cat, ALL_REWARD.xp); L.addLove(cat, ALL_REWARD.love); L.write(p, "tasksDone");
+        if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 30);
+      }
+      if (hit) L.changed();
+    },
+
+    // ------------------------------------------------ kittens
+    // the closest friend: the cat it has booped, raced and play-fought the most
+    bestFriend(p, cats) {
+      let best = null, v = 1.5;
+      for (const c of cats) if (c.profile && c.profile !== p && (p.bond || {})[c.profile.id] >= v) { v = p.bond[c.profile.id]; best = c; }
+      return best;
+    },
+    // Two grown-up friends who are both very happy can have a kitten now and then.
+    // Called once a minute; returns the new kitten's profile, or null.
+    tryBreed(world, force = false) {
+      if (!L.breedOn && !force) return null;
+      const cats = world.cats.filter((c) => c.profile);
+      if (cats.length >= MAX_CATS) return null;
+      const now = Date.now(), ready = (c) => c.profile.xp >= ADULT && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
+        && !["held", "fall", "leap"].includes(c.state);
+      const pairs = [];
+      for (const a of cats) for (const b of cats) {
+        if (a.profile.id >= b.profile.id || !ready(a) || !ready(b)) continue;
+        const bond = Math.min((a.profile.bond || {})[b.profile.id] || 0, (b.profile.bond || {})[a.profile.id] || 0);
+        if (bond >= 2 || force) pairs.push([a, b, bond]);
+      }
+      if (!pairs.length || (!force && Math.random() > 0.05)) return null;
+      pairs.sort((x, y) => y[2] - x[2]);
+      const [a, b] = pairs[0], r = Math.random();
+      const coat = r < 0.45 ? a.profile.coat : r < 0.9 ? b.profile.coat : pickOne(Object.keys(COAT_NAMES));
+      const k = L.make(coat, { taken: cats.map((c) => c.profile.name), love: 60 });
+      k.log = []; k.parents = [a.profile.id, b.profile.id];
+      L.write(k, "bornOf", { a: a.profile.name, b: b.profile.name });
+      for (const [x, y] of [[a, b], [b, a]]) { x.profile.lastKit = now; L.write(x.profile, "kitten", { o: y.profile.name, n: k.name }); }
+      L.changed();
+      return { profile: k, parents: [a, b] };
     },
     addXP(cat, n) {
       const p = cat.profile, before = L.stage(p.xp).id;

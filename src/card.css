@@ -246,3 +246,17 @@
 @keyframes cc-float { to { transform: translate(var(--dx, 0), -70px) scale(1.5) rotate(var(--r, 0)); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) { .cc *, .cc { animation: none !important; transition: none !important; } }
+
+/* daily tasks */
+.cc-tasks ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.cc-tasks li { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; padding: 8px 11px; border-radius: 13px; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .16); font-size: 13px; font-weight: 700; }
+.cc-tasks li .ico { font-size: 17px; text-align: center; }
+.cc-tasks li .txt { display: grid; gap: 5px; }
+.cc-tasks li .txt i { display: block; height: 6px; border-radius: 99px; background: linear-gradient(90deg, #6fd3a8 calc(var(--f) * 100%), #f2e1da 0); }
+.cc-tasks li b { font: 700 13px "Pixelify Sans", monospace; opacity: .75; }
+.cc-tasks li.done { background: #e4f8ee; box-shadow: 0 0 0 2px #6fd3a8; }
+.cc-tasks li.done .txt { text-decoration: line-through; text-decoration-thickness: 2px; opacity: .7; }
+.cc-tasks li.done b { color: #2f9e6e; opacity: 1; font-size: 16px; }
+.cc-tasks li.all { display: block; text-align: center; background: #fff1b8; box-shadow: 0 0 0 2px var(--ink); animation: cc-bump .6s; }
+.cc-tfoot { margin-top: 9px; text-align: center; font: 700 13px "Pixelify Sans", monospace; opacity: .8; }
+.cc-panes button[hidden] { display: none; }
