@@ -76,7 +76,7 @@ Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card
 - **Tricks** — teach give-a-paw, spin, stand up, roll over and jump; a few good lessons and it knows them for good (and shows off now and then)
 - **It knows you** — comes to say hello when you get back, says good morning, curls up next to your mouse when you've been away, and dreams while it sleeps
 - **Seasons** — snow in winter, blossom in spring, fireflies on summer nights, falling leaves in autumn (can be switched off)
-- **Real meows** — add your own recordings (🎙️ on the card) for kittens, grown-ups and old cats; record your own cat or use free CC0 sounds. Without them the built-in synthesised meow plays
+- **Real meows** — record them right in the app with the microphone (🎤), or add sound files (🎙️ on the card), separately for kittens, grown-ups and old cats; record your own cat or use free CC0 sounds. Without them the built-in synthesised meow plays
 - Tasks and kittens are optional: switch them off from the tray menu (or the demo page)
 - **Saying goodbye** — remove a cat from its card (it asks first), or all of them at once from the tray
 - **Turkish and English** — the whole app, tray menu included. Switch at the bottom of the card or under **Language** in the tray

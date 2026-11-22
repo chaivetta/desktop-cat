@@ -229,7 +229,8 @@
       q(".cc-vt").textContent = `🎙️ ${t.voices}`; q('[data-v="back"]').textContent = `← ${t.back}`; q(".cc-vhelp").textContent = t.voicesHelp;
       const counts = V.counts(), html = [["kitten", "🍼"], ["adult", "👑"], ["elder", "🦉"]].map(([g, e]) =>
         `<div class="cc-vrow" data-g="${g}"><b>${e} ${esc(t["voice_" + g])}</b><small>${esc(t.voiceN(counts[g] || 0))}</small>
-          <label class="cc-pill">＋ ${esc(t.addFiles)}<input type="file" accept="audio/*" multiple hidden></label>
+          <button type="button" class="cc-pill rec${recG === g ? " on" : ""}" data-vt="rec" title="${esc(t.recTitle)}">${recG === g ? `⏹ ${recLeft}` : "🎤"}</button>
+          <label class="cc-pill" title="${esc(t.addFiles)}">＋<input type="file" accept="audio/*" multiple hidden></label>
           <button type="button" class="cc-pill" data-vt="test"${counts[g] ? "" : " disabled"}>▶</button><button type="button" class="cc-pill" data-vt="clear"${counts[g] ? "" : " disabled"}>🗑</button></div>`).join("");
       const box = q(".cc-vrows"); if (box.dataset.v !== html) { box.innerHTML = html; box.dataset.v = html; }
     }
@@ -363,7 +364,7 @@
       pane = b.dataset.p; update(); q(".cc-body").scrollTop = 0; place();
     });
     q(".cc-mic").onclick = () => { pane = pane === "voice" ? "cat" : "voice"; update(); place(); };
-    q('[data-v="back"]').onclick = () => { pane = "cat"; update(); place(); };
+    q('[data-v="back"]').onclick = () => { stopRec(); pane = "cat"; update(); place(); };
     q(".cc-vrows").addEventListener("change", async (e) => {
       const inp = e.target.closest("input[type=file]"); if (!inp || !inp.files.length) return;
       const g = inp.closest("[data-g]").dataset.g; await opts.voices.add(g, [...inp.files]); inp.value = ""; q(".cc-vrows").dataset.v = ""; update();
@@ -371,6 +372,7 @@
     });
     q(".cc-vrows").addEventListener("click", async (e) => {
       const b = e.target.closest("[data-vt]"); if (!b) return; const g = b.closest("[data-g]").dataset.g;
+      if (b.dataset.vt === "rec") { recG === g ? stopRec() : startRec(g); return; }
       if (b.dataset.vt === "test") world.meow(fakeCat(g));
       else { await opts.voices.clear(g); q(".cc-vrows").dataset.v = ""; update(); }
     });
@@ -382,6 +384,52 @@
       const files = [...e.dataTransfer.files].filter((f) => f.type.startsWith("audio/")); if (!files.length) return;
       await opts.voices.add(g, files); q(".cc-vrows").dataset.v = ""; update(); world.meow(fakeCat(g));
     });
+    // ------------------------------------------------ record a meow with the microphone (up to 5 seconds)
+    let recG = null, recLeft = 0, recorder = null, recTimer = 0;
+    async function startRec(g) {
+      if (recorder) stopRec();
+      let stream;
+      try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: false } }); }
+      catch { q(".cc-vhelp").textContent = T().micNo; return; }
+      const chunks = []; recorder = new MediaRecorder(stream); recG = g; recLeft = 5;
+      recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((tr) => tr.stop()); clearInterval(recTimer);
+        const group = recG; recG = null; recorder = null; q(".cc-vrows").dataset.v = ""; update();
+        const wav = await tidyRecording(new Blob(chunks, { type: chunks[0] ? chunks[0].type : "audio/webm" }));
+        if (!wav) { q(".cc-vhelp").textContent = T().recQuiet; return; }
+        await opts.voices.add(group, [wav]); q(".cc-vrows").dataset.v = ""; update(); world.meow(fakeCat(group));
+      };
+      recorder.start();
+      recTimer = setInterval(() => { recLeft--; q(".cc-vrows").dataset.v = ""; update(); if (recLeft <= 0) stopRec(); }, 1000);
+      q(".cc-vrows").dataset.v = ""; update();
+    }
+    function stopRec() { if (recorder && recorder.state !== "inactive") recorder.stop(); clearInterval(recTimer); }
+    // cut the silence off both ends, make it a good loudness, and keep it as a small WAV
+    async function tidyRecording(blob) {
+      try {
+        world.audio = world.audio || new (window.AudioContext || window.webkitAudioContext)();
+        const buf = await world.audio.decodeAudioData(await blob.arrayBuffer());
+        const n = buf.length, sr = buf.sampleRate, mono = new Float32Array(n);
+        for (let c = 0; c < buf.numberOfChannels; c++) { const d = buf.getChannelData(c); for (let i = 0; i < n; i++) mono[i] += d[i] / buf.numberOfChannels; }
+        let peak = 0; for (let i = 0; i < n; i++) peak = Math.max(peak, Math.abs(mono[i]));
+        if (peak < 0.015) return null;                                  // nothing but room noise
+        const th = Math.max(0.01, peak * 0.1), pad = Math.round(sr * 0.04);
+        let a = 0, b = n - 1; while (a < n && Math.abs(mono[a]) < th) a++; while (b > a && Math.abs(mono[b]) < th) b--;
+        a = Math.max(0, a - pad); b = Math.min(n - 1, b + pad * 2);
+        const out = mono.subarray(a, b + 1), gain = 0.9 / peak, fade = Math.min(out.length / 2, Math.round(sr * 0.01));
+        const rate = Math.min(sr, 32000), step = sr / rate, len = Math.floor(out.length / step);
+        const ab = new ArrayBuffer(44 + len * 2), v = new DataView(ab), w = (o, s) => [...s].forEach((ch, i) => v.setUint8(o + i, ch.charCodeAt(0)));
+        w(0, "RIFF"); v.setUint32(4, 36 + len * 2, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+        v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, len * 2, true);
+        for (let i = 0; i < len; i++) {
+          const j = Math.floor(i * step); let x = out[j] * gain;
+          if (j < fade) x *= j / fade; if (out.length - j < fade) x *= (out.length - j) / fade;
+          v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, x)) * 32767, true);
+        }
+        return new Blob([ab], { type: "audio/wav" });
+      } catch { return null; }
+    }
     const fakeCat = (g) => ({ size: g === "kitten" ? 0.4 : 1, profile: { g0: g === "kitten" ? 0.1 : 1, gT: Date.now(), born: g === "elder" ? 0 : Date.now() } });
     q(".cc-trk").onclick = (e) => {
       const b = e.target.closest("[data-tr]"); if (!b || !cat) return;

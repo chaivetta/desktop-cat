@@ -309,8 +309,10 @@
 
 /* meow recordings */
 .cc-vhelp { margin: 0 0 10px; font-size: 11.5px; font-weight: 700; opacity: .75; line-height: 1.35; }
-.cc-vrow { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 6px; padding: 8px 10px; margin-bottom: 7px; border-radius: 13px; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .16); }
+.cc-vrow { display: grid; grid-template-columns: 1fr auto auto auto auto; align-items: center; gap: 6px; padding: 8px 10px; margin-bottom: 7px; border-radius: 13px; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .16); }
 .cc-vrow b { font: 700 13px "Pixelify Sans", monospace; }
 .cc-vrow small { grid-column: 1; grid-row: 2; font-size: 11px; opacity: .6; font-weight: 800; }
 .cc-vrow .cc-pill { grid-row: 1 / span 2; cursor: pointer; }
 .cc-vrow .cc-pill:disabled { opacity: .4; cursor: default; }
+
+.cc-pill.rec.on { background: #ff6f91; color: #fff; animation: cc-bump 1s infinite; }

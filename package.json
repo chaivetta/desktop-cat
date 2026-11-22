@@ -18,7 +18,7 @@
     "productName": "Desktop Cat",
     "files": ["main.js", "preload.js", "src/**", "assets/**"],
     "win": { "target": "portable", "icon": "assets/icon.png" },
-    "mac": { "target": "dmg", "icon": "assets/icon.png" },
+    "mac": { "target": "dmg", "icon": "assets/icon.png", "extendInfo": { "NSMicrophoneUsageDescription": "Desktop Cat uses the microphone only when you record a meow for your cats." } },
     "linux": { "target": "AppImage", "icon": "assets/icon.png" }
   }
 }

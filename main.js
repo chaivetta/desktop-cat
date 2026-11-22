@@ -2,7 +2,7 @@
 // A transparent, click-through window spans the screen above the taskbar.
 // The page tells us when the pointer is over a cat or the yarn, and only then
 // do we let the window catch the mouse, so the rest of the desktop keeps working.
-const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage, dialog } = require("electron");
+const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage, dialog, session, systemPreferences } = require("electron");
 const path = require("path");
 
 if (process.platform === "linux") app.commandLine.appendSwitch("enable-transparent-visuals");
@@ -136,6 +136,12 @@ ipcMain.on("settings", (_e, o) => {
 ipcMain.on("coats", (_e, list) => { coats = Array.isArray(list) ? list : []; if (tray) tray.setContextMenu(buildMenu()); });
 
 app.whenReady().then(() => {
+  // the microphone is only used when you press 🎤 to record a meow on a cat card
+  session.defaultSession.setPermissionRequestHandler((_wc, perm, cb) => {
+    if (perm !== "media") return cb(false);
+    if (process.platform === "darwin") systemPreferences.askForMediaAccess("microphone").then(cb, () => cb(false)); else cb(true);
+  });
+  session.defaultSession.setPermissionCheckHandler((_wc, perm) => perm === "media");
   if (process.platform === "darwin" && app.dock) app.dock.hide();
   createWindow();
   createTray();
