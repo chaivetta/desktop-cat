@@ -12,8 +12,8 @@
         catnip: ["Kedi otu", "Bir kullanımlık. Kediler çılgına döner."],
       },
       put: "Ortaya koy", store: "Kaldır", repair: (n) => `Tamir 🪙 ${n}`, sell: (n) => `Sat 🪙 ${n}`, out: "Ortada", stored: "Depoda", worn: "Eskimiş", broken: "Kırık",
-      noItems: "Henüz eşyan yok. Eşyalar sekmesinden alabilirsin.", cond: "Durumu",
-      wearNote: "Eşyalar kullandıkça ve zamanla eskir. Kırılan eşyayı kediler kullanmaz; tamir edebilir ya da satabilirsin.",
+      durable: "Eskimez", noItems: "Henüz eşyan yok. Eşyalar sekmesinden alabilirsin.", cond: "Durumu",
+      wearNote: "Halı, minder, yatak ve kedi ağacı kullandıkça ve zamanla eskir; kulübe, akvaryum ve saksı eskimez. Kırılan eşyayı kediler kullanmaz; tamir edebilir ya da satabilirsin.",
       needMore: (n) => `${n} altın daha lazım`,
       ways: [
         ["🎯", "Görevler", "Her görev 2🪙, bir kedinin üç görevi de bitince +5🪙 ve 1⭐."],
@@ -35,8 +35,8 @@
         catnip: ["Catnip", "One go. The cats go wild."],
       },
       put: "Place", store: "Put away", repair: (n) => `Repair 🪙 ${n}`, sell: (n) => `Sell 🪙 ${n}`, out: "Out", stored: "Stored", worn: "Worn", broken: "Broken",
-      noItems: "You don't own anything yet. Have a look under Furniture.", cond: "Condition",
-      wearNote: "Things wear out with use and over time. Cats won't use something broken; repair it or sell it.",
+      durable: "Never wears out", noItems: "You don't own anything yet. Have a look under Furniture.", cond: "Condition",
+      wearNote: "Rugs, cushions, beds and the cat tree wear out with use and over time; the cat house, aquarium and plant never do. Cats won't use something broken; repair it or sell it.",
       needMore: (n) => `${n} more coins needed`,
       ways: [
         ["🎯", "Tasks", "2🪙 per task, +5🪙 and 1⭐ when all three of a cat's tasks are done."],
@@ -78,12 +78,13 @@
           return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`); }).join("")}</div>`;
       } else if (tab === "mine") {
         body = H.items.length ? `<p class="mk-note">${esc(s.wearNote)}</p><div class="mk-list">${H.items.map((it) => {
-          const [nm] = L.t("furn")[it.k], c = Math.round(it.cond), lab = condLabel(it, s), rc = repairCost(it);
+          const [nm] = L.t("furn")[it.k], dur = DC.FURN[it.k].durable; if (dur) it.cond = 100;
+          const c = Math.round(it.cond), lab = condLabel(it, s), rc = repairCost(it);
           return `<div class="mk-row${it.cond <= 0 ? " broken" : ""}" data-id="${it.id}"><canvas width="64" height="48" data-f="${it.k}"></canvas>
             <div class="mk-info"><b>${esc(nm)}</b><small>${esc(it.x != null ? s.out : s.stored)}${lab ? ` · <em>${esc(lab)}</em>` : ""}</small>
-              <span class="mk-cond" title="${esc(s.cond)} ${c}%"><i style="--c:${c}%;--h:${Math.round(c * 1.2)}"></i></span></div>
+              ${dur ? `<small class="mk-dur">✨ ${esc(s.durable)}</small>` : `<span class="mk-cond" title="${esc(s.cond)} ${c}%"><i style="--c:${c}%;--h:${Math.round(c * 1.2)}"></i></span>`}</div>
             <div class="mk-acts"><button type="button" data-it="${it.x != null ? "store" : "put"}">${esc(it.x != null ? s.store : s.put)}</button>
-              ${it.cond < 90 ? `<button type="button" class="gold" data-it="repair"${L.wallet.coins < rc ? " disabled" : ""}>${esc(s.repair(rc))}</button>` : ""}
+              ${!dur && it.cond < 90 ? `<button type="button" class="gold" data-it="repair"${L.wallet.coins < rc ? " disabled" : ""}>${esc(s.repair(rc))}</button>` : ""}
               <button type="button" class="ghost" data-it="sell">${esc(s.sell(sellPrice(it)))}</button></div></div>`; }).join("")}</div>` : `<p class="mk-empty">🪑<br>${esc(s.noItems)}</p>`;
       } else {
         body = `<div class="mk-ways">${s.ways.map(([e, h, d]) => `<div class="mk-way"><span>${e}</span><div><b>${esc(h)}</b><small>${esc(d)}</small></div></div>`).join("")}</div><p class="mk-today">${esc(s.today(E.pc, E.game))}</p>`;

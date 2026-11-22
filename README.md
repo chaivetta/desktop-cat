@@ -71,7 +71,7 @@ Right-click a cat (or tap **Cat cards** in ⚙️ Settings) to open its card, ri
 - **Best friends and kittens** — cats who keep booping, racing and play-fighting become best friends. Two happy grown-up friends sometimes have a kitten that looks like one of them
 - **Two currencies** — 🪙 coins buy food and furniture in the 🛒 market; ⭐ stars buy hats, collars and outfits on the cat card. Coins come from tasks (2🪙 each, +5🪙 for all three), the laser hunt (1🪙 per star caught, 40 a day at most) and simply using your computer (1🪙 every 10 active minutes, 30 a day at most). Stars only come from finishing all of a cat's tasks (1⭐) or a laser-hunt score of 20+ (once a day)
 - **🛒 Market** — dry food (two meals for 10🪙), wet food, fish feasts, treats for teaching tricks, catnip, and furniture. The bowl only fills from your cupboard
-- **Things wear out** — furniture wears a little with every use and every day; worn things look faded, broken things are ignored by the cats. Repair them or sell them under **My things**
+- **Things wear out** — rugs, cushions, beds and the cat tree wear a little with every use and every day (the cat house, aquarium and plant never do); worn things look faded, broken things are ignored by the cats. Repair them or sell them under **My things**
 - **Growing up takes real care** — a cat only grows while the app is running, it isn't hungry (a meal lasts eight hours) and it feels loved: about 250 hours of that to grow up
 - **Wise old cats** — after a year a grown-up becomes a wise old cat with a grey muzzle who takes life a bit slower (and stays with you)
 - **Memories** — the big moments (arriving, growing up, birthdays, kittens, tricks, days together, your photos) are kept as little polaroids in the card, drawn as the cat looked that day

@@ -58,3 +58,4 @@
 .mk-pop { position: fixed; z-index: 60; transform: translate(-50%, 0); font: 700 16px "Pixelify Sans", monospace; color: #5b3a29; pointer-events: none; animation: mk-up .9s ease-out forwards; text-shadow: 0 0 3px #fff, 0 0 6px #fff; }
 @keyframes mk-up { to { transform: translate(-50%, -46px); opacity: 0; } }
 .coinpop { position: fixed; z-index: 60; pointer-events: none; font: 700 15px "Pixelify Sans", monospace; color: #8a5a00; text-shadow: 0 0 3px #fff, 0 0 6px #fff; animation: mk-up 1.2s ease-out forwards; transform: translate(-50%, 0); }
+.mk-info small.mk-dur { margin-top: 4px; color: #2f9e6e; opacity: 1; font-weight: 800; }

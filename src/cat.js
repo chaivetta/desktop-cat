@@ -1871,12 +1871,12 @@
   // rug, potted plant, cushion, cat tree and a little aquarium; drag them anywhere along the floor
   // nap: a spot one cat can sleep in (the cat house hides it inside)
   const FURN = {
-    plant:   { w: 18, h: 30, price: 40 },             // prices in coins 🪙
+    plant:   { w: 18, h: 30, price: 40, durable: true },   // prices in coins 🪙; durable things never wear out
     rug:     { w: 60, h: 6, price: 60 },
     cushion: { w: 30, h: 9, price: 50, nap: 5 },
     bed:     { w: 30, h: 13, price: 70, nap: 4 },
-    aquarium:{ w: 30, h: 26, price: 120 },
-    house:   { w: 36, h: 34, price: 150, nap: 0 },
+    aquarium:{ w: 30, h: 26, price: 120, durable: true },
+    house:   { w: 36, h: 34, price: 150, nap: 0, durable: true },
     tree:    { w: 44, h: 80, price: 200 },
   };
   function paintFurniture(kind, R) {
@@ -1935,6 +1935,7 @@
     constructor(world, kind, x, item) {
       this.world = world; this.kind = kind; this.x = x; this.y = world.floor; this.held = false; this.occupant = null; this.f = FURN[kind];
       this.item = item || { k: kind, cond: 100 };
+      if (this.f.durable) this.item.cond = 100;
       this.sp = new Sprite(this.f.w, this.f.h); this.dirty = true; this.t = 0;
       if (kind === "tree") this.platforms = [new Platform(this, -5, 35, 13), new Platform(this, 6, 61, 14)];
       if (kind === "aquarium") this.fish = [{ x: 8, y: 9, d: 1, c: "#ff8a3d" }, { x: 20, y: 13, d: -1, c: "#ffd34d" }];
@@ -1943,7 +1944,7 @@
     // things wear out: a little with every use, a little every day; at 0 they're broken until you repair them
     get cond() { return this.item.cond; }
     get usable() { return this.item.cond > 0; }
-    use() { this.item.cond = Math.max(0, this.item.cond - 1.5); }
+    use() { if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - 1.5); }
     grab() { this.held = true; } release() { this.held = false; }
     click() {
       const o = this.occupant; if (o && this.world.cats.includes(o)) { o.set("stretch", 1.4); return; }      // knock knock: whoever's napping wakes up
@@ -1951,7 +1952,7 @@
     }
     update(dt) {
       const w = this.world, s = w.toyScale; this.t += dt; this.y = w.floor;
-      this.item.cond = Math.max(0, this.item.cond - dt * 2 / 86400);                 // two points a day
+      if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - dt * 2 / 86400);   // two points a day
       if (!this.usable && this.occupant) { const o = this.occupant; this.occupant = null; if (o.cushion === this) { o.cushion = null; o.set("stretch", 1.4); } }
       if (this.held) this.x += (clamp(w.pointer.x, this.f.w * s / 2, w.W - this.f.w * s / 2) - this.x) * Math.min(1, dt * 14);
       if (this.occupant && (!w.cats.includes(this.occupant) || this.occupant.cushion !== this)) this.occupant = null;
