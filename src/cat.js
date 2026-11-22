@@ -650,6 +650,11 @@
         else if (!right && (x + y) % 2 === 0) rgb = t.shade;         // dithered rim on the back
         else rgb = t.base;
       }
+      if (R.grey && R.head && !R.head.flip && R.part[i] === PART.HEAD && m !== M.EYE && m !== M.PUPIL && m !== M.NOSE && m !== M.CLOSED) {
+        const h = R.head, mx = h.front ? h.x : h.x + h.d * 4, my = h.y + (h.front ? 2.4 : 1.6);
+        const ex = (x + 0.5 - mx) / 4, ey = (y + 0.5 - my) / 3;
+        if (ex * ex + ey * ey <= 1) rgb = mix(rgb, [222, 220, 226], 0.6);          // a wise old cat's grey muzzle
+      }
       const o = i * 4; d[o] = rgb[0]; d[o + 1] = rgb[1]; d[o + 2] = rgb[2]; d[o + 3] = 255;
     }
     // outline
@@ -668,6 +673,7 @@
     const R = portraitCache.R || (portraitCache.R = new Raster()); R.clear();
     const c = portraitCache.c || (portraitCache.c = Object.assign(document.createElement("canvas"), { width: SW, height: SH }));
     const g = c.getContext("2d"), img = portraitCache.img || (portraitCache.img = g.createImageData(SW, SH));
+    R.grey = !!o.grey;
     (POSES[o.pose] || POSES.sit)(R, { t: o.t || 0, st: 1, phase: o.phase || 0, blink: !!o.blink, eyes: o.eyes || null, look: o.look || null });
     const pal = portraitCache.pal[coat] || (portraitCache.pal[coat] = buildPalette(coat));
     dress(R, o.acc); shade(R, pal, img, accTones(o.acc)); g.putImageData(img, 0, 0);
@@ -787,6 +793,13 @@
       if (foe) wt.fight = 0.6;
       if (wt.yarn || wt.mouse || wt.dangle || wt.butterfly) { wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; wt.loaf = wt.sploot = 0.2; }
       if (this.mods) for (const k in wt) if (this.mods[k]) wt[k] *= this.mods[k];      // personality
+      if (this.profile && window.CatLife && window.CatLife.isElder(this.profile)) {                              // wise old cats take it easy
+        wt.sleep *= 1.6; wt.walk *= 0.7; wt.zoom = 0; wt.tailChase *= 0.3; wt.loaf *= 1.6; if (wt.pronk) wt.pronk *= 0.4; if (wt.fight) wt.fight *= 0.4;
+      }
+      // you've been away from the mouse for a while: come and curl up next to where you left it
+      if (w.idleFor() > 480 && pt && pt.x > 0 && !wt.yarn && !wt.mouse && !wt.bowl) wt.you = 6;
+      const known = this.profile && this.profile.tricks ? Object.keys(this.profile.tricks).filter((k) => this.profile.tricks[k] >= 5) : [];
+      if (known.length && !w.isNight()) wt.showOff = 0.15;                              // practising a trick it knows
       const n = pick(wt);
       if (n === "walk") { const m = SW * this.s; this.set("walk", 12, { target: clamp(this.x + rnd(-420, 420), m, w.W - m) }); }
       else if (n === "sit") this.set("sit", rnd(3, 8));
@@ -807,6 +820,8 @@
       else if (n === "meerkat") this.set("meerkat", rnd(2.2, 3.6));
       else if (n === "tailChase") this.set("tailChase", rnd(2.2, 3.8), { spinT: 0 });
       else if (n === "pronk") this.pronk(rnd(2, 4) | 0);
+      else if (n === "you") { this.napOff = rnd(-70, 70) * this.s / 3; this.set("chase", 20, { goal: "you" }); }
+      else if (n === "showOff") this.doTrick(known[Math.floor(Math.random() * known.length)]);
       else if (n === "blink") { this.facing = Math.sign(pt.x - this.x) || this.facing; this.set("slowBlink", 3.4); }
       else if (n === "zoom") this.startZoom();
       else if (n === "box") { box.claimed = this; this.set("chase", 12, { goal: "box", boxRef: box }); }
@@ -825,6 +840,7 @@
         }
         case "box": return this.boxRef && w.boxes.includes(this.boxRef) && !this.boxRef.occupant ? this.boxRef.x : null;
         case "feather": return w.wand && w.pointer.seen ? w.wand.x : null;
+        case "you": return w.pointer.x > 0 ? clamp(w.pointer.x + (this.napOff || 0), 20, w.W - 20) : null;
         case "butterfly": return w.butterfly ? w.butterfly.x : null;
         case "catnip": return w.catnip && !w.catnip.held ? w.catnip.x : null;
         case "bed": return this.bedRef && w.bed === this.bedRef && !this.bedRef.occupant ? this.bedRef.x : null;
@@ -888,7 +904,9 @@
           const am = this.aim(), tx = am ? am.x : this.x;
           this.facing = Math.sign(tx - this.x) || this.facing;
           if (this.stateT > this.dur) {
-            const air = 0.42; this.vx = clamp((tx - this.x) / air, -320 * s / 3 * 3, 320 * s / 3 * 3); this.vy = -G * air / 2;
+            // aim so the front paws, not the tummy, come down on the toy
+            const lead = ["yarn", "mouse", "butterfly"].includes(this.goal) ? this.facing * 11 * s : 0;
+            const air = 0.42; this.vx = clamp((tx - lead - this.x) / air, -320 * s / 3 * 3, 320 * s / 3 * 3); this.vy = -G * air / 2;
             this.set("leap", 3);
           }
           break;
@@ -912,6 +930,7 @@
           this.paws((tx, ty) => this.contact(tx, ty));
           if (this.y >= floor) {
             this.y = floor; this.vy = 0; w.burst(this.x, floor, "dust", "rgba(140,120,100,.7)", 3);
+            this.landOnToy();
             if (this.goalX() != null && Math.random() < 0.8) this.set("chase", ["laser", "feather"].includes(this.goal) ? 30 : 6);
             else this.set("sit", 2.5);
           }
@@ -956,7 +975,7 @@
         }
         case "knead": {
           if (Math.random() < dt * 0.8) w.burst(this.x + this.facing * 8 * s, this.y - 26 * s, "heart", "#e2557a", 1);
-          if (this.stateT > this.dur) this.set("sleep", rnd(12, 30));
+          if (this.stateT > this.dur) { this.set("sleep", rnd(12, 30)); this.dream = pick(this.dreams()); }
           break;
         }
         case "spar": this.updateSpar(dt); break;
@@ -1093,6 +1112,7 @@
         }
         else if (g === "shelf") { this.facing = Math.sign(this.shelfRef.x - this.x) || this.facing; this.set("prep", rnd(0.4, 0.8)); }
         else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); this.care("scratch"); }
+        else if (g === "you") { this.set("knead", rnd(1.5, 2.5)); this.care("napNear"); }
         else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7) * ((this.mods && this.mods._eat) || 1)); this.care("fed"); }
         else if (g === "box") {
           const b = this.boxRef; b.claimed = null;
@@ -1104,6 +1124,21 @@
     }
 
     // where the front paws are, in screen space
+    // coming down from a pounce: whatever is under the paws or the tummy gets pinned, then squirts away
+    landOnToy() {
+      const w = this.world, s = this.s, f = this.facing, y = w.yarn;
+      if (y && !y.held) {
+        const d = (y.x - this.x) * f;                          // how far ahead of the cat's middle
+        if (d > -16 * s && d < 24 * s && y.y > this.y - 30 * s) {
+          y.x = clamp(y.x, 0, w.W); y.vx = f * rnd(140, 300) + (d < 4 * s ? f * 80 : 0); y.vy = -rnd(200, 360); y.spin += f * 12;
+          if (y.squash != null) y.squash = 1;
+          w.burst(y.x, y.y, "spark", "#f7e48c", 4); this.care("play", { toyKey: "yarn" }); this.touchedRecently = 0.25;
+          if (Math.random() < 0.5) setTimeout(() => w.meow(this), 120);
+        }
+      }
+      const m = w.mouse;
+      if (m && !m.held && m.airT <= 0 && Math.abs(m.x - (this.x + f * 8 * s)) < 22 * s) { m.kick(f); w.burst(m.x, m.y - 6 * s, "spark", "#f7e48c", 3); this.care("play", { toyKey: "mouse" }); }
+    }
     paws(fn) {
       const s = this.s, f = this.facing;
       if (this.state === "stand") fn(this.x + f * 8 * s, this.y - 34 * s);
@@ -1198,6 +1233,34 @@
         }
       }
     }
+    // what it dreams about: its favourite toy, dinner, butterflies… and you
+    dreams() {
+      const fav = this.profile && window.CatLife ? window.CatLife.TOYS[this.profile.fav] : null;
+      return { [fav ? fav.e : "🧶"]: 3, "🐟": 2, "🦋": 1, "🐭": 1, "💗": this.profile && this.profile.love > 60 ? 2.5 : 0.5, "🌙": 0.6 };
+    }
+    drawDream(ctx) {
+      if (this.state !== "sleep" || !this.dream || this.stateT < 2.5) return;
+      const cyc = (this.stateT - 2.5) % 9; if (cyc > 4.2) return;
+      const s = this.s, w = this.world, a = Math.min(1, cyc * 2, (4.2 - cyc) * 2);
+      const hx = this.x + this.facing * 10 * s, hy = this.y - 18 * s * (this.bed ? 1.2 : 1);
+      const bx = hx + this.facing * 16 * s, by = hy - 26 * s, r = 9 * Math.max(2, s) / 2;
+      ctx.save(); ctx.globalAlpha = 0.92 * a; ctx.fillStyle = "#fff"; ctx.strokeStyle = "#5b3a29"; ctx.lineWidth = Math.max(1.5, s / 2);
+      for (const [k, rr] of [[0.25, 0.18], [0.5, 0.28]]) { ctx.beginPath(); ctx.arc(hx + (bx - hx) * k, hy + (by - hy) * k + 6 * s * k, r * rr, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+      ctx.beginPath(); ctx.ellipse(bx, by, r * 1.25, r, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.font = `${Math.round(r * 1.15)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(this.dream, bx, by + r * 0.08 + Math.sin(this.t * 2) * s * 0.4);
+      ctx.restore();
+    }
+    // do a trick on cue (or try to, while it's still learning)
+    doTrick(id, fail = false) {
+      const w = this.world, s = this.s;
+      if (["held", "fall", "leap", "inbox"].includes(this.state) || this.bed) return;
+      if (w.pointer.seen) this.facing = Math.sign(w.pointer.x - this.x) || this.facing;
+      if (fail) { this.set(Math.random() < 0.5 ? "sit" : "yawn", 1.4, { eyes: null }); w.burst(this.x + this.facing * 6 * s, this.y - 40 * s, "what", "#8a6b55", 1); return; }
+      const tr = { paw: () => this.set("bat", 1.4, { swatted: true }), spin: () => this.set("tailChase", 1.7, { spinT: 0 }), beg: () => this.set("meerkat", 2),
+        roll: () => this.set("roll", 2.2), jump: () => this.pronk(2) }[id];
+      if (tr) { tr(); w.burst(this.x + this.facing * 8 * s, this.y - 36 * s, "spark", "#ffd34d", 2); }
+    }
     pronk(n) { this.set("pronk", 9); this.hops = Math.max(1, n); this.vy = -rnd(230, 300) * Math.sqrt(this.s / 3); this.vx = 0; this.y = this.world.floor - 1; }
     hopOut() {
       const b = this.box; if (b) b.occupant = null; this.box = null;
@@ -1221,6 +1284,7 @@
 
     render(ctx) {
       const R = this.R; R.clear();
+      R.grey = !!(this.profile && window.CatLife && window.CatLife.isElder(this.profile));
       const a = { t: this.t, st: this.stateT, phase: this.phase, blink: this.blink, eyes: this.state === "happy" ? "happy" : this.eyes, peekEyes: null, look: this.look };
       POSES[this.pose()](R, a);
       const acc = this.wearing();
@@ -1242,6 +1306,7 @@
       ctx.drawImage(this.canvas, Math.round(-SW * s / 2), 0, SW * s, SH * s);
       ctx.restore();
       if (this.profile && this.profile.showName && w.showNames !== false) this.drawTag(ctx, R, dy);
+      this.drawDream(ctx);
     }
 
     // a little speech-bubble name tag floating above the cat
@@ -1711,6 +1776,7 @@
   // ---------------------------------------------------------------- pixel glyphs for particles
   const GLYPH = {
     heart: ["01100110", "11111111", "11111111", "01111110", "00111100", "00011000"],
+    what: ["0110", "1001", "0001", "0010", "0100", "0000", "0100"],
     z: ["11111", "00010", "00100", "01000", "11111"],
     spark: ["00100", "00100", "11011", "00100", "00100"],
     dust: ["0110", "1111", "0110"],
@@ -1725,19 +1791,35 @@
       this.canvas = canvas; this.ctx = canvas.getContext("2d");
       this.scale = opts.scale || 3; this.toyScale = opts.toyScale || this.scale; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
       this.wand = null; this.butterfly = null; this.catnip = null; this.catnipId = 0; this.bed = null; this.post = null;
-      this.shelves = []; this.cakes = []; this.purrOn = opts.purrOn ?? true; this.meowOn = opts.meowOn ?? true; this.nightMode = opts.nightMode || "auto";
+      this.shelves = []; this.cakes = []; this.purrOn = opts.purrOn ?? true; this.meowOn = opts.meowOn ?? true; this.nightMode = opts.nightMode || "auto"; this.seasonsOn = opts.seasonsOn ?? true;
       this.pointer = { x: -1e4, y: -1e4, seen: false }; this.drag = null; this.onHover = opts.onHover || (() => {});
       this.floorInset = opts.floorInset ?? 6; this.audio = null; this.last = performance.now();
       this.resize(); addEventListener("resize", () => this.resize());
       this.bindInput();
       requestAnimationFrame((t) => this.frame(t));
     }
+    idleFor() { return this.pointer.movedAt ? (performance.now() - this.pointer.movedAt) / 1000 : 0; }
+    // back at the computer after a while (or the app just opened after hours away): the cats come to say hello
+    greet(long = false, kind = "greet") {
+      const p = this.pointer, tx = p.x > 0 ? p.x : this.W / 2;
+      this.cats.forEach((c, i) => {
+        if (["held", "fall", "inbox"].includes(c.state)) return;
+        setTimeout(() => {
+          if (!this.cats.includes(c)) return;
+          if (c.state === "sleep" || c.state === "knead") c.set("stretch", 1.4);
+          else { c.napOff = (i - (this.cats.length - 1) / 2) * 40 * c.s / 3 * 2; c.goal = null; c.set("chase", 8, { goal: "you" }); }
+          setTimeout(() => { if (this.cats.includes(c) && !["held", "fall", "inbox", "leap", "pronk"].includes(c.state)) { c.facing = Math.sign(tx - c.x) || c.facing; c.set(long ? "happy" : "slowBlink", long ? 3 : 3.4); } }, 1800 + i * 300);
+          c.care(kind, { long });
+        }, i * 350);
+      });
+      if (this.cats[0]) setTimeout(() => this.meow(this.cats[0]), 900);
+    }
     resize() { this.W = innerWidth; this.H = innerHeight; this.canvas.width = this.W; this.canvas.height = this.H; this.canvas.style.width = this.W + "px"; this.canvas.style.height = this.H + "px"; this.floor = this.H - this.floorInset; }
     spot() { return rnd(this.W * 0.15, this.W * 0.85); }
     addCat(coat, profile) {
       coat = profile ? profile.coat : coat && COATS[coat] ? coat : COAT_KEYS[Math.floor(Math.random() * COAT_KEYS.length)];
       const c = new Cat(this, coat, this.spot());
-      if (profile) { c.profile = profile; if (window.CatLife) { c.mods = window.CatLife.mods(profile); c.size = window.CatLife.size(profile.xp); } }
+      if (profile) { c.profile = profile; if (window.CatLife) { c.mods = window.CatLife.mods(profile); c.size = window.CatLife.size(profile); } }
       c.y = -60; c.set("fall", 5); c.vx = 0; this.cats.push(c); return c;
     }
     removeCat(cat) {
@@ -1796,8 +1878,33 @@
     }
     // a soft synthesised meow: a buzzy voice with a little vibrato, shaped by three "mouth" formants
     // sliding from "mee" through "aa" to "ow", plus a breath of air. Kittens are higher and shorter.
+    // real recordings, if you've added some: one set for kittens, one for grown-ups, one for wise old cats
+    async setVoices(group, files) {
+      this.audio = this.audio || new (window.AudioContext || window.webkitAudioContext)();
+      const out = [];
+      for (const f of files) { try { out.push(await this.audio.decodeAudioData(f.slice(0))); } catch {} }
+      this.voices = this.voices || {}; this.voices[group] = out;
+      return out.length;
+    }
+    voiceGroup(cat) {
+      const L = window.CatLife, p = cat && cat.profile;
+      if (L && p) { const st = L.stage(p).id; return st === "kitten" ? "kitten" : st === "elder" ? "elder" : "adult"; }
+      return cat && cat.size < 0.6 ? "kitten" : "adult";
+    }
+    playVoice(cat) {
+      const V = this.voices || {}, g = this.voiceGroup(cat);
+      // missing a set? borrow a neighbour's and shift the pitch: kittens higher, old cats a little lower
+      const order = { kitten: [["kitten", 1], ["adult", 1.3], ["elder", 1.45]], adult: [["adult", 1], ["kitten", 0.8], ["elder", 1.12]], elder: [["elder", 1], ["adult", 0.88], ["kitten", 0.7]] }[g];
+      const hit = order.find(([k]) => V[k] && V[k].length); if (!hit) return false;
+      const ac = this.audio, list = V[hit[0]], buf = list[Math.floor(Math.random() * list.length)];
+      const src = ac.createBufferSource(), gain = ac.createGain();
+      src.buffer = buf; src.playbackRate.value = hit[1] * rnd(0.95, 1.06);       // every meow a little different
+      gain.gain.value = 0.55; src.connect(gain); gain.connect(ac.destination); src.start();
+      return true;
+    }
     meow(cat) {
       if (!this.meowOn) return;
+      try { if (this.playVoice(cat)) return; } catch {}
       try {
         this.audio = this.audio || new (window.AudioContext || window.webkitAudioContext)();
         const ac = this.audio, t0 = ac.currentTime + 0.02, kit = cat && cat.size < 0.8;
@@ -1874,7 +1981,9 @@
         return { x: (b[1] - a[1]) / dt, y: (b[2] - a[2]) / dt };
       };
       addEventListener("pointermove", (e) => {
+        const away = this.idleFor();
         pos(e); const d = this.drag;
+        if (away > 480 && this.cats.length) this.greet(away > 3600);
         if (d && !d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 6) {
           d.moved = true;
           if (d.cat) { d.cat.set("held", 1e9); d.cat.care("held"); if (Math.random() < 0.5) this.meow(d.cat); }
@@ -1912,6 +2021,7 @@
       for (const t of [this.wand, this.butterfly, this.catnip, this.bed, this.post, ...this.shelves, ...this.cakes]) if (t) t.update(dt);
       this.cats.forEach((c) => c.update(dt));
       if (this.isNight()) this.renderNight(ctx, now);
+      if (this.seasonsOn !== false) this.renderSeason(ctx, dt, now);
       if (this.post) this.post.render(ctx);
       this.shelves.forEach((sh) => sh.render(ctx));
       this.cakes.forEach((c) => c.render(ctx));
@@ -1928,6 +2038,34 @@
       if (this.laser && this.pointer.seen) this.renderLaser(ctx, now);
       this.renderParticles(ctx, dt);
       requestAnimationFrame((t) => this.frame(t));
+    }
+    // the time of year, outside the cats' window: snow in winter, blossom in spring, fireflies on summer nights, leaves in autumn
+    season() { const m = new Date().getMonth(); return m === 11 || m <= 1 ? "winter" : m <= 4 ? "spring" : m <= 7 ? "summer" : "autumn"; }
+    renderSeason(ctx, dt, now) {
+      const se = this.seasonOverride || this.season(), night = this.isNight();
+      if (se === "summer" && !night) { this.flakes = []; return; }
+      const max = { winter: 34, spring: 14, summer: 10, autumn: 16 }[se], k = Math.max(2, Math.round(this.scale * 0.7));
+      const fl = this.flakes = (this.flakes || []).filter((f) => f.y < this.floor + 4 && f.x > -20 && f.x < this.W + 20 && f.se === se);
+      if (fl.length < max && Math.random() < dt * max / 6) {
+        const cols = { winter: ["#ffffff", "#eef5ff", "#dfeaff"], spring: ["#ffc7d9", "#ffb0c8", "#fff0f4"], summer: ["#fff3a0"], autumn: ["#e8873a", "#c9622a", "#e0a13c", "#a8502a"] }[se];
+        fl.push({ se, x: Math.random() * this.W, y: se === "summer" ? this.floor - Math.random() * 260 : -10, ph: Math.random() * 6, c: cols[Math.floor(Math.random() * cols.length)],
+          vy: { winter: 22, spring: 26, summer: -4, autumn: 34 }[se] * (0.6 + Math.random() * 0.8), big: Math.random() < 0.3 });
+      }
+      ctx.save();
+      for (const f of fl) {
+        f.ph += dt; f.y += f.vy * dt; f.x += Math.sin(f.ph * (se === "autumn" ? 1.6 : 1.1)) * (se === "autumn" ? 34 : se === "summer" ? 14 : 12) * dt;
+        if (se === "summer") { f.y += Math.cos(f.ph * 0.7) * 8 * dt; if (f.ph > 14) f.y = 1e5; }
+        ctx.globalAlpha = se === "summer" ? 0.35 + 0.65 * (Math.sin(f.ph * 3) + 1) / 2 : 0.9; ctx.fillStyle = f.c;
+        const x = Math.round(f.x), y = Math.round(f.y), z = f.big ? k * 1.5 : k;
+        if (se === "autumn") { ctx.fillRect(x, y, z * 2, z); ctx.fillRect(x + z / 2, y - z / 2, z, z * 2); }
+        else if (se === "spring") { ctx.fillRect(x, y, z * 1.5, z); }
+        else ctx.fillRect(x, y, z, z);
+      }
+      if (se === "winter") {                            // a thin line of snow settles on the floor
+        ctx.globalAlpha = 0.85; ctx.fillStyle = "#ffffff";
+        for (let x = 0; x < this.W; x += k * 3) { const h = k * (1 + ((x * 7919) % 3 === 0 ? 1 : 0)); ctx.fillRect(x, this.floor - h + k, k * 3, h); }
+      }
+      ctx.restore();
     }
     // a small crescent moon and a few twinkling stars, only at night
     renderNight(ctx, now) {

@@ -276,3 +276,41 @@
 .cc-tfoot b { font-size: 15px; }
 .cc-tfoot span { font-size: 12px; opacity: .8; }
 .cc-tfoot small { font: 800 11px "Nunito", sans-serif; opacity: .6; }
+
+/* tabs: icon only unless open */
+.cc-panes button { flex: 0 0 auto; min-width: 38px; }
+.cc-panes button.on { flex: 1; }
+.cc-mic { border: 0; background: none; cursor: pointer; font-size: 13px; padding: 0 2px; }
+.cc-mic[hidden] { display: none; }
+
+/* tricks */
+.cc-trk { display: flex; flex-wrap: wrap; gap: 6px; }
+.cc-trick { position: relative; overflow: hidden; border: 0; border-radius: 99px; padding: 5px 11px 7px; cursor: pointer; background: #fff; font: 800 12px "Nunito", sans-serif; box-shadow: 0 0 0 2px rgba(91, 58, 41, .25); }
+.cc-trick i { position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--f) * 100%); background: #6fd3a8; }
+.cc-trick.done { background: #e4f8ee; box-shadow: 0 0 0 2px #6fd3a8, 0 2px 0 2px #6fd3a8; }
+.cc-trick:active { transform: translateY(1px); }
+
+/* memories */
+.cc-together { margin: 0 0 12px; padding: 8px 12px; border-radius: 13px; background: #ffe1ea; text-align: center; font: 700 14px "Pixelify Sans", monospace; box-shadow: 0 0 0 2px var(--ink); }
+.cc-fam[hidden] { display: none; }
+.cc-famrow { display: grid; gap: 4px; margin-bottom: 8px; }
+.cc-famrow > small { font-weight: 800; font-size: 11px; opacity: .65; }
+.cc-famrow > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.cc-kin { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px 2px 2px; border: 0; border-radius: 99px; background: #fff; cursor: pointer; font: 800 12px "Nunito", sans-serif; box-shadow: 0 0 0 2px rgba(91, 58, 41, .25); }
+.cc-kin canvas { width: 28px; height: 28px; border-radius: 50%; background: #fff3e3; image-rendering: pixelated; }
+.cc-kin.gone { opacity: .55; cursor: default; }
+.cc-album { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 8px; max-height: 330px; overflow-y: auto; padding: 4px 4px 8px; }
+.cc-pol { margin: 0; padding: 5px 5px 6px; background: #fff; border-radius: 3px; transform: rotate(var(--r)); box-shadow: 0 0 0 1.5px rgba(91, 58, 41, .25), 2px 3px 0 rgba(91, 58, 41, .15); }
+.cc-pol:hover { transform: rotate(0) scale(1.04); z-index: 1; position: relative; }
+.cc-pol canvas { width: 100%; aspect-ratio: 96 / 84; display: block; image-rendering: pixelated; }
+.cc-pol figcaption { margin-top: 4px; font: 800 10px/1.25 "Nunito", sans-serif; text-align: center; }
+.cc-pol time { display: block; opacity: .55; font-size: 9px; margin-top: 2px; }
+.cc-empty { text-align: center; opacity: .6; font-weight: 800; font-size: 12px; }
+
+/* meow recordings */
+.cc-vhelp { margin: 0 0 10px; font-size: 11.5px; font-weight: 700; opacity: .75; line-height: 1.35; }
+.cc-vrow { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 6px; padding: 8px 10px; margin-bottom: 7px; border-radius: 13px; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .16); }
+.cc-vrow b { font: 700 13px "Pixelify Sans", monospace; }
+.cc-vrow small { grid-column: 1; grid-row: 2; font-size: 11px; opacity: .6; font-weight: 800; }
+.cc-vrow .cc-pill { grid-row: 1 / span 2; cursor: pointer; }
+.cc-vrow .cc-pill:disabled { opacity: .4; cursor: default; }

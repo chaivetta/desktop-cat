@@ -37,12 +37,27 @@
     post: { e: "🪵", tr: "Tırmalama direği", en: "Scratching post", goals: ["post"] },
   };
 
+  // Growing up follows the calendar: 0.1 on the first day, +0.1 a day, fully grown (1.0) after nine days.
+  // Much later a cat becomes a wise old one: a grey muzzle and a slower pace, but it stays with you.
   const STAGES = [
     { id: "kitten", min: 0, e: "🍼", tr: "Yavru", en: "Kitten" },
-    { id: "young", min: 120, e: "🐱", tr: "Genç", en: "Young cat" },
-    { id: "adult", min: 360, e: "👑", tr: "Yetişkin", en: "Grown-up" },
+    { id: "young", min: 0.4, e: "🐱", tr: "Genç", en: "Young cat" },
+    { id: "adult", min: 1, e: "👑", tr: "Yetişkin", en: "Grown-up" },
+    { id: "elder", min: 1, e: "🦉", tr: "Bilge", en: "Wise old cat" },
   ];
-  const ADULT = 360;
+  const ADULT = 360, GROW_PER_DAY = 0.1, ELDER_DAYS = 120;
+
+  // tricks you can teach: a few good lessons and it knows it for good
+  const TRICKS = {
+    paw:  { e: "🐾", state: "bat", dur: 1.4, tr: "Pati ver", en: "Give a paw", learnTr: "Pati vermeyi öğrendi!", learnEn: "Learned to give a paw!" },
+    spin: { e: "🌀", state: "tailChase", dur: 1.6, tr: "Dön", en: "Spin", learnTr: "Kendi etrafında dönmeyi öğrendi!", learnEn: "Learned to spin!" },
+    beg:  { e: "🙏", state: "meerkat", dur: 2, tr: "Kalk", en: "Stand up", learnTr: "Arka ayaklarının üstüne kalkmayı öğrendi!", learnEn: "Learned to stand up!" },
+    roll: { e: "🙃", state: "roll", dur: 2.2, tr: "Yuvarlan", en: "Roll over", learnTr: "Yuvarlanmayı öğrendi!", learnEn: "Learned to roll over!" },
+    jump: { e: "⬆️", state: "pronk", dur: 2, tr: "Zıpla", en: "Jump", learnTr: "Komutla zıplamayı öğrendi!", learnEn: "Learned to jump on cue!" },
+  };
+  const LESSONS = 5;
+  // days together worth a party (counted from your very first cat)
+  const TOGETHER = [7, 30, 50, 100, 200, 300];
 
   const COAT_NAMES = {
     ginger: { tr: "Sarman", en: "Ginger tabby" }, black: { tr: "Kara kedi", en: "Black" }, white: { tr: "Bembeyaz", en: "White" },
@@ -96,6 +111,9 @@
     dress:   { xp: 1, love: 1, every: 10e3, log: 2 * 60e3 },
     photo:   { xp: 1, love: 2, every: 5e3, log: 60e3 },
     blink:   { xp: 2, love: 4, every: 60e3, log: 20 * 60e3 },
+    greet:   { xp: 2, love: 5, every: 10 * 60e3, log: 10 * 60e3 },
+    morning: { xp: 2, love: 3, every: 6 * 3.6e6, log: 6 * 3.6e6 },
+    napNear: { xp: 1, love: 2, every: 20 * 60e3, log: 30 * 60e3 },
     shelf:   { xp: 2, love: 1, every: 30e3, log: 10 * 60e3 },
   };
 
@@ -111,7 +129,13 @@
       locked: "Kilitli", unlock: (n) => `⭐ ${n} ile aç`, need: (n) => `${n} yıldız daha lazım, görevlere bak 🎯`, unlocked: "Açıldı!", showName: "İsmini başının üstünde göster",
       pet: "Sev", feed: "Mama ver", play: "Oyna", rename: "İsmini değiştir", dice: "Rastgele isim", ok: "Kaydet", close: "Kapat",
       adopt: "Yeni yavru", newKitten: "Yeni bir yavru geldi! Adını koyalım mı?", empty: "Henüz bir şey yazmadı…",
-      grownUp: "Tamamen büyüdü", toNext: (n) => `${n} puan sonra büyüyecek`,
+      grownUp: "Tamamen büyüdü", toNext: (n) => n < 1 ? "Yarın büyüyecek" : `${Math.ceil(n)} gün sonra büyüyecek`, height: (g) => `Boyu ${g.toFixed(1).replace(".", ",")}`,
+      memories: "Anılar", family: "Ailesi", parentsL: "Annesi ve babası", siblings: "Kardeşleri", kids: "Yavruları", noMem: "Anılar burada birikecek…",
+      together: (n) => `💞 Birlikte ${n} gündür`, tricks: "Numaralar", teach: "Öğret", lessons: (n, m) => `${n}/${m} ders`, learnHint: "Dokun, öğret",
+      trickFail: ["Kafası karıştı", "Şimdi canı istemedi", "Esnedi geçti", "Kuyruğunu salladı"], gone: "artık yok",
+      voices: "Miyav sesleri", back: "Geri", addFiles: "Ses ekle", voiceN: (n) => n ? `${n} kayıt` : "henüz yok",
+      voice_kitten: "Yavru", voice_adult: "Yetişkin", voice_elder: "Yaşlı",
+      voicesHelp: "Gerçek miyavlamalar ekle: kendi kedinin sesini telefonla kaydedebilir ya da serbest lisanslı (CC0) kayıtlar indirebilirsin. Dosyaları buraya sürükle ya da seç. Bir grup boşsa diğerinin sesi inceltilip kalınlaştırılarak kullanılır.",
       wardrobe: "Dolap", hat: "Şapka", collar: "Tasma", outfit: "Kıyafet", none: "Hiçbiri", surprise: "Rastgele kombin", undress: "Hepsini çıkar",
       nothingOn: "Üstünde bir şey yok", photo: "Fotoğraf", remove: "Kediyi kaldır", removeQ: (n) => `${n} gitsin mi? Bu geri alınamaz.`, yes: "Evet, kaldır", no: "Vazgeç",
       size: "Kart boyutu", pin: "Kedinin üstüne geri taşı", soundOff: "Sesleri kapat", soundOn: "Sesleri aç", birthdayToday: "Bugün doğum günü!", photoOf: (n, d, st) => `${n} · ${d} · ${st}`,
@@ -128,6 +152,9 @@
         hello: () => "Seninle masaüstünde yaşamaya başladı",
         dress: (a) => `${a.itemName} ${a.kind === "outfit" ? "giydi" : "taktı"}`, photo: () => "Fotoğrafı çekildi", blink: () => "Sana yavaşça göz kırptı, kedi dilinde \"seni seviyorum\" demek", shelf: () => "Rafa zıplayıp oturdu",
         birthday: (a) => `${STR.tr.age1(a.days)} oldu! İyi ki doğdun`,
+        trick: (a) => TRICKS[a.id] ? TRICKS[a.id].learnTr : "", elder: () => "Artık bilge bir kedi, burnunun etrafı kırlaştı",
+        together: (a) => `Birlikte ${a.n} gün oldu!`, greet: (a) => a.long ? "Seni çok özlemiş, gelir gelmez karşıladı" : "Seni kapıda karşıladı",
+        morning: () => "Günaydın! Gerinip seni selamladı", napNear: () => "Sen yokken yanında uyuyakaldı", memPhoto: () => "Birlikte bir fotoğraf",
         task: (a) => `Görevi bitirdi: ${a.txt}`, tasksDone: () => "Bugünün bütün görevlerini bitirdi ⭐",
         bornOf: (a) => `${a.a} ve ${nin(a.b)} yavrusu olarak dünyaya geldi`, kitten: (a) => `${a.o} ile bir yavruları oldu: ${a.n}`,
       },
@@ -140,7 +167,13 @@
       locked: "Locked", unlock: (n) => `Unlock for ⭐ ${n}`, need: (n) => `${n} more star${n === 1 ? "" : "s"} needed, see the tasks 🎯`, unlocked: "Unlocked!", showName: "Show name above head",
       pet: "Pet", feed: "Feed", play: "Play", rename: "Rename", dice: "Random name", ok: "Save", close: "Close",
       adopt: "New kitten", newKitten: "A new kitten arrived! Want to name it?", empty: "Nothing written yet…",
-      grownUp: "All grown up", toNext: (n) => `${n} more points to grow`,
+      grownUp: "All grown up", toNext: (n) => n < 1 ? "Grows tomorrow" : `Grows in ${Math.ceil(n)} days`, height: (g) => `Height ${g.toFixed(1)}`,
+      memories: "Memories", family: "Family", parentsL: "Parents", siblings: "Siblings", kids: "Kittens", noMem: "Memories will gather here…",
+      together: (n) => `💞 Together for ${n} days`, tricks: "Tricks", teach: "Teach", lessons: (n, m) => `${n}/${m} lessons`, learnHint: "Tap to teach",
+      trickFail: ["Got confused", "Not in the mood", "Yawned instead", "Flicked its tail"], gone: "gone",
+      voices: "Meow sounds", back: "Back", addFiles: "Add sounds", voiceN: (n) => n ? `${n} recording${n > 1 ? "s" : ""}` : "none yet",
+      voice_kitten: "Kitten", voice_adult: "Grown-up", voice_elder: "Old cat",
+      voicesHelp: "Add real meows: record your own cat on your phone, or download free (CC0) recordings. Drop the files here or pick them. If a group is empty, another group's sounds are used, pitched up or down.",
       wardrobe: "Wardrobe", hat: "Hats", collar: "Collars", outfit: "Outfits", none: "None", surprise: "Surprise outfit", undress: "Take it all off",
       nothingOn: "Wearing nothing", photo: "Photo", remove: "Remove cat", removeQ: (n) => `Say goodbye to ${n}? This can't be undone.`, yes: "Yes, remove", no: "Keep",
       size: "Card size", pin: "Put it back above the cat", soundOff: "Mute the cats", soundOn: "Turn sounds on", birthdayToday: "Birthday today!", photoOf: (n, d, st) => `${n} · ${d} · ${st}`,
@@ -157,20 +190,24 @@
         hello: () => "Moved in on your desktop",
         dress: (a) => `Put on the ${a.itemName}`, photo: () => "Had a photo taken", blink: () => "Gave you a slow blink. That's cat for \"I love you\"", shelf: () => "Jumped up onto the shelf",
         birthday: (a) => `${STR.en.age1(a.days)} today! Happy birthday`,
+        trick: (a) => TRICKS[a.id] ? TRICKS[a.id].learnEn : "", elder: () => "A wise old cat now, with a little grey round the nose",
+        together: (a) => `${a.n} days together!`, greet: (a) => a.long ? "Missed you so much, ran to meet you" : "Came to say hello when you got back",
+        morning: () => "Good morning! Stretched and said hi", napNear: () => "Fell asleep next to you while you were away", memPhoto: () => "A photo together",
         task: (a) => `Finished a task: ${a.txt}`, tasksDone: () => "Finished all of today's tasks ⭐",
         bornOf: (a) => `Born to ${a.a} and ${a.b}`, kitten: (a) => `Had a kitten with ${a.o}: ${a.n}`,
       },
     },
   };
   const LOG_ICON = { born: "🐣", named: "🏷️", fed: "🍗", pet: "💗", play: "🧶", bed: "🛏️", scratch: "🪵", catnip: "🌿", zoom: "💨",
-    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", bornOf: "🐣", kitten: "🍼" };
+    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
 
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   const L = {
     lang: (navigator.language || "en").toLowerCase().startsWith("tr") ? "tr" : "en",
-    NAMES, TRAITS, TOYS, STAGES, ADULT, STR, LOG_ICON, COAT_NAMES, TASKS, MAX_CATS,
+    NAMES, TRAITS, TOYS, STAGES, ADULT, STR, LOG_ICON, COAT_NAMES, TASKS, MAX_CATS, TRICKS, LESSONS,
+    since: Date.now(), togetherDone: 0,  // the day your first cat arrived, and how many "days together" parties so far
     tasksOn: true, breedOn: true,         // both can be switched off in the settings
     wallet: { stars: 0, owned: [] },      // stars from tasks, shared by all cats, and the wardrobe designs bought with them
     PRICES,
@@ -207,24 +244,38 @@
       const p = {
         id: Math.random().toString(36).slice(2, 10), coat, name: o.name || L.randomName(o.taken), traits: L.randomTraits(),
         fav: pickOne(Object.keys(TOYS)), born: now, xp: o.xp ?? 0, love: o.love ?? 40, showName: true, log: [], lastR: {}, lastL: {}, seen: now,
+        g0: o.g0 ?? 0.1, gT: now, mem: [], tricks: {},
       };
+      p.stageId = L.stage(p).id;
       L.write(p, o.migrated ? "hello" : "born", { n: p.name });
+      if (!o.quiet) L.remember(p, o.migrated ? "hello" : "born", { n: p.name });
       return p;
     },
     // bring an old save (just a list of coats) into the new world, as grown-up cats who already live here
-    migrate(coats) { const taken = []; return coats.map((c) => { const p = L.make(c, { xp: ADULT, love: 60, migrated: true, taken }); taken.push(p.name); return p; }); },
+    migrate(coats) { const taken = []; return coats.map((c) => { const p = L.make(c, { xp: ADULT, g0: 1, love: 60, migrated: true, taken }); taken.push(p.name); return p; }); },
     // time passes while the app is closed: love fades a little, never all the way
     welcomeBack(p) {
       const hours = Math.max(0, (Date.now() - (p.seen || Date.now())) / 3.6e6);
       p.love = Math.max(5, p.love - Math.min(40, hours * 2)); p.seen = Date.now();
-      p.lastR = p.lastR || {}; p.lastL = p.lastL || {}; p.log = p.log || [];
+      p.lastR = p.lastR || {}; p.lastL = p.lastL || {}; p.log = p.log || []; p.mem = p.mem || []; p.tricks = p.tricks || {};
+      if (p.g0 == null) { p.g0 = p.xp >= ADULT ? 1 : clamp(0.1 + 0.9 * p.xp / ADULT, 0.1, 1); p.gT = Date.now(); }   // saves from before growth by days
+      if (!p.stageId) p.stageId = L.stage(p).id;
       if (!TRAITS[p.traits?.[0]] || !TRAITS[p.traits?.[1]]) p.traits = L.randomTraits();
       if (!TOYS[p.fav]) p.fav = pickOne(Object.keys(TOYS));
       return p;
     },
-    stage(xp) { let s = STAGES[0]; for (const st of STAGES) if (xp >= st.min) s = st; return s; },
-    nextStage(xp) { return STAGES.find((st) => st.min > xp) || null; },
-    size(xp) { return 0.58 + 0.42 * Math.min(1, xp / ADULT); },
+    growth(p) { return clamp((p.g0 ?? 1) + (Date.now() - (p.gT || Date.now())) / 864e5 * GROW_PER_DAY, 0.1, 1); },
+    ageDays(p) { return (Date.now() - p.born) / 864e5; },
+    isElder(p) { return !!p && L.growth(p) >= 1 && L.ageDays(p) >= ELDER_DAYS; },
+    stage(p) {
+      if (typeof p === "number") p = { g0: p >= ADULT ? 1 : 0.1 + 0.9 * p / ADULT, gT: Date.now(), born: Date.now() };
+      if (L.isElder(p)) return STAGES[3];
+      const g = L.growth(p); let s = STAGES[0]; for (const st of STAGES.slice(0, 3)) if (g >= st.min - 1e-9) s = st; return s;
+    },
+    nextStage(p) { const g = L.growth(p); return STAGES.slice(0, 3).find((st) => st.min > g + 1e-9) || null; },
+    daysToNext(p) { const nx = L.nextStage(p); return nx ? (nx.min - L.growth(p)) / GROW_PER_DAY : 0; },
+    // how big it looks: a newborn (0.1) is drawn small but still readable, a grown-up (1.0) at today's full size
+    size(p) { return typeof p === "number" ? 1 : 0.3 + 0.7 * L.growth(p); },
     mods(p) {
       const m = {};
       for (const t of p.traits) for (const [k, v] of Object.entries(TRAITS[t].mods)) m[k] = (m[k] || 1) * v;
@@ -256,7 +307,7 @@
     milestones(age) { const m = [7, 30, 60, 90, 180]; for (let y = 365; y <= age + 365; y += 365) m.push(y); return m.filter((d) => d <= age); },
     birthdayDue(p) {
       const age = (Date.now() - p.born) / 864e5, done = L.milestones(age);
-      if (done.length > (p.bdays || 0)) { p.bdays = done.length; p.lastBday = Date.now(); const days = done[done.length - 1]; L.write(p, "birthday", { days }); L.changed(); return days; }
+      if (done.length > (p.bdays || 0)) { p.bdays = done.length; p.lastBday = Date.now(); const days = done[done.length - 1]; L.write(p, "birthday", { days }); L.remember(p, "birthday", { days }); L.changed(); return days; }
       return 0;
     },
     isBirthday(p) { return p.lastBday && Date.now() - p.lastBday < 864e5; },
@@ -280,6 +331,43 @@
       if (now - (p.lastL[key] || 0) > r.log) { p.lastL[key] = now; L.write(p, kind, arg); L.changed(); }
       if (arg.oid && ["boop", "race", "fight"].includes(kind)) { p.bond = p.bond || {}; p.bond[arg.oid] = Math.min(50, (p.bond[arg.oid] || 0) + (kind === "fight" ? 0.5 : 1)); }
       if (L.tasksOn) L.taskEvent(cat, kind + (arg.toyKey ? ":" + arg.toyKey : ""));
+    },
+
+    // ------------------------------------------------ memories: the big moments, kept as little polaroids
+    // (stored as what the cat looked like, and drawn again when you look at them)
+    remember(p, k, a = {}) {
+      p.mem = p.mem || [];
+      if (k === "photo" && p.mem.filter((m) => m.k === "photo").length >= 12) p.mem.splice(p.mem.findIndex((m) => m.k === "photo"), 1);
+      p.mem.unshift({ t: Date.now(), k, a, acc: { ...(p.acc || {}) }, g: L.growth(p), grey: L.isElder(p), pose: { born: "sleep", bornOf: "sleep", grew: "sit", elder: "loaf", birthday: "sit", lovemax: "sit",
+        kitten: "sit", trick: "sit", together: "sit", photo: "sit", hello: "sit", first: "sit" }[k] || "sit" });
+      if (p.mem.length > 40) p.mem.length = 40;
+    },
+    memText(m) {
+      const t = STR[L.lang], a = { ...m.a };
+      if (a.stageKey) { const st = STAGES.find((s) => s.id === a.stageKey); if (st) a.stage = st[L.lang]; }
+      const f = m.k === "photo" ? t.log.memPhoto : t.log[m.k]; return f ? f(a) : "";
+    },
+    // ------------------------------------------------ tricks
+    // a lesson: the better it knows the trick (and the more it loves you), the likelier it gets it right
+    teach(cat, id) {
+      const p = cat.profile, tr = TRICKS[id]; if (!tr) return null;
+      p.tricks = p.tricks || {};
+      const n = p.tricks[id] || 0, learned = n >= LESSONS;
+      const ok = learned || Math.random() < 0.35 + n * 0.1 + p.love / 400;
+      if (ok && !learned) {
+        p.tricks[id] = n + 1; L.addXP(cat, 4); L.addLove(cat, 2);
+        if (n + 1 >= LESSONS) { L.write(p, "trick", { id }); L.remember(p, "trick", { id }); if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 24); }
+        L.changed();
+      }
+      return { ok, learned: (p.tricks[id] || 0) >= LESSONS, n: p.tricks[id] || 0 };
+    },
+    // ------------------------------------------------ days together
+    togetherDays() { return Math.floor((Date.now() - L.since) / 864e5); },
+    togetherDue() {
+      const d = L.togetherDays(), ms = TOGETHER.slice(); for (let y = 365; y <= d + 365; y += 365) ms.push(y);
+      const done = ms.filter((m) => m <= d).sort((a, b) => a - b);
+      if (done.length > L.togetherDone) { L.togetherDone = done.length; return done[done.length - 1]; }
+      return 0;
     },
 
     // ------------------------------------------------ daily tasks
@@ -334,7 +422,7 @@
       if (!L.breedOn && !force) return null;
       const cats = world.cats.filter((c) => c.profile);
       if (cats.length >= MAX_CATS) return null;
-      const now = Date.now(), ready = (c) => c.profile.xp >= ADULT && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
+      const now = Date.now(), ready = (c) => L.growth(c.profile) >= 1 && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
         && !["held", "fall", "leap"].includes(c.state);
       const pairs = [];
       for (const a of cats) for (const b of cats) {
@@ -346,19 +434,26 @@
       pairs.sort((x, y) => y[2] - x[2]);
       const [a, b] = pairs[0], r = Math.random();
       const coat = r < 0.45 ? a.profile.coat : r < 0.9 ? b.profile.coat : pickOne(Object.keys(COAT_NAMES));
-      const k = L.make(coat, { taken: cats.map((c) => c.profile.name), love: 60 });
+      const k = L.make(coat, { taken: cats.map((c) => c.profile.name), love: 60, quiet: true });
       k.log = []; k.parents = [a.profile.id, b.profile.id];
-      L.write(k, "bornOf", { a: a.profile.name, b: b.profile.name });
-      for (const [x, y] of [[a, b], [b, a]]) { x.profile.lastKit = now; L.write(x.profile, "kitten", { o: y.profile.name, n: k.name }); }
+      k.parentInfo = [a, b].map((c) => ({ id: c.profile.id, name: c.profile.name, coat: c.profile.coat }));
+      L.write(k, "bornOf", { a: a.profile.name, b: b.profile.name }); L.remember(k, "bornOf", { a: a.profile.name, b: b.profile.name });
+      for (const [x, y] of [[a, b], [b, a]]) {
+        x.profile.lastKit = now; L.write(x.profile, "kitten", { o: y.profile.name, n: k.name });
+        (x.profile.kids = x.profile.kids || []).push({ id: k.id, name: k.name, coat: k.coat });
+        L.remember(x.profile, "kitten", { o: y.profile.name, n: k.name, with: { coat: y.profile.coat, acc: y.profile.acc || {} }, kit: { coat: k.coat } });
+      }
       L.changed();
       return { profile: k, parents: [a, b] };
     },
     addXP(cat, n) {
-      const p = cat.profile, before = L.stage(p.xp).id;
-      p.xp = Math.max(0, p.xp + n); cat.size = L.size(p.xp);
-      const after = L.stage(p.xp);
-      if (after.id !== before) {
-        L.write(p, "grew", { stageKey: after.id }); L.changed();
+      const p = cat.profile; p.xp = Math.max(0, p.xp + n);
+    },
+    // a new stage of life: kitten → young → grown-up → wise old cat
+    grewUp(cat, after) {
+      const p = cat.profile;
+      {
+        L.write(p, after.id === "elder" ? "elder" : "grew", { stageKey: after.id }); L.remember(p, after.id === "elder" ? "elder" : "grew", { stageKey: after.id }); L.changed();
         const w = cat.world, s = cat.s;
         w.burst(cat.x, cat.y - 34 * s, "spark", "#ffd34d", 5); w.burst(cat.x, cat.y - 30 * s, "heart", "#e2557a", 3);
         if (!["held", "fall", "leap", "inbox"].includes(cat.state) && !cat.bed) cat.set("happy", 2.6, { eyes: null });
@@ -367,7 +462,7 @@
     addLove(cat, n) {
       const p = cat.profile, before = p.love;
       p.love = clamp(p.love + n, 0, 100);
-      if (before < 100 && p.love >= 100 && now() - (p.lastL.lovemax || 0) > 6 * 3.6e6) { p.lastL.lovemax = now(); L.write(p, "lovemax"); L.changed(); }
+      if (before < 100 && p.love >= 100 && now() - (p.lastL.lovemax || 0) > 6 * 3.6e6) { p.lastL.lovemax = now(); L.write(p, "lovemax"); if (!p.memLove) { p.memLove = 1; L.remember(p, "lovemax"); } L.changed(); }
     },
     // a little every frame: growing up slowly just by being around, love fading very slowly
     tick(cat, dt) {
@@ -375,6 +470,9 @@
       p.seen = Date.now();
       L.addXP(cat, dt / 120);
       p.love = Math.max(0, p.love - dt * (3 / 3600));
+      cat.size = L.size(p);
+      const st = L.stage(p);
+      if (st.id !== p.stageId) { p.stageId = st.id; L.grewUp(cat, st); }
     },
   };
   const now = () => Date.now();

@@ -44,13 +44,14 @@
         </div>
         <div class="cc-banner" hidden></div>
         <div class="cc-panes" role="tablist">
-          <button type="button" role="tab" data-p="cat"></button><button type="button" role="tab" data-p="tasks"></button><button type="button" role="tab" data-p="ward"></button><button type="button" role="tab" data-p="log"></button>
+          <button type="button" role="tab" data-p="cat"></button><button type="button" role="tab" data-p="tasks"></button><button type="button" role="tab" data-p="ward"></button><button type="button" role="tab" data-p="log"></button><button type="button" role="tab" data-p="mem"></button>
         </div>
         <div class="cc-body">
           <div class="cc-pane" data-pane="cat">
           <section class="cc-sec"><div class="cc-label"><span data-l="love"></span><small class="cc-mood"></small></div><div class="cc-hearts"></div></section>
           <section class="cc-sec"><div class="cc-label"><span data-l="growth"></span><small class="cc-next"></small></div><div class="cc-grow"><i></i></div><div class="cc-steps"></div></section>
           <section class="cc-sec"><div class="cc-label"><span data-l="traits"></span></div><div class="cc-chips"></div></section>
+          <section class="cc-sec cc-tricks"><div class="cc-label"><span data-l="tricks"></span><small class="cc-thint"></small></div><div class="cc-trk"></div></section>
           <section class="cc-sec"><label class="cc-toggle"><input type="checkbox"><span class="cc-switch"></span><span data-t="showName"></span></label></section>
           <section class="cc-sec cc-actions">
             <button class="cc-btn" type="button" data-a="pet" style="--b:#ffe1ea"></button>
@@ -76,13 +77,21 @@
             <div class="cc-wbtns"><button class="cc-pill" type="button" data-w="surprise"></button><button class="cc-pill" type="button" data-w="undress"></button></div>
           </section>
           </div>
+          <div class="cc-pane" data-pane="mem" hidden>
+          <div class="cc-together"></div>
+          <section class="cc-sec cc-fam" hidden><div class="cc-label"><span data-l="family"></span></div><div class="cc-famrows"></div></section>
+          <section class="cc-sec"><div class="cc-label"><span data-l="memories"></span><small class="cc-memn"></small></div><div class="cc-album"></div></section>
+          </div>
+          <div class="cc-pane" data-pane="voice" hidden>
+          <section class="cc-sec cc-voice"><div class="cc-label"><span class="cc-vt"></span><button class="cc-pill" type="button" data-v="back"></button></div><p class="cc-vhelp"></p><div class="cc-vrows"></div></section>
+          </div>
           <div class="cc-pane" data-pane="log" hidden>
           <section class="cc-sec cc-log"><ol></ol></section>
           </div>
         </div>
         <div class="cc-foot">
           <span class="cc-born"></span>
-          <span class="cc-tools"><button class="cc-pin" type="button" data-title="pin" hidden>📍</button><button class="cc-snd" type="button" data-title="sound" hidden>🔊</button><span class="cc-sizer" title=""><button type="button" data-z="-1">−</button><b>🔍</b><button type="button" data-z="1">+</button></span>
+          <span class="cc-tools"><button class="cc-pin" type="button" data-title="pin" hidden>📍</button><button class="cc-snd" type="button" data-title="sound" hidden>🔊</button><button class="cc-mic" type="button" data-title="voices" hidden>🎙️</button><span class="cc-sizer" title=""><button type="button" data-z="-1">−</button><b>🔍</b><button type="button" data-z="1">+</button></span>
           <span class="cc-lang"><button type="button" data-lang="tr">TR</button>·<button type="button" data-lang="en">EN</button></span></span>
         </div>
         <div class="cc-flash"></div>
@@ -107,7 +116,7 @@
       if (cat) {
         const pose = POSE_OF[cat.state] || "sit";
         pg.clearRect(0, 0, cv.width, cv.height);
-        DC.portrait(pg, cat.coat, { pose, t: pt, blink, eyes: cat.state === "happy" ? "happy" : null, scale: 2, dx: DX[pose] ?? 4, dy: 3, acc: cat.wearing() });
+        DC.portrait(pg, cat.coat, { pose, t: pt, blink, eyes: cat.state === "happy" ? "happy" : null, scale: 2, dx: DX[pose] ?? 4, dy: 3, acc: cat.wearing(), grey: L.isElder(cat.profile) });
         tickT += dt; if (tickT > 1) { tickT = 0; update(); }
       }
       raf = requestAnimationFrame(drawPortrait);
@@ -172,6 +181,58 @@
       wardKey = ""; tabKey = ""; L.changed(); update();
     }
 
+    // ------------------------------------------------ tricks: tap to teach, tap again once learned to ask for it
+    function renderTricks(p, t) {
+      q(".cc-thint").textContent = t.learnHint;
+      const html = Object.entries(L.TRICKS).map(([id, tr]) => {
+        const n = (p.tricks || {})[id] || 0, done = n >= L.LESSONS;
+        return `<button type="button" class="cc-trick${done ? " done" : ""}" data-tr="${id}" title="${esc(done ? tr[lang()] : t.lessons(n, L.LESSONS))}">${tr.e} ${esc(tr[lang()])}${done ? "" : `<i style="--f:${n / L.LESSONS}"></i>`}</button>`;
+      }).join("");
+      const box = q(".cc-trk"); if (box.dataset.v !== html) { box.innerHTML = html; box.dataset.v = html; }
+    }
+    const lang = () => L.lang;
+    // ------------------------------------------------ memories, family, days together
+    let memKey = "";
+    function renderMemories(p, t) {
+      const ln = L.lang, cats = world.cats.filter((c) => c.profile);
+      const key = [ln, p.id, (p.mem || []).length, p.mem && p.mem[0] && p.mem[0].t, cats.map((c) => c.profile.id + c.profile.name).join(), L.togetherDays()].join("|");
+      if (key === memKey) return; memKey = key;
+      q(".cc-together").textContent = t.together(Math.max(1, L.togetherDays() + 1));
+      // family: parents, brothers and sisters, kittens (with the ones who've left still remembered by name)
+      const byId = (id) => cats.find((c) => c.profile.id === id);
+      const chip = (info) => { const c = byId(info.id); return `<button type="button" class="cc-kin${c ? "" : " gone"}" data-kin="${c ? info.id : ""}"><canvas width="40" height="40" data-coat="${esc((c ? c.profile.coat : info.coat) || "ginger")}" data-acc='${esc(JSON.stringify(c ? c.profile.acc || {} : {}))}'></canvas><span>${esc(c ? c.profile.name : info.name)}${c ? "" : ` <small>(${esc(t.gone)})</small>`}</span></button>`; };
+      const par = p.parentInfo || [], sibs = par.length ? cats.filter((c) => c.profile !== p && c.profile.parents && c.profile.parents.join() === (p.parents || []).join()).map((c) => ({ id: c.profile.id, name: c.profile.name, coat: c.profile.coat })) : [];
+      const kids = p.kids || [];
+      const rows = [[t.parentsL, par], [t.siblings, sibs], [t.kids, kids]].filter(([, l]) => l.length);
+      q(".cc-fam").hidden = !rows.length;
+      q(".cc-famrows").innerHTML = rows.map(([h, l]) => `<div class="cc-famrow"><small>${esc(h)}</small><div>${l.map(chip).join("")}</div></div>`).join("");
+      q(".cc-famrows").querySelectorAll("canvas").forEach((k) => DC.portrait(k.getContext("2d"), k.dataset.coat, { scale: 0.85, dx: 4, dy: 2, acc: JSON.parse(k.dataset.acc || "{}") }));
+      // the album: each polaroid drawn again from how the cat looked that day
+      const mem = p.mem || [];
+      q(".cc-memn").textContent = mem.length ? `${mem.length}` : "";
+      const album = q(".cc-album");
+      if (!mem.length) { album.innerHTML = `<p class="cc-empty">${esc(t.noMem)}</p>`; return; }
+      album.innerHTML = mem.map((m, i) => `<figure class="cc-pol" style="--r:${((i * 37) % 7) - 3}deg"><canvas width="96" height="84" data-i="${i}"></canvas><figcaption>${esc(L.memText(m))}<time>${esc(new Date(m.t).toLocaleDateString(ln === "tr" ? "tr-TR" : "en-GB", { day: "numeric", month: "short", year: "numeric" }))}</time></figcaption></figure>`).join("");
+      album.querySelectorAll("canvas").forEach((k) => {
+        const m = mem[+k.dataset.i], g = k.getContext("2d");
+        g.fillStyle = tint(DC.COATS[p.coat].body, 0.75); g.fillRect(0, 0, 96, 84);
+        const sz = 0.3 + 0.7 * (m.g ?? 1);
+        DC.portrait(g, p.coat, { pose: m.pose || "sit", scale: 1.75 * sz, dx: 4, dy: 3 + (1 - sz) * 18, acc: m.acc, grey: m.grey, eyes: m.pose === "sleep" ? null : "happy" });
+        if (m.k === "kitten" && m.a && m.a.kit) DC.portrait(g, m.a.kit.coat, { pose: "sleep", scale: 0.75, dx: 26, dy: 22 });
+        if (m.k === "birthday" || m.k === "together") { g.font = "18px sans-serif"; g.fillText(m.k === "birthday" ? "🎂" : "💞", 6, 22); }
+        if (m.k === "trick" && L.TRICKS[m.a.id]) { g.font = "18px sans-serif"; g.fillText(L.TRICKS[m.a.id].e, 6, 22); }
+      });
+    }
+    // ------------------------------------------------ your own meow recordings
+    function renderVoices(t) {
+      const V = opts.voices; if (!V) return;
+      q(".cc-vt").textContent = `🎙️ ${t.voices}`; q('[data-v="back"]').textContent = `← ${t.back}`; q(".cc-vhelp").textContent = t.voicesHelp;
+      const counts = V.counts(), html = [["kitten", "🍼"], ["adult", "👑"], ["elder", "🦉"]].map(([g, e]) =>
+        `<div class="cc-vrow" data-g="${g}"><b>${e} ${esc(t["voice_" + g])}</b><small>${esc(t.voiceN(counts[g] || 0))}</small>
+          <label class="cc-pill">＋ ${esc(t.addFiles)}<input type="file" accept="audio/*" multiple hidden></label>
+          <button type="button" class="cc-pill" data-vt="test"${counts[g] ? "" : " disabled"}>▶</button><button type="button" class="cc-pill" data-vt="clear"${counts[g] ? "" : " disabled"}>🗑</button></div>`).join("");
+      const box = q(".cc-vrows"); if (box.dataset.v !== html) { box.innerHTML = html; box.dataset.v = html; }
+    }
     function renderTasks(p, t) {
       const ts = L.tasks(p);
       q(".cc-tt").textContent = `🎯 ${t.tasksToday}`;
@@ -193,26 +254,29 @@
       root.querySelectorAll("[data-title]").forEach((el) => { el.title = t[el.dataset.title]; });
       const snd = q(".cc-snd"); snd.hidden = !opts.sound;
       if (opts.sound) { const on = opts.sound(); snd.textContent = on ? "🔊" : "🔇"; snd.classList.toggle("off", !on); snd.title = on ? t.soundOff : t.soundOn; }
-      const icons = { love: "💗", growth: "🌱", traits: "✨", diary: "📖", wardrobe: "👗" };
+      const icons = { love: "💗", growth: "🌱", traits: "✨", diary: "📖", wardrobe: "👗", tricks: "🎓", family: "👪", memories: "📷" };
       root.querySelectorAll("[data-l]").forEach((el) => { el.textContent = `${icons[el.dataset.l]} ${t[el.dataset.l]}`; });
       if (pane === "tasks" && !L.tasksOn) pane = "cat";
       q('[data-p="tasks"]').hidden = !L.tasksOn;
-      const pn = { cat: ["🐾", t.paneCat], tasks: ["🎯", t.tasks], ward: ["👗", t.wardrobe], log: ["📖", t.diary] };
-      root.querySelectorAll("[data-p]").forEach((b) => { const on = b.dataset.p === pane; b.textContent = `${pn[b.dataset.p][0]} ${pn[b.dataset.p][1]}`; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+      const pn = { cat: ["🐾", t.paneCat], tasks: ["🎯", t.tasks], ward: ["👗", t.wardrobe], log: ["📖", t.diary], mem: ["📷", t.memories] };
+      // the open tab shows its name, the others just their icon
+      root.querySelectorAll("[data-p]").forEach((b) => { const on = b.dataset.p === pane; b.textContent = on ? `${pn[b.dataset.p][0]} ${pn[b.dataset.p][1]}` : pn[b.dataset.p][0]; b.title = pn[b.dataset.p][1]; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+      q(".cc-mic").hidden = !opts.voices; q(".cc-mic").title = t.voices || "";
       root.querySelectorAll("[data-pane]").forEach((d) => { d.hidden = d.dataset.pane !== pane; });
       q(".cc-name").textContent = p.name;
       const days = Math.floor((now - p.born) / 864e5);
       q(".cc-sub").textContent = `${L.COAT_NAMES[p.coat] ? L.COAT_NAMES[p.coat][lang] : p.coat} · ${t.age(days)}`;
-      const st = L.stage(p.xp); q(".cc-stage").textContent = `${st.e} ${st[lang]}`;
+      const st = L.stage(p); q(".cc-stage").textContent = `${st.e} ${st[lang]}`;
       const bd = q(".cc-bday"); bd.hidden = !L.isBirthday(p); bd.title = t.birthdayToday;
       const hearts = Array.from({ length: 10 }, (_, i) => { const f = clamp((p.love - i * 10) / 10, 0, 1); return heart(f >= 0.9 ? 1 : f >= 0.4 ? 0.5 : 0); }).join("");
       const hb = q(".cc-hearts"); if (hb.dataset.v !== hearts) { hb.innerHTML = hearts; hb.dataset.v = hearts; }
       if (lastLove != null && p.love > lastLove + 0.5) { hb.classList.remove("bump"); void hb.offsetWidth; hb.classList.add("bump"); }
       lastLove = p.love;
       q(".cc-mood").textContent = t.mood(p.love);
-      q(".cc-grow > i").style.width = `${clamp(p.xp / L.ADULT * 100, 3, 100)}%`;
-      const nx = L.nextStage(p.xp); q(".cc-next").textContent = nx ? t.toNext(Math.ceil(nx.min - p.xp)) : t.grownUp;
-      q(".cc-steps").innerHTML = L.STAGES.map((s) => `<span class="${p.xp >= s.min ? "on" : ""}" style="left:${s.min / L.ADULT * 100}%" title="${esc(s[lang])}">${s.e}</span>`).join("");
+      const gr = L.growth(p);
+      q(".cc-grow > i").style.width = `${clamp(gr * 100, 3, 100)}%`;
+      const nx = L.nextStage(p); q(".cc-next").textContent = `${t.height(gr)} · ${nx ? t.toNext(L.daysToNext(p)) : t.grownUp}`;
+      q(".cc-steps").innerHTML = L.STAGES.slice(0, 3).map((s) => `<span class="${gr >= s.min - 1e-9 ? "on" : ""}" style="left:${s.min * 100}%" title="${esc(s[lang])}">${s.e}</span>`).join("");
       q(".cc-chips").innerHTML = p.traits.map((k, i) => `<span class="cc-chip" style="--c:${CHIP[(i * 2 + p.id.charCodeAt(0)) % CHIP.length]}">${L.TRAITS[k].e} ${esc(L.TRAITS[k][lang])}</span>`).join("")
         + `<span class="cc-chip fav">${L.TOYS[p.fav].e} ${esc(t.fav)}: ${esc(L.TOYS[p.fav][lang])}</span>`;
       const bf = L.bestFriend(p, world.cats), par = (p.parents || []).map((id) => world.cats.find((c) => c.profile && c.profile.id === id));
@@ -220,6 +284,9 @@
       if (par.length === 2 && par[0] && par[1]) q(".cc-chips").innerHTML += `<span class="cc-chip" style="--c:#fff1b8">🐣 ${esc(t.parents(par[0].profile.name, par[1].profile.name))}</span>`;
       q(".cc-toggle input").checked = !!p.showName;
       if (L.tasksOn) renderTasks(p, t);
+      renderTricks(p, t);
+      if (pane === "mem") renderMemories(p, t);
+      if (pane === "voice") renderVoices(t);
       q('[data-a="pet"]').textContent = `💗 ${t.pet}`; q('[data-a="feed"]').textContent = `🍗 ${t.feed}`;
       q('[data-a="play"]').textContent = `🧶 ${t.play}`; q('[data-a="photo"]').textContent = `📸 ${t.photo}`;
       q('[data-w="surprise"]').textContent = `🎲 ${t.surprise}`; q('[data-w="undress"]').textContent = `✖ ${t.undress}`;
@@ -295,6 +362,34 @@
       if (pane === b.dataset.p) return;
       pane = b.dataset.p; update(); q(".cc-body").scrollTop = 0; place();
     });
+    q(".cc-mic").onclick = () => { pane = pane === "voice" ? "cat" : "voice"; update(); place(); };
+    q('[data-v="back"]').onclick = () => { pane = "cat"; update(); place(); };
+    q(".cc-vrows").addEventListener("change", async (e) => {
+      const inp = e.target.closest("input[type=file]"); if (!inp || !inp.files.length) return;
+      const g = inp.closest("[data-g]").dataset.g; await opts.voices.add(g, [...inp.files]); inp.value = ""; q(".cc-vrows").dataset.v = ""; update();
+      world.meow(fakeCat(g));
+    });
+    q(".cc-vrows").addEventListener("click", async (e) => {
+      const b = e.target.closest("[data-vt]"); if (!b) return; const g = b.closest("[data-g]").dataset.g;
+      if (b.dataset.vt === "test") world.meow(fakeCat(g));
+      else { await opts.voices.clear(g); q(".cc-vrows").dataset.v = ""; update(); }
+    });
+    // drop sound files straight onto the card
+    root.addEventListener("dragover", (e) => { if (pane === "voice") e.preventDefault(); });
+    root.addEventListener("drop", async (e) => {
+      if (pane !== "voice") return; e.preventDefault();
+      const row = e.target.closest && e.target.closest("[data-g]"), g = row ? row.dataset.g : "adult";
+      const files = [...e.dataTransfer.files].filter((f) => f.type.startsWith("audio/")); if (!files.length) return;
+      await opts.voices.add(g, files); q(".cc-vrows").dataset.v = ""; update(); world.meow(fakeCat(g));
+    });
+    const fakeCat = (g) => ({ size: g === "kitten" ? 0.4 : 1, profile: { g0: g === "kitten" ? 0.1 : 1, gT: Date.now(), born: g === "elder" ? 0 : Date.now() } });
+    q(".cc-trk").onclick = (e) => {
+      const b = e.target.closest("[data-tr]"); if (!b || !cat) return;
+      const r = L.teach(cat, b.dataset.tr); if (!r) return;
+      cat.doTrick(b.dataset.tr, !r.ok);
+      floatUp(r.ok ? (r.learned ? "🎓" : "✨") : "❔", b); update();
+    };
+    q(".cc-famrows").onclick = (e) => { const b = e.target.closest("[data-kin]"); if (!b || !b.dataset.kin) return; const c = world.cats.find((x) => x.profile && x.profile.id === b.dataset.kin); if (c) { pane = "mem"; memKey = ""; api.open(c); } };
     q(".cc-snd").onclick = () => { if (opts.onSound) opts.onSound(); };
     q(".cc-pin").onclick = () => { pinned = null; place(); if (opts.onPos) opts.onPos(null); };
     function floatUp(emoji, el) {
@@ -329,13 +424,13 @@
       g.fillStyle = "rgba(0,0,0,.18)"; g.beginPath(); g.ellipse(300, 478, 170, 18, 0, 0, Math.PI * 2); g.fill();
       const k = document.createElement("canvas"); k.width = 540; k.height = 540; const kg = k.getContext("2d");
       const pose = POSE_OF[cat.state] || "sit";
-      DC.portrait(kg, cat.coat, { pose, t: pt, eyes: cat.state === "sleep" ? null : "happy", scale: 10, dx: DX[pose] ?? 4, dy: 3, acc: cat.wearing() });
+      DC.portrait(kg, cat.coat, { pose, t: pt, eyes: cat.state === "sleep" ? null : "happy", scale: 10, dx: DX[pose] ?? 4, dy: 3, acc: cat.wearing(), grey: L.isElder(p) });
       g.drawImage(k, 30, 20);
       g.strokeStyle = "#5b3a29"; g.lineWidth = 4; g.strokeRect(30, 30, 540, 540);
       g.fillStyle = "#5b3a29"; g.textAlign = "center";
       g.font = '700 46px "Pixelify Sans", monospace'; g.fillText(p.name, 300, 640);
       const date = new Date().toLocaleDateString(lang === "tr" ? "tr-TR" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
-      g.font = '800 22px "Nunito", sans-serif'; g.globalAlpha = 0.75; g.fillText(`${date} · ${L.stage(p.xp)[lang]}`, 300, 684); g.globalAlpha = 1;
+      g.font = '800 22px "Nunito", sans-serif'; g.globalAlpha = 0.75; g.fillText(`${date} · ${L.stage(p)[lang]}`, 300, 684); g.globalAlpha = 1;
       g.fillStyle = "#ff6f91"; GLYPH.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === "1") { g.fillRect(520 + x * 4, 690 + y * 4, 4, 4); g.fillRect(48 + x * 4, 690 + y * 4, 4, 4); } }));
       const flash = q(".cc-flash"); flash.classList.remove("go"); void flash.offsetWidth; flash.classList.add("go");
       c.toBlob((blob) => {
@@ -344,7 +439,7 @@
         a.download = `${p.name}-${new Date().toISOString().slice(0, 10)}.png`; document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 4000);
       }, "image/png");
-      L.care(cat, "photo"); update();
+      L.care(cat, "photo"); L.remember(p, "photo"); L.changed(); memKey = ""; update();
     }
 
     // ------------------------------------------------ wiring

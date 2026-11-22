@@ -57,6 +57,7 @@
   <div class="row">
     <button id="tasks"></button>
     <button id="breed"></button>
+    <button id="seasons"></button>
   </div>
   <div class="row">
     <span data-i="catSize" style="opacity:.7;margin:0 2px 0 0"></span>
@@ -84,14 +85,33 @@
       adopt: "Adopt:", yarn: "Yarn", mouse: "Wind-up mouse", box: "Box", feed: "Feed", laser: "Laser", wand: "Feather wand", catnip: "Catnip", butterfly: "Butterfly",
       bed: "Cat bed", post: "Scratching post", shelf: "Wall shelf", clear: "Put toys away", cards: "Cat cards", remove: "Remove a cat", removeAll: "Remove all cats",
       sure: "Sure? Click again", purr: "Purring", meow: "Meowing", on: "on", off: "off", night: "Night", auto: "follow the clock", day: "always day", nightOn: "always night",
-      catSize: "Cat size:", toySize: "Toy size:", tasks: "Daily tasks", breed: "Kittens" },
+      catSize: "Cat size:", toySize: "Toy size:", tasks: "Daily tasks", breed: "Kittens", seasons: "Seasons" },
     tr: { intro: "Sevmek için kediye tıkla, kucağa almak için sürükle. Kartını açmak için kediye sağ tıkla. Bir oyuncak çıkar; çoğunu sürükleyebilirsin.",
       adopt: "Sahiplen:", yarn: "Yumak", mouse: "Kurmalı fare", box: "Kutu", feed: "Mama ver", laser: "Lazer", wand: "Tüylü olta", catnip: "Kedi otu", butterfly: "Kelebek",
       bed: "Kedi yatağı", post: "Tırmalama direği", shelf: "Duvar rafı", clear: "Oyuncakları topla", cards: "Kedi kartları", remove: "Bir kediyi kaldır", removeAll: "Tüm kedileri kaldır",
       sure: "Emin misin? Tekrar tıkla", purr: "Mırlama", meow: "Miyavlama", on: "açık", off: "kapalı", night: "Gece", auto: "saate göre", day: "hep gündüz", nightOn: "hep gece",
-      catSize: "Kedi boyu:", toySize: "Oyuncak boyu:", tasks: "Günlük görevler", breed: "Yavrulama" },
+      catSize: "Kedi boyu:", toySize: "Oyuncak boyu:", tasks: "Günlük görevler", breed: "Yavrulama", seasons: "Mevsimler" },
   };
   const ui = (k) => UI[L.lang][k];
+
+  // your own meow recordings live in IndexedDB (they're too big for localStorage), in three groups by age
+  const Voices = (() => {
+    const db = new Promise((ok) => {
+      try { const r = indexedDB.open("desktop-cat", 1); r.onupgradeneeded = () => r.result.createObjectStore("voices"); r.onsuccess = () => ok(r.result); r.onerror = () => ok(null); } catch { ok(null); }
+    });
+    const cache = { kitten: [], adult: [], elder: [] };
+    const tx = async (mode, fn) => { const d = await db; if (!d) return null; return new Promise((ok) => { const t = d.transaction("voices", mode), st = t.objectStore("voices"), r = fn(st); t.oncomplete = () => ok(r && r.result); t.onerror = () => ok(null); }); };
+    const push = (g) => world && world.setVoices(g, cache[g]);
+    return {
+      async load() { for (const g of Object.keys(cache)) { const v = await tx("readonly", (st) => st.get(g)); cache[g] = Array.isArray(v) ? v : []; if (cache[g].length) await push(g); } },
+      async add(g, files) {
+        for (const f of files.slice(0, 12)) if (f.size < 3e6) cache[g].push(await f.arrayBuffer());
+        cache[g] = cache[g].slice(-12); await tx("readwrite", (st) => st.put(cache[g], g)); await push(g);
+      },
+      async clear(g) { cache[g] = []; await tx("readwrite", (st) => st.put([], g)); await push(g); },
+      counts() { return { kitten: cache.kitten.length, adult: cache.adult.length, elder: cache.elder.length }; },
+    };
+  })();
 
   if (!bridge) document.body.classList.add("demo");
 
@@ -104,6 +124,11 @@
   if (saved.lang) L.lang = saved.lang;
   L.tasksOn = saved.tasksOn ?? true; L.breedOn = saved.breedOn ?? true;
   L.loadWallet(saved.wallet, saved.cats);
+  // "days together" count from your very first cat
+  L.since = saved.since || Math.min(Date.now(), ...saved.cats.map((p) => p.born || Date.now())); L.togetherDone = saved.togetherDone || 0;
+  // how long you were away, and whether this is the first visit of the day
+  const lastSeen = Math.max(0, ...saved.cats.map((p) => p.seen || 0)), awayH = lastSeen ? (Date.now() - lastSeen) / 3.6e6 : 0;
+  const dayKey = new Date().toDateString(), firstToday = saved.lastDay && saved.lastDay !== dayKey;
   saved.cats.forEach(L.welcomeBack);
 
   let world, cardPos = saved.cardPos || null;
@@ -111,7 +136,7 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
-        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet }));
+        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
   };
   let saveT = 0; L.onChange = () => { clearTimeout(saveT); saveT = setTimeout(save, 400); card && card.refresh(); };
@@ -121,12 +146,13 @@
   let hovering = false, overCat = false, overUI = false;
   const syncIgnore = () => { const h = overCat || overUI; if (bridge && h !== hovering) { hovering = h; bridge.setIgnore(!h); } };
   world = new World(document.getElementById("stage"), {
-    scale: saved.scale, toyScale: saved.toyScale || saved.scale, purrOn: saved.purrOn ?? saved.sound ?? true, meowOn: saved.meowOn ?? saved.sound ?? true, nightMode: saved.nightMode || "auto", floorInset: bridge ? 2 : Math.round(innerHeight * 0.22) - 40,
+    scale: saved.scale, toyScale: saved.toyScale || saved.scale, purrOn: saved.purrOn ?? saved.sound ?? true, meowOn: saved.meowOn ?? saved.sound ?? true, nightMode: saved.nightMode || "auto", seasonsOn: saved.seasonsOn ?? true, floorInset: bridge ? 2 : Math.round(innerHeight * 0.22) - 40,
     onHover: (h) => { overCat = h; syncIgnore(); }
   });
   addEventListener("pointermove", (e) => { overUI = !!(e.target.closest && e.target.closest(".ui")); syncIgnore(); }, true);
   if (!bridge) addEventListener("resize", () => { world.floorInset = Math.round(innerHeight * 0.22) - 40; world.resize(); });
   saved.cats.forEach((p, i) => setTimeout(() => { world.addCat(null, p); }, 350 * i));
+  Voices.load();
 
   var card = window.CatCard.create(world, {
     size: saved.cardSize,
@@ -137,12 +163,23 @@
     onPos: (p) => { cardPos = p; save(); },
     onSound: () => act.mute(),
     sound: () => world.purrOn || world.meowOn,
+    voices: Voices,
     onRemove: (c) => { world.removeCat(c); save(); card.refresh(); },
     onClose: () => { overUI = false; syncIgnore(); },
   });
 
-  // birthdays: checked a few seconds after the cats arrive, then every minute
-  const checkBirthdays = () => world.cats.forEach((c) => { if (c.profile && L.birthdayDue(c.profile)) world.celebrate(c); });
+  // birthdays and "days together": checked a few seconds after the cats arrive, then every minute
+  const checkBirthdays = () => {
+    world.cats.forEach((c) => { if (c.profile && L.birthdayDue(c.profile)) world.celebrate(c); });
+    const n = L.togetherDue();
+    if (n) world.cats.forEach((c, i) => { if (!c.profile) return; L.write(c.profile, "together", { n }); L.remember(c.profile, "together", { n }); setTimeout(() => world.celebrate(c), i * 600); });
+    if (n) L.changed();
+  };
+  // coming back after a while: the cats come to say hello (and good morning, the first time each day)
+  setTimeout(() => {
+    if (awayH >= 3) world.greet(awayH >= 12);
+    else if (firstToday && new Date().getHours() < 13) world.greet(false, "morning");
+  }, 350 * saved.cats.length + 1800);
   setTimeout(checkBirthdays, 350 * saved.cats.length + 2500); setInterval(checkBirthdays, 60000);
 
   // kittens: two happy grown-up friends sometimes have one (checked every minute, if switched on)
@@ -162,7 +199,7 @@
   function syncToggles() {
     if (bridge) {
       bridge.setLaser(world.laser); bridge.setWand(!!world.wand);
-      bridge.setSettings({ purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode, lang: L.lang, tasksOn: L.tasksOn, breedOn: L.breedOn });
+      bridge.setSettings({ purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode, lang: L.lang, tasksOn: L.tasksOn, breedOn: L.breedOn, seasonsOn: world.seasonsOn });
       return;
     }
     const on = (v) => ui(v ? "on" : "off");
@@ -173,6 +210,7 @@
     document.getElementById("night").textContent = `${ui("night")}: ${ui({ auto: "auto", day: "day", night: "nightOn" }[world.nightMode])}`;
     document.getElementById("tasks").textContent = `🎯 ${ui("tasks")}: ${on(L.tasksOn)}`;
     document.getElementById("breed").textContent = `🍼 ${ui("breed")}: ${on(L.breedOn)}`;
+    document.getElementById("seasons").textContent = `❄️ ${ui("seasons")}: ${on(world.seasonsOn)}`;
   }
   // one language for everything: the page, the cards and the tray menu
   function applyLang() {
@@ -199,6 +237,7 @@
     // the card's 🔊 button: everything off, or everything back on
     mute: () => { const any = world.purrOn || world.meowOn; world.purrOn = world.meowOn = !any; save(); syncToggles(); card.refresh(); },
     tasks: (on) => { L.tasksOn = typeof on === "boolean" ? on : !L.tasksOn; save(); syncToggles(); card.refresh(); },
+    seasons: (on) => { world.seasonsOn = typeof on === "boolean" ? on : !world.seasonsOn; save(); syncToggles(); },
     breed: (on) => { L.breedOn = typeof on === "boolean" ? on : !L.breedOn; save(); syncToggles(); card.refresh(); },
     lang: (l) => { L.lang = l === "tr" || l === "en" ? l : L.lang === "tr" ? "en" : "tr"; applyLang(); card.refresh(); save(); },
     night: (mode) => { const order = ["auto", "night", "day"]; world.nightMode = order.includes(mode) ? mode : order[(order.indexOf(world.nightMode) + 1) % 3]; save(); syncToggles(); },
@@ -230,7 +269,7 @@
   });
 
   if (bridge) {
-    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](["laser", "wand", "purr", "meow", "tasks", "breed"].includes(cmd.type) ? cmd.on : cmd.type === "night" ? cmd.mode : cmd.type === "lang" ? cmd.lang : cmd.coat); });
+    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](["laser", "wand", "purr", "meow", "tasks", "breed", "seasons"].includes(cmd.type) ? cmd.on : cmd.type === "night" ? cmd.mode : cmd.type === "lang" ? cmd.lang : cmd.coat); });
     applyLang();
   } else {
     const box = document.getElementById("coats");
@@ -239,7 +278,7 @@
       b.style.background = `linear-gradient(135deg, ${COATS[k].body} 55%, ${COATS[k].accent} 55%)`;
       b.onclick = () => act.add(k); box.appendChild(b);
     });
-    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "shelf", "clear", "cards", "remove", "purr", "meow", "night", "lang", "tasks", "breed"].forEach(id => document.getElementById(id).onclick = () => act[id]());
+    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "shelf", "clear", "cards", "remove", "purr", "meow", "night", "lang", "tasks", "breed", "seasons"].forEach(id => document.getElementById(id).onclick = () => act[id]());
     // removing every cat asks twice
     const ra = document.getElementById("removeAll");
     ra.onclick = () => {
