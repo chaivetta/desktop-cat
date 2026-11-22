@@ -37,7 +37,7 @@
     post: { e: "🪵", tr: "Tırmalama direği", en: "Scratching post", goals: ["post"] },
   };
 
-  // Growing up follows the calendar: 0.1 on the first day, fully grown (1.0) after about 90 days.
+  // Growing up is earned: a cat only grows while the app is running, it isn't hungry and it feels loved (love 30+).
   // Much later a cat becomes a wise old one: a grey muzzle and a slower pace, but it stays with you.
   const STAGES = [
     { id: "kitten", min: 0, e: "🍼", tr: "Yavru", en: "Kitten" },
@@ -45,7 +45,7 @@
     { id: "adult", min: 1, e: "👑", tr: "Yetişkin", en: "Grown-up" },
     { id: "elder", min: 1, e: "🦉", tr: "Bilge", en: "Wise old cat" },
   ];
-  const ADULT = 360, GROW_PER_DAY = 0.9 / 90, ELDER_DAYS = 365;      // about three months to grow up, wise and old after a year
+  const ADULT = 360, GROW_PER_DAY = 0.9 / 90, ELDER_DAYS = 365;      // (old calendar growth, only used to convert older saves); wise and old after a year
 
   // tricks you can teach: a few good lessons and it knows it for good
   const TRICKS = {
@@ -84,7 +84,18 @@
     dress:     { e: "👗", n: 1, on: "dress", tr: () => "Ona yeni bir şey giydir", en: () => "Dress it up" },
   };
   // Stars are hard-won: a cat's three tasks together are worth one star a day.
-  const TASK_REWARD = { xp: 6, love: 6, stars: 0 }, ALL_REWARD = { xp: 15, love: 10, stars: 1 };
+  const TASK_REWARD = { xp: 6, love: 6, stars: 0, coins: 2 }, ALL_REWARD = { xp: 15, love: 10, stars: 1, coins: 5 };
+  // Two currencies: 🪙 coins (food and furniture, from tasks, the game and simply using your computer)
+  // and ⭐ stars (the wardrobe, only from finishing all of a cat's tasks or a great game).
+  const FOOD = {
+    dry:    { e: "🥣", price: 10, n: 2 },        // 10 coins for two meals
+    wet:    { e: "🥫", price: 9, n: 1, love: 6 },
+    fish:   { e: "🐟", price: 25, n: 1, love: 12, grow: 0.01 },
+    treat:  { e: "🍬", price: 6, n: 3, love: 10 },
+    catnip: { e: "🌿", price: 8, n: 1 },
+  };
+  const HUNGRY_AFTER = 8 * 3.6e6;                      // a meal keeps a cat full for eight hours
+  const GROW_PER_HOUR = 0.9 / 250;                     // ~250 hours of being fed and loved, with the app running, to grow up
   // Every design in the wardrobe is locked and bought with stars (it then comes in all ten colours).
   const PRICES = {
     hat: { beanie: 3, cap: 3, party: 5, beret: 5, witch: 7, chef: 7, tophat: 9, flowers: 9, santa: 11, crown: 15 },
@@ -132,7 +143,7 @@
       locked: "Kilitli", unlock: (n) => `⭐ ${n} ile aç`, need: (n) => `${n} yıldız daha lazım, görevlere bak 🎯`, needTasks: "Yıldız kazanmak için ayarlardan görevleri aç 🎯", unlocked: "Açıldı!", showName: "İsmini başının üstünde göster",
       pet: "Sev", feed: "Mama ver", play: "Oyna", rename: "İsmini değiştir", dice: "Rastgele isim", ok: "Kaydet", close: "Kapat",
       adopt: "Yeni yavru", newKitten: "Yeni bir yavru geldi! Adını koyalım mı?", empty: "Henüz bir şey yazmadı…",
-      grownUp: "Tamamen büyüdü", toNext: (n) => n < 1 ? "Yarın büyüyecek" : `${Math.ceil(n)} gün sonra büyüyecek`, height: (g) => `Boyu ${g.toFixed(1).replace(".", ",")}`,
+      grownUp: "Tamamen büyüdü", toNext: (h) => `büyümesine ≈${Math.ceil(h)} saat bakım`, hungry: "🍽️ Karnı aç", notGrowing: "Büyümesi için tok ve mutlu olmalı", height: (g) => `Boyu ${g.toFixed(1).replace(".", ",")}`,
       memories: "Anılar", family: "Ailesi", parentsL: "Annesi ve babası", siblings: "Kardeşleri", kids: "Yavruları", noMem: "Anılar burada birikecek…",
       together: (n) => `💞 Birlikte ${n} gündür`, tricks: "Numaralar", teach: "Öğret", lessons: (n, m) => `${n}/${m} ders`, learnHint: "Dokun, öğret",
       trickFail: ["Kafası karıştı", "Şimdi canı istemedi", "Esnedi geçti", "Kuyruğunu salladı"], gone: "artık yok",
@@ -141,7 +152,7 @@
       furn: { bed: ["Kedi yatağı", "Yumuşacık, içinde kıvrılıp uyur"], house: ["Kedi kulübesi", "İçine girip saklanarak uyur"], rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
         tree: ["Kedi ağacı", "İki katlı, tepesine tırmanır"], aquarium: ["Akvaryum", "Balıkları izler, cama pati atar"] },
       game: "Lazer avı", gameHelp: "30 saniye: lazerle kedileri parlayan yıldızlara götür!", again: "Tekrar oyna", closeB: "Kapat",
-      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun yıldızları doldu, yarın yine gel 🌙", bestL: (n) => `Rekor: ${n}`,
+      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", bestL: (n) => `Rekor: ${n}`,
       sexF: "♀ Dişi", sexM: "♂ Erkek", lonely: "Kendini yalnız hissediyor 💔 Biraz ilgi lazım", leftHome: (n) => `${n} evden ayrıldı 💔`,
       strayTag: (n) => `Sokak kedisi ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Lazer avı · ⏱ ${t} · ⭐ ${n}`,
       voices: "Miyav sesleri", back: "Geri", addFiles: "Ses ekle", voiceN: (n) => n ? `${n} kayıt` : "henüz yok",
@@ -181,7 +192,7 @@
       locked: "Locked", unlock: (n) => `Unlock for ⭐ ${n}`, need: (n) => `${n} more star${n === 1 ? "" : "s"} needed, see the tasks 🎯`, needTasks: "Switch tasks on in the settings to earn stars 🎯", unlocked: "Unlocked!", showName: "Show name above head",
       pet: "Pet", feed: "Feed", play: "Play", rename: "Rename", dice: "Random name", ok: "Save", close: "Close",
       adopt: "New kitten", newKitten: "A new kitten arrived! Want to name it?", empty: "Nothing written yet…",
-      grownUp: "All grown up", toNext: (n) => n < 1 ? "Grows tomorrow" : `Grows in ${Math.ceil(n)} days`, height: (g) => `Height ${g.toFixed(1)}`,
+      grownUp: "All grown up", toNext: (h) => `≈${Math.ceil(h)} hours of care to grow`, hungry: "🍽️ Hungry", notGrowing: "Needs to be fed and happy to grow", height: (g) => `Height ${g.toFixed(1)}`,
       memories: "Memories", family: "Family", parentsL: "Parents", siblings: "Siblings", kids: "Kittens", noMem: "Memories will gather here…",
       together: (n) => `💞 Together for ${n} days`, tricks: "Tricks", teach: "Teach", lessons: (n, m) => `${n}/${m} lessons`, learnHint: "Tap to teach",
       trickFail: ["Got confused", "Not in the mood", "Yawned instead", "Flicked its tail"], gone: "gone",
@@ -190,7 +201,7 @@
       furn: { bed: ["Cat bed", "Soft and round, curls up in it"], house: ["Cat house", "Crawls inside to sleep, hidden away"], rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
         tree: ["Cat tree", "Two levels to climb up to"], aquarium: ["Aquarium", "Watches the fish and paws at the glass"] },
       game: "Laser hunt", gameHelp: "30 seconds: use the laser to lead the cats onto the twinkling stars!", again: "Play again", closeB: "Close",
-      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game stars for today, come back tomorrow 🌙", bestL: (n) => `Best: ${n}`,
+      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", bestL: (n) => `Best: ${n}`,
       sexF: "♀ Female", sexM: "♂ Male", lonely: "Feeling lonely 💔 needs some attention", leftHome: (n) => `${n} left home 💔`,
       strayTag: (n) => `Stray ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Laser hunt · ⏱ ${t} · ⭐ ${n}`,
       voices: "Meow sounds", back: "Back", addFiles: "Add sounds", voiceN: (n) => n ? `${n} recording${n > 1 ? "s" : ""}` : "none yet",
@@ -234,14 +245,23 @@
     NAMES, TRAITS, TOYS, STAGES, ADULT, STR, LOG_ICON, COAT_NAMES, TASKS, MAX_CATS, TRICKS, LESSONS,
     since: Date.now(), togetherDone: 0,  // the day your first cat arrived, and how many "days together" parties so far
     tasksOn: true, breedOn: true,         // both can be switched off in the settings
-    wallet: { stars: 0, owned: [] },
-    home: { owned: [], placed: {} },      // furniture bought with stars, and where it stands (x as a share of the screen width)
+    wallet: { stars: 0, coins: 0, owned: [] },
+    FOOD, pantry: { dry: 0, wet: 0, fish: 0, treat: 0, catnip: 0 },
+    econ: { day: "", pc: 0, game: 0, gameStars: 0 },    // today's coins from using the computer and from the game (both capped)
+    onEarn: null,                                          // set by the page: a little "+🪙" where it happened
+    earn(n, at) { n = Math.max(0, Math.round(n)); if (!n) return 0; L.wallet.coins += n; if (L.onEarn) L.onEarn(n, at); L.changed(); return n; },
+    econToday() { const d = new Date().toDateString(); if (L.econ.day !== d) L.econ = { day: d, pc: 0, game: 0, gameStars: 0 }; return L.econ; },
+    buyFood(k) { const f = FOOD[k]; if (!f || L.wallet.coins < f.price) return false; L.wallet.coins -= f.price; L.pantry[k] = (L.pantry[k] || 0) + f.n; L.changed(); return true; },
+    // the best meal in the cupboard (or a specific one); returns its kind, or null if the cupboard is bare
+    takeMeal(k) { const order = k ? [k] : ["dry", "wet", "fish"]; const f = order.find((x) => (L.pantry[x] || 0) > 0); if (!f) return null; L.pantry[f]--; L.changed(); return f; },
+    home: { items: [] },                  // every piece of furniture you own: { id, k, cond (0-100), x (share of the screen width, or null when stored) }
     game: { best: 0, day: "", stars: 0 },      // stars from tasks, shared by all cats, and the wardrobe designs bought with them
     PRICES,
     // load the wallet from a save; designs someone is already wearing stay theirs
     loadWallet(w, profiles) {
       // v2: nothing comes unlocked for free any more, whether tasks are on or off (stars already earned are kept)
-      L.wallet = { v: 3, stars: Math.max(0, +(w && w.stars) || 0), owned: w && w.v >= 2 && Array.isArray(w.owned) ? w.owned.slice() : [] };
+      L.wallet = { v: 4, stars: Math.max(0, +(w && w.stars) || 0), coins: Math.max(0, +(w && w.coins) || 0), owned: w && w.v >= 2 && Array.isArray(w.owned) ? w.owned.slice() : [] };
+      if (!w || !(w.v >= 4)) { L.wallet.coins += 30; L.pantry.dry += 4; }      // everyone starts the market with 30 coins and two bags of food
       // v3: the whole wardrobe is locked, so anything a cat wears that hasn't been bought comes off
       for (const p of profiles) for (const [k, id] of Object.entries(p.acc || {})) if (L.price(k, String(id).split(":")[0])) delete p.acc[k];
     },
@@ -272,7 +292,7 @@
       const p = {
         id: Math.random().toString(36).slice(2, 10), coat, name: o.name || L.randomName(o.taken), traits: L.randomTraits(),
         fav: pickOne(Object.keys(TOYS)), born: now, xp: o.xp ?? 0, love: o.love ?? 40, showName: true, log: [], lastR: {}, lastL: {}, seen: now,
-        g0: o.g0 ?? 0.1, gT: now, mem: [], tricks: {}, sex: o.sex || (Math.random() < 0.5 ? "f" : "m"),
+        g: o.g0 ?? 0.1, g0: o.g0 ?? 0.1, gT: now, fedAt: now, mem: [], tricks: {}, sex: o.sex || (Math.random() < 0.5 ? "f" : "m"),
       };
       p.stageId = L.stage(p).id;
       L.write(p, o.migrated ? "hello" : "born", { n: p.name });
@@ -288,12 +308,15 @@
       if (p.sex !== "f" && p.sex !== "m") p.sex = Math.random() < 0.5 ? "f" : "m";
       p.lastR = p.lastR || {}; p.lastL = p.lastL || {}; p.log = p.log || []; p.mem = p.mem || []; p.tricks = p.tricks || {};
       if (p.g0 == null) { p.g0 = p.xp >= ADULT ? 1 : clamp(0.1 + 0.9 * p.xp / ADULT, 0.1, 1); p.gT = Date.now(); }   // saves from before growth by days
+      if (p.g == null) { p.g = L.growth(p); p.fedAt = Date.now(); }                                                    // saves from before growth by care
       if (!p.stageId) p.stageId = L.stage(p).id;
       if (!TRAITS[p.traits?.[0]] || !TRAITS[p.traits?.[1]]) p.traits = L.randomTraits();
       if (!TOYS[p.fav]) p.fav = pickOne(Object.keys(TOYS));
       return p;
     },
-    growth(p) { return clamp((p.g0 ?? 1) + (Date.now() - (p.gT || Date.now())) / 864e5 * GROW_PER_DAY, 0.1, 1); },
+    growth(p) { return p.g != null ? clamp(p.g, 0.1, 1) : clamp((p.g0 ?? 1) + (Date.now() - (p.gT || Date.now())) / 864e5 * GROW_PER_DAY, 0.1, 1); },
+    isHungry(p) { return !!p && Date.now() - (p.fedAt || 0) > HUNGRY_AFTER; },
+    growing(p) { return !!p && !L.isHungry(p) && p.love >= 30 && L.growth(p) < 1; },
     ageDays(p) { return (Date.now() - p.born) / 864e5; },
     isElder(p) { return !!p && L.growth(p) >= 1 && L.ageDays(p) >= ELDER_DAYS; },
     stage(p) {
@@ -302,7 +325,8 @@
       const g = L.growth(p); let s = STAGES[0]; for (const st of STAGES.slice(0, 3)) if (g >= st.min - 1e-9) s = st; return s;
     },
     nextStage(p) { const g = L.growth(p); return STAGES.slice(0, 3).find((st) => st.min > g + 1e-9) || null; },
-    daysToNext(p) { const nx = L.nextStage(p); return nx ? (nx.min - L.growth(p)) / GROW_PER_DAY : 0; },
+    hoursToNext(p) { const nx = L.nextStage(p); return nx ? (nx.min - L.growth(p)) / GROW_PER_HOUR : 0; },
+    daysToNext(p) { return L.hoursToNext(p) / 24; },
     // how big it looks: a newborn (0.1) is drawn small but still readable, a grown-up (1.0) at today's full size
     size(p) { return typeof p === "number" ? 1 : 0.3 + 0.7 * L.growth(p); },
     mods(p) {
@@ -358,6 +382,10 @@
         L.addXP(cat, r.xp); L.addLove(cat, love);
       }
       if (now - (p.lastL[key] || 0) > r.log) { p.lastL[key] = now; L.write(p, kind, arg); L.changed(); }
+      if (kind === "fed") {
+        p.fedAt = Date.now();
+        const f = FOOD[arg.food]; if (f && f.love) L.addLove(cat, f.love); if (f && f.grow) p.g = Math.min(1, L.growth(p) + f.grow);
+      }
       if (arg.oid && ["boop", "race", "fight"].includes(kind)) { p.bond = p.bond || {}; p.bond[arg.oid] = Math.min(50, (p.bond[arg.oid] || 0) + (kind === "fight" ? 0.5 : 1)); }
       if (L.tasksOn) L.taskEvent(cat, kind + (arg.toyKey ? ":" + arg.toyKey : ""));
     },
@@ -382,7 +410,9 @@
       const p = cat.profile, tr = TRICKS[id]; if (!tr) return null;
       p.tricks = p.tricks || {};
       const n = p.tricks[id] || 0, learned = n >= LESSONS;
-      const ok = learned || Math.random() < 0.35 + n * 0.1 + p.love / 400;
+      // a treat from the cupboard makes the lesson go much better
+      const treat = !learned && (L.pantry.treat || 0) > 0; if (treat) L.pantry.treat--;
+      const ok = learned || Math.random() < 0.25 + n * 0.08 + p.love / 500 + (treat ? 0.3 : 0);
       if (ok && !learned) {
         p.tricks[id] = n + 1; L.addXP(cat, 4); L.addLove(cat, 2);
         if (n + 1 >= LESSONS) { L.write(p, "trick", { id }); L.remember(p, "trick", { id }); if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 24); }
@@ -426,12 +456,12 @@
         k.t = now; k.n++; hit = true;
         if (k.n >= d.n) {
           L.addXP(cat, TASK_REWARD.xp); L.addLove(cat, TASK_REWARD.love); L.write(p, "task", { task: k.id });
-          L.wallet.stars += TASK_REWARD.stars; p.stars = (p.stars || 0) + TASK_REWARD.stars;
+          L.wallet.stars += TASK_REWARD.stars; p.stars = (p.stars || 0) + TASK_REWARD.stars; L.earn(TASK_REWARD.coins, cat);
           const w = cat.world, s = cat.s; if (w) { w.burst(cat.x, cat.y - 34 * s, "spark", "#ffd34d", 4); w.burst(cat.x, cat.y - 30 * s, "heart", "#e2557a", 2); }
         }
       }
       if (hit && !ts.all && ts.list.every((k) => k.n >= TASKS[k.id].n)) {
-        ts.all = true; p.stars = (p.stars || 0) + ALL_REWARD.stars; L.wallet.stars += ALL_REWARD.stars; p.streak = (p.streak || 0) + 1;
+        ts.all = true; p.stars = (p.stars || 0) + ALL_REWARD.stars; L.wallet.stars += ALL_REWARD.stars; L.earn(ALL_REWARD.coins, cat); p.streak = (p.streak || 0) + 1;
         L.addXP(cat, ALL_REWARD.xp); L.addLove(cat, ALL_REWARD.love); L.write(p, "tasksDone");
         if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 30);
       }
@@ -512,8 +542,9 @@
       const p = cat.profile; if (!p) return;
       p.seen = Date.now();
       L.addXP(cat, dt / 120);
-      p.love = Math.max(0, p.love - dt * LOVE_FADE);
+      p.love = Math.max(0, p.love - dt * LOVE_FADE * (L.isHungry(p) ? 1.5 : 1));
       L.lonely(cat, dt);
+      if (L.growing(p)) p.g = Math.min(1, L.growth(p) + dt / 3600 * GROW_PER_HOUR);
       cat.size = L.size(p);
       const st = L.stage(p);
       if (st.id !== p.stageId) { p.stageId = st.id; L.grewUp(cat, st); }

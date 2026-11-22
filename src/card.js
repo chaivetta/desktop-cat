@@ -44,7 +44,7 @@
         </div>
         <div class="cc-banner" hidden></div>
         <div class="cc-panes" role="tablist">
-          <button type="button" role="tab" data-p="cat"></button><button type="button" role="tab" data-p="tasks"></button><button type="button" role="tab" data-p="ward"></button><button type="button" role="tab" data-p="log"></button><button type="button" role="tab" data-p="mem"></button><button type="button" role="tab" data-p="home"></button>
+          <button type="button" role="tab" data-p="cat"></button><button type="button" role="tab" data-p="tasks"></button><button type="button" role="tab" data-p="ward"></button><button type="button" role="tab" data-p="log"></button><button type="button" role="tab" data-p="mem"></button>
         </div>
         <div class="cc-body">
           <div class="cc-pane" data-pane="cat">
@@ -95,7 +95,7 @@
         </div>
         <div class="cc-foot">
           <span class="cc-born"></span>
-          <span class="cc-tools"><button class="cc-pin" type="button" data-title="pin" hidden>📍</button><button class="cc-snd" type="button" data-title="sound" hidden>🔊</button><button class="cc-mic" type="button" data-title="voices" hidden>🎙️</button><label class="cc-sizer" title=""><b>🔍</b><input type="range" min="0.5" max="1.1" step="0.02"></label>
+          <span class="cc-tools"><button class="cc-pin" type="button" data-title="pin" hidden>📍</button><button class="cc-snd" type="button" data-title="sound" hidden>🔊</button><button class="cc-mic" type="button" data-title="voices" hidden>🎙️</button><button class="cc-mkt" type="button">🛒</button><label class="cc-sizer" title=""><b>🔍</b><input type="range" min="0.5" max="1.1" step="0.02"></label>
           <span class="cc-lang"><button type="button" data-lang="tr">TR</button>·<button type="button" data-lang="en">EN</button></span></span>
         </div>
         <div class="cc-flash"></div>
@@ -283,7 +283,9 @@
       q(".cc-name").textContent = p.name;
       const days = Math.floor((now - p.born) / 864e5);
       q(".cc-sub").textContent = `${L.COAT_NAMES[p.coat] ? L.COAT_NAMES[p.coat][lang] : p.coat} · ${p.sex === "f" ? t.sexF : t.sexM} · ${t.age(days)}`;
-      const lone = q(".cc-lonely"); lone.hidden = !L.isLonely(p); lone.textContent = t.lonely;
+      const lone = q(".cc-lonely"), hungry = L.isHungry(p);
+      lone.hidden = !L.isLonely(p) && !hungry; lone.textContent = [hungry ? t.hungry : "", L.isLonely(p) ? t.lonely : ""].filter(Boolean).join(" · ");
+      q(".cc-mkt").title = t.market;
       const st = L.stage(p); q(".cc-stage").textContent = `${st.e} ${st[lang]}`;
       const bd = q(".cc-bday"); bd.hidden = !L.isBirthday(p); bd.title = t.birthdayToday;
       const hearts = Array.from({ length: 10 }, (_, i) => { const f = clamp((p.love - i * 10) / 10, 0, 1); return heart(f >= 0.9 ? 1 : f >= 0.4 ? 0.5 : 0); }).join("");
@@ -293,7 +295,7 @@
       q(".cc-mood").textContent = t.mood(p.love);
       const gr = L.growth(p);
       q(".cc-grow > i").style.width = `${clamp(gr * 100, 3, 100)}%`;
-      const nx = L.nextStage(p); q(".cc-next").textContent = `${t.height(gr)} · ${nx ? t.toNext(L.daysToNext(p)) : t.grownUp}`;
+      const nx = L.nextStage(p); q(".cc-next").textContent = `${t.height(gr)} · ${!nx ? t.grownUp : L.growing(p) ? t.toNext(L.hoursToNext(p)) : t.notGrowing}`;
       q(".cc-steps").innerHTML = L.STAGES.slice(0, 3).map((s) => `<span class="${gr >= s.min - 1e-9 ? "on" : ""}" style="left:${s.min * 100}%" title="${esc(s[lang])}">${s.e}</span>`).join("");
       q(".cc-chips").innerHTML = p.traits.map((k, i) => `<span class="cc-chip" style="--c:${CHIP[(i * 2 + p.id.charCodeAt(0)) % CHIP.length]}">${L.TRAITS[k].e} ${esc(L.TRAITS[k][lang])}</span>`).join("")
         + `<span class="cc-chip fav">${L.TOYS[p.fav].e} ${esc(t.fav)}: ${esc(L.TOYS[p.fav][lang])}</span>`;
@@ -305,7 +307,7 @@
       renderTricks(p, t);
       if (pane === "mem") renderMemories(p, t);
       if (pane === "voice") renderVoices(t);
-      if (pane === "home") renderHome(t);
+
       q('[data-a="pet"]').textContent = `💗 ${t.pet}`; q('[data-a="feed"]').textContent = `🍗 ${t.feed}`;
       q('[data-a="play"]').textContent = `🧶 ${t.play}`; q('[data-a="photo"]').textContent = `📸 ${t.photo}`;
       q('[data-w="surprise"]').textContent = `🎲 ${t.surprise}`; q('[data-w="undress"]').textContent = `✖ ${t.undress}`;
@@ -381,6 +383,7 @@
       if (pane === b.dataset.p) return;
       pane = b.dataset.p; update(); q(".cc-body").scrollTop = 0; place();
     });
+    q(".cc-mkt").onclick = () => { if (opts.onMarket) opts.onMarket(); };
     q(".cc-mic").onclick = () => { pane = pane === "voice" ? "cat" : "voice"; update(); place(); };
     q('[data-v="back"]').onclick = () => { stopRec(); pane = "cat"; update(); place(); };
     q(".cc-vrows").addEventListener("change", async (e) => {

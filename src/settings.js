@@ -2,7 +2,7 @@
 (() => {
   const STR = {
     tr: {
-      title: "Ayarlar", cats: "Kediler", adopt: "Sahiplen", surprise: "Sürpriz kedi", count: (n, m) => `${n}/${m} kedi`, cards: "Kedi kartları",
+      title: "Ayarlar", market: "Market: mama ve eşya", cats: "Kediler", adopt: "Sahiplen", surprise: "Sürpriz kedi", count: (n, m) => `${n}/${m} kedi`, cards: "Kedi kartları",
       removeAll: "Tüm kedileri kaldır", sure: "Emin misin? Tekrar dokun",
       toys: "Oyuncaklar", yarn: "Yumak", mouse: "Kurmalı fare", box: "Kutu", feed: "Mama ver", catnip: "Kedi otu", butterfly: "Kelebek",
       post: "Tırmalama direği", shelf: "Duvar rafı", bird: "Kuş çağır", stray: "Sokak kedisi çağır", laser: "Lazer", wand: "Tüylü olta", clear: "Oyuncakları topla",
@@ -15,7 +15,7 @@
       stars: (n) => `⭐ ${n}`,
     },
     en: {
-      title: "Settings", cats: "Cats", adopt: "Adopt", surprise: "Surprise cat", count: (n, m) => `${n}/${m} cats`, cards: "Cat cards",
+      title: "Settings", market: "Market: food and furniture", cats: "Cats", adopt: "Adopt", surprise: "Surprise cat", count: (n, m) => `${n}/${m} cats`, cards: "Cat cards",
       removeAll: "Remove all cats", sure: "Sure? Tap again",
       toys: "Toys", yarn: "Yarn", mouse: "Wind-up mouse", box: "Box", feed: "Feed", catnip: "Catnip", butterfly: "Butterfly",
       post: "Scratching post", shelf: "Wall shelf", bird: "Call a bird", stray: "Call a stray", laser: "Laser", wand: "Feather wand", clear: "Put toys away",
@@ -51,7 +51,7 @@
         <div class="st-body">
           <section><h3>🐱 ${esc(s.cats)} <small class="st-count"></small></h3>
             <div class="st-coats">${DC.COAT_KEYS.map((k) => `<button type="button" class="st-coat" data-coat="${k}" title="${esc(L.COAT_NAMES[k][L.lang])}" style="--a:${DC.COATS[k].body};--b:${DC.COATS[k].accent}"></button>`).join("")}<button type="button" class="st-coat dice" data-coat="" title="${esc(s.surprise)}">🎲</button></div>
-            <div class="st-grid">${btn("cards", "📇 " + s.cards, "pink")}${btn("removeAll", "🧳 " + s.removeAll, "ghost")}</div>
+            <div class="st-grid">${btn("market", "🛒 " + s.market, "gold")}${btn("cards", "📇 " + s.cards, "pink")}${btn("removeAll", "🧳 " + s.removeAll, "ghost")}</div>
           </section>
           <section><h3>🧸 ${esc(s.toys)}</h3>
             <div class="st-grid three">
@@ -115,7 +115,7 @@
       const a = b.dataset.a;
       if (a === "close") return close();
       if (a === "removeAll") { if (sure) { sure = 0; act.removeAll(); } else { sure = 1; setTimeout(() => { sure = 0; sync(); }, 3000); } return sync(); }
-      if (a === "game" || a === "cards") close();
+      if (a === "game" || a === "cards" || a === "market") close();
       if (a === "hide") { close(); return bridge && bridge.hide(); }
       if (a === "quit") return bridge && bridge.quit();
       if (act[a]) act[a]();

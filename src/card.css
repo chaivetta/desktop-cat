@@ -334,3 +334,5 @@
 .cc-fbtns .cc-pill { padding: 3px 8px; font-size: 11px; }
 .cc-fbtns .cc-pill:disabled { opacity: .4; cursor: default; }
 .cc-item small.cc-own { margin-top: 3px; color: #2f9e6e; opacity: 1; }
+
+.cc-mkt { border: 0; background: none; cursor: pointer; font-size: 13px; padding: 0 2px; }

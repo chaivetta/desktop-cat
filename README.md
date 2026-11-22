@@ -69,15 +69,18 @@ Right-click a cat (or tap **Cat cards** in ⚙️ Settings) to open its card, ri
 - **Birthdays** — at one week, then 1, 2, 3 and 6 months, then every year: a cake with a candle, confetti, a party hat and a diary entry
 - **Daily tasks** — three little jobs a day for each cat (pet it five times, play with the yarn, take its photo…). Finish them for love, growing-up points and a ⭐; keep it up for a streak
 - **Best friends and kittens** — cats who keep booping, racing and play-fighting become best friends. Two happy grown-up friends sometimes have a kitten that looks like one of them
-- **Stars are hard-won** — finishing all three of a cat's tasks pays 1⭐, and the laser hunt at most 2⭐ a day. Every hat, collar and outfit is locked and bought with stars (each design then comes in all ten colours), and so is the furniture
-- **Growing up day by day** — a new cat arrives at height 0.1 and grows a little every day, fully grown after about three months. After a year it becomes a wise old cat with a grey muzzle who takes life a bit slower (and stays with you)
+- **Two currencies** — 🪙 coins buy food and furniture in the 🛒 market; ⭐ stars buy hats, collars and outfits on the cat card. Coins come from tasks (2🪙 each, +5🪙 for all three), the laser hunt (1🪙 per star caught, 40 a day at most) and simply using your computer (1🪙 every 10 active minutes, 30 a day at most). Stars only come from finishing all of a cat's tasks (1⭐) or a laser-hunt score of 20+ (once a day)
+- **🛒 Market** — dry food (two meals for 10🪙), wet food, fish feasts, treats for teaching tricks, catnip, and furniture. The bowl only fills from your cupboard
+- **Things wear out** — furniture wears a little with every use and every day; worn things look faded, broken things are ignored by the cats. Repair them or sell them under **My things**
+- **Growing up takes real care** — a cat only grows while the app is running, it isn't hungry (a meal lasts eight hours) and it feels loved: about 250 hours of that to grow up
+- **Wise old cats** — after a year a grown-up becomes a wise old cat with a grey muzzle who takes life a bit slower (and stays with you)
 - **Memories** — the big moments (arriving, growing up, birthdays, kittens, tricks, days together, your photos) are kept as little polaroids in the card, drawn as the cat looked that day
 - **Family** — parents, brothers and sisters and kittens, in the Memories tab
 - **Tricks** — teach give-a-paw, spin, stand up, roll over and jump; a few good lessons and it knows them for good (and shows off now and then)
 - **It knows you** — comes to say hello when you get back, says good morning, curls up next to your mouse when you've been away, and dreams while it sleeps
 - **Seasons** — snow in winter, blossom in spring, fireflies on summer nights, falling leaves in autumn (can be switched off)
 - **Real meows** — record them right in the app with the microphone (🎤), or add sound files (🎙️ on the card), separately for kittens, grown-ups and old cats; record your own cat or use free CC0 sounds. Without them the built-in synthesised meow plays
-- **Home** — spend stars on rugs, potted plants, cushions, cat beds, a cat house they sleep inside, a two-level cat tree and an aquarium, as many of each as you like (Home tab on the card). Cats loaf on the rug, nibble the plant, claim the cushion, climb the tree and watch the fish; drag them anywhere
+- **Home** — spend coins on rugs, potted plants, cushions, cat beds, a cat house they sleep inside, a two-level cat tree and an aquarium, as many of each as you like (in the 🛒 market). Cats loaf on the rug, nibble the plant, claim the cushion, climb the tree and watch the fish; drag them anywhere
 - **Birds** — now and then birds fly past; the cats stop to watch, and if one lands for a peck, they stalk it (it always gets away)
 - **Stray cats** — a shy stray turns up once in a while and keeps its distance. Feed it three times and it moves in, ready for a name
 - **Laser hunt** — a 30-second mini game: lead the cats onto twinkling stars with the laser. Good scores and new records earn stars

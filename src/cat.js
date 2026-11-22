@@ -813,15 +813,15 @@
       if (this.profile && window.CatLife && window.CatLife.isElder(this.profile)) {                              // wise old cats take it easy
         wt.sleep *= 1.6; wt.walk *= 0.7; wt.zoom = 0; wt.tailChase *= 0.3; wt.loaf *= 1.6; if (wt.pronk) wt.pronk *= 0.4; if (wt.fight) wt.fight *= 0.4;
       }
-      const F = (k) => { const l = w.furniture.filter((f) => f.kind === k); return l.length ? l[Math.floor(Math.random() * l.length)] : null; };
+      const F = (k) => { const l = w.furniture.filter((f) => f.kind === k && f.usable); return l.length ? l[Math.floor(Math.random() * l.length)] : null; };
       if (w.landedBird()) wt.bird = 7;
       const rug = F("rug"), plant = F("plant"), aq = F("aquarium");
-      const naps = w.furniture.filter((f) => f.f.nap != null && !f.occupant && (!f.claimed || f.claimed === this)), nap = naps.length ? naps[Math.floor(Math.random() * naps.length)] : null;
+      const naps = w.furniture.filter((f) => f.f.nap != null && f.usable && !f.occupant && (!f.claimed || f.claimed === this)), nap = naps.length ? naps[Math.floor(Math.random() * naps.length)] : null;
       if (rug) wt.rug = 1.1;
       if (plant) wt.plant = 0.35;
       if (nap) wt.cushion = (w.isNight() ? 2.5 : 1) * (nap.kind === "house" ? 1.3 : 1);
       if (aq) wt.fish = 0.8;
-      if (w.furniture.some((f) => f.kind === "tree") && shelf) wt.shelf = (wt.shelf || 0) + 0.8;
+      if (w.furniture.some((f) => f.kind === "tree" && f.usable) && shelf) wt.shelf = (wt.shelf || 0) + 0.8;
       // you've been away from the mouse for a while: come and curl up next to where you left it
       if (w.idleFor() > 480 && pt && pt.x > 0 && !wt.yarn && !wt.mouse && !wt.bowl) wt.you = 6;
       const known = this.profile && this.profile.tricks ? Object.keys(this.profile.tricks).filter((k) => this.profile.tricks[k] >= 5) : [];
@@ -1176,19 +1176,19 @@
         }
         else if (g === "shelf") { this.facing = Math.sign(this.shelfRef.x - this.x) || this.facing; this.set("prep", rnd(0.4, 0.8)); }
         else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); this.care("scratch"); }
-        else if (g === "rug") this.set(pick({ loaf: 3, sploot: 2, roll: 2, knead: 1.2, groom: 1 }), rnd(4, 10));
-        else if (g === "plant") { const f = this.fRef; this.facing = Math.sign(f.x - this.x) || this.facing; this.set("nibble", rnd(1.5, 2.6)); }
-        else if (g === "fish") { const f = this.fRef; this.facing = Math.sign(f.x - this.x) || this.facing; this.set("fishWatch", rnd(4, 8)); }
+        else if (g === "rug" && this.fRef && (this.fRef.use(), true)) this.set(pick({ loaf: 3, sploot: 2, roll: 2, knead: 1.2, groom: 1 }), rnd(4, 10));
+        else if (g === "plant") { const f = this.fRef; f.use(); this.facing = Math.sign(f.x - this.x) || this.facing; this.set("nibble", rnd(1.5, 2.6)); }
+        else if (g === "fish") { const f = this.fRef; f.use(); this.facing = Math.sign(f.x - this.x) || this.facing; this.set("fishWatch", rnd(4, 8)); }
         else if (g === "cushion") {
           const f = this.fRef;
           if (f && !f.occupant) {
-            f.occupant = this; f.claimed = null; this.cushion = f; this.x = f.x;
+            f.occupant = this; f.claimed = null; this.cushion = f; this.x = f.x; f.use();
             if (f.kind === "house") this.set("sleep", rnd(25, 60)); else this.set(Math.random() < 0.5 ? "loaf" : "knead", rnd(4, 9));
             this.care("bed");
           } else this.think();
         }
         else if (g === "you") { this.set("knead", rnd(1.5, 2.5)); this.care("napNear"); }
-        else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7) * ((this.mods && this.mods._eat) || 1)); this.care("fed"); }
+        else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7) * ((this.mods && this.mods._eat) || 1)); this.care("fed", { food: w.bowl.foodKind }); }
         else if (g === "box") {
           const b = this.boxRef; b.claimed = null;
           if (!b.occupant) { b.occupant = this; this.box = b; this.x = b.x; this.set("inbox", rnd(8, 22), { peek: 1, peekTo: 0, peekT: rnd(1, 2), box: b }); w.burst(b.x, floor - 22 * s, "note", "#b08d57", 1); this.care("box"); }
@@ -1286,7 +1286,7 @@
       const w = this.world, s = this.s;
       for (const sh of w.shelves) {
         if (py <= sh.top + 0.5 && this.y >= sh.top && Math.abs(this.x - sh.x) < sh.hw - 4 * s && sh.cats().length < sh.cap()) {
-          this.y = sh.top; this.vy = 0; this.vx = 0; this.perch = sh; this.perchDx = clamp(this.x - sh.x, -sh.hw + 10 * s, sh.hw - 10 * s);
+          this.y = sh.top; this.vy = 0; this.vx = 0; this.perch = sh; if (sh.isPlatform) sh.tree.use(); this.perchDx = clamp(this.x - sh.x, -sh.hw + 10 * s, sh.hw - 10 * s);
           w.burst(this.x, sh.top, "dust", "rgba(140,120,100,.6)", 2);
           this.set("sit", rnd(3, 6), { goal: null }); this.care("shelf");
           return true;
@@ -1567,7 +1567,7 @@
 
   class Bowl {
     constructor(world, x) {
-      this.world = world; this.x = x; this.y = world.floor; this.vy = 0; this.food = 1; this.refill = 1; this.held = false;
+      this.world = world; this.x = x; this.y = world.floor; this.vy = 0; this.food = world.onFeed ? 0 : 1; this.refill = 1; this.held = false; this.foodKind = null;
       this.sp = new Sprite(20, 9);
       this.pal = { 1: { c: [72, 120, 170], lit: true }, 2: { c: [140, 88, 44], lit: true }, 3: { c: [240, 236, 228] }, 4: { c: [104, 64, 30] } };
     }
@@ -1575,6 +1575,8 @@
     grab() { this.held = true; }
     release() { this.held = false; this.vy = 0; }
     click() {
+      // the food comes out of your cupboard: no food bought, no dinner
+      if (this.world.onFeed) { const k = this.world.onFeed(); if (!k) { this.world.burst(this.x, this.y - 16 * this.world.toyScale, "what", "#8a6b55", 1); return; } this.foodKind = k; }
       this.food = 1; this.refill++; this.world.burst(this.x, this.world.floor - 14 * this.world.toyScale, "note", "#b08d57", 2);
       this.world.cats.forEach((c, i) => { if (!["held", "fall", "inbox"].includes(c.state)) { c.set("chase", 10, { goal: "bowl" }); if (i < 2) setTimeout(() => this.world.meow(c), 150 + i * 450 + Math.random() * 300); } });
     }
@@ -1869,13 +1871,13 @@
   // rug, potted plant, cushion, cat tree and a little aquarium; drag them anywhere along the floor
   // nap: a spot one cat can sleep in (the cat house hides it inside)
   const FURN = {
-    plant:   { w: 18, h: 30, price: 8 },
-    rug:     { w: 60, h: 6, price: 12 },
-    cushion: { w: 30, h: 9, price: 10, nap: 5 },
-    bed:     { w: 30, h: 13, price: 12, nap: 4 },
-    aquarium:{ w: 30, h: 26, price: 18 },
-    house:   { w: 36, h: 34, price: 22, nap: 0 },
-    tree:    { w: 44, h: 80, price: 25 },
+    plant:   { w: 18, h: 30, price: 40 },             // prices in coins 🪙
+    rug:     { w: 60, h: 6, price: 60 },
+    cushion: { w: 30, h: 9, price: 50, nap: 5 },
+    bed:     { w: 30, h: 13, price: 70, nap: 4 },
+    aquarium:{ w: 30, h: 26, price: 120 },
+    house:   { w: 36, h: 34, price: 150, nap: 0 },
+    tree:    { w: 44, h: 80, price: 200 },
   };
   function paintFurniture(kind, R) {
     R.clear();
@@ -1924,19 +1926,24 @@
     get x() { return this.tree.x + this.dx * this.world.toyScale; }
     get top() { return this.tree.y - this.dy * this.world.toyScale; }
     get hw() { return this.w2 * this.world.toyScale; }
-    cap() { return 1; }
+    cap() { return this.tree.usable ? 1 : 0; }
     cats() { return this.world.cats.filter((c) => c.perch === this); }
     hit() { return false; }
     update() {} render() {}
   }
   class Furniture {
-    constructor(world, kind, x) {
+    constructor(world, kind, x, item) {
       this.world = world; this.kind = kind; this.x = x; this.y = world.floor; this.held = false; this.occupant = null; this.f = FURN[kind];
+      this.item = item || { k: kind, cond: 100 };
       this.sp = new Sprite(this.f.w, this.f.h); this.dirty = true; this.t = 0;
       if (kind === "tree") this.platforms = [new Platform(this, -5, 35, 13), new Platform(this, 6, 61, 14)];
       if (kind === "aquarium") this.fish = [{ x: 8, y: 9, d: 1, c: "#ff8a3d" }, { x: 20, y: 13, d: -1, c: "#ffd34d" }];
     }
     hit(px, py) { const s = this.world.toyScale, hw = this.f.w * s / 2; return Math.abs(px - this.x) < hw && py > this.y - this.f.h * s && py < this.y + 2; }
+    // things wear out: a little with every use, a little every day; at 0 they're broken until you repair them
+    get cond() { return this.item.cond; }
+    get usable() { return this.item.cond > 0; }
+    use() { this.item.cond = Math.max(0, this.item.cond - 1.5); }
     grab() { this.held = true; } release() { this.held = false; }
     click() {
       const o = this.occupant; if (o && this.world.cats.includes(o)) { o.set("stretch", 1.4); return; }      // knock knock: whoever's napping wakes up
@@ -1944,6 +1951,8 @@
     }
     update(dt) {
       const w = this.world, s = w.toyScale; this.t += dt; this.y = w.floor;
+      this.item.cond = Math.max(0, this.item.cond - dt * 2 / 86400);                 // two points a day
+      if (!this.usable && this.occupant) { const o = this.occupant; this.occupant = null; if (o.cushion === this) { o.cushion = null; o.set("stretch", 1.4); } }
       if (this.held) this.x += (clamp(w.pointer.x, this.f.w * s / 2, w.W - this.f.w * s / 2) - this.x) * Math.min(1, dt * 14);
       if (this.occupant && (!w.cats.includes(this.occupant) || this.occupant.cushion !== this)) this.occupant = null;
       if (this.kind === "house" && this.occupant && Math.random() < dt * 0.5) w.burst(this.x + 3 * s, this.y - 16 * s, "z", "#8a6b55", 1, { rise: true });
@@ -1954,8 +1963,15 @@
       if (this.dirty) { paintFurniture(this.kind, this.sp.R); this.img = this.sp.paint(FURN_PAL[this.kind], FURN_OUTLINE[this.kind]); this.dirty = false; }
       const x0 = Math.round(this.x - f.w * s / 2), y0 = Math.round(this.y - f.h * s + (this.kind === "rug" ? 2 * s : 0));
       if (this.kind !== "rug") { ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, f.w * s * 0.45, 1.8 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
-      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(this.img, x0, y0, f.w * s, f.h * s);
-      if (this.fish) for (const fi of this.fish) {                    // two little fish swimming about
+      ctx.save(); ctx.imageSmoothingEnabled = false;
+      const c = this.cond; if (c < 40) ctx.filter = c <= 0 ? "grayscale(.9) brightness(.8)" : `saturate(${0.5 + c / 80}) brightness(${0.85 + c / 270})`;   // faded, then broken
+      ctx.drawImage(this.img, x0, y0, f.w * s, f.h * s); ctx.filter = "none";
+      if (c < 40) {                                     // worn patches and, once broken, a crack
+        ctx.fillStyle = c <= 0 ? "rgba(40,30,25,.75)" : "rgba(90,70,55,.45)";
+        const seed = this.kind.length * 7 + Math.round(this.x) % 5;
+        for (let i = 0; i < (c <= 0 ? 7 : 4); i++) ctx.fillRect(x0 + ((seed * (i + 3) * 13) % Math.max(1, f.w - 3)) * s, y0 + ((seed * (i + 5) * 7) % Math.max(1, f.h - 2)) * s, s * (c <= 0 ? 2 : 1), s);
+      }
+      if (this.fish && c > 0) for (const fi of this.fish) {                    // two little fish swimming about
         ctx.fillStyle = fi.c; const fx = x0 + Math.round(fi.x) * s, fy = y0 + Math.round(fi.y) * s;
         ctx.fillRect(fx, fy, 3 * s, 2 * s); ctx.fillRect(fx + (fi.d > 0 ? -s : 3 * s), fy - (Math.sin(this.t * 9) > 0 ? 0 : s / 2), s, 2 * s);
         ctx.fillStyle = "#222"; ctx.fillRect(fx + (fi.d > 0 ? 2 * s : 0), fy, s, s);
@@ -2118,8 +2134,8 @@
       const dir = Math.random() < 0.5 ? 1 : -1, n = o.n || (Math.random() < 0.35 ? rnd(2, 4) | 0 : 1), y = this.floor - rnd(200, Math.min(520, this.floor - 60));
       for (let i = 0; i < n; i++) { const b = new Bird(this, dir, y + rnd(-30, 30), i === 0 && (o.land ?? Math.random() < 0.3)); b.x -= dir * i * rnd(30, 60); this.birds.push(b); }
     }
-    placeFurniture(kind, x) {
-      const f = new Furniture(this, kind, x ?? this.spot()); this.furniture.push(f);
+    placeFurniture(kind, x, item) {
+      const f = new Furniture(this, kind, x ?? this.spot(), item); this.furniture.push(f);
       if (f.platforms) this.shelves.push(...f.platforms);
       this.furniture.sort((a, b) => (a.kind === "rug" ? -1 : 0) - (b.kind === "rug" ? -1 : 0));
       return f;
