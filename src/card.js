@@ -57,8 +57,7 @@
           <section class="cc-sec cc-actions">
             <button class="cc-btn" type="button" data-a="pet" style="--b:#ffe1ea"></button>
             <button class="cc-btn" type="button" data-a="feed" style="--b:#fff1b8"></button>
-            <button class="cc-btn" type="button" data-a="play" style="--b:#d8f3e6"></button>
-            <button class="cc-btn" type="button" data-a="photo" style="--b:#dcefff"></button>
+            <button class="cc-btn" type="button" data-a="photo" style="--b:#dcefff;grid-column:1 / -1"></button>
           </section>
           <section class="cc-sec cc-care"><div class="cc-label"><span class="cc-careT"></span><small class="cc-cleanL"></small></div>
             <div class="cc-buffs"></div>
@@ -329,7 +328,7 @@
       if (pane === "voice") renderVoices(t);
 
       q('[data-a="pet"]').textContent = `💗 ${t.pet}`; q('[data-a="feed"]').textContent = `🍗 ${t.feed} · ${(L.pantry.dry || 0) + (L.pantry.wet || 0) + (L.pantry.fish || 0)}`;
-      q('[data-a="play"]').textContent = `🧶 ${t.play}`; q('[data-a="photo"]').textContent = `📸 ${t.photo}`;
+      q('[data-a="photo"]').textContent = `📸 ${t.photo}`;
       q('[data-w="surprise"]').textContent = `🎲 ${t.surprise}`; q('[data-w="undress"]').textContent = `✖ ${t.undress}`;
       renderWardrobe();
       const key = lang + p.log.length + (p.log[0] ? p.log[0].t : 0) + Math.floor(now / 60e3);
@@ -553,7 +552,6 @@
     q(".cc-toggle input").onchange = (e) => { cat.profile.showName = e.target.checked; L.changed(); };
     q('[data-a="pet"]').onclick = (e) => { cat.pet(); floatUp("💗", e.currentTarget); q(".cc-portrait").classList.remove("bounce"); void cv.offsetWidth; q(".cc-portrait").classList.add("bounce"); update(); };
     q('[data-a="feed"]').onclick = (e) => { world.feed(); floatUp("🍗", e.currentTarget); };
-    q('[data-a="play"]').onclick = (e) => { world.throwYarn(clamp(cat.x + (Math.random() - 0.5) * 300, 40, world.W - 40), world.floor - 220); floatUp("🧶", e.currentTarget); };
     q(".cc-carebtns").onclick = (e) => {
       const b = e.target.closest("[data-c]"); if (!b || !cat || !cat.profile) return; const p = cat.profile, t = T(), k = b.dataset.c;
       if (k === "brush") {
