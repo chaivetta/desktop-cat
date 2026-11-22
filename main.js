@@ -8,7 +8,7 @@ const path = require("path");
 if (process.platform === "linux") app.commandLine.appendSwitch("enable-transparent-visuals");
 if (!app.requestSingleInstanceLock()) app.quit();
 
-let win = null, tray = null, coats = [], paused = false, laser = false;
+let win = null, tray = null, coats = [], paused = false, laser = false, wand = false;
 
 function fitToScreen() {
   if (!win) return;
@@ -49,7 +49,13 @@ function buildMenu() {
       { label: "Ball of yarn", click: () => send({ type: "yarn" }) },
       { label: "Wind-up mouse", click: () => send({ type: "mouse" }) },
       { label: "Cardboard box", click: () => send({ type: "box" }) },
+      { label: "Feather wand", type: "checkbox", checked: wand, click: (item) => { wand = item.checked; send({ type: "wand", on: wand }); } },
       { label: "Laser pointer", type: "checkbox", checked: laser, click: (item) => { laser = item.checked; send({ type: "laser", on: laser }); } },
+      { label: "Catnip", click: () => send({ type: "catnip" }) },
+      { label: "Butterfly", click: () => send({ type: "butterfly" }) },
+      { type: "separator" },
+      { label: "Cat bed", click: () => send({ type: "bed" }) },
+      { label: "Scratching post", click: () => send({ type: "post" }) },
       { type: "separator" },
       { label: "Put the toys away", click: () => send({ type: "clear" }) },
     ] },
@@ -84,6 +90,7 @@ function createTray() {
 
 ipcMain.on("ignore", (_e, ignore) => { if (win) win.setIgnoreMouseEvents(!!ignore, { forward: true }); });
 ipcMain.on("laser", (_e, on) => { laser = !!on; if (tray) tray.setContextMenu(buildMenu()); });
+ipcMain.on("wand", (_e, on) => { wand = !!on; if (tray) tray.setContextMenu(buildMenu()); });
 ipcMain.on("coats", (_e, list) => { coats = Array.isArray(list) ? list : []; if (tray) tray.setContextMenu(buildMenu()); });
 
 app.whenReady().then(() => {

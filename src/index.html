@@ -25,7 +25,7 @@
 <canvas id="stage"></canvas>
 <div class="panel" id="panel">
   <h1>Desktop Cat</h1>
-  <p>Click a cat to pet it, drag it to pick it up. Hold the yarn to dangle it, throw it, or bring out a toy.</p>
+  <p>Click a cat to pet it, drag it to pick it up. Bring out a toy — most of them can be dragged around too.</p>
   <div class="row" id="coats"></div>
   <div class="row">
     <button id="yarn">Yarn</button>
@@ -33,6 +33,13 @@
     <button id="box">Box</button>
     <button id="feed">Feed</button>
     <button id="laser">Laser</button>
+  </div>
+  <div class="row">
+    <button id="wand">Feather wand</button>
+    <button id="catnip">Catnip</button>
+    <button id="butterfly">Butterfly</button>
+    <button id="bed">Cat bed</button>
+    <button id="post">Scratching post</button>
     <button id="clear">Put toys away</button>
   </div>
   <div class="row">
@@ -65,6 +72,12 @@
   if (!bridge) addEventListener("resize", () => { world.floorInset = Math.round(innerHeight * 0.22) - 40; world.resize(); });
   saved.cats.forEach((c, i) => setTimeout(() => { world.addCat(c); }, 350 * i));
 
+  // laser and feather wand are on/off toys; keep the buttons (or the tray menu) in step
+  function syncToggles() {
+    if (bridge) { bridge.setLaser(world.laser); bridge.setWand(!!world.wand); return; }
+    document.getElementById("laser").textContent = world.laser ? "Laser: on" : "Laser";
+    document.getElementById("wand").textContent = world.wand ? "Feather wand: on" : "Feather wand";
+  }
   const act = {
     add: (coat) => { world.addCat(coat); save(); },
     remove: () => { world.removeCat(); save(); },
@@ -72,8 +85,13 @@
     mouse: () => world.addMouse(),
     box: () => world.addBox(),
     feed: () => world.feed(),
-    laser: (on) => { const v = world.setLaser(typeof on === "boolean" ? on : undefined); if (!bridge) document.getElementById("laser").textContent = v ? "Laser: on" : "Laser"; if (bridge) bridge.setLaser(v); },
-    clear: () => { world.clearToys(); if (!bridge) document.getElementById("laser").textContent = "Laser"; else bridge.setLaser(false); },
+    laser: (on) => { world.setLaser(typeof on === "boolean" ? on : undefined); syncToggles(); },
+    wand: (on) => { world.setWand(typeof on === "boolean" ? on : undefined); syncToggles(); },
+    catnip: () => world.dropCatnip(),
+    butterfly: () => world.addButterfly(),
+    bed: () => world.addBed(),
+    post: () => world.addPost(),
+    clear: () => { world.clearToys(); syncToggles(); },
     bigger: () => { world.scale = Math.min(SCALE_MAX, world.scale + 1); save(); },
     smaller: () => { world.scale = Math.max(SCALE_MIN, world.scale - 1); save(); },
     toysBigger: () => { world.toyScale = Math.min(SCALE_MAX, world.toyScale + 1); save(); },
@@ -81,7 +99,7 @@
   };
 
   if (bridge) {
-    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](cmd.type === "laser" ? cmd.on : cmd.coat); });
+    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](cmd.type === "laser" || cmd.type === "wand" ? cmd.on : cmd.coat); });
     bridge.setCoats(COAT_KEYS.map(k => ({ key: k, name: COATS[k].name })));
   } else {
     const box = document.getElementById("coats");
@@ -91,8 +109,9 @@
       b.style.background = `linear-gradient(135deg, ${COATS[k].body} 55%, ${COATS[k].accent} 55%)`;
       b.onclick = () => act.add(k); box.appendChild(b);
     });
-    ["yarn", "mouse", "box", "feed", "clear"].forEach(id => document.getElementById(id).onclick = () => act[id]());
+    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "clear"].forEach(id => document.getElementById(id).onclick = () => act[id]());
     document.getElementById("laser").onclick = () => act.laser();
+    document.getElementById("wand").onclick = () => act.wand();
     document.getElementById("remove").onclick = act.remove;
     document.getElementById("bigger").onclick = act.bigger;
     document.getElementById("smaller").onclick = act.smaller;

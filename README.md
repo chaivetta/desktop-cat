@@ -8,11 +8,11 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 
 - **Wander** along the top of your taskbar, and stop to **boop noses** when two cats meet
 - **Watch you** — bring the mouse pointer close and they turn their heads and follow it with their eyes
-- **Groom** — sit down and lick a paw
+- **Groom** — lick a paw, wash behind the ears, twist round to lick a flank, or go full leg-in-the-air
 - **Knead** — paws pressing in turn, eyes squeezed shut, before settling down
 - **Nap** — curl into a loaf with little *z*'s floating up; wake with a big **stretch** and a **yawn**
 - **Roll over** — belly up, paws kicking in the air
-- **Zoomies** — every so often, a sudden sprint from one side of the screen to the other
+- **Zoomies** — a sudden full gallop from one side of the screen to the other, ending in a skidding stop. Sometimes a second cat joins in and they race
 - **Eat** — when you put food out, they trot over and tuck in, then groom
 - **Sit in boxes** — of course. They duck down and peek out over the edge
 - **Play** — chase, crouch with a bottom-wiggle, pounce, bat, stand up and swat
@@ -21,6 +21,8 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 ![Stretch, yawn, stand and swat, eat, boop, zoomies, hunting crouch](docs/moves.png)
 
 ![Watching the pointer, kneading, play-fighting and the chase](docs/more.png)
+
+![Gallop, skid, and three ways to groom](docs/moves2.png)
 
 ## Toys
 
@@ -31,8 +33,15 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 | **Cardboard box** | A cat will climb in and peek out. Drag the box around — passenger included. Click it to make the cat hop out |
 | **Food bowl** | *Feed the cats* puts a bowl out; click the bowl to refill it |
 | **Laser pointer** | Turn it on and the red dot follows your mouse. Every cat on screen goes after it |
+| **Feather wand** | A feather on a string at the end of a stick, held by your pointer. Swing it — they stand, swat and leap for it |
+| **Butterfly** | Drifts about the room, rests on the floor or on a napping cat. The cats stalk and pounce; it always gets away |
+| **Catnip** | Drop a pouch: each cat sniffs it, then rolls about in bliss — and often gets the zoomies after. Click it to freshen it up |
+| **Cat bed** | Sleepy cats walk over, knead it and curl up inside. Drag it with the sleeper in it |
+| **Scratching post** | Cats stretch up against it and rake away, sisal fluff flying, the pom-pom swinging |
 
 ![Eating, sitting in a box, swatting at dangling yarn, chasing the laser](docs/toys.png)
+
+![Scratching post, cat bed, catnip, feather wand and a race](docs/toys2.png)
 
 ## Playing with the cats
 

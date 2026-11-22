@@ -86,27 +86,28 @@
 
   // ---------------------------------------------------------------- body parts
   function headSide(R, cx, cy, o = {}) {
+    const d = o.dir || 1, X = (dx) => cx + d * dx;
     // ears first so the head overlaps their base
-    R.tri(cx - 4.5, cy - 2.5, cx - 2.5, cy - 8.5, cx - 0.2, cy - 3.5, M.BODY, PART.EAR);
-    R.tri(cx - 0.5, cy - 3.6, cx + 2.2, cy - 8.8, cx + 4, cy - 2.6, M.BODY, PART.EAR);
-    R.put(cx - 2.5, cy - 5.5, M.EAR, PART.EAR); R.put(cx + 1.8, cy - 5.8, M.EAR, PART.EAR); R.put(cx + 1.8, cy - 4.8, M.EAR, PART.EAR);
+    R.tri(X(-4.5), cy - 2.5, X(-2.5), cy - 8.5, X(-0.2), cy - 3.5, M.BODY, PART.EAR);
+    R.tri(X(-0.5), cy - 3.6, X(2.2), cy - 8.8, X(4), cy - 2.6, M.BODY, PART.EAR);
+    R.put(X(-2.5), cy - 5.5, M.EAR, PART.EAR); R.put(X(1.8), cy - 5.8, M.EAR, PART.EAR); R.put(X(1.8), cy - 4.8, M.EAR, PART.EAR);
     R.ellipse(cx, cy, 5.8, 5.2, M.BODY, PART.HEAD);
-    R.ellipse(cx + 4.2, cy + 1.6, 2.8, 2.2, M.BELLY, PART.HEAD);        // muzzle
-    R.put(cx + 6.4, cy + 0.4, M.NOSE, PART.HEAD);
-    const ex = cx + 2.2, ey = cy - 1;
-    if (o.eyes === "closed") { R.put(ex - 1, ey + 1, M.CLOSED); R.put(ex, ey + 1, M.CLOSED); R.put(ex + 1, ey + 1, M.CLOSED); }
-    else if (o.eyes === "happy") { R.put(ex - 1, ey + 1, M.CLOSED); R.put(ex, ey, M.CLOSED); R.put(ex + 1, ey + 1, M.CLOSED); }
-    else if (o.eyes === "blink") { R.put(ex, ey + 1, M.CLOSED); R.put(ex + 1, ey + 1, M.CLOSED); }
+    R.ellipse(X(4.2), cy + 1.6, 2.8, 2.2, M.BELLY, PART.HEAD);        // muzzle
+    R.put(X(6.4), cy + 0.4, M.NOSE, PART.HEAD);
+    const ex = X(2.2), ey = cy - 1, e = (k) => ex + d * k;
+    if (o.eyes === "closed") { R.put(e(-1), ey + 1, M.CLOSED); R.put(ex, ey + 1, M.CLOSED); R.put(e(1), ey + 1, M.CLOSED); }
+    else if (o.eyes === "happy") { R.put(e(-1), ey + 1, M.CLOSED); R.put(ex, ey, M.CLOSED); R.put(e(1), ey + 1, M.CLOSED); }
+    else if (o.eyes === "blink") { R.put(ex, ey + 1, M.CLOSED); R.put(e(1), ey + 1, M.CLOSED); }
     else {
       const lk = o.look || { x: 0.5, y: 0 };
-      const px = lk.x < -0.3 ? ex : ex + 1, rows = lk.y < -0.4 ? [ey] : lk.y > 0.4 ? [ey + 1] : [ey, ey + 1];
-      for (const yy of [ey, ey + 1]) for (const xx of [ex, ex + 1]) R.put(xx, yy, xx === px && rows.includes(yy) ? M.PUPIL : M.EYE);
+      const px = lk.x < -0.3 ? ex : e(1), rows = lk.y < -0.4 ? [ey] : lk.y > 0.4 ? [ey + 1] : [ey, ey + 1];
+      for (const yy of [ey, ey + 1]) for (const xx of [ex, e(1)]) R.put(xx, yy, xx === px && rows.includes(yy) ? M.PUPIL : M.EYE);
     }
-    if (o.tongue) R.put(cx + 5.6, cy + 3.4, M.TONGUE);
+    if (o.tongue) R.put(X(5.6), cy + 3.4, M.TONGUE);
     if (o.yawn) {                                    // wide-open mouth
-      R.put(cx + 3, cy + 2.6, M.PUPIL); R.put(cx + 4, cy + 2.6, M.PUPIL); R.put(cx + 5, cy + 2.6, M.PUPIL);
-      R.put(cx + 3, cy + 3.6, M.TONGUE); R.put(cx + 4, cy + 3.6, M.TONGUE); R.put(cx + 5, cy + 3.6, M.PUPIL);
-      R.put(cx + 4, cy + 4.6, M.BELLY, PART.HEAD); R.put(cx + 3, cy + 4.6, M.BELLY, PART.HEAD);
+      R.put(X(3), cy + 2.6, M.PUPIL); R.put(X(4), cy + 2.6, M.PUPIL); R.put(X(5), cy + 2.6, M.PUPIL);
+      R.put(X(3), cy + 3.6, M.TONGUE); R.put(X(4), cy + 3.6, M.TONGUE); R.put(X(5), cy + 3.6, M.PUPIL);
+      R.put(X(4), cy + 4.6, M.BELLY, PART.HEAD); R.put(X(3), cy + 4.6, M.BELLY, PART.HEAD);
     }
   }
   function headFront(R, cx, cy, o = {}) {
@@ -127,6 +128,7 @@
   };
 
   // ---------------------------------------------------------------- poses (sprite faces right)
+  const lerp = (a, b, t) => a + (b - a) * t;
   const POSES = {
     walk(R, a) {
       const p = a.phase * Math.PI * 2, bob = Math.sin(p * 2) > 0.3 ? 1 : 0;
@@ -314,7 +316,79 @@
     // play-fighting stances
     spar(R, a) { POSES.crouch(R, { ...a, t: a.t * 0.4 }); },
     swipe(R, a) { POSES.bat(R, a); },
-    zoom(R, a) { POSES.run(R, a); },
+    // a real gallop: legs gather under the body, then the whole cat stretches out and flies
+    gallop(R, a) {
+      const p = a.phase * Math.PI * 2, e = 0.5 + 0.5 * Math.cos(p), e2 = 0.5 + 0.5 * Math.cos(p + 0.7);
+      const by = 27 - 3 * e;
+      R.limb(13, by + 1, lerp(19, 3, e2), lerp(GROUND - 1, by + 6, e2), 2.6, M.FAR, PART.LEG);
+      R.limb(31, by, lerp(25, 41, e2), lerp(GROUND - 1, by + 5, e2), 2.6, M.FAR, PART.LEG);
+      R.curve(11, by - 1, 5, by - 3 - e, 1, by - 4 + 2 * e, 3, 2.2, M.BODY, PART.TAIL);
+      R.ellipse(22, by - (1 - e) * 1.5, 9 + 3 * e, 5 - 0.6 * e, M.BODY, PART.BODY);
+      R.ellipse(30 + e, by - 0.5, 5.4, 5, M.BODY, PART.CHEST);
+      R.limb(14, by + 1, lerp(21, 3, e), lerp(GROUND - 1, by + 5, e), 2.8, M.BODY, PART.LEG);
+      R.limb(30 + e, by + 1, lerp(23, 42, e), lerp(GROUND - 1, by + 4, e), 2.8, M.BODY, PART.LEG);
+      headSide(R, 36 + 2 * e, by - 7, {});
+    },
+    // brakes on! haunches down, front paws braced
+    skid(R, a) {
+      R.curve(13, 29, 7, 23, 6, 16, 3, 2.4, M.BODY, PART.TAIL);
+      R.limb(30, 30, 39, GROUND - 1, 2.8, M.FAR, PART.LEG);
+      R.ellipse(21, 31, 9.5, 5.2, M.BODY, PART.BODY);
+      R.ellipse(28, 29, 5.2, 5.2, M.BODY, PART.CHEST);
+      R.ellipse(17, GROUND - 1.5, 5, 2, M.BODY, PART.LEG);
+      R.limb(28, 30, 37, GROUND - 1, 2.8, M.BODY, PART.LEG);
+      R.rect(36, GROUND - 1, 4, 1, M.BODY, PART.LEG);
+      headSide(R, 32, 22, {});
+    },
+    // grooming, three ways
+    lickFlank(R, a) {
+      const lick = Math.sin(a.t * 8) > 0;
+      R.curve(15, 35, 6, 38, 4, 32, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31, 8.2, 7, M.BODY, PART.BODY);
+      R.ellipse(26, 26, 6, 8, M.BODY, PART.CHEST);
+      R.ellipse(20, GROUND - 1, 4.5, 1.6, M.BODY, PART.LEG);
+      leg(R, 28, 28, GROUND, M.BODY, 0);
+      headSide(R, 21, 22 + (lick ? 1 : 0), { dir: -1, eyes: "closed", tongue: lick });
+    },
+    washFace(R, a) {
+      const k = (Math.sin(a.t * 5) + 1) / 2;
+      R.curve(15, 35, 6, 38, 4, 32, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31, 8.2, 7, M.BODY, PART.BODY);
+      R.ellipse(26.5, 25.5, 6, 8.6, M.BODY, PART.CHEST);
+      R.ellipse(20, GROUND - 1, 4.5, 1.6, M.BODY, PART.LEG);
+      headSide(R, 29, 16 + k, { eyes: "closed" });
+      const px = 31 + 2 * k, py = 9 + 7 * k;
+      R.limb(27, 26, px, py + 1, 2.8, M.BODY, PART.LEG);
+      R.ellipse(px, py, 1.9, 1.6, M.BODY, PART.LEG);
+    },
+    legUp(R, a) {
+      const lick = Math.sin(a.t * 8) > 0;
+      R.curve(13, 36, 6, 38, 1, 37, 3, 2.2, M.BODY, PART.TAIL);
+      leg(R, 31, 29, GROUND, M.FAR, 1);
+      R.ellipse(19, 32, 8, 6, M.BODY, PART.BODY);
+      R.ellipse(26, 29, 6, 6.5, M.BODY, PART.CHEST);
+      R.limb(18, 30, 24, 8, 3.2, M.BODY, PART.LEG);
+      R.ellipse(24.5, 6.5, 2.2, 1.8, M.BODY, PART.LEG);
+      headSide(R, 22, 25 + (lick ? 1 : 0), { dir: -1, eyes: "closed", tongue: lick });
+      leg(R, 29, 30, GROUND, M.BODY, 1);
+    },
+    // up against the scratching post, raking with both paws
+    scratch(R, a) {
+      const k = Math.sin(a.t * 9), k2 = Math.sin(a.t * 9 + Math.PI);
+      R.curve(15, 34, 8, 30, 5, 22, 3, 2.4, M.BODY, PART.TAIL);
+      R.limb(19, 31, 17, GROUND - 1, 3, M.FAR, PART.LEG);
+      R.limb(30, 21, 38, 16 + k2 * 3, 2.8, M.FAR, PART.LEG);
+      R.ellipse(20, 32, 6.5, 5, M.BODY, PART.BODY);
+      R.limb(21, 30, 29, 21, 10, M.BODY, PART.CHEST);
+      R.limb(22, 33, 22, GROUND - 1, 3, M.BODY, PART.LEG);
+      R.rect(20, GROUND - 1, 5, 1, M.BODY, PART.LEG);
+      headSide(R, 31, 14, { eyes: "happy" });
+      R.limb(30, 22, 39, 18 + k * 3, 2.8, M.BODY, PART.LEG);
+      R.ellipse(39.5, 18 + k * 3, 1.6, 1.8, M.BODY, PART.LEG);
+    },
+    zoom(R, a) { POSES.gallop(R, a); },
     boop(R, a) { POSES.sit(R, { ...a, eyes: "happy" }); },
     inbox(R, a) { POSES.sit(R, { ...a, eyes: a.peekEyes }); },
     hunt(R, a) { POSES.crouch(R, a); },
@@ -424,7 +498,11 @@
     get s() { return this.world.scale; }
     set(state, dur = 3, extra = {}) {
       if (this.state === "inbox" && state !== "inbox" && this.box) { this.box.occupant = null; this.box = null; }
+      if (this.bed && !["knead", "sleep", "stretch", "yawn"].includes(state)) { this.bed.occupant = null; this.bed = null; }
       this.state = state; this.stateT = 0; this.dur = dur; Object.assign(this, extra);
+      const w = this.world;
+      if (w.post && w.post.user === this && !(state === "scratch" || (state === "chase" && this.goal === "post"))) w.post.user = null;
+      if (this.bedRef && this.bedRef.claimed === this && !(state === "chase" && this.goal === "bed")) this.bedRef.claimed = null;
     }
     bounds() { const s = this.s; return { x: this.x - SW * s / 2, y: this.y - GROUND * s, w: SW * s, h: (GROUND + 2) * s }; }
     hit(px, py) {
@@ -437,21 +515,28 @@
     think() {
       const w = this.world;
       if (w.laser) return this.set("chase", 30, { goal: "laser" });
-      const wt = { walk: 3, sit: 2, groom: 1.5, sleep: 1.1, roll: 1, zoom: 0.45 };
+      if (w.wand) return this.set("chase", 30, { goal: "feather" });
+      const wt = { walk: 3, sit: 2, groom: 1.8, sleep: 1.1, roll: 1, zoom: 0.8 };
       const y = w.yarn;
       if (y) { if (y.held) wt.dangle = 6; else if (Math.abs(y.x - this.x) < w.W * 0.7) wt.yarn = 5; }
       if (w.mouse && w.mouse.running()) wt.mouse = 6;
       if (w.bowl && w.bowl.food > 0.05 && this.fed !== w.bowl.refill) wt.bowl = 9;
       const box = w.boxes.find((b) => !b.occupant && !b.held && !b.claimed);
       if (box) wt.box = 2.4;
+      if (w.butterfly) wt.butterfly = 5;
+      if (w.catnip && this.nipped !== w.catnip.id) wt.catnip = 8;
+      if (w.post && !w.post.user) wt.post = 0.9;
+      const bed = w.bed && !w.bed.occupant && !w.bed.claimed ? w.bed : null;
+      if (bed) wt.sleep += 0.6;                       // a comfy bed makes a nap more tempting
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
       if (foe) wt.fight = 1.4;
-      if (wt.yarn || wt.mouse || wt.dangle) { wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; }
+      if (wt.yarn || wt.mouse || wt.dangle || wt.butterfly) { wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; }
       const n = pick(wt);
       if (n === "walk") { const m = SW * this.s; this.set("walk", 12, { target: clamp(this.x + rnd(-420, 420), m, w.W - m) }); }
       else if (n === "sit") this.set("sit", rnd(3, 8));
-      else if (n === "groom") this.set("groom", rnd(3, 6));
-      else if (n === "sleep") this.set("knead", rnd(2.5, 4));
+      else if (n === "groom") this.set(pick({ groom: 3, lickFlank: 2, washFace: 2, legUp: 1.4 }), rnd(3, 6));
+      else if (n === "sleep") { if (bed) { bed.claimed = this; this.set("chase", 14, { goal: "bed", bedRef: bed }); } else this.set("knead", rnd(2.5, 4)); }
+      else if (n === "post") { w.post.user = this; this.set("chase", 12, { goal: "post" }); }
       else if (n === "fight") {
         const d = rnd(4, 6.5);
         this.fightCool = foe.fightCool = rnd(40, 80);
@@ -459,7 +544,7 @@
         w.burst((this.x + foe.x) / 2, this.y - 30 * this.s, "spark", "#f7e48c", 1);
       }
       else if (n === "roll") this.set("roll", rnd(3, 5.5));
-      else if (n === "zoom") this.set("zoom", rnd(2.4, 4), { target: this.x < w.W / 2 ? w.W - SW * this.s : SW * this.s, laps: 0 });
+      else if (n === "zoom") this.startZoom();
       else if (n === "box") { box.claimed = this; this.set("chase", 12, { goal: "box", boxRef: box }); }
       else this.set("chase", n === "dangle" ? 12 : 9, { goal: n });
     }
@@ -475,8 +560,34 @@
           const side = this.x < w.bowl.x ? -1 : 1; return w.bowl.x + side * 15 * s;
         }
         case "box": return this.boxRef && w.boxes.includes(this.boxRef) && !this.boxRef.occupant ? this.boxRef.x : null;
+        case "feather": return w.wand && w.pointer.seen ? w.wand.x : null;
+        case "butterfly": return w.butterfly ? w.butterfly.x : null;
+        case "catnip": return w.catnip && !w.catnip.held ? w.catnip.x : null;
+        case "bed": return this.bedRef && w.bed === this.bedRef && !this.bedRef.occupant ? this.bedRef.x : null;
+        case "post": {
+          if (!w.post) return null;
+          const side = this.x < w.post.x ? -1 : 1; return w.post.x + side * (3 * w.toyScale + 15 * s);
+        }
       }
       return null;
+    }
+    // the point the cat is trying to get its paws on
+    aim() {
+      const w = this.world;
+      switch (this.goal) {
+        case "laser": return { x: w.pointer.x, y: w.pointer.y };
+        case "feather": return w.wand ? { x: w.wand.x, y: w.wand.cy } : null;
+        case "butterfly": return w.butterfly ? { x: w.butterfly.x, y: w.butterfly.y } : null;
+        case "mouse": return w.mouse ? { x: w.mouse.x + w.mouse.dir * w.mouse.speed * 0.4, y: w.mouse.y } : null;
+        default: return w.yarn ? { x: w.yarn.x, y: w.yarn.y } : null;
+      }
+    }
+    startZoom(race = true) {
+      const w = this.world, m = SW * this.s, target = this.x < w.W / 2 ? w.W - m : m, d = rnd(2.4, 4);
+      this.set("zoom", d, { target, laps: 0 });
+      if (!race) return;
+      const buddy = w.cats.find((o) => o !== this && ["sit", "walk", "groom"].includes(o.state) && Math.abs(o.x - this.x) < 110 * this.s);
+      if (buddy && Math.random() < 0.55) buddy.set("zoom", d, { target, laps: 0 });   // a race!
     }
 
     // ------------------------------------------------ physics + behaviour
@@ -484,7 +595,8 @@
       const w = this.world, s = this.s, floor = w.floor;
       this.t += dt; this.stateT += dt; this.boopCool -= dt; this.fightCool -= dt;
       this.blinkT -= dt; if (this.blinkT <= 0) { this.blink = !this.blink; this.blinkT = this.blink ? 0.14 : rnd(2, 6); }
-      if (w.laser && !["chase", "leap", "stand", "held", "fall", "hunt"].includes(this.state)) this.think();
+      if ((w.laser || w.wand) && !["chase", "leap", "stand", "held", "fall", "hunt"].includes(this.state)) this.think();
+      if (this.bed && w.bed !== this.bed) this.bed = null;
 
       switch (this.state) {
         case "walk": {
@@ -499,12 +611,12 @@
           const dx = this.target - this.x;
           this.facing = Math.sign(dx) || this.facing; this.x += this.facing * 175 * s * dt; this.phase = (this.phase + dt * 4.5) % 1;
           if (Math.random() < dt * 8) w.burst(this.x - this.facing * 14 * s, floor - 2 * s, "dust", "rgba(140,120,100,.55)", 1);
-          if (Math.abs(dx) < 12 * s) { this.laps++; const m = SW * s; this.target = this.facing > 0 ? m : w.W - m; if (this.laps >= 2 || this.stateT > this.dur) this.set("sit", rnd(2, 4)); }
+          if (Math.abs(dx) < 12 * s) { this.laps++; const m = SW * s; this.target = this.facing > 0 ? m : w.W - m; if (this.laps >= 2 || this.stateT > this.dur) this.set("skid", 0.8, { slide: 170 * s }); }
           break;
         }
         case "chase": this.updateChase(dt); break;
         case "hunt": {                                    // crouched, bottom wiggling, about to pounce
-          const tx = this.goal === "laser" ? w.pointer.x : this.goal === "mouse" && w.mouse ? w.mouse.x + w.mouse.dir * w.mouse.speed * 0.4 : w.yarn ? w.yarn.x : this.x;
+          const am = this.aim(), tx = am ? am.x : this.x;
           this.facing = Math.sign(tx - this.x) || this.facing;
           if (this.stateT > this.dur) {
             const air = 0.42; this.vx = clamp((tx - this.x) / air, -320 * s / 3 * 3, 320 * s / 3 * 3); this.vy = -G * air / 2;
@@ -517,18 +629,18 @@
           this.paws((tx, ty) => this.contact(tx, ty));
           if (this.y >= floor) {
             this.y = floor; this.vy = 0; w.burst(this.x, floor, "dust", "rgba(140,120,100,.7)", 3);
-            if (this.goalX() != null && Math.random() < 0.8) this.set("chase", this.goal === "laser" ? 30 : 6);
+            if (this.goalX() != null && Math.random() < 0.8) this.set("chase", ["laser", "feather"].includes(this.goal) ? 30 : 6);
             else this.set("sit", 2.5);
           }
           break;
         }
         case "stand": {                                   // up on hind legs under a dangling toy
-          const tx = this.goal === "laser" ? w.pointer.x : w.yarn ? w.yarn.x : this.x;
+          const am = this.aim(), tx = am ? am.x : this.x;
           this.facing = Math.sign(tx - this.x) || this.facing;
           this.x += clamp(tx - this.facing * 8 * s - this.x, -40 * s * dt, 40 * s * dt);
           this.paws((px, py) => this.contact(px, py));
           if (this.goalX() == null) { this.set("sit", 2); break; }
-          if (this.stateT > this.dur) this.set("chase", this.goal === "laser" ? 30 : 8);
+          if (this.stateT > this.dur) this.set("chase", ["laser", "feather"].includes(this.goal) ? 30 : 8);
           break;
         }
         case "bat": {
@@ -565,6 +677,31 @@
           break;
         }
         case "spar": this.updateSpar(dt); break;
+        case "skid": {
+          this.x += this.facing * this.slide * dt; this.slide *= Math.pow(0.03, dt);
+          if (this.stateT < 0.4 && Math.random() < dt * 22) w.burst(this.x + this.facing * 12 * s, floor - 2 * s, "dust", "rgba(140,120,100,.6)", 1);
+          if (this.stateT > this.dur) this.set("sit", rnd(2, 4));
+          break;
+        }
+        case "sniff": {
+          if (!w.catnip) { this.set("sit", 1.5); break; }
+          if (this.stateT > this.dur) this.set("nip", rnd(4, 6.5));
+          break;
+        }
+        case "nip": {                                     // blissed out on catnip
+          if (Math.random() < dt * 5) w.burst(this.x + rnd(-10, 10) * s, this.y - 20 * s, "spark", Math.random() < 0.5 ? "#8bd36b" : "#c58ae8", 1);
+          if (Math.random() < dt * 1.2) w.burst(this.x, this.y - 28 * s, "heart", "#e2557a", 1);
+          if (this.stateT > this.dur) { if (Math.random() < 0.6) this.startZoom(false); else this.set("sit", rnd(2, 4)); }
+          break;
+        }
+        case "scratch": {
+          const p = w.post; if (!p) { this.set("sit", 1.5); break; }
+          this.facing = Math.sign(p.x - this.x) || this.facing;
+          this.x += clamp(p.x - this.facing * (3 * w.toyScale + 15 * s) - this.x, -80 * s * dt, 80 * s * dt);
+          if (Math.random() < dt * 4) w.burst(p.x - this.facing * 3 * w.toyScale, floor - rnd(14, 24) * s, "crumb", "#d8c08a", 1);
+          if (this.stateT > this.dur) this.set(Math.random() < 0.5 ? "sit" : "washFace", rnd(2, 4));
+          break;
+        }
         case "flee": case "pursue": {
           const f = this.foe;
           if (this.state === "pursue") {
@@ -613,7 +750,8 @@
           if (this.stateT > this.dur) this.think();
       }
       const m = SW * s / 2; this.x = clamp(this.x, m, w.W - m);
-      if (!["held", "fall", "leap", "inbox"].includes(this.state) && !(this.state === "spar" && this.vy)) this.y = floor;
+      if (this.bed) { this.x = this.bed.x; this.y = floor - 4 * w.toyScale; }
+      else if (!["held", "fall", "leap", "inbox"].includes(this.state) && !(this.state === "spar" && this.vy)) this.y = floor;
       this.watchPointer(dt);
     }
 
@@ -622,30 +760,36 @@
       const tx = this.goalX();
       if (tx == null) { if (this.boxRef && this.boxRef.claimed === this) this.boxRef.claimed = null; this.set("sit", 1.5); return; }
       const dx = tx - this.x, g = this.goal;
-      const reach = { yarn: 16, dangle: 9, mouse: 46, laser: 22, bowl: 3, box: 4 }[g] * s;
+      const reach = { yarn: 16, dangle: 9, mouse: 46, laser: 22, bowl: 3, box: 4, feather: 9, butterfly: 10, catnip: 6, bed: 4, post: 3 }[g] * s;
       if (Math.abs(dx) > reach) {
         this.facing = Math.sign(dx);
-        const sp = (g === "bowl" || g === "box") ? 60 : g === "laser" ? 135 : 95;
-        this.x += this.facing * Math.min(sp * s * dt, Math.abs(dx)); this.phase = (this.phase + dt * (sp > 70 ? 2.6 : 1.8)) % 1;
+        const sp = ["bowl", "box", "bed", "post"].includes(g) ? 60 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
+        this.x += this.facing * Math.min(sp * s * dt, Math.abs(dx)); this.phase = (this.phase + dt * (sp > 120 ? 3.4 : sp > 70 ? 2.6 : 1.8)) % 1;
       } else {
         if (g === "yarn") {
           const y = w.yarn;
           if (y.y > floor - 30 * s) { if (Math.abs(y.vx) < 220 && Math.random() < 0.55) this.set("hunt", rnd(0.5, 1.1)); else this.set("bat", 0.7, { swatted: false }); }
         } else if (g === "mouse") this.set("hunt", rnd(0.25, 0.6));
-        else if (g === "dangle" || g === "laser") {
-          const ty = g === "laser" ? w.pointer.y : w.yarn.y, h = floor - ty;
-          if (g === "laser" && h < 34 * s) this.set("hunt", rnd(0.2, 0.5));
+        else if (["dangle", "laser", "feather", "butterfly"].includes(g)) {
+          const am = this.aim(), h = floor - am.y;
+          if ((g === "laser" || (g === "butterfly" && w.butterfly.resting)) && h < 34 * s) this.set("hunt", rnd(0.3, 0.8));
           else if (h < 46 * s) this.set("stand", rnd(0.9, 1.6));
-          else if (h < 150 * s && Math.random() < 0.035) { this.vx = this.facing * 20; this.vy = -Math.sqrt(2 * G * Math.min(h - 8 * s, 120 * s)); this.set("leap", 3); }
+          else if (h < 150 * s && Math.random() < (g === "butterfly" ? 0.08 : 0.035)) { this.vx = this.facing * 20; this.vy = -Math.sqrt(2 * G * Math.min(h - 8 * s, 120 * s)); this.set("leap", 3); }
           else this.set("stand", 0.6);
-        } else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7)); }
+        }
+        else if (g === "catnip") { this.nipped = w.catnip.id; this.facing = Math.sign(w.catnip.x - this.x) || this.facing; this.set("sniff", rnd(1, 1.6)); }
+        else if (g === "bed") {
+          const b = this.bedRef; b.claimed = null;
+          if (!b.occupant) { b.occupant = this; this.bed = b; this.x = b.x; this.set("knead", rnd(2.5, 4)); } else this.think();
+        }
+        else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); } else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7)); }
         else if (g === "box") {
           const b = this.boxRef; b.claimed = null;
           if (!b.occupant) { b.occupant = this; this.box = b; this.x = b.x; this.set("inbox", rnd(8, 22), { peek: 1, peekTo: 0, peekT: rnd(1, 2), box: b }); w.burst(b.x, floor - 22 * s, "note", "#b08d57", 1); }
           else this.think();
         }
       }
-      if (g !== "laser" && this.state === "chase" && this.stateT > this.dur) this.think();
+      if (!["laser", "feather"].includes(g) && this.state === "chase" && this.stateT > this.dur) this.think();
     }
 
     // where the front paws are, in screen space
@@ -663,13 +807,20 @@
       const m = w.mouse;
       if (m && !m.held && Math.abs(m.x - px) < 14 * s && Math.abs(m.y - 4 * s - py) < 22 * s && m.airT <= 0) { m.kick(this.facing); w.burst(m.x, m.y - 6 * s, "spark", "#f7e48c", 3); }
       if (w.laser && Math.hypot(w.pointer.x - px, w.pointer.y - py) < 12 * s && Math.random() < 0.06) w.burst(w.pointer.x, w.pointer.y, "spark", "#ff5a5a", 1);
+      const f = w.wand;
+      if (f && w.pointer.seen && Math.hypot(f.x - px, f.cy - py) < 9 * s + 4 * w.toyScale && !this.touchedF) {
+        this.touchedF = 0.3; f.vx += this.facing * rnd(260, 460); f.vy -= rnd(140, 300); w.burst(f.x, f.cy, "spark", "#f7e48c", 2);
+      }
+      const bf = w.butterfly;
+      if (bf && Math.hypot(bf.x - px, bf.y - py) < 14 * s) bf.scare(this.facing);
       if (this.touchedRecently) this.touchedRecently = Math.max(0, this.touchedRecently - 1 / 60) || 0;
+      if (this.touchedF) this.touchedF = Math.max(0, this.touchedF - 1 / 60) || 0;
     }
     // turn the head (and if needed the whole cat) towards the mouse pointer
     watchPointer(dt) {
       const w = this.world, s = this.s, p = w.pointer;
       const dx = p.x - this.x, dy = p.y - (this.y - 26 * s);
-      const near = p.seen && !w.laser && Math.abs(dx) < 75 * s && p.y < w.floor + 4 && p.y > w.floor - 120 * s;
+      const near = p.seen && !w.laser && !w.wand && Math.abs(dx) < 75 * s && p.y < w.floor + 4 && p.y > w.floor - 120 * s;
       if (near && this.state === "walk" && performance.now() - (p.movedAt || 0) < 400 && Math.random() < dt * 0.9) this.set("sit", rnd(2.5, 5));
       if (near && ["sit", "happy", "boop", "inbox"].includes(this.state)) {
         if (Math.abs(dx) > 6 * s && Math.sign(dx) !== this.facing && this.state !== "boop") this.facing = Math.sign(dx);
@@ -731,9 +882,11 @@
     pose() {
       switch (this.state) {
         case "walk": return "walk";
-        case "chase": return (this.goal === "bowl" || this.goal === "box") ? "walk" : "run";
+        case "chase": return ["bowl", "box", "bed", "post"].includes(this.goal) ? "walk" : ["laser", "feather", "butterfly"].includes(this.goal) ? "gallop" : "run";
         case "spar": return (this.vy || this.y < this.world.floor) ? "leap" : this.act === "swipe" ? "swipe" : "spar";
-        case "flee": case "pursue": return "run";
+        case "flee": case "pursue": return "gallop";
+        case "sniff": return "eat";
+        case "nip": return "roll";
         case "happy": return "sit";
         default: return this.state in POSES ? this.state : "sit";
       }
@@ -747,7 +900,7 @@
       this.ctx.putImageData(this.img, 0, 0);
       const s = this.s, w = this.world, inbox = this.state === "inbox";
       const lift = Math.max(0, w.floor - this.y);
-      if (!inbox) {
+      if (!inbox && !this.bed) {
         ctx.save(); ctx.globalAlpha = Math.max(0.08, 0.28 - lift / 900); ctx.fillStyle = "#000";
         ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, 13 * s * (1 - Math.min(lift, 300) / 600), 2.2 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       }
@@ -931,6 +1084,213 @@
     }
   }
 
+  // A feather on a string at the end of a little stick, held by your pointer.
+  class Wand {
+    constructor(world) {
+      this.world = world; const p = world.pointer; this.x = p.x; this.y = p.y + this.len; this.vx = 0; this.vy = 0; this.t = 0;
+      this.sp = new Sprite(9, 15);
+      this.pal = { 1: { c: [236, 112, 150], lit: true }, 2: { c: [70, 170, 170], lit: true }, 3: { c: [250, 236, 210] }, 4: { c: [246, 200, 80], lit: true } };
+    }
+    get len() { return 36 * this.world.toyScale; }
+    get cy() { return this.y + 6 * this.world.toyScale; }
+    update(dt) {
+      const w = this.world, p = w.pointer; this.t += dt;
+      this.vy += 900 * dt; this.vx += Math.sin(this.t * 7) * 60 * dt;            // feathers flutter
+      this.x += this.vx * dt; this.y += this.vy * dt;
+      const dx = this.x - p.x, dy = this.y - p.y, d = Math.hypot(dx, dy) || 1;
+      if (d > this.len) {
+        const nx = dx / d, ny = dy / d; this.x = p.x + nx * this.len; this.y = p.y + ny * this.len;
+        const vr = this.vx * nx + this.vy * ny; if (vr > 0) { this.vx -= vr * nx; this.vy -= vr * ny; }
+      }
+      this.vx *= Math.pow(0.35, dt); this.vy *= Math.pow(0.35, dt);
+      const fl = w.floor - 13 * w.toyScale;
+      if (this.y > fl) { this.y = fl; this.vy = Math.min(0, this.vy); this.vx *= Math.pow(0.05, dt); }
+    }
+    render(ctx) {
+      const w = this.world, s = w.toyScale, p = w.pointer; if (!p.seen) return;
+      ctx.save(); ctx.lineCap = "round";
+      ctx.strokeStyle = "#6b4a2b"; ctx.lineWidth = Math.max(2, 1.6 * s);
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - 22 * s, p.y - 26 * s); ctx.stroke();
+      ctx.strokeStyle = "#c69a62"; ctx.lineWidth = Math.max(1, 0.5 * s);
+      ctx.beginPath(); ctx.moveTo(p.x - 1, p.y - 1); ctx.lineTo(p.x - 22 * s - 1, p.y - 26 * s - 1); ctx.stroke();
+      ctx.strokeStyle = "rgba(60,50,40,.8)"; ctx.lineWidth = Math.max(1, 0.45 * s);
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.quadraticCurveTo((p.x + this.x) / 2 - this.vx * 0.03, (p.y + this.y) / 2 + 6 * s, this.x, this.y); ctx.stroke();
+      ctx.restore();
+      const R = this.sp.R; R.clear();
+      R.ellipse(4.5, 6, 3.4, 4.6, 1); R.ellipse(4.5, 11, 2.6, 2.6, 2); R.put(4, 1, 4); R.put(4, 0, 4);
+      for (let y = 1; y < 15; y++) R.put(4, y, 3);                           // quill
+      R.put(2, 4, 3); R.put(6, 6, 3); R.put(2, 8, 3);                          // barbs
+      const img = this.sp.paint(this.pal, [80, 40, 60]), ang = clamp(this.vx / 900, -0.9, 0.9);
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(Math.round(this.x), Math.round(this.y)); ctx.rotate(-ang);
+      ctx.drawImage(img, Math.round(-4.5 * s), 0, 9 * s, 15 * s); ctx.restore();
+    }
+  }
+
+  // A butterfly that drifts about, lands on the floor or on a napping cat, and always escapes.
+  class Butterfly {
+    constructor(world) {
+      this.world = world; this.x = Math.random() < 0.5 ? 10 : world.W - 10; this.y = world.floor - 110 * world.scale;
+      this.vx = 0; this.vy = 0; this.t = rnd(0, 9); this.pickT = 0; this.restT = 0; this.resting = false; this.perch = null; this.scaredT = 0; this.facing = 1;
+      const c = [[240, 150, 50], [90, 150, 230], [240, 205, 70], [200, 110, 200], [120, 200, 230]][Math.floor(Math.random() * 5)];
+      this.sp = new Sprite(15, 11);
+      this.pal = { 1: { c, lit: true }, 2: { c: darken(c, 0.3) }, 3: { c: [40, 32, 32] }, 4: { c: [250, 246, 236] } };
+      this.newTarget();
+    }
+    newTarget() {
+      const w = this.world, s = w.scale, r = Math.random();
+      const sleeper = w.cats.find((c) => c.state === "sleep");
+      if (r < 0.18 && sleeper) { this.perch = sleeper; this.tx = sleeper.x; this.ty = sleeper.y - 15 * s; }
+      else if (r < 0.36) { this.perch = "floor"; this.tx = w.spot(); this.ty = w.floor - 3; }
+      else { this.perch = null; this.tx = clamp(this.x + rnd(-380, 380), 30, w.W - 30); this.ty = Math.max(30, w.floor - rnd(20, 110) * s); }
+      this.pickT = rnd(1.4, 3);
+    }
+    scare(dir) {
+      if (this.scaredT > 0) return;
+      const w = this.world; this.scaredT = 0.6; this.resting = false; this.perch = null;
+      this.vx = dir * rnd(150, 260); this.vy = -rnd(260, 380);
+      this.tx = clamp(this.x + dir * 220, 30, w.W - 30); this.ty = Math.max(30, w.floor - rnd(110, 160) * w.scale); this.pickT = rnd(1.2, 2);
+      w.burst(this.x, this.y, "spark", "#f7e48c", 1);
+    }
+    click() { this.scare(Math.random() < 0.5 ? -1 : 1); }
+    hit(px, py) { const s = this.world.toyScale; return Math.hypot(px - this.x, py - this.y) < Math.max(16, 9 * s); }
+    grab() {} release() {}
+    update(dt) {
+      const w = this.world, s = w.scale; this.t += dt; this.scaredT -= dt;
+      if (this.resting) {
+        this.restT -= dt;
+        if (this.perch && this.perch !== "floor") {
+          if (this.perch.state !== "sleep" || !w.cats.includes(this.perch)) { this.scare(Math.random() < 0.5 ? -1 : 1); return; }
+          this.x = this.perch.x; this.y = this.perch.y - 15 * s;
+        }
+        if (this.restT <= 0) { this.resting = false; this.perch = null; this.vy = -200; this.newTarget(); }
+        return;
+      }
+      this.pickT -= dt; if (this.pickT <= 0) this.newTarget();
+      if (this.perch && this.perch !== "floor") { this.tx = this.perch.x; this.ty = this.perch.y - 15 * s; }
+      this.vx += clamp((this.tx - this.x) * 3, -600, 600) * dt;
+      this.vy += clamp((this.ty - this.y) * 3, -600, 600) * dt + Math.sin(this.t * 9) * 520 * dt;   // fluttery bobbing
+      this.vx *= Math.pow(0.3, dt); this.vy *= Math.pow(0.3, dt);
+      this.x = clamp(this.x + this.vx * dt, 6, w.W - 6); this.y = Math.min(this.y + this.vy * dt, w.floor - 3);
+      if (Math.abs(this.vx) > 8) this.facing = this.vx > 0 ? 1 : -1;
+      if (this.perch && Math.hypot(this.tx - this.x, this.ty - this.y) < 6 * s) {
+        this.resting = true; this.restT = this.perch === "floor" ? rnd(1.5, 3.5) : rnd(4, 9); this.vx = this.vy = 0;
+        this.x = this.tx; this.y = this.ty;
+      }
+    }
+    render(ctx) {
+      const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
+      const flap = this.resting ? 0.55 + 0.45 * Math.sin(this.t * 2) : Math.abs(Math.sin(this.t * 16));
+      const ww = 1 + 5.5 * flap;
+      for (const d of [-1, 1]) {
+        R.ellipse(7.5 + d * (ww / 2 + 0.6), 4, ww / 2 + 0.4, 3, 1);             // upper wings
+        R.ellipse(7.5 + d * (ww * 0.35 + 0.6), 7.5, ww * 0.35 + 0.4, 2, 2);    // lower wings
+        if (ww > 3) R.put(7.5 + d * (ww / 2 + 0.6), 3.5, 4);                   // white spots
+      }
+      R.rect(7, 2, 1, 7, 3); R.put(6, 0, 3); R.put(8, 0, 3); R.put(6.5, 1, 3); R.put(8, 1, 3);  // body + antennae
+      const img = this.sp.paint(this.pal, [50, 36, 36]);
+      ctx.save(); ctx.globalAlpha = 0.16; ctx.fillStyle = "#000"; ctx.beginPath();
+      ctx.ellipse(this.x, w.floor + s, 5 * s * (1 - Math.min(1, (w.floor - this.y) / 400)), 1.2 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(Math.round(this.x), Math.round(this.y));
+      ctx.rotate(clamp(this.vx / 1200, -0.35, 0.35)); ctx.drawImage(img, Math.round(-7.5 * s), Math.round(-5.5 * s), 15 * s, 11 * s); ctx.restore();
+    }
+  }
+
+  // A little pouch of catnip. Each cat gets one blissful roll per pouch; click it to freshen it up.
+  class Catnip {
+    constructor(world, x, id) {
+      this.world = world; this.x = x; this.y = world.floor - 180; this.vy = 0; this.id = id; this.life = 40; this.held = false;
+      this.sp = new Sprite(13, 10);
+      this.pal = { 1: { c: [112, 170, 80], lit: true }, 2: { c: [74, 122, 54] }, 3: { c: [226, 206, 156], lit: true }, 4: { c: [150, 206, 110], lit: true } };
+    }
+    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < Math.max(12, 8 * s) && py > this.y - 12 * s && py < this.y + 3; }
+    grab() { this.held = true; }
+    release() { this.held = false; this.vy = 0; }
+    click() { this.life = 40; this.id = ++this.world.catnipId; this.world.burst(this.x, this.y - 10 * this.world.toyScale, "spark", "#8bd36b", 3); }
+    update(dt) {
+      const w = this.world, s = w.toyScale;
+      if (this.held) { this.x = clamp(w.pointer.x, 10, w.W - 10); this.y = Math.min(w.floor, w.pointer.y + 6 * s); return; }
+      if (this.y < w.floor) { this.vy += G * dt; this.y += this.vy * dt; if (this.y >= w.floor) { this.y = w.floor; this.vy = 0; w.burst(this.x, w.floor - 4 * s, "spark", "#8bd36b", 3); } }
+      this.life -= dt;
+      if (Math.random() < dt * 1.5) w.burst(this.x + rnd(-4, 4) * s, this.y - 9 * s, "spark", "rgba(139,211,107,.8)", 1);
+      if (this.life <= 0) w.catnip = null;
+    }
+    render(ctx) {
+      const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
+      R.ellipse(6.5, 6.8, 5.6, 3.4, 1);                                         // pouch
+      R.rect(4, 3, 5, 2, 1); R.rect(5, 3, 3, 1, 3);                              // gathered neck + string tie
+      R.put(4, 1, 4); R.put(5, 2, 4); R.put(8, 1, 4); R.put(9, 0, 4); R.put(7, 2, 4);   // leaves poking out
+      R.put(4, 7, 2); R.put(8, 6, 2); R.put(6, 8, 2);                            // printed dots
+      const img = this.sp.paint(this.pal, [44, 74, 34]);
+      ctx.save(); ctx.globalAlpha = Math.min(1, this.life / 3);
+      ctx.save(); ctx.globalAlpha *= 0.2; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, 6 * s, 1.4 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round(this.x - 6.5 * s), Math.round(this.y - 10 * s), 13 * s, 10 * s); ctx.restore();
+    }
+  }
+
+  // A round cushion bed. Sleepy cats walk over, knead it and curl up inside.
+  class Bed {
+    constructor(world, x) {
+      this.world = world; this.x = x; this.held = false; this.occupant = null; this.claimed = null;
+      this.back = new Sprite(36, 13); this.front = new Sprite(36, 13);
+      this.pal = { 1: { c: [176, 78, 72], lit: true }, 2: { c: [238, 218, 196], lit: true }, 3: { c: [146, 58, 54] } };
+    }
+    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < 17 * s && py > this.world.floor - 12 * s && py < this.world.floor + 2; }
+    grab() { this.held = true; }
+    release() { this.held = false; }
+    click() {
+      if (this.occupant) { this.occupant.pet(); return; }
+      const c = this.world.cats.find((c) => ["sit", "walk", "groom", "lickFlank", "washFace", "legUp", "roll"].includes(c.state));
+      if (c && !this.claimed) { this.claimed = c; c.set("chase", 14, { goal: "bed", bedRef: this }); }
+    }
+    update(dt) { const w = this.world; if (this.held) this.x += (clamp(w.pointer.x, 18 * w.toyScale, w.W - 18 * w.toyScale) - this.x) * Math.min(1, dt * 14); }
+    paint(spr, front) {
+      const R = spr.R; R.clear();
+      R.ellipse(18, 7.5, 17, 5.2, 1);                                            // cushion rim
+      R.ellipse(18, 6.3, 12.5, 3, 2);                                            // soft pad
+      for (let x = 3; x < 33; x += 4) R.put(x, 10, 3);                           // stitching
+      if (front) for (let y = 0; y < 13; y++) for (let x = 0; x < 36; x++) if (y < 7 || R.get(x, y) === 2) R.put(x, y, 0);
+      return spr.paint(this.pal, [96, 38, 36]);
+    }
+    renderBack(ctx) {
+      const w = this.world, s = w.toyScale;
+      ctx.save(); ctx.globalAlpha = 0.22; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, 18 * s, 2 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(this.paint(this.back, false), Math.round(this.x - 18 * s), Math.round(w.floor - 13 * s), 36 * s, 13 * s); ctx.restore();
+    }
+    renderFront(ctx) {
+      const w = this.world, s = w.toyScale;
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(this.paint(this.front, true), Math.round(this.x - 18 * s), Math.round(w.floor - 13 * s), 36 * s, 13 * s); ctx.restore();
+    }
+  }
+
+  // A sisal scratching post with a pom-pom dangling from the top.
+  class Post {
+    constructor(world, x) {
+      this.world = world; this.x = x; this.held = false; this.user = null; this.t = 0;
+      this.sp = new Sprite(17, 46);
+      this.pal = { 1: { c: [214, 190, 140], lit: true }, 2: { c: [178, 150, 100] }, 3: { c: [120, 96, 146], lit: true }, 4: { c: [238, 124, 146], lit: true }, 5: { c: [96, 74, 54] } };
+    }
+    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < 8 * s && py > this.world.floor - 46 * s && py < this.world.floor + 2; }
+    grab() { this.held = true; }
+    release() { this.held = false; }
+    click() {
+      const c = this.world.cats.find((c) => ["sit", "walk", "groom"].includes(c.state));
+      if (c && !this.user) { this.user = c; c.set("chase", 12, { goal: "post" }); }
+    }
+    update(dt) { const w = this.world; this.t += dt; if (this.held) this.x += (clamp(w.pointer.x, 8 * w.toyScale, w.W - 8 * w.toyScale) - this.x) * Math.min(1, dt * 14); }
+    render(ctx) {
+      const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
+      const busy = this.user && this.user.state === "scratch", sway = Math.sin(this.t * (busy ? 9 : 2.5)) * (busy ? 1.6 : 0.6);
+      R.rect(0, 42, 17, 4, 3);                                                   // carpeted base
+      R.rect(5, 6, 7, 36, 1);                                                    // sisal post
+      for (let y = 7; y < 42; y += 2) R.rect(5, y, 7, 1, 2);                     // rope wraps
+      R.rect(1, 3, 15, 3, 3);                                                    // top platform
+      R.limb(14, 6, 14 + sway, 11, 0.6, 5); R.circle(14 + sway, 12.5, 1.7, 4);   // string + pom-pom
+      const img = this.sp.paint(this.pal, [70, 52, 40]);
+      ctx.save(); ctx.globalAlpha = 0.22; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, 10 * s, 1.8 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round(this.x - 8.5 * s), Math.round(w.floor - 46 * s), 17 * s, 46 * s); ctx.restore();
+    }
+  }
+
   // ---------------------------------------------------------------- pixel glyphs for particles
   const GLYPH = {
     heart: ["01100110", "11111111", "11111111", "01111110", "00111100", "00011000"],
@@ -946,6 +1306,7 @@
       World.current = this;                         // handy for poking at the cats from the devtools console
       this.canvas = canvas; this.ctx = canvas.getContext("2d");
       this.scale = opts.scale || 3; this.toyScale = opts.toyScale || this.scale; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
+      this.wand = null; this.butterfly = null; this.catnip = null; this.catnipId = 0; this.bed = null; this.post = null;
       this.pointer = { x: -1e4, y: -1e4, seen: false }; this.drag = null; this.onHover = opts.onHover || (() => {});
       this.floorInset = opts.floorInset ?? 6; this.audio = null; this.last = performance.now();
       this.resize(); addEventListener("resize", () => this.resize());
@@ -958,7 +1319,7 @@
       coat = coat && COATS[coat] ? coat : COAT_KEYS[Math.floor(Math.random() * COAT_KEYS.length)];
       const c = new Cat(this, coat, this.spot()); c.y = -60; c.set("fall", 5); c.vx = 0; this.cats.push(c); return c;
     }
-    removeCat() { const c = this.cats.pop(); if (c && c.box) c.box.occupant = null; }
+    removeCat() { const c = this.cats.pop(); if (c && c.box) c.box.occupant = null; if (c && c.bed) c.bed.occupant = null; if (this.post && this.post.user === c) this.post.user = null; }
     throwYarn(x, y) {
       if (this.yarn && this.yarn.held) return;          // never snatch the yarn out of your hand
       this.yarn = new Yarn(this, x ?? this.spot(), y ?? this.floor - 260);
@@ -967,9 +1328,27 @@
     addMouse() { this.mouse = new WindupMouse(this, this.spot()); this.mouse.click(); }
     addBox() { if (this.boxes.length >= 3) this.boxes.shift(); const b = new Box(this, this.spot()); b.y = this.floor - 200; this.boxes.push(b); }
     feed() { if (!this.bowl) this.bowl = new Bowl(this, this.spot()); this.bowl.click(); }
-    setLaser(on) { this.laser = on ?? !this.laser; if (!this.laser) this.cats.forEach((c) => { if (c.goal === "laser") c.set("sit", 2, { goal: null }); }); return this.laser; }
+    setLaser(on) {
+      this.laser = on ?? !this.laser;
+      if (this.laser && this.wand) this.setWand(false);
+      if (!this.laser) this.cats.forEach((c) => { if (c.goal === "laser") c.set("sit", 2, { goal: null }); });
+      return this.laser;
+    }
+    setWand(on) {
+      const v = on ?? !this.wand;
+      if (v && !this.wand) { this.wand = new Wand(this); if (this.laser) this.setLaser(false); }
+      if (!v && this.wand) { this.wand = null; this.cats.forEach((c) => { if (c.goal === "feather") c.set("sit", 2, { goal: null }); }); }
+      return !!this.wand;
+    }
+    addButterfly() { this.butterfly = new Butterfly(this); }
+    dropCatnip() { this.catnip = new Catnip(this, this.spot(), ++this.catnipId); }
+    addBed() { if (!this.bed) this.bed = new Bed(this, this.spot()); else this.bed.click(); }
+    addPost() { if (!this.post) this.post = new Post(this, this.spot()); else this.post.click(); }
     clearToys() {
-      this.yarn = null; this.mouse = null; this.bowl = null; this.setLaser(false);
+      this.yarn = null; this.mouse = null; this.bowl = null; this.setLaser(false); this.setWand(false);
+      this.butterfly = null; this.catnip = null;
+      if (this.bed && this.bed.occupant) this.bed.occupant.set("sit", 2); this.bed = null;
+      if (this.post && this.post.user) this.post.user.set("sit", 2); this.post = null;
       this.boxes.forEach((b) => { if (b.occupant) b.occupant.hopOut(); }); this.boxes = [];
     }
     burst(x, y, kind, color, n = 1, o = {}) {
@@ -989,9 +1368,13 @@
     hitTest(x, y) {
       if (this.yarn && this.yarn.hit(x, y)) return { toy: this.yarn };
       if (this.mouse && this.mouse.hit(x, y)) return { toy: this.mouse };
+      if (this.butterfly && this.butterfly.hit(x, y)) return { toy: this.butterfly };
       for (let i = this.cats.length - 1; i >= 0; i--) if (this.cats[i].hit(x, y)) return { cat: this.cats[i] };
       for (let i = this.boxes.length - 1; i >= 0; i--) if (this.boxes[i].hit(x, y)) return { toy: this.boxes[i] };
       if (this.bowl && this.bowl.hit(x, y)) return { toy: this.bowl };
+      if (this.catnip && this.catnip.hit(x, y)) return { toy: this.catnip };
+      if (this.bed && this.bed.hit(x, y)) return { toy: this.bed };
+      if (this.post && this.post.hit(x, y)) return { toy: this.post };
       return null;
     }
     bindInput() {
@@ -1043,13 +1426,19 @@
       if (this.mouse) this.mouse.update(dt);
       if (this.bowl) this.bowl.update(dt);
       this.boxes.forEach((b) => b.update(dt));
+      for (const t of [this.wand, this.butterfly, this.catnip, this.bed, this.post]) if (t) t.update(dt);
       this.cats.forEach((c) => c.update(dt));
+      if (this.post) this.post.render(ctx);
       if (this.bowl) this.bowl.render(ctx);
+      if (this.bed) { this.bed.renderBack(ctx); if (this.bed.occupant) this.bed.occupant.render(ctx); this.bed.renderFront(ctx); }
       this.boxes.forEach((b) => { if (b.occupant) b.occupant.render(ctx); b.render(ctx); });
+      if (this.catnip) this.catnip.render(ctx);
       if (this.mouse) this.mouse.render(ctx);
       if (this.yarn && !this.yarn.held) this.yarn.render(ctx);
-      [...this.cats].filter((c) => c.state !== "inbox").sort((a, b) => (a.state === "held") - (b.state === "held")).forEach((c) => c.render(ctx));
+      [...this.cats].filter((c) => c.state !== "inbox" && !c.bed).sort((a, b) => (a.state === "held") - (b.state === "held")).forEach((c) => c.render(ctx));
       if (this.yarn && this.yarn.held) this.yarn.render(ctx);
+      if (this.butterfly) this.butterfly.render(ctx);
+      if (this.wand) this.wand.render(ctx);
       if (this.laser && this.pointer.seen) this.renderLaser(ctx, now);
       this.renderParticles(ctx, dt);
       requestAnimationFrame((t) => this.frame(t));
