@@ -2,6 +2,7 @@
 (() => {
   const STR = {
     tr: {
+      bowlN: "Mama kabı", bowlD: "Önce ortaya çıkar, sonra dolaptan mamayı koy. İşin bitince envantere geri koyabilirsin.", fillBowl: (n) => `Mamayı koy (${n} öğün)`, noMeal: "Dolapta mama yok",
       pickOne: "Bir şeye dokun: ne yapabileceğin burada çıkar 👆", stow: "🎒 Envantere koy", noFood: "Dolap boş. Marketten mama alabilirsin.", noToys: "Oyuncağın yok. Marketten alabilirsin.",
       toyNote: "Oyuncaklar envantere gelir; oradan çıkarır ya da geri koyarsın. Oynadıkça (ve dışarıda kaldıkça) eskir, bitince yenisini alman gerekir.", inInv: (c) => `🎒 Envanterde · %${c}`, again: "Bir daha",
       catsT: "Kediler", toysT: "Oyuncak", posts: "gönderi", atHome: "evde", price: "fiyat", free: "Ücretsiz", unlocked: "Açık",
@@ -56,6 +57,7 @@
       pantry: "Dolap", empty: "Mama bitti! Buradan alabilirsin 🥣",
     },
     en: {
+      bowlN: "Food bowl", bowlD: "Take it out first, then put food in it from the cupboard. Put it away when you're done.", fillBowl: (n) => `Fill it (${n} meals)`, noMeal: "No food in the cupboard",
       pickOne: "Tap something to see what you can do with it 👆", stow: "🎒 Put away", noFood: "The cupboard is empty. Buy food in the market.", noToys: "No toys yet. Buy some in the market.",
       toyNote: "Toys go to your inventory, where you take them out or put them away. They wear out with play (and while left out); when one's gone you'll need a new one.", inInv: (c) => `🎒 In inventory · ${c}%`, again: "Again",
       catsT: "Cats", toysT: "Toys", posts: "posts", atHome: "at home", price: "price", free: "Free", unlocked: "Unlocked",
@@ -128,7 +130,7 @@
 
     function render() {
       const s = t(), H = L.home, E = L.econToday();
-      const k = [L.lang, tab, sel, JSON.stringify(L.toyCond), coatSel, (L.wallet.coats || []).join(), o.catCount ? o.catCount() : 0, o.toyOn ? Object.keys(L.TOY_PRICES).map(o.toyOn).join() : "", L.toys.join(), note, result, L.luck.chestDay, spinning, L.wallet.coins, L.wallet.stars, JSON.stringify(L.pantry), H.items.map((i) => `${i.id}${Math.round(i.cond)}${i.x != null}`).join()].join("|");
+      const k = [L.lang, tab, sel, JSON.stringify(L.toyCond), coatSel, (L.wallet.coats || []).join(), o.catCount ? o.catCount() : 0, o.toyOn ? Object.keys(L.TOY_PRICES).map(o.toyOn).join() : "", o.bowl ? o.bowl().out() : "", L.toys.join(), note, result, L.luck.chestDay, spinning, L.wallet.coins, L.wallet.stars, JSON.stringify(L.pantry), H.items.map((i) => `${i.id}${Math.round(i.cond)}${i.x != null}`).join()].join("|");
       if (k === key) return; key = k;
       // the inventory has its own panel (🎒 on the card); the market keeps the shop tabs
       const tabs = o.only ? [] : [["cats", "🐱", s.catsT], ["food", "🍗", s.food], ["toys", "🧸", s.toysT], ["furniture", "🛋️", s.furniture], ["luck", "🎁", s.luck], ["earn", "🪙", s.earn]];
@@ -155,11 +157,11 @@
         const bar = (c) => `<span class="iv-bar"><i style="--c:${c}%;--h:${Math.round(c * 1.2)}"></i></span>`;
         const tile = (id, pic, badge, extra, out) => `<button type="button" class="iv-tile${sel === id ? " sel" : ""}${out ? " out" : ""}" data-sel="${id}">${pic}${badge ? `<b class="iv-n">${badge}</b>` : ""}${extra}</button>`;
         const grid = (h, list, empty) => `<h4 class="mk-h">${h}</h4>${list.length ? `<div class="iv-grid">${list.join("")}</div>` : `<p class="iv-empty">${esc(empty)}</p>`}`;
-        if (!sel || !((sel.startsWith("f:") && foods.includes(sel.slice(2))) || (sel.startsWith("t:") && toys.includes(sel.slice(2))) || (sel.startsWith("i:") && items.some((i) => i.id === sel.slice(2))))) sel = "";
+        if (!sel || !(sel === "b:bowl" || (sel.startsWith("f:") && foods.includes(sel.slice(2))) || (sel.startsWith("t:") && toys.includes(sel.slice(2))) || (sel.startsWith("i:") && items.some((i) => i.id === sel.slice(2))))) sel = "";
         body = `<div class="iv-detail">${detail(s)}</div>`
           + grid(`🧺 ${esc(s.pantryH)}`, foods.map((f) => tile("f:" + f, `<span class="iv-e">${L.FOOD[f].e}</span>`, "×" + L.pantry[f], "", false)), s.noFood)
           + grid(`🧸 ${esc(s.toysH)}`, toys.map((k) => tile("t:" + k, `<span class="iv-e">${s.toyE[k]}</span>`, "", bar(L.toyCondOf(k)), o.toyOn && o.toyOn(k))), s.noToys)
-          + grid(`🛋️ ${esc(s.thingsH)}`, items.map((it) => { if (DC.FURN[it.k].durable) it.cond = 100; return tile("i:" + it.id, `<canvas width="56" height="42" data-f="${it.k}"></canvas>`, "", DC.FURN[it.k].durable ? "" : bar(Math.round(it.cond)), it.x != null); }), s.noItems)
+          + grid(`🛋️ ${esc(s.thingsH)}`, [tile("b:bowl", `<span class="iv-e">🥣</span>`, "", "", o.bowl && o.bowl().out())].concat(items.map((it) => { if (DC.FURN[it.k].durable) it.cond = 100; return tile("i:" + it.id, `<canvas width="56" height="42" data-f="${it.k}"></canvas>`, "", DC.FURN[it.k].durable ? "" : bar(Math.round(it.cond)), it.x != null); })), s.noItems)
           + `<div class="iv-foot"><button type="button" class="mk-wide" data-clear="1">${esc(s.clearToys)}</button><small>${esc(s.wearNote)}</small></div>`;
       } else if (tab === "luck") {
         const ready = L.chestReady(), left = (() => { const m = new Date(); m.setHours(24, 0, 0, 0); const d = m - Date.now(); return `${Math.floor(d / 3.6e6)}sa ${Math.floor(d / 6e4) % 60}dk`; })();
@@ -212,6 +214,11 @@
       if (!sel) return `<p class="iv-hint">${esc(s.pickOne)}</p>`;
       const [kind, id] = [sel.slice(0, 1), sel.slice(2)];
       const head = (pic, nm, sub) => `<div class="iv-dh">${pic}<div><b>${esc(nm)}</b><small>${sub}</small></div></div>`;
+      if (sel === "b:bowl") {
+        const B = o.bowl(), out = B.out(), meals = Object.keys(L.FOOD).filter((f) => L.FOOD[f].meal || ["dry", "wet", "fish"].includes(f)).reduce((a, f) => a + (L.pantry[f] || 0), 0);
+        return head(`<span class="iv-e big">🥣</span>`, s.bowlN, `${esc(out ? s.out : s.stored)} · ✨ ${esc(s.durable)}<br>${esc(s.bowlD)}`)
+          + `<div class="iv-acts">${out ? `<button type="button" data-bowl="stow">${esc(s.stow)}</button><button type="button" class="gold" data-bowl="fill"${meals ? "" : " disabled"}>${esc(meals ? s.fillBowl(meals) : s.noMeal)}</button>` : `<button type="button" class="gold" data-bowl="take">${esc(s.toyPlay)}</button>`}</div>`;
+      }
       if (kind === "f") {
         const f = id, d = L.FOOD[f], n = L.pantry[f] || 0;
         const btn = f === "treat" ? `<small class="mk-tn">${esc(s.treatNote)}</small>` : `<button type="button" class="gold" data-use="${f}">${esc(s.use[f] || s.useMeal)}</button>`;
@@ -277,7 +284,7 @@
       root.style.height = ""; root.style.left = "auto"; root.style.right = "14px"; root.style.top = "auto"; root.style.bottom = `${bottom + 52}px`;
       root.style.setProperty("--maxh", `${Math.max(260, innerHeight - bottom - 80)}px`);
     }
-    function open(which, msg) { if (o.only) which = o.only; if (!o.only && which === "mine") return o.openInventory && o.openInventory(msg); if (which) tab = which; note = msg || ""; root.hidden = false; key = ""; render(); place(); o.onOpen && o.onOpen(); }
+    function open(which, msg, pick) { if (pick) sel = pick; if (o.only) which = o.only; if (!o.only && which === "mine") return o.openInventory && o.openInventory(msg); if (which) tab = which; note = msg || ""; root.hidden = false; key = ""; render(); place(); o.onOpen && o.onOpen(); }
     function close() { root.hidden = true; note = ""; o.onClose && o.onClose(); }
     fab.onclick = () => (root.hidden ? open() : close());
 
@@ -304,6 +311,7 @@
         return;
       }
       if (b.dataset.sel) { sel = sel === b.dataset.sel ? "" : b.dataset.sel; key = ""; return render(); }
+      if (b.dataset.bowl) { const B = o.bowl(); B[b.dataset.bowl](); pop(b, "🥣"); key = ""; return render(); }
       if (b.dataset.stow) { o.storeToy && o.storeToy(b.dataset.stow); pop(b, "🎒"); key = ""; return render(); }
       if (b.dataset.coat) { coatSel = b.dataset.coat; key = ""; return render(); }
       if (b.dataset.unlock) { if (L.buyCoat(b.dataset.unlock)) { note = t().unlockedMsg(L.COAT_NAMES[b.dataset.unlock][L.lang]); world.confetti(innerWidth / 2, 140, 40); } key = ""; return render(); }

@@ -1699,9 +1699,14 @@
     hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < 12 * s && py > this.y - 12 * s && py < this.y + 2; }
     grab() { this.held = true; }
     release() { this.held = false; this.vy = 0; }
+    // clicking the bowl fills it from your cupboard; with nothing in the cupboard it just says it's empty (you can still move it)
     click() {
+      if (this.food > 0.05) { this.world.burst(this.x, this.y - 14 * this.world.toyScale, "note", "#b08d57", 1); return; }
+      this.fill(true);
+    }
+    fill(fromBowl) {
       // the food comes out of your cupboard: no food bought, no dinner
-      if (this.world.onFeed) { const k = this.world.onFeed(); if (!k) { this.world.burst(this.x, this.y - 16 * this.world.toyScale, "what", "#8a6b55", 1); return; } this.foodKind = k; }
+      if (this.world.onFeed) { const k = this.world.onFeed(fromBowl); if (!k) { this.emptyT = 3; this.world.burst(this.x, this.y - 16 * this.world.toyScale, "what", "#8a6b55", 1); return; } this.foodKind = k; }
       this.food = 1; this.refill++; this.world.burst(this.x, this.world.floor - 14 * this.world.toyScale, "note", "#b08d57", 2);
       this.world.cats.forEach((c, i) => { if (!["held", "fall", "inbox"].includes(c.state)) { c.set("chase", 10, { goal: "bowl" }); if (i < 2) setTimeout(() => this.world.meow(c), 150 + i * 450 + Math.random() * 300); } });
     }
@@ -1729,6 +1734,15 @@
       const img = this.sp.paint(this.pal, [40, 52, 70]);
       ctx.save(); ctx.globalAlpha = 0.2 * (1 - Math.min(0.8, (w.floor - this.y) / 400)); ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, 10 * s, 1.6 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round(this.x - 10 * s), Math.round(this.y - 9 * s), 20 * s, 9 * s); ctx.restore();
+      // an empty bowl says so, in a little tag above it
+      if (this.food <= 0.02 && this.world.onFeed) {
+        const L = window.CatLife, txt = L && L.lang === "en" ? "Empty" : "Boş", fs = Math.max(10, Math.round(4.5 * s)), bob = this.emptyT > 0 ? Math.sin(performance.now() / 70) * 2 : 0;
+        this.emptyT = Math.max(0, (this.emptyT || 0) - 1 / 60);
+        ctx.save(); ctx.font = `700 ${fs}px "Pixelify Sans", monospace`; const tw = ctx.measureText(txt).width + fs * 0.9, th = fs * 1.45, tx = Math.round(this.x - tw / 2 + bob), ty = Math.round(this.y - 9 * s - th - 3 * s);
+        ctx.fillStyle = "#5b3a29"; ctx.beginPath(); ctx.roundRect(tx - 2, ty - 2, tw + 4, th + 4, th / 2 + 2); ctx.fill();
+        ctx.fillStyle = this.emptyT > 0 ? "#ffd0d7" : "#fff7ec"; ctx.beginPath(); ctx.roundRect(tx, ty, tw, th, th / 2); ctx.fill();
+        ctx.fillStyle = "#5b3a29"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(txt, tx + tw / 2, ty + th / 2 + 1); ctx.restore();
+      }
     }
   }
 
@@ -2511,7 +2525,10 @@
     }
     addMouse() { this.mouse = new WindupMouse(this, this.spot()); this.mouse.click(); }
     addBox() { if (this.boxes.length >= 3) this.boxes.shift(); const b = new Box(this, this.spot()); b.y = this.floor - 200; this.boxes.push(b); }
-    feed() { if (!this.bowl) this.bowl = new Bowl(this, this.spot()); this.bowl.click(); }
+    // the bowl lives in your inventory: take it out first, then fill it; put it away and it's gone from the floor
+    feed() { if (!this.bowl) { if (this.onNoBowl) { this.onNoBowl(); return false; } this.bowl = new Bowl(this, this.spot()); } this.bowl.fill(false); return true; }
+    placeBowl(x, food) { if (!this.bowl) { this.bowl = new Bowl(this, x ?? this.spot()); this.bowl.food = food || 0; this.burst(this.bowl.x, this.floor - 10 * this.toyScale, "dust", "rgba(140,120,100,.6)", 3); } return this.bowl; }
+    storeBowl() { const b = this.bowl; if (!b) return 0; this.bowl = null; this.cats.forEach((c) => { if (c.state === "eat" || c.goal === "bowl") c.set("sit", 1.5); }); return b.food; }
     setLaser(on) {
       this.laser = on ?? !this.laser;
       if (this.laser && this.wand) this.setWand(false);

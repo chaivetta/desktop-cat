@@ -104,6 +104,7 @@
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
         tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, toyCond: L.toyCond, guests: L.guests,
+        bowl: world.bowl ? { out: true, x: +(world.bowl.x / world.W).toFixed(4), food: +world.bowl.food.toFixed(3), kind: world.bowl.foodKind } : { out: false, food: bowlFood },
         home: { items: L.home.items.map((it) => { const f = world.furniture.find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
   };
@@ -120,6 +121,15 @@
   addEventListener("pointermove", (e) => { overUI = !!(e.target.closest && e.target.closest(".ui")); syncIgnore(); }, true);
   if (!bridge) addEventListener("resize", () => { world.floorInset = Math.round(innerHeight * 0.22) - 40; world.resize(); });
   saved.cats.forEach((p, i) => setTimeout(() => { world.addCat(null, p); }, 350 * i));
+  // the food bowl: in your inventory until you take it out (food left in it stays in it)
+  var bowlFood = (saved.bowl && saved.bowl.food) || 0;
+  if (saved.bowl && saved.bowl.out) { const b = world.placeBowl(saved.bowl.x * world.W, saved.bowl.food); b.foodKind = saved.bowl.kind || null; }
+  const bowlAct = {
+    out: () => !!world.bowl,
+    take: () => { world.placeBowl(undefined, bowlFood); bowlFood = 0; save(); },
+    stow: () => { bowlFood = world.storeBowl(); save(); },
+    fill: () => { if (world.bowl) world.bowl.fill(false); save(); },
+  };
   Voices.load();
   // furniture back where you left it
   L.home.items.forEach((it) => { if (it.x != null) world.placeFurniture(it.k, it.x * world.W, it); });
@@ -150,6 +160,7 @@
     playToy: (k) => { if (act[k]) act[k](); },
     toyOn: (k) => act.toyOut(k),
     storeToy: (k) => act.storeToy(k),
+    bowl: () => bowlAct,
     clearToys: () => act.clear(),
     onClose: () => { overUI = false; syncIgnore(); },
   });
@@ -159,12 +170,14 @@
   setInterval(() => {
     const f = world.furniture.find((f) => f.kind === "feeder" && f.usable); if (!f) return;
     if (Date.now() - (f.item.fedAt || 0) < 8 * 3.6e6) return;
-    if (world.bowl && world.bowl.food > 0.05) return;
+    if (!world.bowl || world.bowl.food > 0.05) return;     // no bowl out, or still food in it
     if (!world.cats.some((c) => c.profile && L.isHungry(c.profile))) return;
     const k = L.takeMeal(null); if (!k) return; L.pantry[k]++;     // just checking there's a meal; feed() takes it
     f.item.fedAt = Date.now(); world.feed(); world.burst(f.x, world.floor - 30 * world.toyScale, "note", "#4be07a", 2); save();
   }, 60e3);
-  world.onFeed = () => { const k = L.takeMeal(preferMeal); if (!k) { market.open("food", market.t().empty); return null; } save(); return k; };
+  // filling the bowl from the cupboard; clicking the bowl itself never opens the market (it just says it's empty)
+  world.onFeed = (fromBowl) => { const k = L.takeMeal(preferMeal); if (!k) { if (!fromBowl) market.open("food", market.t().empty); return null; } save(); return k; };
+  world.onNoBowl = () => { market.close(); games.close(); settings.close(); inventory.open("mine", L.lang === "tr" ? "Önce mama kabını envanterden çıkar 🥣" : "Take the food bowl out of your inventory first 🥣", "b:bowl"); };
   // cleaning the litter box takes a scoop of litter from the cupboard
   function cleanLitter(f) {
     if (!f) return;
