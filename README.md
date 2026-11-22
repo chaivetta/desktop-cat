@@ -124,7 +124,7 @@ Every few minutes a little kawaii cloud drifts along the very top of the screen,
 
 <img src="docs/guest.png" width="520" alt="A neighbour asks you to look after their cat for a day">
 
-Now and then a neighbour asks you to look after their cat for a day. Accept and it moves in for 24 hours. When the owner comes back they pay you: more for a happy, fed, clean cat, more for a home full of things it can use, and more as your sitter rating grows. If the guest gets ill, goes hungry for too long or is left alone and unloved, they take it back and pay nothing, and your rating drops.
+4 to 6 times a day, at random times 4–6 hours apart, a neighbour asks you to look after their cat, for anything from a day to a week (several guests can stay at once if there is room). The pay is per day. When the owner comes back they pay you: more for a happy, fed, clean cat, more for a home full of things it can use, and more as your sitter rating grows. If the guest gets ill, goes hungry for too long or is left alone and unloved, they take it back and pay nothing, and your rating drops.
 
 ### Visitors
 
