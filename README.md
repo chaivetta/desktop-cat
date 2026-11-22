@@ -16,6 +16,8 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 - **Eat** — when you put food out, they trot over and tuck in, then groom
 - **Sit in boxes** — of course. They duck down and peek out over the edge
 - **Play** — chase, crouch with a bottom-wiggle, pounce, bat, stand up and swat
+- **Day and night** — after 22:00 a little moon and twinkling stars come out and the cats get very sleepy; in the morning they stretch and yawn
+- **Meow** — little synthesised meows when you pet them, when food appears, when they wake up (turn sounds off from the tray)
 - **Play-fight** — two cats square up, swat and hop at each other, then one bolts and the other chases it until it flops over in surrender
 
 ![Stretch, yawn, stand and swat, eat, boop, zoomies, hunting crouch](docs/moves.png)
@@ -37,6 +39,7 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 | **Butterfly** | Drifts about the room, rests on the floor or on a napping cat. The cats stalk and pounce; it always gets away |
 | **Catnip** | Drop a pouch: each cat sniffs it, then rolls about in bliss — and often gets the zoomies after. Click it to freshen it up |
 | **Cat bed** | Sleepy cats walk over, knead it and curl up inside. Drag it with the sleeper in it |
+| **Wall shelf** | Put it anywhere on screen (drag it up and down too). Cats crouch, leap up onto it and lounge there |
 | **Scratching post** | Cats stretch up against it and rake away, sisal fluff flying, the pom-pom swinging |
 
 ![Eating, sitting in a box, swatting at dangling yarn, chasing the laser](docs/toys.png)
@@ -45,7 +48,7 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 
 ## Every cat has a card
 
-Right-click or double-click a cat (or pick **Cat cards…** from the tray icon) to open its card.
+Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card, right above the cat. The 🔍 − + buttons at the bottom make the card smaller or bigger.
 
 <img src="docs/card.png" width="360" align="right" alt="A cat card: portrait, love hearts, growing-up bar, personality, diary">
 
@@ -55,11 +58,19 @@ Right-click or double-click a cat (or pick **Cat cards…** from the tray icon) 
 - **Growing up** — kittens start small and grow as you look after them: petting, feeding, playing, naps in the bed. Kitten 🍼 → young cat 🐱 → grown-up 👑
 - **Love bar** — ten pixel hearts. Petting, feeding and playing (especially with their favourite toy) fill it up; it fades slowly if they're left alone for long
 - **Diary** — what they've been up to: meals, naps, games, races, play-fights, growing up…
+- **Wardrobe** — 300 things to wear: 100 hats, 100 collars & bows, 100 outfits (ten designs each, in ten colour schemes). They stay on in every pose, even asleep. 🎲 picks a surprise outfit
+- **Photo** — 📸 saves a little polaroid of your cat, outfit and all, as a PNG
+- **Birthdays** — at one week, then 1, 2, 3 and 6 months, then every year: a cake with a candle, confetti, a party hat and a diary entry
+- **Saying goodbye** — remove a cat from its card (it asks first), or all of them at once from the tray
 - **Turkish and English** — switch at the bottom of the card
 
 Everything is saved on your computer and remembered next time.
 
 ![Name tags above the cats](docs/nametags.png)
+
+![A few of the 300 hats, collars, bows and outfits, in all sorts of poses](docs/accessories.png)
+
+<img src="docs/wardrobe.png" width="250" alt="The wardrobe in the cat card"> <img src="docs/photo.png" width="230" alt="A polaroid photo of a cat"> <img src="docs/party.png" width="330" alt="A birthday cake, confetti, a cat up on the shelf, and the moon at night">
 
 <br clear="right">
 
@@ -70,8 +81,8 @@ Everything is saved on your computer and remembered next time.
 | **Click** a cat | Pet it — hearts and a soft purr (a sleeping cat wakes up and stretches) |
 | **Drag** a cat | Pick it up by the scruff; let go and it lands on its feet |
 | **Drag** a toy | Move the box, bowl or mouse; dangle the yarn, swing it and let go to throw it |
-| **Right-click / double-click** a cat | Open its card |
-| **Tray / menu-bar icon** | Cat cards, adopt a kitten (seven coats), toys, feed them, laser pointer, **cat size** and **toy size** (each from tiny to large), hide them, start with your computer |
+| **Right-click** a cat | Open its card |
+| **Tray / menu-bar icon** | Cat cards, adopt a kitten (seven coats), remove one or all cats, toys, sounds on/off, day & night (follow the clock, always day, always night), feed them, laser pointer, **cat size** and **toy size** (each from tiny to large), hide them, start with your computer |
 
 Seven coats: ginger tabby, black, white, grey tabby, calico, siamese and tuxedo.
 

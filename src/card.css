@@ -18,11 +18,13 @@
 
 .cc {
   --ink: #5b3a29; --paper: #fff8ee; --pink: #ff8fab; --tint: #ffe3c4;
-  position: fixed; z-index: 20; width: 356px; max-width: calc(100vw - 24px);
+  position: fixed; z-index: 20; --z: .66;
   font: 600 14px/1.35 "Nunito", system-ui, sans-serif; color: var(--ink);
   user-select: none; -webkit-user-select: none;
 }
 .cc[hidden] { display: none; }
+/* the whole card can be shrunk or enlarged (the 🔍 − + buttons) */
+.cc-z { width: 356px; zoom: var(--z); }
 .cc * { box-sizing: border-box; }
 .cc button { font-family: inherit; color: var(--ink); }
 
@@ -40,7 +42,7 @@
 /* ---- the card itself */
 .cc-card {
   position: relative; display: flex; flex-direction: column; overflow: hidden;
-  max-height: calc(100vh - 100px); background: var(--paper); border-radius: 20px;
+  max-height: var(--maxh, calc((100vh - 24px) / var(--z) - 70px)); background: var(--paper); border-radius: 20px;
   box-shadow: 0 0 0 3px var(--ink), 0 0 0 7px #ffd9e4, 0 0 0 9px var(--ink), 8px 10px 0 9px rgba(91, 58, 41, .2);
   animation: cc-pop .38s cubic-bezier(.3, 1.6, .5, 1);
 }
@@ -84,6 +86,9 @@
 }
 .cc-rename input:focus { box-shadow: inset 0 0 0 2px var(--ink), 0 0 0 3px var(--pink); }
 .cc-sub { margin-top: 5px; font-size: 12.5px; opacity: .78; }
+.cc-badges { display: flex; align-items: center; gap: 6px; }
+.cc-bday { font-size: 20px; animation: cc-bump 1s infinite; }
+.cc-bday[hidden] { display: none; }
 .cc-stage {
   display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 3px 11px 3px 8px; border-radius: 999px;
   background: #fff; font: 700 12.5px "Pixelify Sans", monospace; box-shadow: 0 0 0 2px var(--ink);
@@ -140,12 +145,60 @@
 .cc-toggle input:checked + .cc-switch::after { left: 23px; }
 
 /* chunky buttons */
-.cc-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.cc-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 11px 9px; }
 .cc-btn {
   padding: 10px 4px 9px; border: 0; border-radius: 13px; cursor: pointer; background: var(--b, #ffe1ea);
   font: 700 14px/1 "Pixelify Sans", monospace; box-shadow: 0 0 0 2px var(--ink), 0 4px 0 2px var(--ink); transform: translateY(-2px);
 }
 .cc-btn:hover { filter: brightness(1.04); }
+
+/* wardrobe */
+.cc-ward .cc-label small { max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cc-kinds { display: flex; gap: 6px; margin-bottom: 9px; }
+.cc-kind {
+  flex: 1; padding: 6px 4px; border: 0; border-radius: 11px; cursor: pointer; background: #fff; white-space: nowrap;
+  font: 800 11.5px "Nunito", sans-serif; box-shadow: 0 0 0 2px rgba(91, 58, 41, .3);
+}
+.cc-kind small { opacity: .5; font-size: 10px; }
+.cc-kind.on { background: #ffe1ea; box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px var(--ink); transform: translateY(-2px); }
+.cc-designs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; margin-bottom: 10px; }
+.cc-design {
+  position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: 12px; cursor: pointer; overflow: hidden;
+  background: radial-gradient(circle at 50% 110%, #ffe9c7 0 40%, #fffaf2 41%); box-shadow: 0 0 0 2px rgba(91, 58, 41, .3);
+  transition: transform .12s;
+}
+.cc-design canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+.cc-design:hover { transform: translateY(-2px); }
+.cc-design.pick { box-shadow: 0 0 0 2px var(--ink); }
+.cc-design.on { box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--pink); }
+.cc-design.none { font: 700 20px/1 "Nunito", sans-serif; color: rgba(91, 58, 41, .55); }
+.cc-swatches { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+.cc-swatch {
+  width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  background: conic-gradient(var(--a) 0 55%, var(--b) 55% 85%, var(--c) 85%); box-shadow: 0 0 0 2px var(--ink); transition: transform .12s;
+}
+.cc-swatch:hover { transform: scale(1.12); }
+.cc-swatch.on { box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px #fff, 0 0 0 7px var(--pink); transform: scale(1.08); }
+.cc-wbtns { display: flex; gap: 8px; }
+.cc-pill {
+  padding: 6px 12px; border: 0; border-radius: 999px; cursor: pointer; background: #fff; font: 800 12px "Nunito", sans-serif;
+  box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px var(--ink);
+}
+.cc-pill:active { transform: translateY(2px); box-shadow: 0 0 0 2px var(--ink), 0 1px 0 2px var(--ink); }
+.cc-pill.red { background: #ffd2d2; }
+
+/* saying goodbye */
+.cc-danger { text-align: center; }
+.cc-link { border: 0; background: none; cursor: pointer; font: 800 12px "Nunito", sans-serif; opacity: .55; text-decoration: underline dotted; }
+.cc-link:hover { opacity: .9; }
+.cc-link[hidden], .cc-confirm[hidden] { display: none; }
+.cc-confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; padding: 10px; border-radius: 13px; background: #fff3f3; box-shadow: 0 0 0 2px #e8b4b4; font-weight: 800; font-size: 12.5px; }
+.cc-confirm span { flex-basis: 100%; }
+
+/* camera flash */
+.cc-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.cc-flash.go { animation: cc-flash .6s ease-out; }
+@keyframes cc-flash { 0% { opacity: .95; } 100% { opacity: 0; } }
 
 /* diary */
 .cc-log ol { list-style: none; margin: 0; padding: 4px 10px; max-height: 190px; overflow-y: auto; border-radius: 13px; background: #fff;
@@ -160,6 +213,11 @@
 
 .cc-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 16px 13px; font-size: 12px; border-top: 2px dotted rgba(91, 58, 41, .16); }
 .cc-born { opacity: .75; }
+.cc-tools { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.cc-sizer { display: inline-flex; align-items: center; gap: 2px; padding: 1px 3px; border-radius: 999px; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .22); }
+.cc-sizer b { font-size: 11px; }
+.cc-sizer button { width: 20px; height: 20px; border: 0; border-radius: 50%; background: none; cursor: pointer; font: 700 14px/1 "Pixelify Sans", monospace; }
+.cc-sizer button:hover { background: #ffe1ea; }
 .cc-lang button { border: 0; background: none; cursor: pointer; padding: 2px 3px; font: 700 12px "Pixelify Sans", monospace; opacity: .45; }
 .cc-lang button.on { opacity: 1; text-decoration: underline wavy var(--pink); text-underline-offset: 3px; }
 

@@ -37,11 +37,13 @@
 
   // ---------------------------------------------------------------- tiny rasteriser
   const SW = 48, SH = 42, GROUND = 38;            // sprite size and the row the feet stand on
-  const M = { EMPTY: 0, BODY: 1, FAR: 2, BELLY: 3, ACCENT: 4, ACCENT2: 5, EYE: 6, NOSE: 7, EAR: 8, CLOSED: 9, TONGUE: 10, PUPIL: 11, FORCE_BELLY: 12 };
+  const M = { EMPTY: 0, BODY: 1, FAR: 2, BELLY: 3, ACCENT: 4, ACCENT2: 5, EYE: 6, NOSE: 7, EAR: 8, CLOSED: 9, TONGUE: 10, PUPIL: 11, FORCE_BELLY: 12,
+    H1: 13, H2: 14, H3: 15, C1: 16, C2: 17, C3: 18, O1: 19, O2: 20 };
 
   class Raster {
     constructor(w = SW, h = SH) { this.w = w; this.h = h; this.m = new Uint8Array(w * h); this.part = new Uint8Array(w * h); }
-    clear() { this.m.fill(0); this.part.fill(0); }
+    clear() { this.m.fill(0); this.part.fill(0); this.head = null; this.outfit = null; }
+    partAt(x, y) { x |= 0; y |= 0; return (x < 0 || y < 0 || x >= this.w || y >= this.h) ? 0 : this.part[y * this.w + x]; }
     put(x, y, mat, part = 0) {
       x |= 0; y |= 0;
       if (x < 0 || y < 0 || x >= this.w || y >= this.h) return;
@@ -82,11 +84,12 @@
       }
     }
   }
-  const PART = { NONE: 0, HEAD: 1, BODY: 2, LEG: 3, TAIL: 4, EAR: 5, CHEST: 6 };
+  const PART = { NONE: 0, HEAD: 1, BODY: 2, LEG: 3, TAIL: 4, EAR: 5, CHEST: 6, HAT: 7, COLLAR: 8 };
 
   // ---------------------------------------------------------------- body parts
   function headSide(R, cx, cy, o = {}) {
     const d = o.dir || 1, X = (dx) => cx + d * dx;
+    R.head = { x: cx, y: cy, d, front: false };
     // ears first so the head overlaps their base
     R.tri(X(-4.5), cy - 2.5, X(-2.5), cy - 8.5, X(-0.2), cy - 3.5, M.BODY, PART.EAR);
     R.tri(X(-0.5), cy - 3.6, X(2.2), cy - 8.8, X(4), cy - 2.6, M.BODY, PART.EAR);
@@ -111,6 +114,7 @@
     }
   }
   function headFront(R, cx, cy, o = {}) {
+    R.head = { x: cx, y: cy, d: 1, front: true };
     R.tri(cx - 6, cy - 1, cx - 5, cy - 9, cx - 1.5, cy - 4.5, M.BODY, PART.EAR);
     R.tri(cx + 6, cy - 1, cx + 5, cy - 9, cx + 1.5, cy - 4.5, M.BODY, PART.EAR);
     R.put(cx - 4.5, cy - 5.5, M.EAR, PART.EAR); R.put(cx + 4, cy - 5.5, M.EAR, PART.EAR);
@@ -191,6 +195,7 @@
       R.put(38, 32, M.NOSE);
       R.put(33, 31, M.CLOSED); R.put(34, 31, M.CLOSED); R.put(35, 31, M.CLOSED);
       R.ellipse(37, 36, 3, 1.5, M.BODY, PART.LEG);                   // paw under chin
+      R.head = { x: 32.5, y: 31, d: 1, low: true };
     },
     roll(R, a) {
       const w = Math.sin(a.t * 6), w2 = Math.sin(a.t * 6 + 1.7), tilt = Math.round(Math.sin(a.t * 2.4) * 1.5);
@@ -209,6 +214,7 @@
       R.ellipse(39.5, 31, 2.4, 1.8, M.BELLY, PART.HEAD);
       R.put(41.5, 31.5, M.NOSE);
       R.put(37, 33, M.CLOSED); R.put(38, 34, M.CLOSED); R.put(39, 33, M.CLOSED);
+      R.head = { x: 36, y: 32.5, d: 1, flip: true };
     },
     crouch(R, a) {
       const wig = Math.sin(a.t * 18) * 0.9;
@@ -394,6 +400,142 @@
     hunt(R, a) { POSES.crouch(R, a); },
   };
 
+  // ---------------------------------------------------------------- the wardrobe: 10 designs x 10 colour schemes, three times over
+  const SCHEMES = {
+    cherry:    { tr: "Kiraz", en: "Cherry", c: ["#d94b4b", "#fff3e0", "#ffd34d"] },
+    ocean:     { tr: "Okyanus", en: "Ocean", c: ["#3f7fd6", "#e8f4ff", "#ffd34d"] },
+    mint:      { tr: "Nane", en: "Mint", c: ["#5fc7a4", "#ffffff", "#ff8fab"] },
+    lavender:  { tr: "Lavanta", en: "Lavender", c: ["#a98be0", "#5b3f91", "#ffe08a"] },
+    candy:     { tr: "Pamuk şeker", en: "Candy floss", c: ["#ff9ec0", "#ffffff", "#ff5a8a"] },
+    lemon:     { tr: "Limon", en: "Lemon", c: ["#f5d547", "#f08a2e", "#ffffff"] },
+    tangerine: { tr: "Mandalina", en: "Tangerine", c: ["#f28a3c", "#7a4524", "#ffe7b0"] },
+    midnight:  { tr: "Gece", en: "Midnight", c: ["#2f3b73", "#e0b84a", "#ffffff"] },
+    forest:    { tr: "Orman", en: "Forest", c: ["#4f8f45", "#7a5230", "#ffd34d"] },
+    charcoal:  { tr: "Kömür", en: "Charcoal", c: ["#3a3a40", "#d94b4b", "#e8e8e8"] },
+  };
+  const HATS = {
+    beanie: { tr: "örgü bere", en: "beanie" }, tophat: { tr: "silindir şapka", en: "top hat" }, party: { tr: "parti şapkası", en: "party hat" },
+    crown: { tr: "taç", en: "crown" }, cap: { tr: "kasket", en: "cap" }, witch: { tr: "cadı şapkası", en: "witch hat" },
+    chef: { tr: "aşçı şapkası", en: "chef's hat" }, beret: { tr: "ressam beresi", en: "beret" }, santa: { tr: "Noel şapkası", en: "Santa hat" },
+    flowers: { tr: "çiçek taç", en: "flower crown" },
+  };
+  const COLLARS = {
+    plain: { tr: "tasma", en: "collar" }, bell: { tr: "zilli tasma", en: "bell collar" }, bowtie: { tr: "papyon", en: "bow tie" },
+    bigbow: { tr: "kocaman fiyonk", en: "big bow" }, bandana: { tr: "bandana", en: "bandana" }, pearls: { tr: "inci kolye", en: "pearl necklace" },
+    scarf: { tr: "atkı", en: "scarf" }, tag: { tr: "kalpli künye", en: "heart tag" }, studs: { tr: "çivili tasma", en: "studded collar" },
+    lei: { tr: "çiçek kolye", en: "flower lei" },
+  };
+  const OUTFITS = {
+    sweater: { tr: "kazak", en: "sweater" }, stripes: { tr: "çizgili tişört", en: "striped tee" }, dots: { tr: "puantiyeli elbise", en: "polka-dot dress" },
+    plaid: { tr: "ekose gömlek", en: "plaid shirt" }, zigzag: { tr: "zikzak hırka", en: "zigzag cardigan" }, raincoat: { tr: "yağmurluk", en: "raincoat" },
+    stars: { tr: "yıldızlı pijama", en: "starry pyjamas" }, diagonal: { tr: "çapraz çizgili forma", en: "sash jersey" },
+    vertical: { tr: "dikey çizgili yelek", en: "pinstripe vest" }, overalls: { tr: "salopet", en: "dungarees" },
+  };
+  const WARDROBE = { schemes: SCHEMES, hat: HATS, collar: COLLARS, outfit: OUTFITS };
+  const toneCache = {};
+  const toneOf = (h) => toneCache[h] || (toneCache[h] = (() => { const b = hex(h); return { base: b, light: lighten(b, 0.25), shade: darken(b, 0.22), deep: darken(b, 0.4) }; })());
+  const split = (id) => { const [d, s] = String(id || "").split(":"); return { d, s: SCHEMES[s] ? s : "cherry" }; };
+  const accCache = {};
+  function accTones(acc) {
+    if (!acc) return null;
+    const key = `${acc.hat}|${acc.collar}|${acc.outfit}`;
+    if (accCache[key]) return accCache[key];
+    const A = {}, put = (id, mats) => { if (!id) return; const c = SCHEMES[split(id).s].c; mats.forEach((m, i) => { if (m) A[m] = toneOf(c[i]); }); };
+    put(acc.hat, [M.H1, M.H2, M.H3]); put(acc.collar, [M.C1, M.C2, M.C3]); put(acc.outfit, [M.O1, M.O2]);
+    return (accCache[key] = A);
+  }
+
+  const isTorso = (R, x, y) => {
+    const p = R.partAt(x, y), m = R.get(x, y);
+    return (p === PART.BODY || p === PART.CHEST) && (m === M.BODY || m === M.FAR || m === M.BELLY || m === M.FORCE_BELLY || m === M.ACCENT || m === M.ACCENT2);
+  };
+  // 1 = main colour, 2 = second colour, by pattern
+  function outfitMat(R, x, y) {
+    const t = (xx, yy) => isTorso(R, xx, yy);
+    switch (R.outfit) {
+      case "sweater": return !t(x, y + 1) || (R.partAt(x, y - 1) === PART.HEAD) ? 2 : 1;
+      case "stripes": return (y >> 1) % 2 ? 2 : 1;
+      case "dots": return (x % 4 === 1 && y % 4 === 1) || (x % 4 === 3 && y % 4 === 3) ? 2 : 1;
+      case "plaid": return x % 4 === 0 || y % 4 === 0 ? 2 : 1;
+      case "zigzag": return (y + Math.abs((x % 6) - 3)) % 4 === 0 ? 2 : 1;
+      case "raincoat": return !t(x, y - 1) || !t(x, y + 1) || (x % 6 === 3 && y % 3 === 1) ? 2 : 1;
+      case "stars": { const k = (x * 7 + y * 13) % 19; return k === 0 || k === 7 ? 2 : 1; }
+      case "diagonal": return (x + y) % 6 < 2 ? 2 : 1;
+      case "vertical": return x % 3 === 0 ? 2 : 1;
+      case "overalls": return y >= 29 || (y >= 22 && (x % 8 === 3)) ? 2 : 1;
+    }
+    return 1;
+  }
+
+  function drawHat(R, h, design) {
+    const d = h.d, top = h.y - (h.low ? 3.6 : h.front ? 4.8 : 4.4), cx = h.x + (h.front ? 0 : 0.4 * d);
+    const P = (u, v, m) => R.put(cx + d * u, top - v, m, PART.HAT);
+    const Rc = (u0, v0, w, hh, m) => { for (let v = 0; v < hh; v++) for (let u = 0; u < w; u++) P(u0 + u, v0 + v, m); };
+    const E = (u, v, ru, rv, m, vmin = -99) => {
+      for (let vv = Math.floor(v - rv - 1); vv <= Math.ceil(v + rv + 1); vv++) for (let uu = Math.floor(u - ru - 1); uu <= Math.ceil(u + ru + 1); uu++) {
+        const a = (uu + 0.5 - u) / ru, b = (vv + 0.5 - v) / rv; if (a * a + b * b <= 1 && vv >= vmin) P(uu, vv, m);
+      }
+    };
+    const T = (au, av, bu, bv, cu, cv, m) => R.tri(cx + d * au, top - av, cx + d * bu, top - bv, cx + d * cu, top - cv, m, PART.HAT);
+    switch (design) {
+      case "beanie": E(0, 0.5, 5.6, 4.6, M.H1, 0); for (let u = -5; u <= 5; u++) { P(u, 0, M.H2); P(u, 1, u % 2 ? M.H2 : M.H1); } E(0, 5.6, 1.8, 1.8, M.H3); break;
+      case "tophat": Rc(-6, 0, 13, 1, M.H1); Rc(-4, 1, 8, 7, M.H1); Rc(-4, 2, 8, 1, M.H2); P(2, 2, M.H3); break;
+      case "party": T(-4.5, 0, 4.5, 0, 0.5, 10, M.H1); for (const v of [2, 5, 8]) { const w = 4.5 * (1 - v / 10); for (let u = Math.floor(-w); u <= Math.ceil(w) - 1; u++) P(u + 0.5, v, M.H2); } E(0.5, 10.6, 1.5, 1.5, M.H3); break;
+      case "crown": Rc(-5, 0, 10, 2, M.H1); T(-5, 1.5, -2.5, 1.5, -4, 5.5, M.H1); T(-1.4, 1.5, 1.4, 1.5, 0, 6.5, M.H1); T(2.5, 1.5, 5, 1.5, 4, 5.5, M.H1);
+        P(-3.5, 0.6, M.H3); P(0, 0.6, M.H2); P(3, 0.6, M.H3); P(-4, 5, M.H3); P(0, 6, M.H3); P(4, 5, M.H3); break;
+      case "cap": E(-0.5, 0.6, 4.9, 3.4, M.H1, 0); Rc(h.front ? -4 : 3, 0, h.front ? 9 : 5, 1, M.H2); P(-0.5, 3.6, M.H2); break;
+      case "witch": Rc(-7, 0, 15, 1, M.H1); T(-3.8, 1, 3.8, 1, -1.5, 9, M.H1); T(-2.4, 7.5, -0.6, 7.5, -5, 10.5, M.H1); Rc(-3, 1, 7, 1, M.H2); P(0, 1, M.H3); break;
+      case "chef": Rc(-4, 0, 8, 2, M.H2); E(-2.6, 4, 2.7, 2.5, M.H1); E(0.4, 5, 2.9, 2.9, M.H1); E(3, 3.8, 2.4, 2.3, M.H1); break;
+      case "beret": E(-0.5, 1.2, 6, 1.9, M.H1); P(-0.5, 3.4, M.H1); P(0.5, 3.4, M.H2); for (let u = -5; u <= 4; u++) P(u, 0, M.H2); break;
+      case "santa": T(-4.6, 1, 4.6, 1, -3.5, 8.5, M.H1); T(-4.4, 8, -1.2, 6.2, -7.5, 4.5, M.H1); Rc(-5, 0, 11, 2, M.H2); E(-7.5, 4, 1.7, 1.7, M.H2); break;
+      case "flowers": for (let u = -5; u <= 5; u++) P(u, 0, M.H2); [[-4.2, M.H1], [-1.5, M.H3], [1.2, M.H1], [3.8, M.H3]].forEach(([u, m]) => { E(u, 1.4, 1.5, 1.4, m); P(u, 1.2, m === M.H1 ? M.H3 : M.H1); }); break;
+    }
+  }
+
+  function drawCollar(R, h, design) {
+    const d = h.d, onBody = (x, y) => { const p = R.partAt(x, y); return R.get(x, y) && (p === PART.BODY || p === PART.CHEST || p === PART.COLLAR); };
+    const B = (x, y, m) => { if (onBody(x, y)) R.put(x, y, m, PART.COLLAR); };
+    const D = (x, y, m) => R.put(x, y, m, PART.COLLAR);
+    const bandMat = (i, row) => {
+      switch (design) {
+        case "studs": return i % 2 === 0 && row === 0 ? M.C3 : M.C1;
+        case "pearls": return i % 2 ? M.C2 : M.C3;
+        case "lei": return [M.C1, M.C3, M.C2][i % 3];
+        case "scarf": return i % 3 === 0 ? M.C2 : M.C1;
+        default: return M.C1;
+      }
+    };
+    const rows = design === "scarf" ? 3 : design === "pearls" ? 1 : 2;
+    if (h.flip) return;
+    if (h.low) {                                     // sleeping: the collar shows behind the head as a little stripe
+      for (let y = Math.round(h.y - 3); y <= Math.round(h.y + 3); y++) for (let k = 0; k < Math.min(rows, 2); k++) B(Math.round(h.x - 6 - k), y, bandMat(y, k));
+      return;
+    }
+    const ny = Math.round(h.y + 5.5), uMin = h.front ? -6 : -5, uMax = h.front ? 6 : 4;
+    for (let r = 0; r < rows; r++) for (let u = uMin, i = 0; u <= uMax; u++, i++) B(Math.round(h.x + d * u), ny + r, bandMat(i, r));
+    const fx = h.x + (h.front ? 0 : d * 2.5), fy = ny + 1;
+    switch (design) {
+      case "plain": D(fx, fy, M.C3); break;
+      case "bell": R.ellipse(fx + 0.5, fy + 2, 1.5, 1.5, M.C3, PART.COLLAR); D(fx, fy + 2.6, M.C2); break;
+      case "bowtie": R.tri(fx + 0.5, fy + 0.5, fx - 3, fy - 1.3, fx - 3, fy + 2.3, M.C1, PART.COLLAR); R.tri(fx + 0.5, fy + 0.5, fx + 4, fy - 1.3, fx + 4, fy + 2.3, M.C1, PART.COLLAR); D(fx, fy, M.C2); D(fx + 1, fy, M.C2); break;
+      case "bigbow": { const bx = h.x - (h.front ? -4 : d * 4), by = ny - 0.5;
+        R.ellipse(bx - 2.6, by, 2.5, 2, M.C1, PART.COLLAR); R.ellipse(bx + 2.8, by, 2.5, 2, M.C1, PART.COLLAR);
+        R.limb(bx - 0.5, by + 1, bx - 2, by + 5, 1.4, M.C1, PART.COLLAR); R.limb(bx + 0.5, by + 1, bx + 2, by + 5, 1.4, M.C1, PART.COLLAR); R.ellipse(bx + 0.2, by, 1.2, 1.3, M.C2, PART.COLLAR); break; }
+      case "bandana": R.tri(h.x - d * 4, ny, h.x + d * 3.5, ny, h.x + d * 1.2, ny + 6, M.C1, PART.COLLAR); D(h.x + d * 0.5, ny + 2, M.C2); D(h.x + d * 2, ny + 1, M.C2); D(h.x + d * 1, ny + 4, M.C2); break;
+      case "scarf": if (!h.front) for (let k = 0; k < 6; k++) { D(h.x - d * 4, ny + 2 + k, k % 2 ? M.C2 : M.C1); D(h.x - d * 3, ny + 2 + k, M.C1); } break;
+      case "tag": D(fx - 1, fy + 1, M.C3); D(fx + 1, fy + 1, M.C3); D(fx - 1, fy + 2, M.C3); D(fx, fy + 2, M.C3); D(fx + 1, fy + 2, M.C3); D(fx, fy + 3, M.C3); break;
+      case "lei": R.ellipse(fx, fy + 1, 1.3, 1.3, M.C1, PART.COLLAR); D(fx, fy + 1, M.C3); break;
+    }
+  }
+
+  function dress(R, acc) {
+    if (!acc) return;
+    R.outfit = acc.outfit ? split(acc.outfit).d : null;
+    if (!R.head) return;
+    if (acc.collar) drawCollar(R, R.head, split(acc.collar).d);
+    if (acc.hat && !R.head.flip) drawHat(R, R.head, split(acc.hat).d);
+  }
+
   // ---------------------------------------------------------------- coat patterns + lighting
   function patternMaterial(P, mat, part, x, y) {
     if (mat !== M.BODY && mat !== M.FAR && mat !== M.BELLY) return mat;
@@ -425,9 +567,9 @@
     return mat;
   }
 
-  function shade(R, P, out) {
+  function shade(R, P, out, A) {
     const d = out.data; d.fill(0);
-    const tone = (m) => P[m] || P[M.BODY];
+    const tone = (m) => (A && A[m]) || P[m] || P[M.BODY];
     for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) {
       const i = y * SW + x; let m = R.m[i]; if (!m) continue;
       let rgb;
@@ -436,6 +578,7 @@
       else {
         const far = m === M.FAR;
         let mm = m === M.FORCE_BELLY ? M.BELLY : patternMaterial(P, far ? M.BODY : m, R.part[i], x, y);
+        if (R.outfit && isTorso(R, x, y)) mm = outfitMat(R, x, y) === 2 ? M.O2 : M.O1;
         if (far && mm === M.BODY) mm = M.BODY;
         const t = tone(mm);
         const above = R.get(x, y - 1), below = R.get(x, y + 1), right = R.get(x + 1, y);
@@ -465,7 +608,7 @@
     const g = c.getContext("2d"), img = portraitCache.img || (portraitCache.img = g.createImageData(SW, SH));
     (POSES[o.pose] || POSES.sit)(R, { t: o.t || 0, st: 1, phase: o.phase || 0, blink: !!o.blink, eyes: o.eyes || null, look: o.look || null });
     const pal = portraitCache.pal[coat] || (portraitCache.pal[coat] = buildPalette(coat));
-    shade(R, pal, img); g.putImageData(img, 0, 0);
+    dress(R, o.acc); shade(R, pal, img, accTones(o.acc)); g.putImageData(img, 0, 0);
     const k = o.scale || 2, W = ctx.canvas.width, H = ctx.canvas.height;
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(c, Math.round((W - SW * k) / 2 + (o.dx ?? 4) * k), Math.round((H - SH * k) / 2 + (o.dy || 0) * k), SW * k, SH * k);
@@ -499,6 +642,7 @@
   const pick = (weights) => { let s = 0; for (const k in weights) s += weights[k]; let r = Math.random() * s; for (const k in weights) { r -= weights[k]; if (r <= 0) return k; } return Object.keys(weights)[0]; };
   const G = 1500;                                   // gravity, px/s²
 
+  const PERCH_OK = ["sit", "groom", "lickFlank", "washFace", "legUp", "sleep", "knead", "stretch", "yawn", "happy", "boop", "roll", "prep"];
   class Cat {
     constructor(world, coat, x) {
       this.world = world; this.coat = coat; this.P = buildPalette(coat);
@@ -513,10 +657,22 @@
     // kittens are drawn smaller; they grow as they're looked after
     get s() { return this.profile ? Math.max(1, Math.round(this.world.scale * this.size * 2) / 2) : this.world.scale; }
     get name() { return this.profile ? this.profile.name : "?"; }
+    // what the cat has on right now (a party hat goes on for birthdays if there's no other hat)
+    wearing() {
+      const a = this.profile && this.profile.acc;
+      if (this.partyT > 0) return { ...(a || {}), hat: a && a.hat ? a.hat : "party:candy" };
+      return a && (a.hat || a.collar || a.outfit) ? a : null;
+    }
     care(kind, arg) { if (window.CatLife && this.profile) window.CatLife.care(this, kind, arg); }
     set(state, dur = 3, extra = {}) {
       if (this.state === "inbox" && state !== "inbox" && this.box) { this.box.occupant = null; this.box = null; }
       if (this.bed && !["knead", "sleep", "stretch", "yawn"].includes(state)) { this.bed.occupant = null; this.bed = null; }
+      if (this.perch && (state === "held" || state === "fall")) this.perch = null;
+      if (this.perch && !PERCH_OK.includes(state) && state !== "leap") {
+        // asked to do something that needs the floor: hop down first, then carry on from there
+        this.perch = null; Object.assign(this, extra); extra = {};
+        this.vy = -170; this.vx = this.facing * 80; state = "leap"; dur = 3;
+      }
       this.state = state; this.stateT = 0; this.dur = dur; Object.assign(this, extra);
       const w = this.world;
       if (w.post && w.post.user === this && !(state === "scratch" || (state === "chase" && this.goal === "post"))) w.post.user = null;
@@ -534,6 +690,16 @@
       const w = this.world;
       if (w.laser) return this.set("chase", 30, { goal: "laser" });
       if (w.wand) return this.set("chase", 30, { goal: "feather" });
+      if (this.perch) {                                // up on a shelf: lounge about, or hop down
+        const pw = { sit: 3, groom: 2, sleep: w.isNight() ? 4 : 1.3, down: 1.5 };
+        if (this.mods) for (const k in pw) if (this.mods[k]) pw[k] *= this.mods[k];
+        const n = pick(pw);
+        if (n === "down") return this.hopDown();
+        if (n === "sleep") return this.set("knead", rnd(2, 3));
+        if (n === "groom") return this.set(pick({ groom: 3, lickFlank: 2, washFace: 2, legUp: 1.4 }), rnd(3, 6));
+        return this.set("sit", rnd(4, 9));
+      }
+      if (Math.random() < 0.015 && !w.isNight()) w.meow(this);
       const wt = { walk: 3, sit: 2, groom: 1.8, sleep: 1.1, roll: 1, zoom: this.zoomCool > 0 ? 0 : 0.12 };
       const y = w.yarn;
       if (y) { if (y.held) wt.dangle = 6; else if (Math.abs(y.x - this.x) < w.W * 0.7) wt.yarn = 5; }
@@ -546,6 +712,9 @@
       if (w.post && !w.post.user) wt.post = 0.9;
       const bed = w.bed && !w.bed.occupant && !w.bed.claimed ? w.bed : null;
       if (bed) wt.sleep += 0.6;                       // a comfy bed makes a nap more tempting
+      const shelf = w.shelves.find((sh) => sh.cats().length < sh.cap() && w.floor - sh.top < 220 * this.s);
+      if (shelf) wt.shelf = 1.1;
+      if (w.isNight()) { wt.sleep *= 3; wt.walk *= 0.4; wt.zoom = 0; if (wt.fight) wt.fight *= 0.2; if (wt.shelf) wt.shelf *= 0.5; }
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
       if (foe) wt.fight = 0.6;
       if (wt.yarn || wt.mouse || wt.dangle || wt.butterfly) { wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; }
@@ -556,6 +725,7 @@
       else if (n === "groom") this.set(pick({ groom: 3, lickFlank: 2, washFace: 2, legUp: 1.4 }), rnd(3, 6));
       else if (n === "sleep") { if (bed) { bed.claimed = this; this.set("chase", 14, { goal: "bed", bedRef: bed }); } else this.set("knead", rnd(2.5, 4)); }
       else if (n === "post") { w.post.user = this; this.set("chase", 12, { goal: "post" }); }
+      else if (n === "shelf") this.set("chase", 12, { goal: "shelf", shelfRef: shelf });
       else if (n === "fight") {
         const d = rnd(4, 6.5);
         this.fightCool = foe.fightCool = rnd(40, 80);
@@ -584,6 +754,10 @@
         case "butterfly": return w.butterfly ? w.butterfly.x : null;
         case "catnip": return w.catnip && !w.catnip.held ? w.catnip.x : null;
         case "bed": return this.bedRef && w.bed === this.bedRef && !this.bedRef.occupant ? this.bedRef.x : null;
+        case "shelf": {
+          const sh = this.shelfRef; if (!sh || !w.shelves.includes(sh) || sh.cats().length >= sh.cap()) return null;
+          return sh.x - (this.x < sh.x ? 1 : -1) * (sh.hw + 14 * s);
+        }
         case "post": {
           if (!w.post) return null;
           const side = this.x < w.post.x ? -1 : 1; return w.post.x + side * (3 * w.toyScale + 15 * s);
@@ -645,8 +819,22 @@
           }
           break;
         }
+        case "prep": {                                     // gathering itself for the jump up onto a shelf
+          const sh = this.shelfRef;
+          if (!sh || !w.shelves.includes(sh) || sh.cats().length >= sh.cap()) { this.set("sit", 2); break; }
+          this.facing = Math.sign(sh.x - this.x) || this.facing;
+          if (this.stateT > this.dur) {
+            const h = floor - sh.top, tx = sh.x + rnd(-0.35, 0.35) * sh.hw;
+            this.vy = -Math.sqrt(2 * G * (h + 14 * s));
+            const T = (-this.vy + Math.sqrt(this.vy * this.vy - 2 * G * h)) / G;
+            this.vx = (tx - this.x) / T; this.set("leap", 3, { goal: null });
+          }
+          break;
+        }
         case "leap": {
+          const py = this.y;
           this.vy += G * dt; this.x += this.vx * dt; this.y += this.vy * dt;
+          if (this.vy > 0 && this.tryPerch(py)) break;
           this.paws((tx, ty) => this.contact(tx, ty));
           if (this.y >= floor) {
             this.y = floor; this.vy = 0; w.burst(this.x, floor, "dust", "rgba(140,120,100,.7)", 3);
@@ -751,7 +939,9 @@
           break;
         }
         case "fall": {
+          const py = this.y;
           this.vy += 1700 * dt; this.x += this.vx * dt; this.y += this.vy * dt; this.vx *= 0.995;
+          if (this.vy > 0 && this.tryPerch(py)) break;
           if (this.y >= floor) { this.y = floor; this.vy = 0; this.vx = 0; w.burst(this.x, floor, "dust", "rgba(140,120,100,.7)", 4); this.set("sit", rnd(2, 4)); }
           break;
         }
@@ -762,7 +952,7 @@
         }
         case "sleep": {
           if (Math.random() < dt * 0.9) w.burst(this.x + this.facing * 10 * s, this.y - 18 * s, "z", "rgba(120,130,170,.95)", 1, { rise: true });
-          if (this.stateT > this.dur) this.set("stretch", 1.4);
+          if (this.stateT > this.dur) { this.set("stretch", 1.4); if (Math.random() < 0.4) w.meow(this); }
           break;
         }
         case "stretch": if (this.stateT > this.dur) this.set("yawn", 1.1); break;
@@ -771,7 +961,10 @@
           if (this.stateT > this.dur) this.think();
       }
       const m = SW * s / 2; this.x = clamp(this.x, m, w.W - m);
+      if (this.perch && !w.shelves.includes(this.perch)) { this.perch = null; this.set("fall", 5); this.vx = 0; this.vy = 0; }
+      this.partyT = (this.partyT || 0) - dt;
       if (this.bed) { this.x = this.bed.x; this.y = floor - 4 * w.toyScale; }
+      else if (this.perch && !["held", "fall", "leap"].includes(this.state)) { this.x = this.perch.x + this.perchDx; this.y = this.perch.top; }
       else if (!["held", "fall", "leap", "inbox"].includes(this.state) && !(this.state === "spar" && this.vy)) this.y = floor;
       this.watchPointer(dt);
     }
@@ -781,10 +974,10 @@
       const tx = this.goalX();
       if (tx == null) { if (this.boxRef && this.boxRef.claimed === this) this.boxRef.claimed = null; this.set("sit", 1.5); return; }
       const dx = tx - this.x, g = this.goal;
-      const reach = { yarn: 16, dangle: 9, mouse: 46, laser: 22, bowl: 3, box: 4, feather: 9, butterfly: 10, catnip: 6, bed: 4, post: 3 }[g] * s;
+      const reach = { yarn: 16, dangle: 9, mouse: 46, laser: 22, bowl: 3, box: 4, feather: 9, butterfly: 10, catnip: 6, bed: 4, post: 3, shelf: 4 }[g] * s;
       if (Math.abs(dx) > reach) {
         this.facing = Math.sign(dx);
-        const sp = ["bowl", "box", "bed", "post"].includes(g) ? 60 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
+        const sp = ["bowl", "box", "bed", "post", "shelf"].includes(g) ? 60 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
         this.x += this.facing * Math.min(sp * s * dt, Math.abs(dx)); this.phase = (this.phase + dt * (sp > 120 ? 3.4 : sp > 70 ? 2.6 : 1.8)) % 1;
       } else {
         if (g === "yarn") {
@@ -803,6 +996,7 @@
           const b = this.bedRef; b.claimed = null;
           if (!b.occupant) { b.occupant = this; this.bed = b; this.x = b.x; this.set("knead", rnd(2.5, 4)); this.care("bed"); } else this.think();
         }
+        else if (g === "shelf") { this.facing = Math.sign(this.shelfRef.x - this.x) || this.facing; this.set("prep", rnd(0.4, 0.8)); }
         else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); this.care("scratch"); }
         else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7) * ((this.mods && this.mods._eat) || 1)); this.care("fed"); }
         else if (g === "box") {
@@ -882,6 +1076,19 @@
         else this.actT = rnd(0.35, 0.8);
       }
     }
+    tryPerch(py) {
+      const w = this.world, s = this.s;
+      for (const sh of w.shelves) {
+        if (py <= sh.top + 0.5 && this.y >= sh.top && Math.abs(this.x - sh.x) < sh.hw - 4 * s && sh.cats().length < sh.cap()) {
+          this.y = sh.top; this.vy = 0; this.vx = 0; this.perch = sh; this.perchDx = clamp(this.x - sh.x, -sh.hw + 10 * s, sh.hw - 10 * s);
+          w.burst(this.x, sh.top, "dust", "rgba(140,120,100,.6)", 2);
+          this.set("sit", rnd(3, 6), { goal: null }); this.care("shelf");
+          return true;
+        }
+      }
+      return false;
+    }
+    hopDown() { this.perch = null; this.vx = this.facing * rnd(70, 130); this.vy = -180; this.set("leap", 3, { goal: null }); }
     tryBoop() {
       if (this.boopCool > 0) return;
       for (const o of this.world.cats) {
@@ -905,7 +1112,8 @@
     pose() {
       switch (this.state) {
         case "walk": return "walk";
-        case "chase": return ["bowl", "box", "bed", "post"].includes(this.goal) ? "walk" : "run";
+        case "chase": return ["bowl", "box", "bed", "post", "shelf"].includes(this.goal) ? "walk" : "run";
+        case "prep": return "crouch";
         case "spar": return (this.vy || this.y < this.world.floor) ? "leap" : this.act === "swipe" ? "swipe" : "spar";
         case "flee": case "pursue": return "run";
         case "sniff": return "eat";
@@ -919,13 +1127,15 @@
       const R = this.R; R.clear();
       const a = { t: this.t, st: this.stateT, phase: this.phase, blink: this.blink, eyes: this.state === "happy" ? "happy" : this.eyes, peekEyes: null, look: this.look };
       POSES[this.pose()](R, a);
-      shade(R, this.P, this.img);
+      const acc = this.wearing();
+      dress(R, acc);
+      shade(R, this.P, this.img, accTones(acc));
       this.ctx.putImageData(this.img, 0, 0);
       const s = this.s, w = this.world, inbox = this.state === "inbox";
-      const lift = Math.max(0, w.floor - this.y);
+      const ground = this.perch ? this.perch.top : w.floor, lift = Math.max(0, ground - this.y);
       if (!inbox && !this.bed) {
         ctx.save(); ctx.globalAlpha = Math.max(0.08, 0.28 - lift / 900); ctx.fillStyle = "#000";
-        ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, 13 * s * (1 - Math.min(lift, 300) / 600), 2.2 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        ctx.beginPath(); ctx.ellipse(this.x, ground + s, 13 * s * (1 - Math.min(lift, 300) / 600), 2.2 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       }
       ctx.save();
       ctx.imageSmoothingEnabled = false;
@@ -966,7 +1176,7 @@
 
     pet() {
       const w = this.world, s = this.s;
-      this.care("pet");
+      this.care("pet"); if (Math.random() < 0.35) setTimeout(() => w.meow(this), 300);
       if (this.state === "inbox") { this.peekTo = 0; this.peekT = 2.5; w.burst(this.x, this.y - 40 * s, "heart", "#e2557a", 2); w.purr(); return; }
       if (this.state === "sleep") { this.set("stretch", 1.4); w.burst(this.x, this.y - 30 * s, "note", "#b08d57", 1); return; }
       this.set("happy", 2.6, { eyes: null });
@@ -1117,7 +1327,7 @@
     release() { this.held = false; }
     click() {
       this.food = 1; this.refill++; this.world.burst(this.x, this.world.floor - 14 * this.world.toyScale, "note", "#b08d57", 2);
-      this.world.cats.forEach((c) => { if (!["held", "fall", "inbox"].includes(c.state)) c.set("chase", 10, { goal: "bowl" }); });
+      this.world.cats.forEach((c, i) => { if (!["held", "fall", "inbox"].includes(c.state)) { c.set("chase", 10, { goal: "bowl" }); if (i < 2) setTimeout(() => this.world.meow(c), 150 + i * 450 + Math.random() * 300); } });
     }
     update(dt) { const w = this.world; if (this.held) this.x += (clamp(w.pointer.x, 12 * w.toyScale, w.W - 12 * w.toyScale) - this.x) * Math.min(1, dt * 14); }
     render(ctx) {
@@ -1342,6 +1552,66 @@
     }
   }
 
+  // A little wall shelf you can put anywhere on screen. Cats leap up onto it and lounge about.
+  class Shelf {
+    constructor(world, x, top) {
+      this.world = world; this.x = x; this.top = top; this.held = false;
+      this.sp = new Sprite(52, 12);
+      this.pal = { 1: { c: [184, 132, 84], lit: true }, 2: { c: [150, 102, 62] }, 3: { c: [126, 86, 52], lit: true } };
+    }
+    get hw() { return 26 * this.world.toyScale; }
+    cap() { return 2; }
+    cats() { return this.world.cats.filter((c) => c.perch === this); }
+    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < this.hw && py > this.top - 2 && py < this.top + 12 * s; }
+    grab() { this.held = true; }
+    release() { this.held = false; }
+    click() {
+      const c = this.world.cats.find((c) => !c.perch && ["sit", "walk", "groom"].includes(c.state));
+      if (c && this.cats().length < this.cap()) c.set("chase", 12, { goal: "shelf", shelfRef: this });
+    }
+    update() {
+      const w = this.world;
+      if (this.held) { this.x = clamp(w.pointer.x, this.hw + 4, w.W - this.hw - 4); this.top = clamp(w.pointer.y - 4, 60, w.floor - 34 * w.toyScale); }
+    }
+    render(ctx) {
+      const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
+      R.rect(0, 0, 52, 4, 1); R.rect(3, 2, 14, 1, 2); R.rect(26, 1, 18, 1, 2);       // plank with grain
+      R.tri(7, 4, 13, 4, 7, 11, 3); R.tri(39, 4, 45, 4, 45, 11, 3);                    // brackets
+      const img = this.sp.paint(this.pal, [86, 56, 34]);
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round(this.x - 26 * s), Math.round(this.top), 52 * s, 12 * s); ctx.restore();
+    }
+  }
+
+  // A birthday cake with a flickering candle. Click it for more confetti.
+  class Cake {
+    constructor(world, x, cat) {
+      this.world = world; this.x = x; this.cat = cat; this.life = 45; this.t = 0;
+      this.sp = new Sprite(22, 20);
+      this.pal = { 1: { c: [255, 214, 226], lit: true }, 2: { c: [196, 120, 74], lit: true }, 3: { c: [255, 255, 255], lit: true }, 4: { c: [255, 120, 150] },
+        5: { c: [120, 190, 240], lit: true }, 6: { c: [255, 210, 80] }, 7: { c: [255, 150, 60] }, 8: { c: [236, 236, 240], lit: true } };
+    }
+    hit(px, py) { const s = this.world.toyScale; return Math.abs(px - this.x) < 11 * s && py > this.world.floor - 20 * s && py < this.world.floor + 2; }
+    grab() {} release() {}
+    click() { this.world.confetti(this.x, this.world.floor - 20 * this.world.toyScale, 24); if (this.cat) this.world.meow(this.cat); }
+    update(dt) { this.t += dt; this.life -= dt; if (this.life <= 0) this.world.cakes = this.world.cakes.filter((c) => c !== this); }
+    render(ctx) {
+      const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
+      R.rect(0, 18, 22, 2, 8);                                                     // plate
+      R.rect(3, 11, 16, 7, 2); R.rect(3, 13, 16, 1, 4);                            // sponge with jam
+      R.rect(3, 9, 16, 3, 1); for (const x of [5, 9, 13, 16]) R.rect(x, 12, 1, 1 + (x % 3), 1);   // pink icing + drips
+      for (const x of [5, 8, 11, 14, 17]) R.put(x, 9, 3);                          // white piping
+      R.rect(10, 3, 2, 6, 5); R.put(10, 4, 3); R.put(11, 6, 3);                    // striped candle
+      const fl = Math.sin(this.t * 22) > 0;
+      R.put(10.5, 1, 6); R.put(10.5, 2, 7); if (fl) R.put(10.5, 0, 6); else R.put(11.5, 1, 6);
+      const img = this.sp.paint(this.pal, [110, 62, 50]);
+      ctx.save(); ctx.globalAlpha = Math.min(1, this.life / 2);
+      ctx.save(); ctx.globalAlpha *= 0.2; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, 12 * s, 1.6 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      const glow = ctx.createRadialGradient(this.x, w.floor - 19 * s, 0, this.x, w.floor - 19 * s, 8 * s);
+      glow.addColorStop(0, "rgba(255,210,80,.45)"); glow.addColorStop(1, "rgba(255,210,80,0)"); ctx.fillStyle = glow; ctx.fillRect(this.x - 8 * s, w.floor - 27 * s, 16 * s, 16 * s);
+      ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round(this.x - 11 * s), Math.round(w.floor - 20 * s), 22 * s, 20 * s); ctx.restore();
+    }
+  }
+
   // ---------------------------------------------------------------- pixel glyphs for particles
   const GLYPH = {
     heart: ["01100110", "11111111", "11111111", "01111110", "00111100", "00011000"],
@@ -1350,6 +1620,7 @@
     dust: ["0110", "1111", "0110"],
     note: ["00110", "00101", "00100", "11100", "11100"],
     crumb: ["11", "11"],
+    confetti: ["11", "11"],
   };
 
   class World {
@@ -1358,6 +1629,7 @@
       this.canvas = canvas; this.ctx = canvas.getContext("2d");
       this.scale = opts.scale || 3; this.toyScale = opts.toyScale || this.scale; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
       this.wand = null; this.butterfly = null; this.catnip = null; this.catnipId = 0; this.bed = null; this.post = null;
+      this.shelves = []; this.cakes = []; this.sound = opts.sound ?? true; this.nightMode = opts.nightMode || "auto";
       this.pointer = { x: -1e4, y: -1e4, seen: false }; this.drag = null; this.onHover = opts.onHover || (() => {});
       this.floorInset = opts.floorInset ?? 6; this.audio = null; this.last = performance.now();
       this.resize(); addEventListener("resize", () => this.resize());
@@ -1396,6 +1668,22 @@
       return !!this.wand;
     }
     addButterfly() { this.butterfly = new Butterfly(this); }
+    addShelf() { if (this.shelves.length >= 3) this.shelves.shift(); this.shelves.push(new Shelf(this, this.spot(), this.floor - rnd(110, 170) * this.toyScale)); }
+    removeAllCats() { [...this.cats].forEach((c) => this.removeCat(c)); }
+    // "auto" follows the clock: from 22:00 to 07:00 it's night and the cats get sleepy
+    isNight() { if (this.nightMode === "night") return true; if (this.nightMode === "day") return false; const h = new Date().getHours(); return h >= 22 || h < 7; }
+    confetti(x, y, n = 36) {
+      const cols = ["#ff6f91", "#ffd34d", "#6fd3a8", "#7fb6ff", "#c58ae8", "#ff9f5a"];
+      for (let i = 0; i < n; i++) this.parts.push({ x, y, vx: rnd(-170, 170), vy: rnd(-380, -150), life: rnd(1.6, 2.4), age: 0, kind: "confetti", color: cols[i % cols.length] });
+    }
+    celebrate(cat) {
+      const s = cat.s, x = clamp(cat.x + (cat.facing || 1) * 26 * s, 30, this.W - 30);
+      this.cakes.push(new Cake(this, x, cat));
+      cat.partyT = 45; cat.facing = Math.sign(x - cat.x) || cat.facing;
+      if (!["held", "fall", "leap", "inbox"].includes(cat.state) && !cat.bed && !cat.perch) cat.set("happy", 4, { eyes: null });
+      this.confetti(cat.x, cat.y - 30 * s); setTimeout(() => this.confetti(x, this.floor - 20 * this.toyScale, 20), 700);
+      this.meow(cat); setTimeout(() => this.meow(cat), 900);
+    }
     dropCatnip() { this.catnip = new Catnip(this, this.spot(), ++this.catnipId); }
     addBed() { if (!this.bed) this.bed = new Bed(this, this.spot()); else this.bed.click(); }
     addPost() { if (!this.post) this.post = new Post(this, this.spot()); else this.post.click(); }
@@ -1404,12 +1692,32 @@
       this.butterfly = null; this.catnip = null;
       if (this.bed && this.bed.occupant) this.bed.occupant.set("sit", 2); this.bed = null;
       if (this.post && this.post.user) this.post.user.set("sit", 2); this.post = null;
+      this.shelves = []; this.cakes = [];
       this.boxes.forEach((b) => { if (b.occupant) b.occupant.hopOut(); }); this.boxes = [];
     }
     burst(x, y, kind, color, n = 1, o = {}) {
       for (let i = 0; i < n; i++) this.parts.push({ x: x + rnd(-8, 8) * this.scale, y, vx: rnd(-30, 30), vy: o.rise ? -28 : rnd(-90, -40), life: kind === "z" ? 2.2 : 1.1, age: 0, kind, color });
     }
+    meow(cat) {
+      if (!this.sound) return;
+      try {
+        this.audio = this.audio || new (window.AudioContext || window.webkitAudioContext)();
+        const ac = this.audio, t0 = ac.currentTime + 0.01, dur = rnd(0.38, 0.62);
+        const kit = cat && cat.size < 0.8, f0 = (kit ? 700 : 500) * rnd(0.92, 1.1);
+        const o = ac.createOscillator(); o.type = "sawtooth";
+        o.frequency.setValueAtTime(f0 * 0.78, t0); o.frequency.linearRampToValueAtTime(f0 * 1.18, t0 + dur * 0.35); o.frequency.linearRampToValueAtTime(f0 * 0.66, t0 + dur);
+        const f1 = ac.createBiquadFilter(); f1.type = "bandpass"; f1.Q.value = 5;                 // the "mee-ow" mouth shape
+        f1.frequency.setValueAtTime(700, t0); f1.frequency.linearRampToValueAtTime(1300, t0 + dur * 0.4); f1.frequency.linearRampToValueAtTime(650, t0 + dur);
+        const f2 = ac.createBiquadFilter(); f2.type = "bandpass"; f2.Q.value = 7; f2.frequency.value = 2600;
+        const g = ac.createGain(), g2 = ac.createGain(); g2.gain.value = 0.35;
+        g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.32, t0 + 0.05); g.gain.setValueAtTime(0.32, t0 + dur * 0.7); g.gain.linearRampToValueAtTime(0, t0 + dur);
+        o.connect(f1).connect(g); o.connect(f2).connect(g2).connect(g); g.connect(ac.destination);
+        o.start(t0); o.stop(t0 + dur + 0.05);
+        if (cat) this.burst(cat.x + cat.facing * 12 * cat.s, cat.y - 30 * cat.s, "note", "#b08d57", 1);
+      } catch {}
+    }
     purr() {
+      if (!this.sound) return;
       try {
         this.audio = this.audio || new (window.AudioContext || window.webkitAudioContext)();
         const ac = this.audio, t0 = ac.currentTime, len = 1.4;
@@ -1430,6 +1738,8 @@
       if (this.catnip && this.catnip.hit(x, y)) return { toy: this.catnip };
       if (this.bed && this.bed.hit(x, y)) return { toy: this.bed };
       if (this.post && this.post.hit(x, y)) return { toy: this.post };
+      for (const c of this.cakes) if (c.hit(x, y)) return { toy: c };
+      for (let i = this.shelves.length - 1; i >= 0; i--) if (this.shelves[i].hit(x, y)) return { toy: this.shelves[i] };
       return null;
     }
     bindInput() {
@@ -1450,7 +1760,7 @@
         pos(e); const d = this.drag;
         if (d && !d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 6) {
           d.moved = true;
-          if (d.cat) { d.cat.set("held", 1e9); d.cat.care("held"); }
+          if (d.cat) { d.cat.set("held", 1e9); d.cat.care("held"); if (Math.random() < 0.5) this.meow(d.cat); }
           if (d.toy && d.toy !== this.yarn) d.toy.grab();
         }
         this.onHover(!!d || !!this.hitTest(e.clientX, e.clientY));
@@ -1482,9 +1792,12 @@
       if (this.mouse) this.mouse.update(dt);
       if (this.bowl) this.bowl.update(dt);
       this.boxes.forEach((b) => b.update(dt));
-      for (const t of [this.wand, this.butterfly, this.catnip, this.bed, this.post]) if (t) t.update(dt);
+      for (const t of [this.wand, this.butterfly, this.catnip, this.bed, this.post, ...this.shelves, ...this.cakes]) if (t) t.update(dt);
       this.cats.forEach((c) => c.update(dt));
+      if (this.isNight()) this.renderNight(ctx, now);
       if (this.post) this.post.render(ctx);
+      this.shelves.forEach((sh) => sh.render(ctx));
+      this.cakes.forEach((c) => c.render(ctx));
       if (this.bowl) this.bowl.render(ctx);
       if (this.bed) { this.bed.renderBack(ctx); if (this.bed.occupant) this.bed.occupant.render(ctx); this.bed.renderFront(ctx); }
       this.boxes.forEach((b) => { if (b.occupant) b.occupant.render(ctx); b.render(ctx); });
@@ -1499,6 +1812,23 @@
       this.renderParticles(ctx, dt);
       requestAnimationFrame((t) => this.frame(t));
     }
+    // a small crescent moon and a few twinkling stars, only at night
+    renderNight(ctx, now) {
+      const s = Math.max(2, this.toyScale), x = this.W - 22 * s - 30, y = Math.max(24, this.floor - 90 * s);
+      ctx.save(); ctx.imageSmoothingEnabled = false;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, 16 * s); g.addColorStop(0, "rgba(255,240,180,.35)"); g.addColorStop(1, "rgba(255,240,180,0)");
+      ctx.fillStyle = g; ctx.fillRect(x - 16 * s, y - 16 * s, 32 * s, 32 * s);
+      for (let yy = -6; yy <= 6; yy++) for (let xx = -6; xx <= 6; xx++) {
+        const a = xx * xx + yy * yy, b = (xx - 3) * (xx - 3) + (yy + 2) * (yy + 2);
+        if (a <= 36 && b > 22) { ctx.fillStyle = a > 25 || b < 30 ? "#f2d77a" : "#fff1b5"; ctx.fillRect(Math.round(x + xx * s), Math.round(y + yy * s), s, s); }
+      }
+      [[-34, -10, 0], [-20, 14, 1.3], [-48, 8, 2.1], [10, -18, 0.7], [-60, -14, 3.1]].forEach(([dx, dy, ph]) => {
+        const tw = (Math.sin(now / 420 + ph * 2) + 1) / 2; ctx.globalAlpha = 0.35 + 0.65 * tw; ctx.fillStyle = "#fff6c8";
+        const sx = Math.round(x + dx * s / 2), sy = Math.round(y + dy * s / 2), k = Math.max(1, Math.round(s / 2));
+        ctx.fillRect(sx, sy - k, k, 3 * k); ctx.fillRect(sx - k, sy, 3 * k, k);
+      });
+      ctx.restore();
+    }
     renderLaser(ctx, now) {
       const s = this.toyScale, p = this.pointer, j = Math.sin(now / 37) * 0.6;
       ctx.save();
@@ -1512,7 +1842,9 @@
       const s = Math.max(2, Math.round(this.scale * 0.8));
       this.parts = this.parts.filter((p) => (p.age += dt) < p.life);
       for (const p of this.parts) {
-        p.x += p.vx * dt; p.y += p.vy * dt; if (p.kind !== "z") p.vy += 60 * dt; else p.x += Math.sin(p.age * 3) * 0.6;
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.kind === "confetti") { p.vy += 420 * dt; p.vx *= Math.pow(0.4, dt); }
+        else if (p.kind !== "z") p.vy += 60 * dt; else p.x += Math.sin(p.age * 3) * 0.6;
         const g = GLYPH[p.kind]; ctx.globalAlpha = 1 - p.age / p.life; ctx.fillStyle = p.color;
         const sc = p.kind === "z" ? s * (0.6 + p.age * 0.35) : s;
         for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) if (g[y][x] === "1") ctx.fillRect(Math.round(p.x + x * sc), Math.round(p.y + y * sc), Math.ceil(sc), Math.ceil(sc));
@@ -1521,5 +1853,5 @@
     }
   }
 
-  window.DesktopCat = { World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait };
+  window.DesktopCat = { World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE };
 })();

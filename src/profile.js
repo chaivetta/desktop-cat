@@ -64,6 +64,9 @@
     boop:    { xp: 2, love: 1, every: 30e3, log: 10 * 60e3 },
     box:     { xp: 2, love: 1, every: 30e3, log: 15 * 60e3 },
     held:    { xp: 0, love: 0, every: 30e3, log: 10 * 60e3 },
+    dress:   { xp: 1, love: 1, every: 10e3, log: 2 * 60e3 },
+    photo:   { xp: 1, love: 2, every: 5e3, log: 60e3 },
+    shelf:   { xp: 2, love: 1, every: 30e3, log: 10 * 60e3 },
   };
 
   const STR = {
@@ -72,6 +75,10 @@
       pet: "Sev", feed: "Mama ver", play: "Oyna", rename: "İsmini değiştir", dice: "Rastgele isim", ok: "Kaydet", close: "Kapat",
       adopt: "Yeni yavru", newKitten: "Yeni bir yavru geldi! Adını koyalım mı?", empty: "Henüz bir şey yazmadı…",
       grownUp: "Tamamen büyüdü", toNext: (n) => `${n} puan sonra büyüyecek`,
+      wardrobe: "Dolap", hat: "Şapka", collar: "Tasma & papyon", outfit: "Kıyafet", none: "Hiçbiri", surprise: "Rastgele kombin", undress: "Hepsini çıkar",
+      nothingOn: "Üstünde bir şey yok", photo: "Fotoğraf", remove: "Kediyi kaldır", removeQ: (n) => `${n} gitsin mi? Bu geri alınamaz.`, yes: "Evet, kaldır", no: "Vazgeç",
+      size: "Kart boyutu", birthdayToday: "Bugün doğum günü!", photoOf: (n, d, st) => `${n} · ${d} · ${st}`,
+      age1: (d) => d < 30 ? "1 haftalık" : d < 365 ? `${Math.round(d / 30)} aylık` : `${Math.round(d / 365)} yaşında`,
       age: (d) => d < 1 ? "yeni geldi" : `${d} günlük`, born: (d) => `Doğum günü: ${d}`,
       mood: (l) => l >= 85 ? "Sana bayılıyor" : l >= 60 ? "Çok mutlu" : l >= 35 ? "Keyfi yerinde" : l >= 15 ? "Biraz ilgi bekliyor" : "Seni çok özledi",
       ago: (ms) => { const m = Math.floor(ms / 60e3); return m < 1 ? "az önce" : m < 60 ? `${m} dk önce` : m < 1440 ? `${Math.floor(m / 60)} sa önce` : `${Math.floor(m / 1440)} gün önce`; },
@@ -82,6 +89,8 @@
         race: (a) => `${a.o} ile yarıştı`, fight: (a) => `${a.o} ile şakadan dövüştü`, boop: (a) => `${a.o} ile burun buruna geldi`,
         box: () => "Kutuya saklandı", held: () => "Kucağa alındı", grew: (a) => `Büyüdü, artık ${a.stage}!`, lovemax: () => "Sevgi barı doldu! Sana bayılıyor",
         hello: () => "Seninle masaüstünde yaşamaya başladı",
+        dress: (a) => `${a.itemName} ${a.kind === "outfit" ? "giydi" : "taktı"}`, photo: () => "Fotoğrafı çekildi", shelf: () => "Rafa zıplayıp oturdu",
+        birthday: (a) => `${STR.tr.age1(a.days)} oldu! İyi ki doğdun`,
       },
     },
     en: {
@@ -89,6 +98,10 @@
       pet: "Pet", feed: "Feed", play: "Play", rename: "Rename", dice: "Random name", ok: "Save", close: "Close",
       adopt: "New kitten", newKitten: "A new kitten arrived! Want to name it?", empty: "Nothing written yet…",
       grownUp: "All grown up", toNext: (n) => `${n} more points to grow`,
+      wardrobe: "Wardrobe", hat: "Hats", collar: "Collars & bows", outfit: "Outfits", none: "None", surprise: "Surprise outfit", undress: "Take it all off",
+      nothingOn: "Wearing nothing", photo: "Photo", remove: "Remove cat", removeQ: (n) => `Say goodbye to ${n}? This can't be undone.`, yes: "Yes, remove", no: "Keep",
+      size: "Card size", birthdayToday: "Birthday today!", photoOf: (n, d, st) => `${n} · ${d} · ${st}`,
+      age1: (d) => d < 30 ? "1 week old" : d < 365 ? `${Math.round(d / 30)} months old` : `${Math.round(d / 365)} year${d >= 730 ? "s" : ""} old`,
       age: (d) => d < 1 ? "just arrived" : `${d} day${d > 1 ? "s" : ""} old`, born: (d) => `Birthday: ${d}`,
       mood: (l) => l >= 85 ? "Adores you" : l >= 60 ? "Very happy" : l >= 35 ? "Content" : l >= 15 ? "Wants some attention" : "Misses you a lot",
       ago: (ms) => { const m = Math.floor(ms / 60e3); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.floor(m / 60)} h ago` : `${Math.floor(m / 1440)} d ago`; },
@@ -99,11 +112,13 @@
         race: (a) => `Raced ${a.o}`, fight: (a) => `Play-fought with ${a.o}`, boop: (a) => `Booped noses with ${a.o}`,
         box: () => "Hid in a box", held: () => "Got picked up", grew: (a) => `Grew up — now a ${a.stage.toLowerCase()}!`, lovemax: () => "Love bar full! Adores you",
         hello: () => "Moved in on your desktop",
+        dress: (a) => `Put on the ${a.itemName}`, photo: () => "Had a photo taken", shelf: () => "Jumped up onto the shelf",
+        birthday: (a) => `${STR.en.age1(a.days)} today! Happy birthday`,
       },
     },
   };
   const LOG_ICON = { born: "🐣", named: "🏷️", fed: "🍗", pet: "💗", play: "🧶", bed: "🛏️", scratch: "🪵", catnip: "🌿", zoom: "💨",
-    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠" };
+    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", shelf: "🪜", birthday: "🎂" };
 
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -162,9 +177,25 @@
       const a = { ...entry.a };
       if (a.toyKey && TOYS[a.toyKey]) a.toy = TOYS[a.toyKey][L.lang];
       if (a.stageKey) { const st = STAGES.find((s) => s.id === a.stageKey); if (st) a.stage = st[L.lang]; }
+      if (a.item) a.itemName = L.itemName(a.kind, a.item);
       return f(a);
     },
     icon(entry) { return entry.k === "play" && TOYS[entry.a?.toyKey] ? TOYS[entry.a.toyKey].e : LOG_ICON[entry.k] || "🐾"; },
+    // "Cherry top hat" / "Kiraz silindir şapka"
+    itemName(kind, id) {
+      const W = window.DesktopCat && window.DesktopCat.WARDROBE; if (!W || !id) return "";
+      const [d, sc] = String(id).split(":"), des = W[kind] && W[kind][d], sch = W.schemes[sc];
+      if (!des || !sch) return "";
+      return L.lang === "tr" ? `${sch.tr} ${des.tr}` : `${sch.en} ${des.en.charAt(0).toLowerCase() + des.en.slice(1)}`.replace(/^./, (c) => c.toUpperCase());
+    },
+    // birthdays: one week, then 1, 2, 3 and 6 months, then every year
+    milestones(age) { const m = [7, 30, 60, 90, 180]; for (let y = 365; y <= age + 365; y += 365) m.push(y); return m.filter((d) => d <= age); },
+    birthdayDue(p) {
+      const age = (Date.now() - p.born) / 864e5, done = L.milestones(age);
+      if (done.length > (p.bdays || 0)) { p.bdays = done.length; p.lastBday = Date.now(); const days = done[done.length - 1]; L.write(p, "birthday", { days }); L.changed(); return days; }
+      return 0;
+    },
+    isBirthday(p) { return p.lastBday && Date.now() - p.lastBday < 864e5; },
     rename(cat, name) {
       const p = cat.profile; name = String(name || "").trim().slice(0, 14); if (!name || name === p.name) return;
       p.name = name; L.write(p, "named", { n: name }); L.changed();

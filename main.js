@@ -2,13 +2,13 @@
 // A transparent, click-through window spans the screen above the taskbar.
 // The page tells us when the pointer is over a cat or the yarn, and only then
 // do we let the window catch the mouse, so the rest of the desktop keeps working.
-const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage } = require("electron");
+const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage, dialog } = require("electron");
 const path = require("path");
 
 if (process.platform === "linux") app.commandLine.appendSwitch("enable-transparent-visuals");
 if (!app.requestSingleInstanceLock()) app.quit();
 
-let win = null, tray = null, coats = [], paused = false, laser = false, wand = false;
+let win = null, tray = null, coats = [], paused = false, laser = false, wand = false, sound = true, nightMode = "auto";
 
 function fitToScreen() {
   if (!win) return;
@@ -56,12 +56,22 @@ function buildMenu() {
       { type: "separator" },
       { label: "Cat bed", click: () => send({ type: "bed" }) },
       { label: "Scratching post", click: () => send({ type: "post" }) },
+      { label: "Wall shelf", click: () => send({ type: "shelf" }) },
       { type: "separator" },
       { label: "Put the toys away", click: () => send({ type: "clear" }) },
     ] },
     { label: "Cat cards…", click: () => { win.showInactive(); send({ type: "cards" }); } },
     { label: "Feed the cats", click: () => send({ type: "feed" }) },
     { label: "Remove a cat", click: () => send({ type: "remove" }) },
+    { label: "Remove all cats…", click: async () => {
+      const r = await dialog.showMessageBox({ type: "question", buttons: ["Remove all", "Cancel"], defaultId: 1, cancelId: 1, message: "Remove all your cats?", detail: "Their names, diaries and wardrobes will be gone. This can't be undone." });
+      if (r.response === 0) send({ type: "removeAll" });
+    } },
+    { type: "separator" },
+    { label: "Sounds", type: "checkbox", checked: sound, click: (item) => { sound = item.checked; send({ type: "sound", on: sound }); } },
+    { label: "Day & night", submenu: ["auto", "day", "night"].map((m) => ({
+      label: { auto: "Follow the clock", day: "Always day", night: "Always night" }[m], type: "radio", checked: nightMode === m,
+      click: () => { nightMode = m; send({ type: "night", mode: m }); } })) },
     { type: "separator" },
     { label: "Cat size", submenu: [
       { label: "Bigger", click: () => send({ type: "bigger" }) },
@@ -92,6 +102,7 @@ function createTray() {
 ipcMain.on("ignore", (_e, ignore) => { if (win) win.setIgnoreMouseEvents(!!ignore, { forward: true }); });
 ipcMain.on("laser", (_e, on) => { laser = !!on; if (tray) tray.setContextMenu(buildMenu()); });
 ipcMain.on("wand", (_e, on) => { wand = !!on; if (tray) tray.setContextMenu(buildMenu()); });
+ipcMain.on("settings", (_e, o) => { if (o) { sound = !!o.sound; nightMode = o.nightMode || "auto"; } if (tray) tray.setContextMenu(buildMenu()); });
 ipcMain.on("coats", (_e, list) => { coats = Array.isArray(list) ? list : []; if (tray) tray.setContextMenu(buildMenu()); });
 
 app.whenReady().then(() => {
