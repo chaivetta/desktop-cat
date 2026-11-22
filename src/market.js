@@ -2,6 +2,13 @@
 (() => {
   const STR = {
     tr: {
+      catsT: "Kediler", toysT: "Oyuncak", posts: "gönderi", atHome: "evde", price: "fiyat", free: "Ücretsiz", unlocked: "Açık",
+      adopt: "🐾 Yavrusunu sahiplen", unlock: (n) => `🔒 Kilidi aç ⭐ ${n}`, needStars: (n) => `⭐ ${n} yıldız daha lazım`, full: "Evin dolu (en çok 8 kedi)",
+      catsNote: "Sarman ücretsiz. Diğer cinsler görevlerden kazandığın yıldızlarla bir kez açılır, sonra istediğin kadar sahiplenirsin.",
+      unlockedMsg: (n) => `🎉 ${n} artık seninle! Sahiplenebilirsin`,
+      bios: { ginger: "Turuncu çizgili, mama düşkünü, en tatlı başlangıç 🧡", black: "Gece kadar kara, sarı gözlü, sessiz ama hep yanında 🌙", white: "Bembeyaz pamuk, mavi gözlü, biraz nazlı ☁️", grey: "Gri tekir, meraklı ve oyunbaz 🐾", tuxedo: "Smokinli beyefendi, her an bir davete hazır 🎩", calico: "Üç renkli şans kedisi, karakteri güçlü 🍀", siamese: "Siyam: konuşkan, mavi gözlü, ilgi ister 💙" },
+      caps: ["merhaba 👋", "uyku vakti 💤", "ekmek modu 🍞", "gerin gerin", "temizlik 🫧", "göbek göster 😹"],
+      toyPlay: "Çıkar", toyOn: "Aç", toyOff: "Kapat", onCard: "Kartta kullanılır", clearToys: "🧺 Oyuncakları topla", yarnFree: "Ücretsiz",
       title: "Market", food: "Mama", furniture: "Eşyalar", mine: "Envanter", earn: "Kazan", luck: "Şans",
       pantryH: "Dolap", thingsH: "Eşyalar", use: { catnip: "Yere at", litter: "Kum kabını temizle", medicine: "Karttaki kediye ver", shampoo: "Karttaki kediyi yıka" }, useMeal: "Kaba koy",
       basics: "Temel", specials: "Güçlendirici mamalar",
@@ -11,8 +18,8 @@
       prize: { nothing: "Bu sefer boş çıktı 🙈", coins: (n) => `${n} altın kazandın! 🪙`, star: "Bir yıldız! ⭐", food: (e, nm, n) => `${e} ${nm} (×${n}) dolaba eklendi`, furniture: (nm) => `🎉 İnanılmaz! Bir ${nm} kazandın, envanterde`, cloth: (nm) => `👑 Efsane! Yeni bir model açıldı: ${nm}` },
       seg: { nothing: "Boş", furniture: "Eşya", cloth: "Kıyafet", star: "Yıldız" },
       toysH: "Oyuncaklar", homeH: "Ev eşyaları", ownedToy: "Senin ✓",
-      toyE: { mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
-      toys: { brush: ["Kedi fırçası", "Kartta 'Tara' ile kedini tararsın; temizlik ve sevgi"], mouse: ["Kurmalı fare", "Kurunca koşturur, kediler avlar"], box: ["Karton kutu", "İçine girip saklanırlar"], butterfly: ["Kelebek", "Uçuşur, kediler peşinden koşar"],
+      toyE: { yarn: "🧶", mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
+      toys: { yarn: ["Yumak", "Fırlat, yakalasınlar. Yumağı ya da ipini tutup sallayabilirsin"], brush: ["Kedi fırçası", "Kartta 'Tara' ile kedini tararsın; temizlik ve sevgi"], mouse: ["Kurmalı fare", "Kurunca koşturur, kediler avlar"], box: ["Karton kutu", "İçine girip saklanırlar"], butterfly: ["Kelebek", "Uçuşur, kediler peşinden koşar"],
         wand: ["Tüylü olta", "Farenle sallarsın, zıplayıp yakalamaya çalışırlar"], post: ["Tırmalama direği", "Tırnaklarını biler"], shelf: ["Duvar rafı", "Yükseğe zıplayıp otururlar"],
         laser: ["Lazer", "Kırmızı noktayı kovalarlar. Lazer avı oyunu için gerekli"] },
       coins: (n) => `🪙 ${n}`, stars: (n) => `⭐ ${n}`, buy: (n) => `🪙 ${n}`, inStock: (n) => `Dolapta: ${n}`, owned: (n) => `${n} tane var`,
@@ -40,12 +47,19 @@
         ["🎯", "Görevler", "Her görev 1🪙, bir kedinin üç görevi de bitince +3🪙 ve 1⭐."],
         ["🔴", "Lazer avı", "Yakalanan her iki yıldıza 1🪙 (günde en çok 25🪙). 20 ve üstü skor 1⭐ (günde bir kez). Lazer gerekir."],
         ["💻", "Bilgisayar başında", "Sen bilgisayarı kullandıkça her 15 dakikada 1🪙 (günde en çok 20🪙)."],
-        ["⭐", "Yıldızlar", "Yıldızlar sadece kedi kartındaki dolapta: şapka, tasma ve kıyafetler."],
+        ["⭐", "Yıldızlar", "Yıldızlarla yeni kedi cinslerinin kilidini (Kediler sekmesi) ve kartın dolabındaki şapka, aksesuar, kıyafetleri açarsın."],
       ],
       today: (pc, g) => `Bugün: bilgisayardan ${pc}/20🪙 · oyundan ${g}/25🪙`,
       pantry: "Dolap", empty: "Mama bitti! Buradan alabilirsin 🥣",
     },
     en: {
+      catsT: "Cats", toysT: "Toys", posts: "posts", atHome: "at home", price: "price", free: "Free", unlocked: "Unlocked",
+      adopt: "🐾 Adopt a kitten", unlock: (n) => `🔒 Unlock for ⭐ ${n}`, needStars: (n) => `⭐ ${n} more stars needed`, full: "Your home is full (8 cats at most)",
+      catsNote: "The ginger tabby is free. Every other coat is unlocked once with stars from tasks, then you can adopt as many as you like.",
+      unlockedMsg: (n) => `🎉 ${n} is yours! You can adopt one now`,
+      bios: { ginger: "Orange stripes, loves food, the sweetest start 🧡", black: "Black as night, yellow eyes, quiet but always near 🌙", white: "Soft as cotton, blue eyes, a little fussy ☁️", grey: "Grey tabby, curious and playful 🐾", tuxedo: "A gentleman in a tux, always ready for a party 🎩", calico: "Lucky three-colour cat with lots of character 🍀", siamese: "Siamese: chatty, blue-eyed, wants attention 💙" },
+      caps: ["hello 👋", "nap time 💤", "loaf mode 🍞", "big stretch", "bath time 🫧", "belly up 😹"],
+      toyPlay: "Take out", toyOn: "On", toyOff: "Off", onCard: "Used from the card", clearToys: "🧺 Put toys away", yarnFree: "Free",
       title: "Market", food: "Food", furniture: "Furniture", mine: "Inventory", earn: "Earn", luck: "Luck",
       pantryH: "Cupboard", thingsH: "Things", use: { catnip: "Drop it", litter: "Clean the litter box", medicine: "Give to the open card's cat", shampoo: "Bath the open card's cat" }, useMeal: "Fill the bowl",
       basics: "Basics", specials: "Special meals (buffs)",
@@ -55,8 +69,8 @@
       prize: { nothing: "Nothing this time 🙈", coins: (n) => `You won ${n} coins! 🪙`, star: "A star! ⭐", food: (e, nm, n) => `${e} ${nm} (×${n}) added to the cupboard`, furniture: (nm) => `🎉 Amazing! You won a ${nm}, it's in your inventory`, cloth: (nm) => `👑 Legendary! A new design unlocked: ${nm}` },
       seg: { nothing: "Nothing", furniture: "Furniture", cloth: "Outfit", star: "Star" },
       toysH: "Toys", homeH: "Furniture", ownedToy: "Yours ✓",
-      toyE: { mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
-      toys: { brush: ["Cat brush", "Brush your cat from its card: cleaner and happier"], mouse: ["Wind-up mouse", "Scurries about; the cats hunt it"], box: ["Cardboard box", "They climb in and hide"], butterfly: ["Butterfly", "Flutters about; the cats chase it"],
+      toyE: { yarn: "🧶", mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
+      toys: { yarn: ["Yarn", "Throw it for them, or swing it by the ball or the string"], brush: ["Cat brush", "Brush your cat from its card: cleaner and happier"], mouse: ["Wind-up mouse", "Scurries about; the cats hunt it"], box: ["Cardboard box", "They climb in and hide"], butterfly: ["Butterfly", "Flutters about; the cats chase it"],
         wand: ["Feather wand", "Swing it with your mouse; they leap for it"], post: ["Scratching post", "For sharpening claws"], shelf: ["Wall shelf", "They leap up and lounge on it"],
         laser: ["Laser pointer", "They chase the red dot. Needed for the laser hunt"] },
       coins: (n) => `🪙 ${n}`, stars: (n) => `⭐ ${n}`, buy: (n) => `🪙 ${n}`, inStock: (n) => `In the cupboard: ${n}`, owned: (n) => `you own ${n}`,
@@ -84,7 +98,7 @@
         ["🎯", "Tasks", "1🪙 per task, +3🪙 and 1⭐ when all three of a cat's tasks are done."],
         ["🔴", "Laser hunt", "1🪙 for every two stars caught (up to 25🪙 a day). A score of 20+ earns 1⭐ (once a day). Needs the laser."],
         ["💻", "At your computer", "1🪙 every 15 minutes while you're using your computer (up to 20🪙 a day)."],
-        ["⭐", "Stars", "Stars are only for the wardrobe on the cat card: hats, collars and outfits."],
+        ["⭐", "Stars", "Stars unlock new cat coats (the Cats tab) and the hats, accessories and outfits in the card's wardrobe."],
       ],
       today: (pc, g) => `Today: ${pc}/20🪙 from the computer · ${g}/25🪙 from the game`,
       pantry: "Cupboard", empty: "Out of food! You can buy some here 🥣",
@@ -99,7 +113,7 @@
     const root = document.createElement("div");
     root.className = "ui mk"; root.hidden = true;
     document.body.append(fab, root);
-    let tab = "food", note = "", key = "", result = "", spinning = false, wheelAngle = 0;
+    let tab = "cats", coatSel = "ginger", note = "", key = "", result = "", spinning = false, wheelAngle = 0;
     const t = () => STR[L.lang] || STR.en;
 
     const repairCost = (it) => Math.ceil(DC.FURN[it.k].price * 0.5 * (1 - it.cond / 100));
@@ -108,9 +122,9 @@
 
     function render() {
       const s = t(), H = L.home, E = L.econToday();
-      const k = [L.lang, tab, note, result, L.luck.chestDay, spinning, L.wallet.coins, L.wallet.stars, JSON.stringify(L.pantry), H.items.map((i) => `${i.id}${Math.round(i.cond)}${i.x != null}`).join()].join("|");
+      const k = [L.lang, tab, coatSel, (L.wallet.coats || []).join(), o.catCount ? o.catCount() : 0, o.toyOn ? ["laser", "wand"].map(o.toyOn).join() : "", L.toys.join(), note, result, L.luck.chestDay, spinning, L.wallet.coins, L.wallet.stars, JSON.stringify(L.pantry), H.items.map((i) => `${i.id}${Math.round(i.cond)}${i.x != null}`).join()].join("|");
       if (k === key) return; key = k;
-      const tabs = [["food", "🍗", s.food], ["furniture", "🛋️", s.furniture], ["mine", "🎒", s.mine], ["luck", "🎁", s.luck], ["earn", "🪙", s.earn]];
+      const tabs = [["cats", "🐱", s.catsT], ["food", "🍗", s.food], ["toys", "🧸", s.toysT], ["furniture", "🛋️", s.furniture], ["mine", "🎒", s.mine], ["luck", "🎁", s.luck], ["earn", "🪙", s.earn]];
       let body = "";
       if (tab === "food") {
         const foodCard = ([f, d]) => card(`<div class="mk-emo">${d.e}</div>`, s.foods[f][0], s.foods[f][1], s.inStock(L.pantry[f] || 0), `<button type="button" class="mk-buy" data-food="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`, d.n > 1 ? `×${d.n}` : d.buff ? L.BUFFS[d.buff[0]] : "");
@@ -118,10 +132,21 @@
         body = `<div class="mk-pantry"><b>🧺 ${esc(s.pantry)}</b>${keys.filter((f) => L.pantry[f]).map((f) => `<span title="${esc(s.foods[f][0])}">${L.FOOD[f].e} ${L.pantry[f]}</span>`).join("")}</div>`
           + `<h4 class="mk-h">🥣 ${esc(s.basics)}</h4><div class="mk-grid">${all.slice(0, cut).map(foodCard).join("")}</div>`
           + `<h4 class="mk-h">✨ ${esc(s.specials)}</h4><div class="mk-grid">${all.slice(cut).map(foodCard).join("")}</div>`;
+      } else if (tab === "cats") {
+        body = catsTab(s);
+      } else if (tab === "toys") {
+        // only the yarn is free; everything else is bought once, then taken out (or switched on) from here
+        const ks = ["yarn", ...Object.keys(L.TOY_PRICES)];
+        body = `<div class="mk-grid">${ks.map((k) => { const price = L.TOY_PRICES[k] || 0, own = L.hasToy(k), [nm, ds] = s.toys[k];
+            let btn;
+            if (!own) btn = `<button type="button" class="mk-buy" data-toy="${k}"${L.wallet.coins < price ? " disabled" : ""}>${s.buy(price)}</button>`;
+            else if (k === "brush") btn = `<span class="mk-have">✓</span>`;
+            else if (k === "laser" || k === "wand") { const on = o.toyOn && o.toyOn(k); btn = `<button type="button" class="mk-buy play${on ? " on" : ""}" data-play="${k}">${esc(on ? s.toyOff : s.toyOn)}</button>`; }
+            else btn = `<button type="button" class="mk-buy play" data-play="${k}">${esc(s.toyPlay)}</button>`;
+            return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, !price ? s.yarnFree : k === "brush" && own ? s.onCard : own ? s.ownedToy : "", btn); }).join("")}</div>
+          <button type="button" class="mk-wide" data-clear="1">${esc(s.clearToys)}</button>`;
       } else if (tab === "furniture") {
-        body = `<h4 class="mk-h">🧸 ${esc(s.toysH)}</h4><div class="mk-grid">${Object.entries(L.TOY_PRICES).map(([k, price]) => { const own = L.toys.includes(k), [nm, ds] = s.toys[k];
-            return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? s.ownedToy : "", own ? `<span class="mk-have">✓</span>` : `<button type="button" class="mk-buy" data-toy="${k}"${L.wallet.coins < price ? " disabled" : ""}>${s.buy(price)}</button>`); }).join("")}</div>
-          <h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${Object.entries(DC.FURN).map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
+        body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${Object.entries(DC.FURN).map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
           return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`); }).join("")}</div>`;
       } else if (tab === "mine") {
         // the cupboard: everything you've bought to eat or use, with what to do with it
@@ -153,11 +178,36 @@
       }
       root.innerHTML = `
         <div class="mk-head"><b>🛒 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">${s.coins(L.wallet.coins)}</span><span class="star">${s.stars(L.wallet.stars)}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
-        <div class="mk-tabs">${tabs.map(([id, e, l]) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}">${e} ${esc(l)}</button>`).join("")}</div>
+        <div class="mk-tabs">${tabs.map(([id, e, l]) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${e}</span>${esc(l)}</button>`).join("")}</div>
         ${note ? `<div class="mk-flash">${esc(note)}</div>` : ""}
         <div class="mk-body">${body}</div>`;
       root.querySelectorAll("canvas[data-f]").forEach((c) => DC.furnitureThumb(c.dataset.f, c.getContext("2d")));
       const wc = root.querySelector(".mk-wheel canvas"); if (wc) drawWheel(wc, s);
+      if (tab === "cats") drawCats();
+    }
+    // 🐱 the cats, like a little photo profile each: a round picture, a bio, and a grid of "posts"
+    const POSTS = [["sit", "#ffe1ea"], ["sleep", "#dff3ff"], ["loaf", "#fff1b8"], ["stretch", "#e4f8ee"], ["groom", "#f1e4ff"], ["bellyUp", "#ffe9d6"]];
+    const likes = (c, i) => { let h = 2166136261; for (const ch of c + "#" + i) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return 60 + ((h >>> 0) % 900); };
+    function catsTab(s) {
+      const DCk = DC.COAT_KEYS, c = coatSel, own = L.hasCoat(c), price = L.COAT_PRICES[c] || 0, nm = L.COAT_NAMES[c][L.lang];
+      const home = (o.catCountOf ? o.catCountOf(c) : 0), full = o.catCount && o.catCount() >= (L.MAX_CATS || 8);
+      const handle = "@" + L.COAT_NAMES[c].en.toLowerCase().replace(/[^a-z]+/g, ".") + ".cat";
+      const btn = !own ? (L.wallet.stars >= price ? `<button type="button" class="ig-btn gold" data-unlock="${c}">${esc(s.unlock(price))}</button>` : `<button type="button" class="ig-btn" disabled>${esc(s.unlock(price))}</button><small class="ig-need">${esc(s.needStars(price - L.wallet.stars))}</small>`)
+        : full ? `<button type="button" class="ig-btn" disabled>${esc(s.full)}</button>` : `<button type="button" class="ig-btn pink" data-adopt="${c}">${esc(s.adopt)}</button>`;
+      return `<div class="ig-stories">${DCk.map((k) => `<button type="button" class="ig-st${k === c ? " sel" : ""}${L.hasCoat(k) ? "" : " locked"}" data-coat="${k}"><span class="ig-ring"><canvas width="52" height="52" data-av="${k}"></canvas></span><small>${esc(L.COAT_NAMES[k][L.lang])}</small></button>`).join("")}</div>
+        <div class="ig-prof">
+          <div class="ig-top"><span class="ig-ring big${own ? "" : " locked"}"><canvas width="84" height="84" data-av="${c}"></canvas></span>
+            <div class="ig-stats"><div><b>${POSTS.length}</b><small>${esc(s.posts)}</small></div><div><b>${home}</b><small>${esc(s.atHome)}</small></div><div><b>${!price ? esc(s.free) : own ? "✓" : "⭐" + price}</b><small>${esc(!price || !own ? s.price : s.unlocked)}</small></div></div></div>
+          <b class="ig-name">${esc(nm)}</b><small class="ig-handle">${esc(handle)}</small>
+          <p class="ig-bio">${esc(s.bios[c] || "")}</p>
+          ${btn}
+          <div class="ig-grid">${POSTS.map(([pose, bg], i) => `<div class="ig-post" style="--bg:${bg}"><canvas width="120" height="120" data-post="${pose}"></canvas><span class="ig-cap">${esc(s.caps[i])}</span><span class="ig-like">♥ ${likes(c, i)}</span></div>`).join("")}</div>
+        </div>
+        <p class="mk-note">${esc(s.catsNote)}</p>`;
+    }
+    function drawCats() {
+      root.querySelectorAll("canvas[data-av]").forEach((cv) => { const g = cv.getContext("2d"), k = cv.width / 52; DC.portrait(g, cv.dataset.av, { scale: k > 1.3 ? 1.5 : 1, dx: 2, dy: 3 }); });
+      root.querySelectorAll("canvas[data-post]").forEach((cv, i) => { const g = cv.getContext("2d"); g.fillStyle = "rgba(91,58,41,.08)"; g.fillRect(0, 96, 120, 24); DC.portrait(g, coatSel, { scale: 2, dx: 0, dy: 6, pose: cv.dataset.post, t: 0.4, blink: cv.dataset.post === "sleep" }); });
     }
     function segLabel(r, s) { const [k, , rg] = r; return k === "coins" ? `🪙 ${rg[0]}` : L.FOOD[k] ? `${L.FOOD[k].e} ${s.foods[k][0]}` : { nothing: "🙈 ", star: "⭐ ", furniture: "🛋️ ", cloth: "👑 " }[k] + s.seg[k]; }
     // the wheel: one slice per prize (slices are equal; the real odds are listed underneath)
@@ -230,6 +280,11 @@
         setTimeout(() => { spinning = false; result = prizeText(r.prize, t()); key = ""; render(); const p = r.prize.k; if (p !== "nothing") world.confetti(innerWidth / 2, 140, p === "furniture" || p === "cloth" || p === "star" ? 70 : 16); }, 3500);
         return;
       }
+      if (b.dataset.coat) { coatSel = b.dataset.coat; key = ""; return render(); }
+      if (b.dataset.unlock) { if (L.buyCoat(b.dataset.unlock)) { note = t().unlockedMsg(L.COAT_NAMES[b.dataset.unlock][L.lang]); world.confetti(innerWidth / 2, 140, 40); } key = ""; return render(); }
+      if (b.dataset.adopt) { o.adopt && o.adopt(b.dataset.adopt); return; }
+      if (b.dataset.play) { o.playToy && o.playToy(b.dataset.play); if (b.dataset.play !== "laser" && b.dataset.play !== "wand") pop(b, t().toyE[b.dataset.play]); key = ""; return render(); }
+      if (b.dataset.clear) { o.clearToys && o.clearToys(); key = ""; return render(); }
       if (b.dataset.food) { if (L.buyFood(b.dataset.food)) { pop(b, `+${L.FOOD[b.dataset.food].n} ${L.FOOD[b.dataset.food].e}`); note = ""; } }
       else if (b.dataset.toy) { if (L.buyToy(b.dataset.toy)) { pop(b, "🎉"); o.onToy && o.onToy(b.dataset.toy); } }
       else if (b.dataset.furn) {

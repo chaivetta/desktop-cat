@@ -2,7 +2,7 @@
 (() => {
   const STR = {
     tr: {
-      title: "Ayarlar", market: "Market: mama ve eşya", cats: "Kediler", adopt: "Sahiplen", surprise: "Sürpriz kedi", count: (n, m) => `${n}/${m} kedi`, cards: "Kedi kartları",
+      title: "Ayarlar", market: "Market: mama ve eşya", cats: "Kediler", adopt: "Kedi sahiplen", surprise: "Sürpriz kedi", count: (n, m) => `${n}/${m} kedi`, cards: "Kedi kartları",
       removeAll: "Tüm kedileri kaldır", sure: "Emin misin? Tekrar dokun",
       toys: "Oyuncaklar", yarn: "Yumak", mouse: "Kurmalı fare", box: "Kutu", feed: "Mama ver", catnip: "Kedi otu", butterfly: "Kelebek",
       post: "Tırmalama direği", shelf: "Duvar rafı", bird: "Kuş çağır", stray: "Sokak kedisi çağır", laser: "Lazer", wand: "Tüylü olta", clear: "Oyuncakları topla",
@@ -18,7 +18,7 @@
       stars: (n) => `⭐ ${n}`,
     },
     en: {
-      title: "Settings", market: "Market: food and furniture", cats: "Cats", adopt: "Adopt", surprise: "Surprise cat", count: (n, m) => `${n}/${m} cats`, cards: "Cat cards",
+      title: "Settings", market: "Market: food and furniture", cats: "Cats", adopt: "Adopt a cat", surprise: "Surprise cat", count: (n, m) => `${n}/${m} cats`, cards: "Cat cards",
       removeAll: "Remove all cats", sure: "Sure? Tap again",
       toys: "Toys", yarn: "Yarn", mouse: "Wind-up mouse", box: "Box", feed: "Feed", catnip: "Catnip", butterfly: "Butterfly",
       post: "Scratching post", shelf: "Wall shelf", bird: "Call a bird", stray: "Call a stray", laser: "Laser", wand: "Feather wand", clear: "Put toys away",
@@ -60,17 +60,7 @@
         <div class="st-head"><b>⚙️ ${esc(s.title)}</b><span class="st-wallet"></span><button type="button" class="st-x" data-a="close">×</button></div>
         <div class="st-body">
           <section><h3>🐱 ${esc(s.cats)} <small class="st-count"></small></h3>
-            <div class="st-coats">${DC.COAT_KEYS.map((k) => `<button type="button" class="st-coat" data-coat="${k}" title="${esc(L.COAT_NAMES[k][L.lang])}" style="--a:${DC.COATS[k].body};--b:${DC.COATS[k].accent}"></button>`).join("")}<button type="button" class="st-coat dice" data-coat="" title="${esc(s.surprise)}">🎲</button></div>
-            <div class="st-grid">${btn("market", "🛒 " + s.market, "gold")}${btn("cards", "📇 " + s.cards, "pink")}${btn("removeAll", "🧳 " + s.removeAll, "ghost")}</div>
-          </section>
-          <section><h3>🧸 ${esc(s.toys)}</h3>
-            <div class="st-grid three">
-              ${btn("yarn", "🧶 " + s.yarn)}${btn("mouse", "🐭 " + s.mouse)}${btn("box", "📦 " + s.box)}
-              ${btn("feed", "🍗 " + s.feed)}${btn("catnip", "🌿 " + s.catnip)}${btn("butterfly", "🦋 " + s.butterfly)}
-              ${btn("post", "🪵 " + s.post)}${btn("shelf", "🪜 " + s.shelf)}${btn("laser", "🔴 " + s.laser, "tog")}
-              ${btn("wand", "🪶 " + s.wand, "tog")}
-            </div>
-            <div class="st-grid">${btn("clear", "🧺 " + s.clear, "ghost")}</div>
+            <div class="st-grid">${btn("adopt", "🐱 " + s.adopt, "gold")}${btn("market", "🛒 " + s.market, "pink")}${btn("cards", "📇 " + s.cards, "pink")}${btn("removeAll", "🧳 " + s.removeAll, "ghost")}</div>
           </section>
           <section><h3>🎮 ${esc(s.play)} <small class="st-best"></small></h3><div class="st-grid">${btn("games", s.games, "gold")}</div></section>
           <section><h3>📏 ${esc(s.sizes)}</h3>${range("scale", s.catSize, DC.SCALE_MIN, DC.SCALE_MAX, 0.25)}${range("toyScale", s.toySize, DC.SCALE_MIN, DC.SCALE_MAX, 0.25)}${range("card", s.cardSize, 0.5, 1.1, 0.02)}</section>
@@ -108,11 +98,7 @@
       root.querySelectorAll("[data-rv]").forEach((b) => { const v = rv[b.dataset.rv]; b.textContent = b.dataset.rv === "card" ? `${Math.round(v * 100)}%` : `×${(+v).toFixed(2).replace(/\.?0+$/, "")}`; });
       root.querySelectorAll("[data-seg=night] button").forEach((b) => b.classList.toggle("on", b.dataset.v === world.nightMode));
       root.querySelectorAll("[data-seg=lang] button").forEach((b) => b.classList.toggle("on", b.dataset.v === L.lang));
-      q('[data-a="laser"]').classList.toggle("on", !!world.laser); q('[data-a="wand"]').classList.toggle("on", !!world.wand);
-      // toys you haven't bought yet show a lock (tapping one opens the market)
-      for (const k of Object.keys(L.TOY_PRICES)) { const b = q(`[data-a="${k}"]`); if (b) b.classList.toggle("locked", !L.hasToy(k)); }
 
-      const full = n >= (L.MAX_CATS || 8); root.querySelectorAll(".st-coat").forEach((b) => { b.disabled = full; });
       const ra = q('[data-a="removeAll"]'); ra.textContent = `🧳 ${sure ? s.sure : s.removeAll}`; ra.classList.toggle("red", !!sure);
     }
 
@@ -130,8 +116,6 @@
     fab.onclick = () => (root.hidden ? open() : close());
 
     root.addEventListener("click", (e) => {
-      const c = e.target.closest("[data-coat]");
-      if (c) { if (!c.disabled) act.add(c.dataset.coat || undefined); return sync(); }
       const sg = e.target.closest("[data-seg] button");
       if (sg) { const k = sg.parentElement.dataset.seg; if (k === "night") act.night(sg.dataset.v); else act.lang(sg.dataset.v); return sync(); }
       const b = e.target.closest("[data-a]"); if (!b) return;
@@ -139,7 +123,7 @@
       if (a === "close") return close();
       if (a === "wxAuto") { wxMsg = ""; o.weather.auto().then(sync); return; }
       if (a === "removeAll") { if (sure) { sure = 0; act.removeAll(); } else { sure = 1; setTimeout(() => { sure = 0; sync(); }, 3000); } return sync(); }
-      if (a === "games" || a === "cards" || a === "market") close();
+      if (a === "games" || a === "cards" || a === "market" || a === "adopt") close();
       if (a === "hide") { close(); return bridge && bridge.hide(); }
       if (a === "quit") return bridge && bridge.quit();
       if (act[a]) act[a]();

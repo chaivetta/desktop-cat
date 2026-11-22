@@ -336,6 +336,10 @@
     home: { items: [] },
     toys: ["yarn"],                       // toys you've bought (the yarn is free); see TOY_PRICES
     TOY_PRICES: { mouse: 30, box: 20, butterfly: 40, wand: 50, post: 60, shelf: 45, laser: 80, brush: 40 },
+    // cat coats: the ginger tabby is free, every other coat is unlocked once with stars, then adopted for free
+    COAT_PRICES: { black: 8, white: 8, grey: 10, tuxedo: 14, calico: 16, siamese: 20 },
+    hasCoat(c) { return !L.COAT_PRICES[c] || (L.wallet.coats || []).includes(c); },
+    buyCoat(c) { const p = L.COAT_PRICES[c]; if (!p || L.hasCoat(c) || L.wallet.stars < p) return false; L.wallet.stars -= p; (L.wallet.coats = L.wallet.coats || []).push(c); L.changed(); return true; },
     hasToy(k) { return !L.TOY_PRICES[k] || L.toys.includes(k); },
     buyToy(k) { const p = L.TOY_PRICES[k]; if (!p || L.toys.includes(k) || L.wallet.coins < p) return false; L.wallet.coins -= p; L.toys.push(k); L.changed(); return true; },                  // every piece of furniture you own: { id, k, cond (0-100), x (share of the screen width, or null when stored) }
     game: { best: 0, day: "", stars: 0 },      // stars from tasks, shared by all cats, and the wardrobe designs bought with them
@@ -344,6 +348,7 @@
     loadWallet(w, profiles) {
       // v2: nothing comes unlocked for free any more, whether tasks are on or off (stars already earned are kept)
       L.wallet = { v: 4, stars: Math.max(0, +(w && w.stars) || 0), coins: Math.max(0, +(w && w.coins) || 0), owned: w && w.v >= 2 && Array.isArray(w.owned) ? w.owned.slice() : [] };
+      L.wallet.coats = w && Array.isArray(w.coats) ? w.coats.filter((c) => L.COAT_PRICES[c]) : [];
       if (!w || !(w.v >= 4)) { L.wallet.coins += 30; L.pantry.dry += 4; }      // everyone starts the market with 30 coins and two bags of food
       // v3: the whole wardrobe is locked, so anything a cat wears that hasn't been bought comes off
       for (const p of profiles) for (const [k, id] of Object.entries(p.acc || {})) if (L.price(k, String(id).split(":")[0])) delete p.acc[k];

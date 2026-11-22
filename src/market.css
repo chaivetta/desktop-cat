@@ -110,3 +110,45 @@
 .gm-holes button i { position: absolute; left: 50%; bottom: -60%; transform: translateX(-50%); font-style: normal; font-size: 34px; transition: bottom .12s; }
 .gm-holes button.up i { bottom: 18%; }
 .gm-holes button.hit { filter: brightness(1.5); }
+
+/* tabs: icon over a short label, so seven fit */
+.mk-tabs { gap: 3px; padding: 8px 10px 0; }
+.mk-tabs button { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 0 5px; font: 800 9.5px/1.1 "Nunito", sans-serif; letter-spacing: -.2px; min-width: 0; white-space: nowrap; }
+.mk-tabs button span { font-size: 16px; line-height: 1.1; }
+
+/* 🐱 cat profiles, like a photo app */
+.ig-stories { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; margin: 0 -4px 6px; scrollbar-width: none; border-bottom: 2px dashed rgba(91, 58, 41, .15); }
+.ig-st { flex: none; width: 58px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; color: #5b3a29; }
+.ig-st small { font: 800 9.5px/1.1 "Nunito", sans-serif; max-width: 58px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ig-ring { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; padding: 3px; background: conic-gradient(from 210deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75); }
+.ig-ring canvas { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 50% 60%, #fff 0 45%, #ffe9d6 80%); box-shadow: 0 0 0 2.5px #fff7ec; image-rendering: pixelated; }
+.ig-st.locked .ig-ring, .ig-ring.big.locked { background: #cdbfb6; }
+.ig-st.locked .ig-ring::after, .ig-ring.big.locked::after { content: "🔒"; position: absolute; right: -3px; bottom: -3px; font-size: 13px; background: #fff7ec; border-radius: 50%; padding: 1px; }
+.ig-ring.big.locked::after { font-size: 18px; right: 0; bottom: 0; }
+.ig-st.sel small { text-decoration: underline 2px #ff8fab; text-underline-offset: 2px; }
+.ig-st.sel .ig-ring { transform: scale(1.08); }
+.ig-prof { display: flex; flex-direction: column; gap: 4px; }
+.ig-top { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+.ig-ring.big { width: 84px; height: 84px; padding: 4px; flex: none; }
+.ig-stats { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; }
+.ig-stats b { display: block; font: 700 17px "Pixelify Sans", monospace; }
+.ig-stats small { font-size: 10.5px; opacity: .65; }
+.ig-name { font: 700 15px "Pixelify Sans", monospace; }
+.ig-handle { font-size: 11px; opacity: .55; margin-top: -3px; }
+.ig-bio { margin: 2px 0 6px; font-size: 12px; font-weight: 700; line-height: 1.35; }
+.ig-btn { border: 0; border-radius: 10px; padding: 8px; cursor: pointer; font: 700 14px "Pixelify Sans", monospace; color: #5b3a29; background: #eee3d8; box-shadow: 0 0 0 2px #5b3a29, 0 3px 0 2px #5b3a29; }
+.ig-btn.gold { background: #ffd34d; } .ig-btn.pink { background: #ffd0d7; }
+.ig-btn:disabled { opacity: .6; cursor: default; box-shadow: 0 0 0 2px rgba(91, 58, 41, .4); }
+.ig-btn:not(:disabled):active { transform: translateY(2px); box-shadow: 0 0 0 2px #5b3a29, 0 1px 0 2px #5b3a29; }
+.ig-need { text-align: center; font-size: 11px; opacity: .7; }
+.ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-top: 10px; border-radius: 10px; overflow: hidden; }
+.ig-post { position: relative; aspect-ratio: 1; background: var(--bg); }
+.ig-post canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+.ig-cap { position: absolute; left: 4px; top: 3px; font-size: 9px; font-weight: 800; opacity: .7; }
+.ig-like { position: absolute; right: 4px; bottom: 3px; font: 700 10px "Pixelify Sans", monospace; color: #e2557a; }
+.ig-post:hover canvas { transform: scale(1.06); transition: transform .15s; }
+
+/* 🧸 toy shelf: take a toy out from here */
+.mk-buy.play { background: #c9f0dc; }
+.mk-buy.play.on { background: #ff8fa3; color: #fff; }
+.mk-wide { width: 100%; margin-top: 12px; border: 0; border-radius: 12px; padding: 9px; cursor: pointer; background: #fff; color: #5b3a29; font: 800 12.5px "Nunito", sans-serif; box-shadow: 0 0 0 2px rgba(91, 58, 41, .3), 0 2px 0 2px rgba(91, 58, 41, .3); }

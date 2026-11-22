@@ -64,7 +64,7 @@
   // saved cats are full profiles; an older save (just a list of coats) is brought over as grown-up cats
   let saved = read(KEY);
   if (!saved) {
-    const old = read(OLD_KEY) || { cats: ["ginger", "black"], scale: 3 };
+    const old = read(OLD_KEY) || { cats: ["ginger"], scale: 3 };
     saved = { cats: L.migrate(old.cats || []), scale: old.scale || 3, toyScale: old.toyScale || old.scale || 3 };
   }
   if (saved.lang) L.lang = saved.lang;
@@ -137,6 +137,13 @@
       preferMeal = k; world.feed(); preferMeal = null;
     },
     storeItem: (it) => { const f = world.furniture.find((f) => f.item === it); if (f) world.removeFurniture(f); it.x = null; save(); },
+    // the cat tab: adopt a kitten of an unlocked coat; the toy tab: take a toy out (or switch the laser / wand)
+    adopt: (coat) => { market.close(); act.add(coat); },
+    catCount: () => world.cats.filter((c) => c.profile).length,
+    catCountOf: (coat) => world.cats.filter((c) => c.profile && c.coat === coat).length,
+    playToy: (k) => { if (act[k]) act[k](); },
+    toyOn: (k) => (k === "laser" ? !!world.laser : k === "wand" ? !!world.wand : false),
+    clearToys: () => act.clear(),
     onClose: () => { overUI = false; syncIgnore(); },
   });
   // meals come out of the cupboard; when it's empty, the market opens on the food shelf
@@ -189,7 +196,7 @@
 
   var card = window.CatCard.create(world, {
     size: saved.cardSize,
-    onAdopt: () => act.add(),
+    onAdopt: () => { settings.close(); games.close(); market.open("cats"); },
     onLang: () => { applyLang(); save(); },
     onSize: () => save(),
     pos: cardPos,
@@ -197,7 +204,7 @@
     onSound: () => act.mute(),
     sound: () => world.purrOn || world.meowOn,
     voices: Voices,
-    onNeed: (k, msg) => market.open(k === "brush" ? "furniture" : "food", msg || (L.lang === "tr" ? "Bu marketten alınır 🛒" : "Get this in the market 🛒")),
+    onNeed: (k, msg) => market.open(k === "brush" ? "toys" : "food", msg || (L.lang === "tr" ? "Bu marketten alınır 🛒" : "Get this in the market 🛒")),
     onMarket: () => market.isOpen ? market.close() : (settings.close(), games.close(), market.open()),
     onSettings: () => settings.isOpen ? settings.close() : (market.close(), games.close(), settings.open()),
     onGames: () => games.isOpen ? games.close() : (market.close(), settings.close(), games.open()),
@@ -239,11 +246,14 @@
   // one language for everything: the settings, the cards and the tray
   function applyLang() { document.documentElement.lang = L.lang; syncToggles(); }
   // toys are bought in the market (only the yarn comes free); a locked one opens the toy shelf instead
-  const need = (k, fn) => { if (L.hasToy(k)) return fn(); market.open("furniture", L.lang === "tr" ? "Bu oyuncak önce marketten alınmalı 🧸" : "Buy this toy in the market first 🧸"); };
+  const need = (k, fn) => { if (L.hasToy(k)) return fn(); market.open("toys", L.lang === "tr" ? "Bu oyuncak önce marketten alınmalı 🧸" : "Buy this toy in the market first 🧸"); };
   const act = {
     // a new cat always arrives as a kitten, and asks for a name
     add: (coat) => {
-      coat = coat && COATS[coat] ? coat : COAT_KEYS[Math.floor(Math.random() * COAT_KEYS.length)];
+      // only the ginger tabby is free; other coats are unlocked with stars in the market's cat tab
+      if (coat && COATS[coat] && !L.hasCoat(coat)) return market.open("cats");
+      if (!coat || !COATS[coat]) { const ok = COAT_KEYS.filter(L.hasCoat); coat = ok[Math.floor(Math.random() * ok.length)]; }
+      if (world.cats.filter((c) => c.profile).length >= (L.MAX_CATS || 8)) return;
       const p = L.make(coat, { taken: world.cats.map((c) => c.profile && c.profile.name) });
       const c = world.addCat(null, p); save();
       setTimeout(() => card.open(c, { naming: true }), 700);
@@ -274,7 +284,8 @@
     laser: (on) => need("laser", () => { world.setLaser(typeof on === "boolean" ? on : undefined); syncToggles(); }),
     wand: (on) => need("wand", () => { world.setWand(typeof on === "boolean" ? on : undefined); syncToggles(); }),
     catnip: () => { if ((L.pantry.catnip || 0) > 0) { L.pantry.catnip--; world.dropCatnip(); L.changed(); } else market.open("food", market.t().empty); },
-    market: () => market.open(),
+    market: (tab) => market.open(tab),
+    adopt: () => market.open("cats"),
     butterfly: () => need("butterfly", () => world.addButterfly()),
     bed: () => world.addBed(),
     post: () => need("post", () => world.addPost()),

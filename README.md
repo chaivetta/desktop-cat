@@ -79,13 +79,17 @@ Right-click a cat to open its card, right above it. Drag it by its top or the av
 
 ## 🛒 Market, coins and luck
 
+<img src="docs/cat-profiles.png" width="300" alt="The market's cat tab: each coat has a round profile picture, a short bio and a grid of photos">
+
+You start with one **ginger tabby**. Every other coat (black, white, grey tabby, tuxedo, calico, Siamese) is unlocked once with ⭐ stars in the market's **🐱 Cats** tab, then adopted for free. Each coat has its own little photo profile: a round picture, a bio and six photos of it sitting, napping, loafing, stretching, washing and lying belly up, so you can see a cat before you unlock it. Kittens born at home can still come in any coat.
+
 ![The market: food, the inventory with the cupboard, the wheel of luck and the daily gift chest](docs/market.png)
 
 | | |
 | :-- | :-- |
 | **🪙 Coins** | Earned slowly: tasks (1🪙 each, +3🪙 for all three), the laser hunt (1🪙 for every two stars caught, 25 a day at most) and simply using your computer (1🪙 every 15 active minutes, 20 a day at most). Spent on food, toys and furniture |
 | **⭐ Stars** | Only from finishing all of a cat's tasks, or a laser-hunt score of 20+ (once a day). Spent on the wardrobe |
-| **🧸 Toys** | Only the yarn is free. The wind-up mouse, box, butterfly, feather wand, scratching post, wall shelf and laser pointer are bought once in the market (the laser hunt needs the laser) |
+| **🧸 Toys** | All toys live in the market's 🧸 Toys tab. Only the yarn is free; the wind-up mouse, box, butterfly, feather wand, scratching post, wall shelf, laser pointer and brush are bought once with coins, then taken out (or switched on) from the same tab |
 | **🍗 Food** | Dry food (two meals for 10🪙), wet food, fish feasts, treats (they make teaching tricks easier), catnip and cat litter. The bowl only fills from your cupboard |
 | **🎒 Inventory** | The cupboard (put food in the bowl, drop catnip, clean the litter box) and every piece of furniture: place it, put it away, repair it or sell it |
 | **🍱 Special meals** | 22 dishes (salmon, shrimp, chicken soup, caviar, birthday cake…), each giving a buff for a few hours: **full** (hunger lasts twice as long), **glow** (love fades slower), **grow**, **healthy** (cures sickness), **energy**, **calm**, **shiny** (love ×1.5), **smart** (tricks are easier), **lucky**, **sleepy** and **royal**. Active buffs show on the card |
