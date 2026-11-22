@@ -10,6 +10,9 @@
       sizes: "Boyutlar", catSize: "Kedi boyu", toySize: "Oyuncak boyu", cardSize: "Kart boyu",
       sound: "Ses", purr: "Mırlama", meow: "Miyavlama",
       world: "Dünya", night: "Gece ve gündüz", auto: "Saate göre", day: "Gündüz", nightOn: "Gece",
+      weather: "Hava durumu", weatherOn: "Gerçek hava durumuna göre", wxNone: "Hava durumu alınamadı (internet?)", wxOff: "Kapalı: mevsime göre",
+      wxKind: { clear: "Açık", cloud: "Bulutlu", fog: "Sisli", drizzle: "Çiseliyor", rain: "Yağmurlu", snow: "Karlı", storm: "Fırtınalı" },
+      city: "Şehir yaz…", find: "Bul", auto: "📍 Otomatik", notFound: "Şehir bulunamadı",
       seasons: "Mevsimler (kar, yaprak…)", birds: "Geçen kuşlar", strays: "Gelen sokak kedileri", breed: "Yavrulama",
       lang: "Dil", app: "Uygulama", login: "Bilgisayarla birlikte başlat", hide: "Kedileri gizle", quit: "Çıkış",
       stars: (n) => `⭐ ${n}`,
@@ -23,6 +26,9 @@
       sizes: "Sizes", catSize: "Cat size", toySize: "Toy size", cardSize: "Card size",
       sound: "Sound", purr: "Purring", meow: "Meowing",
       world: "World", night: "Day & night", auto: "Follow the clock", day: "Day", nightOn: "Night",
+      weather: "Weather", weatherOn: "Follow the real weather", wxNone: "Couldn't get the weather (offline?)", wxOff: "Off: following the seasons",
+      wxKind: { clear: "Clear", cloud: "Cloudy", fog: "Foggy", drizzle: "Drizzle", rain: "Rain", snow: "Snow", storm: "Storm" },
+      city: "Type a city…", find: "Find", auto: "📍 Auto", notFound: "City not found",
       seasons: "Seasons (snow, leaves…)", birds: "Birds flying past", strays: "Stray cats visiting", breed: "Kittens",
       lang: "Language", app: "App", login: "Start with my computer", hide: "Hide the cats", quit: "Quit",
       stars: (n) => `⭐ ${n}`,
@@ -37,7 +43,11 @@
     const root = document.createElement("div");
     root.className = "ui st"; root.hidden = true;
     document.body.append(fab, root);
-    let lang = "", login = false, sure = 0;
+    let lang = "", login = false, sure = 0, wxMsg = "";
+    root.addEventListener("submit", (e) => {
+      e.preventDefault(); const v = e.target.querySelector("input").value.trim(); if (!v || !o.weather) return;
+      o.weather.setCity(v).then((ok) => { wxMsg = ok ? "" : t().notFound; if (!ok) root.querySelector(".st-wx").textContent = wxMsg; else { e.target.querySelector("input").value = ""; sync(); } });
+    });
 
     const t = () => STR[L.lang] || STR.en;
     const sw = (id, label) => `<label class="st-sw"><span>${esc(label)}</span><input type="checkbox" data-sw="${id}"><i></i></label>`;
@@ -70,6 +80,8 @@
             <div class="st-seg" data-seg="night">${["auto", "day", "night"].map((m) => `<button type="button" data-v="${m}">${esc(s[m === "night" ? "nightOn" : m])}</button>`).join("")}</div>
             ${sw("seasons", s.seasons)}${sw("birds", s.birds)}${sw("strays", s.strays)}${sw("breed", s.breed)}
           </section>
+          ${o.weather ? `<section><h3>🌦️ ${esc(s.weather)}</h3>${sw("weather", s.weatherOn)}<p class="st-wx"></p>
+            <form class="st-city"><input type="text" placeholder="${esc(s.city)}" maxlength="60"><button type="submit" class="st-b">${esc(s.find)}</button><button type="button" class="st-b ghost" data-a="wxAuto">${esc(s.auto)}</button></form></section>` : ""}
           <section><h3>🌐 ${esc(s.lang)}</h3><div class="st-seg" data-seg="lang"><button type="button" data-v="tr">Türkçe</button><button type="button" data-v="en">English</button></div></section>
           ${bridge ? `<section><h3>💻 ${esc(s.app)}</h3>${sw("login", s.login)}<div class="st-grid">${btn("hide", "🙈 " + s.hide, "ghost")}${btn("quit", "⏻ " + s.quit, "ghost")}</div></section>` : ""}
         </div>`;
@@ -85,7 +97,11 @@
       q(".st-count").textContent = s.count(n, L.MAX_CATS || 8);
       q(".st-wallet").textContent = s.stars(L.wallet.stars);
       q(".st-best").textContent = L.game && L.game.best ? s.best(L.game.best) : "";
-      const vals = { purr: world.purrOn, meow: world.meowOn, seasons: world.seasonsOn !== false, birds: world.birdsOn !== false, strays: world.strayOn !== false, breed: L.breedOn, login };
+      if (o.weather) {
+        const W = o.weather, now = W.now(), p = q(".st-wx");
+        p.textContent = !W.isOn() ? s.wxOff : now ? `📍 ${now.place} · ${W.icon(now.kind)} ${s.wxKind[now.kind]} · ${Math.round(now.temp)}°C` : (wxMsg || s.wxNone);
+      }
+      const vals = { weather: o.weather && o.weather.isOn(), purr: world.purrOn, meow: world.meowOn, seasons: world.seasonsOn !== false, birds: world.birdsOn !== false, strays: world.strayOn !== false, breed: L.breedOn, login };
       root.querySelectorAll("[data-sw]").forEach((i) => { i.checked = !!vals[i.dataset.sw]; });
       const rv = { scale: world.scale, toyScale: world.toyScale, card: o.card().size };
       root.querySelectorAll("[data-r]").forEach((i) => { if (document.activeElement !== i) i.value = rv[i.dataset.r]; });
@@ -124,6 +140,7 @@
       const b = e.target.closest("[data-a]"); if (!b) return;
       const a = b.dataset.a;
       if (a === "close") return close();
+      if (a === "wxAuto") { wxMsg = ""; o.weather.auto().then(sync); return; }
       if (a === "removeAll") { if (sure) { sure = 0; act.removeAll(); } else { sure = 1; setTimeout(() => { sure = 0; sync(); }, 3000); } return sync(); }
       if (a === "game" || a === "cards" || a === "market") close();
       if (a === "hide") { close(); return bridge && bridge.hide(); }
@@ -134,6 +151,7 @@
     root.addEventListener("change", (e) => {
       const i = e.target.closest("[data-sw]"); if (!i) return;
       const k = i.dataset.sw;
+      if (k === "weather") { o.weather.toggle(i.checked); return; }
       if (k === "login") { login = i.checked; if (bridge && bridge.setLogin) bridge.setLogin(login); return; }
       act[k === "strays" ? "strays" : k](i.checked); sync();
     });

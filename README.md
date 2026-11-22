@@ -105,6 +105,7 @@ A 30-second mini game: lead the cats onto the twinkling stars with the laser.
 ## More
 
 - **It knows you** — the cats come to say hello when you get back, say good morning, curl up next to your mouse when you've been away, and dream while they sleep. Very happy cats sleep belly-up
+- **Real weather** — the sky over your desk follows the weather where you are (from [Open-Meteo](https://open-meteo.com), free, no account): rain, drizzle, snow, fog, drifting clouds, and storms with lightning, a low rumble of thunder and startled cats. On rainy days the cats get sleepy and the birds stay away. Your place is worked out roughly from your internet connection, or type a city in ⚙️ Settings; switch it off to follow the seasons instead
 - **Seasons** — snow in winter, blossom in spring, fireflies on summer nights, falling leaves in autumn
 - **Carry things** — hold the yarn by the ball, pick up the food bowl and put it anywhere (shake it and kibble spills)
 - **Turkish and English** — the whole app
@@ -114,6 +115,8 @@ A 30-second mini game: lead the cats onto the twinkling stars with the laser.
 ![A few of the 300 hats, collars, bows and outfits, in all sorts of poses](docs/accessories.png)
 
 <img src="docs/photo.png" width="230" alt="A polaroid photo of a cat"> <img src="docs/party.png" width="330" alt="A birthday cake, confetti, a cat up on the shelf, and the moon at night">
+
+![Rain, snow, a storm and fog over the cats](docs/weather.png)
 
 ### ⚙️ Settings and cat sounds
 

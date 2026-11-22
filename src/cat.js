@@ -819,6 +819,7 @@
       if (bed) wt.sleep += 0.6;                       // a comfy bed makes a nap more tempting
       const shelf = w.shelves.find((sh) => sh.cats().length < sh.cap() && w.floor - sh.top < 220 * this.s);
       if (shelf) wt.shelf = 1.1;
+      if (w.weather && ["rain", "storm", "snow", "drizzle"].includes(w.weather.kind)) { wt.sleep *= 1.6; wt.loaf = (wt.loaf || 0) * 1.6; wt.zoom = 0; }
       if (w.isNight()) { wt.sleep *= 3; wt.walk *= 0.4; wt.zoom = 0; wt.loaf *= 2; wt.tailChase = 0; wt.meerkat = 0; wt.pronk = 0; if (wt.fight) wt.fight *= 0.2; if (wt.shelf) wt.shelf *= 0.5; }
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
       if (foe) wt.fight = 0.6;
@@ -2454,7 +2455,7 @@
       if (this.bowl) this.bowl.update(dt);
       this.boxes.forEach((b) => b.update(dt));
       for (const t of [this.wand, this.butterfly, this.catnip, this.bed, this.post, ...this.shelves, ...this.cakes, ...this.furniture]) if (t) t.update(dt);
-      if (this.birdsOn && !this.isNight()) { this.birdT -= dt; if (this.birdT <= 0) { this.addBird(); this.birdT = rnd(150, 420); } }
+      if (this.birdsOn && !this.isNight() && !(this.weather && ["rain", "storm", "snow"].includes(this.weather.kind))) { this.birdT -= dt; if (this.birdT <= 0) { this.addBird(); this.birdT = rnd(150, 420); } }
       this.birds.forEach((b) => b.update(dt)); this.birds = this.birds.filter((b) => !b.gone());
       this.updateGame(dt);
       if (this.strayOn && !this.isNight() && !this.stray()) { this.strayT -= dt; if (this.strayT <= 0) { this.strayT = rnd(1200, 2700); if (this.cats.filter((c) => c.profile).length < 8) this.addStray(); } }
@@ -2483,12 +2484,70 @@
     }
     // the time of year, outside the cats' window: snow in winter, blossom in spring, fireflies on summer nights, leaves in autumn
     season() { const m = new Date().getMonth(); return m === 11 || m <= 1 ? "winter" : m <= 4 ? "spring" : m <= 7 ? "summer" : "autumn"; }
+    // ---------------- real weather (set by the page from a weather service): rain, storms, snow, fog, clouds, wind
+    // kinds: clear, cloud, fog, drizzle, rain, storm, snow
+    renderWeather(ctx, dt, now) {
+      const wx = this.weather; if (!wx) return false;
+      const k = Math.max(2, Math.round(this.scale * 0.7)), wind = Math.max(-1, Math.min(1, (wx.wind || 0) / 40)) * (wx.windDir || 1);
+      // clouds drift along the top for anything but a clear sky
+      if (wx.kind !== "clear") {
+        const cl = this.clouds = this.clouds || Array.from({ length: 4 }, (_, i) => ({ x: Math.random() * this.W, y: 30 + i * 34 + Math.random() * 30, w: 60 + Math.random() * 90 }));
+        ctx.save(); ctx.fillStyle = ["rain", "storm"].includes(wx.kind) ? "rgba(150,156,170,.55)" : "rgba(255,255,255,.75)";
+        for (const c of cl) {
+          c.x += (8 + 30 * Math.abs(wind)) * (wind < 0 ? -1 : 1) * dt; if (c.x > this.W + 120) c.x = -c.w - 60; if (c.x < -c.w - 120) c.x = this.W + 60;
+          const x = Math.round(c.x / k) * k, y = Math.round(c.y / k) * k, h = k * 3;
+          ctx.fillRect(x, y, c.w, h * 2); ctx.fillRect(x + k * 3, y - h, c.w * 0.55, h); ctx.fillRect(x + c.w * 0.35, y - h * 1.6, c.w * 0.35, h);
+        }
+        ctx.restore();
+      }
+      if (wx.kind === "fog") {
+        const g = ctx.createLinearGradient(0, this.floor - 260, 0, this.floor); g.addColorStop(0, "rgba(235,238,242,0)"); g.addColorStop(1, "rgba(235,238,242,.55)");
+        ctx.fillStyle = g; ctx.fillRect(0, this.floor - 260, this.W, 262); return true;
+      }
+      if (wx.kind === "snow") { this.seasonOverride = "winter"; return false; }        // the winter snow, as heavy as the real thing
+      if (!["drizzle", "rain", "storm"].includes(wx.kind)) return false;
+      // rain: streaks slanted by the wind, little splashes on the floor
+      const max = wx.kind === "drizzle" ? 70 : wx.kind === "rain" ? 190 : 260, drops = this.drops = (this.drops || []).filter((d) => d.y < this.floor);
+      while (drops.length < max) drops.push({ x: Math.random() * (this.W + 200) - 100, y: -Math.random() * this.floor, v: 520 + Math.random() * 260 });
+      ctx.save(); ctx.strokeStyle = "rgba(84,118,178,.72)"; ctx.lineWidth = Math.max(1.5, k * 0.6); ctx.beginPath();
+      for (const d of drops) {
+        d.y += d.v * dt; d.x += wind * 160 * dt; const len = wx.kind === "drizzle" ? 4 * k : 7 * k;
+        ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - wind * len * 0.5, d.y - len);
+        if (d.y >= this.floor - 2 && Math.random() < 0.3) this.burst(d.x, this.floor, "dust", "rgba(140,170,215,.6)", 1);
+      }
+      ctx.stroke(); ctx.restore();
+      // storms: now and then the room lights up, thunder rumbles and the cats jump
+      if (wx.kind === "storm") {
+        this.flashT = (this.flashT ?? 6) - dt;
+        if (this.flashT <= 0) {
+          this.flashT = 8 + Math.random() * 14; this.flash = 1; this.thunder();
+          this.cats.forEach((c) => { if (c.profile && ["sit", "walk", "groom", "loaf"].includes(c.state) && Math.random() < 0.5) c.set("arch", 1.2); });
+        }
+        if (this.flash > 0) { ctx.save(); ctx.fillStyle = `rgba(255,255,255,${this.flash * 0.35})`; ctx.fillRect(0, 0, this.W, this.floor); ctx.restore(); this.flash -= dt * 3; }
+      }
+      return true;
+    }
+    thunder() {
+      if (!this.purrOn && !this.meowOn) return;
+      try {
+        this.audio = this.audio || new (window.AudioContext || window.webkitAudioContext)();
+        const ac = this.audio, t0 = ac.currentTime + 0.4 + Math.random(), len = 2.6, buf = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
+        const src = ac.createBufferSource(), lp = ac.createBiquadFilter(), g = ac.createGain();
+        src.buffer = buf; lp.type = "lowpass"; lp.frequency.value = 160; g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.18, t0 + 0.15); g.gain.exponentialRampToValueAtTime(0.001, t0 + len);
+        src.connect(lp); lp.connect(g); g.connect(ac.destination); src.start(t0);
+      } catch {}
+    }
     renderSeason(ctx, dt, now) {
+      if (this.weather && this.weather.kind !== "snow" && this.seasonOverride === "winter" && !this.weatherWinter) this.seasonOverride = null;
+      if (this.renderWeather(ctx, dt, now)) { this.flakes = []; return; }
       const se = this.seasonOverride || this.season(), night = this.isNight();
       if (se === "summer" && !night) { this.flakes = []; return; }
-      const max = { winter: 34, spring: 14, summer: 10, autumn: 16 }[se], k = Math.max(2, Math.round(this.scale * 0.7));
+      const max = Math.round({ winter: 34, spring: 14, summer: 10, autumn: 16 }[se] * (this.weather && this.weather.kind === "snow" ? 2.2 : 1)), k = Math.max(2, Math.round(this.scale * 0.7));
       const fl = this.flakes = (this.flakes || []).filter((f) => f.y < this.floor + 4 && f.x > -20 && f.x < this.W + 20 && f.se === se);
-      if (fl.length < max && Math.random() < dt * max / 6) {
+      const heavy = this.weather && this.weather.kind === "snow";
+      if (heavy && !fl.length) for (let i = 0; i < max * 0.7; i++) fl.push({ se, x: Math.random() * this.W, y: Math.random() * this.floor, ph: Math.random() * 6, c: "#ffffff", vy: 22 * (0.6 + Math.random() * 0.8), big: Math.random() < 0.3 });
+      if (fl.length < max && Math.random() < dt * max / (heavy ? 1.5 : 6)) {
         const cols = { winter: ["#ffffff", "#eef5ff", "#dfeaff"], spring: ["#ffc7d9", "#ffb0c8", "#fff0f4"], summer: ["#fff3a0"], autumn: ["#e8873a", "#c9622a", "#e0a13c", "#a8502a"] }[se];
         fl.push({ se, x: Math.random() * this.W, y: se === "summer" ? this.floor - Math.random() * 260 : -10, ph: Math.random() * 6, c: cols[Math.floor(Math.random() * cols.length)],
           vy: { winter: 22, spring: 26, summer: -4, autumn: 34 }[se] * (0.6 + Math.random() * 0.8), big: Math.random() < 0.3 });
@@ -2501,7 +2560,7 @@
         const x = Math.round(f.x), y = Math.round(f.y), z = f.big ? k * 1.5 : k;
         if (se === "autumn") { ctx.fillRect(x, y, z * 2, z); ctx.fillRect(x + z / 2, y - z / 2, z, z * 2); }
         else if (se === "spring") { ctx.fillRect(x, y, z * 1.5, z); }
-        else ctx.fillRect(x, y, z, z);
+        else { if (se === "winter") { ctx.fillStyle = "rgba(110,130,165,.45)"; ctx.fillRect(x + 1, y + 1, z, z); ctx.fillStyle = f.c; } ctx.fillRect(x, y, z, z); }
       }
       if (se === "winter") {                            // a thin line of snow settles on the floor
         ctx.globalAlpha = 0.85; ctx.fillStyle = "#ffffff";
