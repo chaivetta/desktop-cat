@@ -388,7 +388,7 @@
       R.limb(30, 22, 39, 18 + k * 3, 2.8, M.BODY, PART.LEG);
       R.ellipse(39.5, 18 + k * 3, 1.6, 1.8, M.BODY, PART.LEG);
     },
-    zoom(R, a) { POSES.gallop(R, a); },
+    zoom(R, a) { POSES.run(R, a); },
     boop(R, a) { POSES.sit(R, { ...a, eyes: "happy" }); },
     inbox(R, a) { POSES.sit(R, { ...a, eyes: a.peekEyes }); },
     hunt(R, a) { POSES.crouch(R, a); },
@@ -534,7 +534,7 @@
       const w = this.world;
       if (w.laser) return this.set("chase", 30, { goal: "laser" });
       if (w.wand) return this.set("chase", 30, { goal: "feather" });
-      const wt = { walk: 3, sit: 2, groom: 1.8, sleep: 1.1, roll: 1, zoom: 0.8 };
+      const wt = { walk: 3, sit: 2, groom: 1.8, sleep: 1.1, roll: 1, zoom: this.zoomCool > 0 ? 0 : 0.12 };
       const y = w.yarn;
       if (y) { if (y.held) wt.dangle = 6; else if (Math.abs(y.x - this.x) < w.W * 0.7) wt.yarn = 5; }
       if (w.mouse && w.mouse.running()) wt.mouse = 6;
@@ -547,7 +547,7 @@
       const bed = w.bed && !w.bed.occupant && !w.bed.claimed ? w.bed : null;
       if (bed) wt.sleep += 0.6;                       // a comfy bed makes a nap more tempting
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
-      if (foe) wt.fight = 1.4;
+      if (foe) wt.fight = 0.6;
       if (wt.yarn || wt.mouse || wt.dangle || wt.butterfly) { wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; }
       if (this.mods) for (const k in wt) if (this.mods[k]) wt[k] *= this.mods[k];      // personality
       const n = pick(wt);
@@ -604,16 +604,16 @@
     }
     startZoom(race = true) {
       const w = this.world, m = SW * this.s, target = this.x < w.W / 2 ? w.W - m : m, d = rnd(2.4, 4);
-      this.set("zoom", d, { target, laps: 0 }); this.care("zoom");
+      this.set("zoom", d, { target, laps: 0 }); this.care("zoom"); this.zoomCool = rnd(240, 480);
       if (!race) return;
       const buddy = w.cats.find((o) => o !== this && ["sit", "walk", "groom"].includes(o.state) && Math.abs(o.x - this.x) < 110 * this.s);
-      if (buddy && Math.random() < 0.55) { buddy.set("zoom", d, { target, laps: 0 }); this.care("race", { o: buddy.name }); buddy.care("race", { o: this.name }); }   // a race!
+      if (buddy && Math.random() < 0.25) { buddy.zoomCool = rnd(240, 480); buddy.set("zoom", d, { target, laps: 0 }); this.care("race", { o: buddy.name }); buddy.care("race", { o: this.name }); }   // a race!
     }
 
     // ------------------------------------------------ physics + behaviour
     update(dt) {
       const w = this.world, s = this.s, floor = w.floor;
-      this.t += dt; this.stateT += dt; this.boopCool -= dt; this.fightCool -= dt;
+      this.t += dt; this.stateT += dt; this.boopCool -= dt; this.fightCool -= dt; this.zoomCool = (this.zoomCool || 0) - dt;
       if (this.profile && window.CatLife) window.CatLife.tick(this, dt);
       this.blinkT -= dt; if (this.blinkT <= 0) { this.blink = !this.blink; this.blinkT = this.blink ? 0.14 : rnd(2, 6); }
       if ((w.laser || w.wand) && !["chase", "leap", "stand", "held", "fall", "hunt"].includes(this.state)) this.think();
@@ -712,7 +712,7 @@
         case "nip": {                                     // blissed out on catnip
           if (Math.random() < dt * 5) w.burst(this.x + rnd(-10, 10) * s, this.y - 20 * s, "spark", Math.random() < 0.5 ? "#8bd36b" : "#c58ae8", 1);
           if (Math.random() < dt * 1.2) w.burst(this.x, this.y - 28 * s, "heart", "#e2557a", 1);
-          if (this.stateT > this.dur) { if (Math.random() < 0.6) this.startZoom(false); else this.set("sit", rnd(2, 4)); }
+          if (this.stateT > this.dur) { if (Math.random() < 0.2 && !(this.zoomCool > 0)) this.startZoom(false); else this.set("sit", rnd(2, 4)); }
           break;
         }
         case "scratch": {
@@ -905,9 +905,9 @@
     pose() {
       switch (this.state) {
         case "walk": return "walk";
-        case "chase": return ["bowl", "box", "bed", "post"].includes(this.goal) ? "walk" : ["laser", "feather", "butterfly"].includes(this.goal) ? "gallop" : "run";
+        case "chase": return ["bowl", "box", "bed", "post"].includes(this.goal) ? "walk" : "run";
         case "spar": return (this.vy || this.y < this.world.floor) ? "leap" : this.act === "swipe" ? "swipe" : "spar";
-        case "flee": case "pursue": return "gallop";
+        case "flee": case "pursue": return "run";
         case "sniff": return "eat";
         case "nip": return "roll";
         case "happy": return "sit";

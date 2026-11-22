@@ -12,7 +12,7 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 - **Knead** — paws pressing in turn, eyes squeezed shut, before settling down
 - **Nap** — curl into a loaf with little *z*'s floating up; wake with a big **stretch** and a **yawn**
 - **Roll over** — belly up, paws kicking in the air
-- **Zoomies** — a sudden full gallop from one side of the screen to the other, ending in a skidding stop. Sometimes a second cat joins in and they race
+- **Zoomies** — once in a while, a sudden sprint from one side of the screen to the other, ending in a skidding stop. Now and then a second cat joins in and they race
 - **Eat** — when you put food out, they trot over and tuck in, then groom
 - **Sit in boxes** — of course. They duck down and peek out over the edge
 - **Play** — chase, crouch with a bottom-wiggle, pounce, bat, stand up and swat
@@ -22,7 +22,7 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 
 ![Watching the pointer, kneading, play-fighting and the chase](docs/more.png)
 
-![Gallop, skid, and three ways to groom](docs/moves2.png)
+![Skid, and three ways to groom](docs/moves2.png)
 
 ## Toys
 
