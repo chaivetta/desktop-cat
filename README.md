@@ -48,7 +48,7 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 
 ## Every cat has a card
 
-Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card, right above the cat. The 🔍 − + buttons at the bottom make the card smaller or bigger. Drag it by its top or by the avatars to put it anywhere: park it in the lower half of the screen and it opens upwards, with the avatars underneath. 📍 sends it back above the cat.
+Right-click a cat (or pick **Cat cards…** from the tray icon) to open its card, right above the cat. Inside, three tabs keep it short: **Status** (love, growing up, personality, quick actions), **Wardrobe** and **Diary**. The 🔍 − + buttons at the bottom make the card smaller or bigger. Drag it by its top or by the avatars to put it anywhere: park it in the lower half of the screen and it opens upwards, with the avatars underneath. 📍 sends it back above the cat.
 
 <img src="docs/card.png" width="360" align="right" alt="A cat card: portrait, love hearts, growing-up bar, personality, diary">
 

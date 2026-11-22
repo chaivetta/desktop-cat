@@ -71,7 +71,7 @@
 
   const STR = {
     tr: {
-      love: "Sevgi", growth: "Büyüme", traits: "Karakteri", fav: "En sevdiği", diary: "Günlük", showName: "İsmini başının üstünde göster",
+      love: "Sevgi", growth: "Büyüme", traits: "Karakteri", fav: "En sevdiği", diary: "Günlük", paneCat: "Durum", showName: "İsmini başının üstünde göster",
       pet: "Sev", feed: "Mama ver", play: "Oyna", rename: "İsmini değiştir", dice: "Rastgele isim", ok: "Kaydet", close: "Kapat",
       adopt: "Yeni yavru", newKitten: "Yeni bir yavru geldi! Adını koyalım mı?", empty: "Henüz bir şey yazmadı…",
       grownUp: "Tamamen büyüdü", toNext: (n) => `${n} puan sonra büyüyecek`,
@@ -94,7 +94,7 @@
       },
     },
     en: {
-      love: "Love", growth: "Growing up", traits: "Personality", fav: "Favourite", diary: "Diary", showName: "Show name above head",
+      love: "Love", growth: "Growing up", traits: "Personality", fav: "Favourite", diary: "Diary", paneCat: "Status", showName: "Show name above head",
       pet: "Pet", feed: "Feed", play: "Play", rename: "Rename", dice: "Random name", ok: "Save", close: "Close",
       adopt: "New kitten", newKitten: "A new kitten arrived! Want to name it?", empty: "Nothing written yet…",
       grownUp: "All grown up", toNext: (n) => `${n} more points to grow`,

@@ -43,7 +43,11 @@
           </div>
         </div>
         <div class="cc-banner" hidden></div>
+        <div class="cc-panes" role="tablist">
+          <button type="button" role="tab" data-p="cat"></button><button type="button" role="tab" data-p="ward"></button><button type="button" role="tab" data-p="log"></button>
+        </div>
         <div class="cc-body">
+          <div class="cc-pane" data-pane="cat">
           <section class="cc-sec"><div class="cc-label"><span data-l="love"></span><small class="cc-mood"></small></div><div class="cc-hearts"></div></section>
           <section class="cc-sec"><div class="cc-label"><span data-l="growth"></span><small class="cc-next"></small></div><div class="cc-grow"><i></i></div><div class="cc-steps"></div></section>
           <section class="cc-sec"><div class="cc-label"><span data-l="traits"></span></div><div class="cc-chips"></div></section>
@@ -54,18 +58,23 @@
             <button class="cc-btn" type="button" data-a="play" style="--b:#d8f3e6"></button>
             <button class="cc-btn" type="button" data-a="photo" style="--b:#dcefff"></button>
           </section>
+          <section class="cc-sec cc-danger">
+            <button class="cc-link" type="button" data-r="ask"></button>
+            <div class="cc-confirm" hidden><span></span><button class="cc-pill red" type="button" data-r="yes"></button><button class="cc-pill" type="button" data-r="no"></button></div>
+          </section>
+          </div>
+          <div class="cc-pane" data-pane="ward" hidden>
           <section class="cc-sec cc-ward">
-            <div class="cc-label"><span data-l="wardrobe"></span><small class="cc-wearing"></small></div>
+            <div class="cc-label"><span>👕 <small class="cc-wearing"></small></span></div>
             <div class="cc-kinds"></div>
             <div class="cc-designs"></div>
             <div class="cc-swatches"></div>
             <div class="cc-wbtns"><button class="cc-pill" type="button" data-w="surprise"></button><button class="cc-pill" type="button" data-w="undress"></button></div>
           </section>
-          <section class="cc-sec cc-log"><div class="cc-label"><span data-l="diary"></span></div><ol></ol></section>
-          <section class="cc-sec cc-danger">
-            <button class="cc-link" type="button" data-r="ask"></button>
-            <div class="cc-confirm" hidden><span></span><button class="cc-pill red" type="button" data-r="yes"></button><button class="cc-pill" type="button" data-r="no"></button></div>
-          </section>
+          </div>
+          <div class="cc-pane" data-pane="log" hidden>
+          <section class="cc-sec cc-log"><ol></ol></section>
+          </div>
         </div>
         <div class="cc-foot">
           <span class="cc-born"></span>
@@ -80,7 +89,7 @@
     const form = q(".cc-rename"), input = form.querySelector("input");
 
     let cat = null, raf = 0, last = 0, pt = 0, blinkT = 2, blink = false, lastLove = null, logKey = "", tabKey = "", tickT = 0;
-    let kind = "hat", design = null, wardKey = "", size = SIZES.includes(opts.size) ? opts.size : 0.66;
+    let pane = "cat", kind = "hat", design = null, wardKey = "", size = SIZES.includes(opts.size) ? opts.size : 0.66;
     // where you've put the card: null = follow the cat; { x, y, up } = left edge, and the top (or bottom when "up") edge
     let pinned = opts.pos && Number.isFinite(opts.pos.x) ? opts.pos : null;
     const T = () => L.STR[L.lang];
@@ -159,6 +168,9 @@
       if (opts.sound) { const on = opts.sound(); snd.textContent = on ? "🔊" : "🔇"; snd.classList.toggle("off", !on); snd.title = on ? t.soundOff : t.soundOn; }
       const icons = { love: "💗", growth: "🌱", traits: "✨", diary: "📖", wardrobe: "👗" };
       root.querySelectorAll("[data-l]").forEach((el) => { el.textContent = `${icons[el.dataset.l]} ${t[el.dataset.l]}`; });
+      const pn = { cat: ["🐾", t.paneCat], ward: ["👗", t.wardrobe], log: ["📖", t.diary] };
+      root.querySelectorAll("[data-p]").forEach((b) => { const on = b.dataset.p === pane; b.textContent = `${pn[b.dataset.p][0]} ${pn[b.dataset.p][1]}`; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+      root.querySelectorAll("[data-pane]").forEach((d) => { d.hidden = d.dataset.pane !== pane; });
       q(".cc-name").textContent = p.name;
       const days = Math.floor((now - p.born) / 864e5);
       q(".cc-sub").textContent = `${L.COAT_NAMES[p.coat] ? L.COAT_NAMES[p.coat][lang] : p.coat} · ${t.age(days)}`;
@@ -245,6 +257,11 @@
       place(); if (opts.onPos) opts.onPos(pinned);
     });
     root.addEventListener("click", (e) => { if (swallowClick) { e.stopPropagation(); e.preventDefault(); swallowClick = false; } }, true);
+    // Status / Wardrobe / Diary: one page at a time keeps the card short
+    root.querySelectorAll("[data-p]").forEach((b) => b.onclick = () => {
+      if (pane === b.dataset.p) return;
+      pane = b.dataset.p; update(); q(".cc-body").scrollTop = 0; place();
+    });
     q(".cc-snd").onclick = () => { if (opts.onSound) opts.onSound(); };
     q(".cc-pin").onclick = () => { pinned = null; place(); if (opts.onPos) opts.onPos(null); };
     function floatUp(emoji, el) {
