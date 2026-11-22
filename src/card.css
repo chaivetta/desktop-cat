@@ -237,8 +237,10 @@
 .cc-tools { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
 .cc-sizer { display: inline-flex; align-items: center; gap: 2px; padding: 1px 3px; border-radius: 999px; background: #fff; box-shadow: 0 0 0 2px rgba(91, 58, 41, .22); }
 .cc-sizer b { font-size: 11px; }
-.cc-sizer button { width: 20px; height: 20px; border: 0; border-radius: 50%; background: none; cursor: pointer; font: 700 14px/1 "Pixelify Sans", monospace; }
-.cc-sizer button:hover { background: #ffe1ea; }
+.cc-sizer { gap: 4px; padding: 2px 8px; cursor: pointer; }
+.cc-sizer input { -webkit-appearance: none; appearance: none; width: 64px; height: 6px; border-radius: 99px; background: #f2e1da; outline: none; }
+.cc-sizer input::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #ff8fab; box-shadow: 0 0 0 2px #5b3a29; cursor: grab; }
+.cc-sizer input::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: #ff8fab; box-shadow: 0 0 0 2px #5b3a29; }
 .cc-lang button { border: 0; background: none; cursor: pointer; padding: 2px 3px; font: 700 12px "Pixelify Sans", monospace; opacity: .45; }
 .cc-lang button.on { opacity: 1; text-decoration: underline wavy var(--pink); text-underline-offset: 3px; }
 
@@ -324,3 +326,11 @@
 .cc-item b { display: block; font: 700 13.5px "Pixelify Sans", monospace; }
 .cc-item small { font-size: 11px; font-weight: 700; opacity: .65; line-height: 1.25; display: block; }
 .cc-item .cc-pill:disabled { opacity: .45; cursor: default; }
+
+.cc-lonely { margin: 0 0 10px; padding: 7px 10px; border-radius: 12px; background: #e6ecf8; color: #3e4f73; font-size: 12px; font-weight: 800; text-align: center; box-shadow: 0 0 0 2px #9fb0d4; }
+.cc-lonely[hidden] { display: none; }
+.cc-fcol { display: grid; gap: 5px; justify-items: end; }
+.cc-fbtns { display: flex; gap: 4px; }
+.cc-fbtns .cc-pill { padding: 3px 8px; font-size: 11px; }
+.cc-fbtns .cc-pill:disabled { opacity: .4; cursor: default; }
+.cc-item small.cc-own { margin-top: 3px; color: #2f9e6e; opacity: 1; }

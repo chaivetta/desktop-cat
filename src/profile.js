@@ -37,7 +37,7 @@
     post: { e: "🪵", tr: "Tırmalama direği", en: "Scratching post", goals: ["post"] },
   };
 
-  // Growing up follows the calendar: 0.1 on the first day, fully grown (1.0) after about 45 days.
+  // Growing up follows the calendar: 0.1 on the first day, fully grown (1.0) after about 90 days.
   // Much later a cat becomes a wise old one: a grey muzzle and a slower pace, but it stays with you.
   const STAGES = [
     { id: "kitten", min: 0, e: "🍼", tr: "Yavru", en: "Kitten" },
@@ -45,7 +45,7 @@
     { id: "adult", min: 1, e: "👑", tr: "Yetişkin", en: "Grown-up" },
     { id: "elder", min: 1, e: "🦉", tr: "Bilge", en: "Wise old cat" },
   ];
-  const ADULT = 360, GROW_PER_DAY = 0.9 / 45, ELDER_DAYS = 180;      // about 45 days to grow up, wise and old at six months
+  const ADULT = 360, GROW_PER_DAY = 0.9 / 90, ELDER_DAYS = 365;      // about three months to grow up, wise and old after a year
 
   // tricks you can teach: a few good lessons and it knows it for good
   const TRICKS = {
@@ -83,22 +83,25 @@
     photo:     { e: "📸", n: 1, on: "photo", tr: () => "Fotoğrafını çek", en: () => "Take its photo" },
     dress:     { e: "👗", n: 1, on: "dress", tr: () => "Ona yeni bir şey giydir", en: () => "Dress it up" },
   };
-  const TASK_REWARD = { xp: 14, love: 8, stars: 1 }, ALL_REWARD = { xp: 30, love: 15, stars: 2 };
-  // the wardrobe starts with two designs of each kind; the rest are bought with stars from the tasks
-  // (a design comes in all ten colours once it's yours). With tasks switched off, everything is open.
+  // Stars are hard-won: a cat's three tasks together are worth one star a day.
+  const TASK_REWARD = { xp: 6, love: 6, stars: 0 }, ALL_REWARD = { xp: 15, love: 10, stars: 1 };
+  // Every design in the wardrobe is locked and bought with stars (it then comes in all ten colours).
   const PRICES = {
-    hat: { beanie: 0, cap: 0, party: 3, beret: 3, witch: 4, chef: 4, tophat: 5, flowers: 5, santa: 6, crown: 8 },
-    collar: { plain: 0, bowtie: 0, bell: 3, bandana: 3, scarf: 3, tag: 4, studs: 4, bigbow: 5, lei: 5, pearls: 8 },
-    outfit: { sweater: 0, stripes: 0, dots: 4, plaid: 4, zigzag: 4, overalls: 5, raincoat: 5, vertical: 5, diagonal: 6, stars: 8 },
+    hat: { beanie: 3, cap: 3, party: 5, beret: 5, witch: 7, chef: 7, tophat: 9, flowers: 9, santa: 11, crown: 15 },
+    collar: { plain: 2, bowtie: 3, bell: 4, bandana: 4, scarf: 5, tag: 6, studs: 6, bigbow: 8, lei: 8, pearls: 14 },
+    outfit: { sweater: 4, stripes: 4, dots: 6, plaid: 6, zigzag: 7, overalls: 8, raincoat: 9, vertical: 9, diagonal: 10, stars: 15 },
   };
-  const MAX_CATS = 8, KIT_COOL = 12 * 3.6e6;           // breeding: at most 8 cats, a parent rests 12 hours between litters
+  const MAX_CATS = 8, KIT_COOL = 24 * 3.6e6;           // breeding: at most 8 cats, a mother or father rests a day between litters
+  // Love fades when nobody pays attention. A lonely kitten or young cat may pack up and leave;
+  // grown-ups stay, and a wise old cat only very rarely wanders off.
+  const LOVE_FADE = 8 / 3600, LONELY = 15, LEAVE_PER_HOUR = { kitten: 0.12, young: 0.12, adult: 0, elder: 0.012 };
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 
   // what happens when: xp and love rewards, how often they can be earned, how often they get written in the diary
   const RULES = {
-    pet:     { xp: 3, love: 7, every: 4e3, log: 3 * 60e3 },
-    fed:     { xp: 10, love: 10, every: 20e3, log: 30 * 60e3 },
-    play:    { xp: 4, love: 2.5, every: 8e3, log: 5 * 60e3 },
+    pet:     { xp: 1, love: 4, every: 6e3, log: 3 * 60e3 },
+    fed:     { xp: 4, love: 8, every: 60e3, log: 30 * 60e3 },
+    play:    { xp: 2, love: 2, every: 10e3, log: 5 * 60e3 },
     bed:     { xp: 6, love: 3, every: 60e3, log: 20 * 60e3 },
     scratch: { xp: 3, love: 1, every: 10e3, log: 10 * 60e3 },
     catnip:  { xp: 5, love: 6, every: 20e3, log: 10 * 60e3 },
@@ -125,7 +128,7 @@
       love: "Sevgi", growth: "Büyüme", traits: "Karakteri", fav: "En sevdiği", diary: "Günlük", paneCat: "Durum", tasks: "Görevler", tasksToday: "Bugünün görevleri", newTasks: "Yeni görevler gece yarısı",
       allDone: "Hepsi bitti! Yarın yenileri gelecek 🌙", stars: (n) => `⭐ ${n} yıldız`, streak: (n) => `🔥 ${n} gün üst üste`, friend: "Yakın arkadaşı",
       parents: (a, b) => `${a} ve ${nin(b)} yavrusu`, taskToast: "Görev tamam!",
-      wallet: (n) => `⭐ ${n} yıldızın var`, earned: (n) => `bu kedi ${n}⭐ kazandırdı`, howStars: "Her görev 1⭐, hepsi bitince +2⭐",
+      wallet: (n) => `⭐ ${n} yıldızın var`, earned: (n) => `bu kedi ${n}⭐ kazandırdı`, howStars: "Üç görevin hepsini bitirince 1⭐",
       locked: "Kilitli", unlock: (n) => `⭐ ${n} ile aç`, need: (n) => `${n} yıldız daha lazım, görevlere bak 🎯`, needTasks: "Yıldız kazanmak için ayarlardan görevleri aç 🎯", unlocked: "Açıldı!", showName: "İsmini başının üstünde göster",
       pet: "Sev", feed: "Mama ver", play: "Oyna", rename: "İsmini değiştir", dice: "Rastgele isim", ok: "Kaydet", close: "Kapat",
       adopt: "Yeni yavru", newKitten: "Yeni bir yavru geldi! Adını koyalım mı?", empty: "Henüz bir şey yazmadı…",
@@ -133,11 +136,13 @@
       memories: "Anılar", family: "Ailesi", parentsL: "Annesi ve babası", siblings: "Kardeşleri", kids: "Yavruları", noMem: "Anılar burada birikecek…",
       together: (n) => `💞 Birlikte ${n} gündür`, tricks: "Numaralar", teach: "Öğret", lessons: (n, m) => `${n}/${m} ders`, learnHint: "Dokun, öğret",
       trickFail: ["Kafası karıştı", "Şimdi canı istemedi", "Esnedi geçti", "Kuyruğunu salladı"], gone: "artık yok",
-      home: "Ev", homeHint: "Yıldızlarla ev eşyası al. Yerleştirdiklerini sürükleyip istediğin yere koyabilirsin.", place: "Yerleştir", putAway: "Kaldır",
-      furn: { rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
+      home: "Ev", homeHint: "Yıldızlarla ev eşyası al; her birinden istediğin kadar alabilirsin. Yerleştirdiklerini sürükleyip istediğin yere koy.", place: "Koy", putAway: "Kaldır",
+      ownedN: (o, p) => `${o} tane · ${p} ortada`,
+      furn: { bed: ["Kedi yatağı", "Yumuşacık, içinde kıvrılıp uyur"], house: ["Kedi kulübesi", "İçine girip saklanarak uyur"], rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
         tree: ["Kedi ağacı", "İki katlı, tepesine tırmanır"], aquarium: ["Akvaryum", "Balıkları izler, cama pati atar"] },
       game: "Lazer avı", gameHelp: "30 saniye: lazerle kedileri parlayan yıldızlara götür!", again: "Tekrar oyna", closeB: "Kapat",
       gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun yıldızları doldu, yarın yine gel 🌙", bestL: (n) => `Rekor: ${n}`,
+      sexF: "♀ Dişi", sexM: "♂ Erkek", lonely: "Kendini yalnız hissediyor 💔 Biraz ilgi lazım", leftHome: (n) => `${n} evden ayrıldı 💔`,
       strayTag: (n) => `Sokak kedisi ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Lazer avı · ⏱ ${t} · ⭐ ${n}`,
       voices: "Miyav sesleri", back: "Geri", addFiles: "Ses ekle", voiceN: (n) => n ? `${n} kayıt` : "henüz yok",
       voice_kitten: "Yavru", voice_adult: "Yetişkin", voice_elder: "Yaşlı",
@@ -163,6 +168,7 @@
         together: (a) => `Birlikte ${a.n} gün oldu!`, greet: (a) => a.long ? "Seni çok özlemiş, gelir gelmez karşıladı" : "Seni kapıda karşıladı",
         morning: () => "Günaydın! Gerinip seni selamladı", napNear: () => "Sen yokken yanında uyuyakaldı", memPhoto: () => "Birlikte bir fotoğraf",
         strayIn: () => "Sokaktan geldi, artık burası onun evi",
+        lonely: () => "Kimse onunla ilgilenmedi, çok yalnız hissetti", left: (a) => `${a.n} kimse ilgilenmeyince evi terk etti`,
         task: (a) => `Görevi bitirdi: ${a.txt}`, tasksDone: () => "Bugünün bütün görevlerini bitirdi ⭐",
         bornOf: (a) => `${a.a} ve ${nin(a.b)} yavrusu olarak dünyaya geldi`, kitten: (a) => `${a.o} ile bir yavruları oldu: ${a.n}`,
       },
@@ -171,7 +177,7 @@
       love: "Love", growth: "Growing up", traits: "Personality", fav: "Favourite", diary: "Diary", paneCat: "Status", tasks: "Tasks", tasksToday: "Today's tasks", newTasks: "New tasks at midnight",
       allDone: "All done! New ones tomorrow 🌙", stars: (n) => `⭐ ${n} star${n === 1 ? "" : "s"}`, streak: (n) => `🔥 ${n} days in a row`, friend: "Best friend",
       parents: (a, b) => `Kitten of ${a} and ${b}`, taskToast: "Task done!",
-      wallet: (n) => `⭐ You have ${n} star${n === 1 ? "" : "s"}`, earned: (n) => `this cat earned ${n}⭐`, howStars: "1⭐ per task, +2⭐ for finishing all three",
+      wallet: (n) => `⭐ You have ${n} star${n === 1 ? "" : "s"}`, earned: (n) => `this cat earned ${n}⭐`, howStars: "Finish all three tasks for 1⭐",
       locked: "Locked", unlock: (n) => `Unlock for ⭐ ${n}`, need: (n) => `${n} more star${n === 1 ? "" : "s"} needed, see the tasks 🎯`, needTasks: "Switch tasks on in the settings to earn stars 🎯", unlocked: "Unlocked!", showName: "Show name above head",
       pet: "Pet", feed: "Feed", play: "Play", rename: "Rename", dice: "Random name", ok: "Save", close: "Close",
       adopt: "New kitten", newKitten: "A new kitten arrived! Want to name it?", empty: "Nothing written yet…",
@@ -179,11 +185,13 @@
       memories: "Memories", family: "Family", parentsL: "Parents", siblings: "Siblings", kids: "Kittens", noMem: "Memories will gather here…",
       together: (n) => `💞 Together for ${n} days`, tricks: "Tricks", teach: "Teach", lessons: (n, m) => `${n}/${m} lessons`, learnHint: "Tap to teach",
       trickFail: ["Got confused", "Not in the mood", "Yawned instead", "Flicked its tail"], gone: "gone",
-      home: "Home", homeHint: "Buy furniture with stars. Drag anything you've placed to move it.", place: "Place", putAway: "Put away",
-      furn: { rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
+      home: "Home", homeHint: "Buy furniture with stars, as many of each as you like. Drag anything you've placed to move it.", place: "Place", putAway: "Put away",
+      ownedN: (o, p) => `own ${o} · ${p} out`,
+      furn: { bed: ["Cat bed", "Soft and round, curls up in it"], house: ["Cat house", "Crawls inside to sleep, hidden away"], rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
         tree: ["Cat tree", "Two levels to climb up to"], aquarium: ["Aquarium", "Watches the fish and paws at the glass"] },
       game: "Laser hunt", gameHelp: "30 seconds: use the laser to lead the cats onto the twinkling stars!", again: "Play again", closeB: "Close",
       gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game stars for today, come back tomorrow 🌙", bestL: (n) => `Best: ${n}`,
+      sexF: "♀ Female", sexM: "♂ Male", lonely: "Feeling lonely 💔 needs some attention", leftHome: (n) => `${n} left home 💔`,
       strayTag: (n) => `Stray ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Laser hunt · ⏱ ${t} · ⭐ ${n}`,
       voices: "Meow sounds", back: "Back", addFiles: "Add sounds", voiceN: (n) => n ? `${n} recording${n > 1 ? "s" : ""}` : "none yet",
       voice_kitten: "Kitten", voice_adult: "Grown-up", voice_elder: "Old cat",
@@ -209,13 +217,14 @@
         together: (a) => `${a.n} days together!`, greet: (a) => a.long ? "Missed you so much, ran to meet you" : "Came to say hello when you got back",
         morning: () => "Good morning! Stretched and said hi", napNear: () => "Fell asleep next to you while you were away", memPhoto: () => "A photo together",
         strayIn: () => "Came in from the street; this is home now",
+        lonely: () => "Nobody paid it any attention and it felt very lonely", left: (a) => `${a.n} left home after being ignored`,
         task: (a) => `Finished a task: ${a.txt}`, tasksDone: () => "Finished all of today's tasks ⭐",
         bornOf: (a) => `Born to ${a.a} and ${a.b}`, kitten: (a) => `Had a kitten with ${a.o}: ${a.n}`,
       },
     },
   };
   const LOG_ICON = { born: "🐣", named: "🏷️", fed: "🍗", pet: "💗", play: "🧶", bed: "🛏️", scratch: "🪵", catnip: "🌿", zoom: "💨",
-    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", strayIn: "🏡", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
+    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", strayIn: "🏡", lonely: "💔", left: "🚪", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
 
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -232,7 +241,9 @@
     // load the wallet from a save; designs someone is already wearing stay theirs
     loadWallet(w, profiles) {
       // v2: nothing comes unlocked for free any more, whether tasks are on or off (stars already earned are kept)
-      L.wallet = { v: 2, stars: Math.max(0, +(w && w.stars) || 0), owned: w && w.v === 2 && Array.isArray(w.owned) ? w.owned.slice() : [] };
+      L.wallet = { v: 3, stars: Math.max(0, +(w && w.stars) || 0), owned: w && w.v >= 2 && Array.isArray(w.owned) ? w.owned.slice() : [] };
+      // v3: the whole wardrobe is locked, so anything a cat wears that hasn't been bought comes off
+      for (const p of profiles) for (const [k, id] of Object.entries(p.acc || {})) if (L.price(k, String(id).split(":")[0])) delete p.acc[k];
     },
     // what a design costs right now: 0 when it's one of the free ones or already bought
     price(kind, d) {
@@ -261,7 +272,7 @@
       const p = {
         id: Math.random().toString(36).slice(2, 10), coat, name: o.name || L.randomName(o.taken), traits: L.randomTraits(),
         fav: pickOne(Object.keys(TOYS)), born: now, xp: o.xp ?? 0, love: o.love ?? 40, showName: true, log: [], lastR: {}, lastL: {}, seen: now,
-        g0: o.g0 ?? 0.1, gT: now, mem: [], tricks: {},
+        g0: o.g0 ?? 0.1, gT: now, mem: [], tricks: {}, sex: o.sex || (Math.random() < 0.5 ? "f" : "m"),
       };
       p.stageId = L.stage(p).id;
       L.write(p, o.migrated ? "hello" : "born", { n: p.name });
@@ -273,7 +284,8 @@
     // time passes while the app is closed: love fades a little, never all the way
     welcomeBack(p) {
       const hours = Math.max(0, (Date.now() - (p.seen || Date.now())) / 3.6e6);
-      p.love = Math.max(5, p.love - Math.min(40, hours * 2)); p.seen = Date.now();
+      p.love = Math.max(LONELY + 1, p.love - Math.min(60, hours * 3)); p.seen = Date.now();   // fades while you're away, but nobody leaves while the app is closed
+      if (p.sex !== "f" && p.sex !== "m") p.sex = Math.random() < 0.5 ? "f" : "m";
       p.lastR = p.lastR || {}; p.lastL = p.lastL || {}; p.log = p.log || []; p.mem = p.mem || []; p.tricks = p.tricks || {};
       if (p.g0 == null) { p.g0 = p.xp >= ADULT ? 1 : clamp(0.1 + 0.9 * p.xp / ADULT, 0.1, 1); p.gT = Date.now(); }   // saves from before growth by days
       if (!p.stageId) p.stageId = L.stage(p).id;
@@ -439,29 +451,43 @@
       if (!L.breedOn && !force) return null;
       const cats = world.cats.filter((c) => c.profile);
       if (cats.length >= MAX_CATS) return null;
-      const now = Date.now(), ready = (c) => L.growth(c.profile) >= 1 && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
+      const now = Date.now(), ready = (c) => !c.leaving && L.growth(c.profile) >= 1 && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
         && !["held", "fall", "leap"].includes(c.state);
       const pairs = [];
       for (const a of cats) for (const b of cats) {
-        if (a.profile.id >= b.profile.id || !ready(a) || !ready(b)) continue;
+        if (a.profile.id >= b.profile.id || !ready(a) || !ready(b) || a.profile.sex === b.profile.sex) continue;   // a mother and a father
         const bond = Math.min((a.profile.bond || {})[b.profile.id] || 0, (b.profile.bond || {})[a.profile.id] || 0);
         if (bond >= 2 || force) pairs.push([a, b, bond]);
       }
       if (!pairs.length || (!force && Math.random() > 0.05)) return null;
       pairs.sort((x, y) => y[2] - x[2]);
-      const [a, b] = pairs[0], r = Math.random();
-      const coat = r < 0.45 ? a.profile.coat : r < 0.9 ? b.profile.coat : pickOne(Object.keys(COAT_NAMES));
-      const k = L.make(coat, { taken: cats.map((c) => c.profile.name), love: 60, quiet: true });
-      k.log = []; k.parents = [a.profile.id, b.profile.id];
-      k.parentInfo = [a, b].map((c) => ({ id: c.profile.id, name: c.profile.name, coat: c.profile.coat }));
-      L.write(k, "bornOf", { a: a.profile.name, b: b.profile.name }); L.remember(k, "bornOf", { a: a.profile.name, b: b.profile.name });
-      for (const [x, y] of [[a, b], [b, a]]) {
-        x.profile.lastKit = now; L.write(x.profile, "kitten", { o: y.profile.name, n: k.name });
-        (x.profile.kids = x.profile.kids || []).push({ id: k.id, name: k.name, coat: k.coat });
-        L.remember(x.profile, "kitten", { o: y.profile.name, n: k.name, with: { coat: y.profile.coat, acc: y.profile.acc || {} }, kit: { coat: k.coat } });
+      const [a, b] = pairs[0], taken = cats.map((c) => c.profile.name);
+      // a litter: usually one, sometimes two or three (never more than there's room for)
+      const r0 = Math.random(), size = Math.min(MAX_CATS - cats.length, r0 < 0.6 ? 1 : r0 < 0.9 ? 2 : 3), kits = [];
+      for (let i = 0; i < size; i++) {
+        const r = Math.random(), coat = r < 0.45 ? a.profile.coat : r < 0.9 ? b.profile.coat : pickOne(Object.keys(COAT_NAMES));
+        const k = L.make(coat, { taken, love: 60, quiet: true }); taken.push(k.name);
+        k.log = []; k.parents = [a.profile.id, b.profile.id];
+        k.parentInfo = [a, b].map((c) => ({ id: c.profile.id, name: c.profile.name, coat: c.profile.coat }));
+        L.write(k, "bornOf", { a: a.profile.name, b: b.profile.name }); L.remember(k, "bornOf", { a: a.profile.name, b: b.profile.name });
+        for (const [x, y] of [[a, b], [b, a]]) {
+          x.profile.lastKit = now; L.write(x.profile, "kitten", { o: y.profile.name, n: k.name });
+          (x.profile.kids = x.profile.kids || []).push({ id: k.id, name: k.name, coat: k.coat });
+          if (i === 0) L.remember(x.profile, "kitten", { o: y.profile.name, n: k.name, with: { coat: y.profile.coat, acc: y.profile.acc || {} }, kit: { coat: k.coat } });
+        }
+        kits.push(k);
       }
       L.changed();
-      return { profile: k, parents: [a, b] };
+      return { profile: kits[0], kits, parents: [a, b] };
+    },
+    // ------------------------------------------------ loneliness
+    isLonely(p) { return !!p && p.love < LONELY; },
+    lonely(cat, dt) {
+      const p = cat.profile; if (!L.isLonely(p) || cat.leaving) return;
+      if (Date.now() - (p.lastL.lonely || 0) > 3 * 3.6e6) { p.lastL.lonely = Date.now(); L.write(p, "lonely"); L.changed(); }
+      const w = cat.world; if (w && Math.random() < dt / 25) w.burst(cat.x, cat.y - 34 * cat.s, "sad", "#7d8fb3", 1);
+      const per = LEAVE_PER_HOUR[L.stage(p).id] || 0;
+      if (per && Math.random() < per * dt / 3600 && w && w.catLeaves) w.catLeaves(cat);
     },
     addXP(cat, n) {
       const p = cat.profile; p.xp = Math.max(0, p.xp + n);
@@ -486,7 +512,8 @@
       const p = cat.profile; if (!p) return;
       p.seen = Date.now();
       L.addXP(cat, dt / 120);
-      p.love = Math.max(0, p.love - dt * (3 / 3600));
+      p.love = Math.max(0, p.love - dt * LOVE_FADE);
+      L.lonely(cat, dt);
       cat.size = L.size(p);
       const st = L.stage(p);
       if (st.id !== p.stageId) { p.stageId = st.id; L.grewUp(cat, st); }

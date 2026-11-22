@@ -736,7 +736,10 @@
     set(state, dur = 3, extra = {}) {
       if (this.state === "inbox" && state !== "inbox" && this.box) { this.box.occupant = null; this.box = null; }
       if (this.bed && !["knead", "sleep", "stretch", "yawn"].includes(state)) { this.bed.occupant = null; this.bed = null; }
-      if (this.cushion && !["knead", "sleep", "stretch", "yawn", "loaf", "sit", "groom", "slowBlink", "happy"].includes(state)) { this.cushion.occupant = null; this.cushion = null; }
+      if (this.cushion && !(this.cushion.kind === "house" ? ["sleep", "knead"] : ["knead", "sleep", "stretch", "yawn", "loaf", "sit", "groom", "slowBlink", "happy"]).includes(state)) {
+        if (this.cushion.kind === "house") this.facing = Math.random() < 0.5 ? -1 : 1;    // pops out of the door
+        this.cushion.occupant = null; this.cushion = null;
+      }
       if (this.perch && (state === "held" || state === "fall")) this.perch = null;
       if (this.perch && !PERCH_OK.includes(state) && state !== "leap") {
         // asked to do something that needs the floor: hop down first, then carry on from there
@@ -750,6 +753,7 @@
     }
     bounds() { const s = this.s; return { x: this.x - SW * s / 2, y: this.y - GROUND * s, w: SW * s, h: (GROUND + 2) * s }; }
     hit(px, py) {
+      if (this.hidden) return false;                    // inside the cat house: knock on the house instead
       const b = this.bounds(), s = this.s;
       if (this.state === "inbox") return px >= b.x + 12 * s && px <= b.x + b.w - 12 * s && py >= b.y + (4 + this.peek * 14) * s && py <= this.world.floor - 14 * s;
       return px >= b.x + 6 * s && px <= b.x + b.w - 6 * s && py >= b.y + 4 * s && py <= b.y + b.h;
@@ -769,6 +773,7 @@
     think() {
       const w = this.world;
       if (this.stray) return this.strayThink();
+      if (this.leaving) return this.set("walk", 60, { target: this.leaving });
       if (w.laser) return this.set("chase", 30, { goal: "laser" });
       if (w.wand) return this.set("chase", 30, { goal: "feather" });
       if (this.perch) {                                // up on a shelf: lounge about, or hop down
@@ -808,13 +813,15 @@
       if (this.profile && window.CatLife && window.CatLife.isElder(this.profile)) {                              // wise old cats take it easy
         wt.sleep *= 1.6; wt.walk *= 0.7; wt.zoom = 0; wt.tailChase *= 0.3; wt.loaf *= 1.6; if (wt.pronk) wt.pronk *= 0.4; if (wt.fight) wt.fight *= 0.4;
       }
-      const F = (k) => w.furniture.find((f) => f.kind === k);
+      const F = (k) => { const l = w.furniture.filter((f) => f.kind === k); return l.length ? l[Math.floor(Math.random() * l.length)] : null; };
       if (w.landedBird()) wt.bird = 7;
-      if (F("rug")) wt.rug = 1.1;
-      if (F("plant")) wt.plant = 0.35;
-      const cush = F("cushion"); if (cush && !cush.occupant) wt.cushion = w.isNight() ? 2.5 : 1;
-      if (F("aquarium")) wt.fish = 0.8;
-      if (F("tree") && shelf) wt.shelf = (wt.shelf || 0) + 0.8;
+      const rug = F("rug"), plant = F("plant"), aq = F("aquarium");
+      const naps = w.furniture.filter((f) => f.f.nap != null && !f.occupant && (!f.claimed || f.claimed === this)), nap = naps.length ? naps[Math.floor(Math.random() * naps.length)] : null;
+      if (rug) wt.rug = 1.1;
+      if (plant) wt.plant = 0.35;
+      if (nap) wt.cushion = (w.isNight() ? 2.5 : 1) * (nap.kind === "house" ? 1.3 : 1);
+      if (aq) wt.fish = 0.8;
+      if (w.furniture.some((f) => f.kind === "tree") && shelf) wt.shelf = (wt.shelf || 0) + 0.8;
       // you've been away from the mouse for a while: come and curl up next to where you left it
       if (w.idleFor() > 480 && pt && pt.x > 0 && !wt.yarn && !wt.mouse && !wt.bowl) wt.you = 6;
       const known = this.profile && this.profile.tricks ? Object.keys(this.profile.tricks).filter((k) => this.profile.tricks[k] >= 5) : [];
@@ -839,9 +846,10 @@
       else if (n === "meerkat") this.set("meerkat", rnd(2.2, 3.6));
       else if (n === "tailChase") this.set("tailChase", rnd(2.2, 3.8), { spinT: 0 });
       else if (n === "pronk") this.pronk(rnd(2, 4) | 0);
-      else if (n === "rug") { this.rugOff = rnd(-18, 18) * w.toyScale; this.set("chase", 14, { goal: "rug" }); }
-      else if (n === "plant" || n === "fish" || n === "bird") this.set("chase", n === "bird" ? 10 : 14, { goal: n });
-      else if (n === "cushion") { cush.claimed = this; this.set("chase", 14, { goal: "cushion" }); }
+      else if (n === "rug") { this.rugOff = rnd(-18, 18) * w.toyScale; this.set("chase", 14, { goal: "rug", fRef: rug }); }
+      else if (n === "plant" || n === "fish") this.set("chase", 14, { goal: n, fRef: n === "plant" ? plant : aq });
+      else if (n === "bird") this.set("chase", 10, { goal: "bird" });
+      else if (n === "cushion") { nap.claimed = this; this.set("chase", 14, { goal: "cushion", fRef: nap }); }
       else if (n === "you") { this.napOff = rnd(-70, 70) * this.s / 3; this.set("chase", 20, { goal: "you" }); }
       else if (n === "showOff") this.doTrick(known[Math.floor(Math.random() * known.length)]);
       else if (n === "blink") { this.facing = Math.sign(pt.x - this.x) || this.facing; this.set("slowBlink", 3.4); }
@@ -863,10 +871,10 @@
         case "box": return this.boxRef && w.boxes.includes(this.boxRef) && !this.boxRef.occupant ? this.boxRef.x : null;
         case "feather": return w.wand && w.pointer.seen ? w.wand.x : null;
         case "bird": { const b = w.landedBird(); return b ? b.x - Math.sign(b.x - this.x || 1) * 40 * this.s : null; }
-        case "rug": { const f = w.furniture.find((f) => f.kind === "rug"); return f ? clamp(f.x + (this.rugOff || 0), 20, w.W - 20) : null; }
-        case "plant": { const f = w.furniture.find((f) => f.kind === "plant"); return f ? f.x - (this.x < f.x ? 1 : -1) * 12 * w.toyScale : null; }
-        case "cushion": { const f = w.furniture.find((f) => f.kind === "cushion"); return f && (!f.occupant || f.occupant === this) ? f.x : null; }
-        case "fish": { const f = w.furniture.find((f) => f.kind === "aquarium"); return f ? f.x - (this.x < f.x ? 1 : -1) * (16 * w.toyScale + 12 * this.s) : null; }
+        case "rug": { const f = this.fRef; return f && w.furniture.includes(f) ? clamp(f.x + (this.rugOff || 0), 20, w.W - 20) : null; }
+        case "plant": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * 12 * w.toyScale : null; }
+        case "cushion": { const f = this.fRef; return f && w.furniture.includes(f) && (!f.occupant || f.occupant === this) ? f.x : null; }
+        case "fish": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * (16 * w.toyScale + 12 * this.s) : null; }
         case "you": return w.pointer.x > 0 ? clamp(w.pointer.x + (this.napOff || 0), 20, w.W - 20) : null;
         case "butterfly": return w.butterfly ? w.butterfly.x : null;
         case "catnip": return w.catnip && !w.catnip.held ? w.catnip.x : null;
@@ -907,6 +915,9 @@
       const w = this.world, s = this.s, floor = w.floor;
       this.t += dt; this.stateT += dt; this.boopCool -= dt; this.fightCool -= dt; this.zoomCool = (this.zoomCool || 0) - dt;
       if (this.profile && window.CatLife) window.CatLife.tick(this, dt);
+      if (this.leaving && this.profile && this.profile.love >= 30) {             // you won it back
+        this.leaving = false; this.set("happy", 2.5, { eyes: null }); w.burst(this.x, this.y - 34 * s, "heart", "#e2557a", 4);
+      }
       if (this.stray) {
         const st = this.stray; st.life -= dt;
         if (st.life <= 0 && !st.leaving && !["eat", "held", "fall"].includes(this.state)) { st.leaving = true; this.set("walk", 30, { target: st.side < 0 ? SW * s / 2 : w.W - SW * s / 2 }); }
@@ -922,7 +933,7 @@
       switch (this.state) {
         case "walk": {
           const dx = this.target - this.x;
-          if (this.stray && this.stray.leaving && Math.abs(dx) < 6) { w.removeCat(this); return; }
+          if (((this.stray && this.stray.leaving) || this.leaving) && Math.abs(dx) < 6) { const gone = this.leaving; w.removeCat(this); if (gone && w.onCatLeft) w.onCatLeft(this); return; }
           if (Math.abs(dx) < 4) { this.think(); break; }
           this.facing = Math.sign(dx); this.x += this.facing * 34 * s * dt; this.phase = (this.phase + dt * 1.4) % 1;
           this.tryBoop();
@@ -1092,7 +1103,7 @@
           break;
         }
         case "fishWatch": case "birdWatch": {
-          const f = this.state === "fishWatch" && w.furniture.find((f) => f.kind === "aquarium");
+          const f = this.state === "fishWatch" && this.fRef && w.furniture.includes(this.fRef);
           if (this.state === "fishWatch" && !f) { this.set("sit", 1); break; }
           if (this.stateT > this.dur) { const bw = this.state === "birdWatch"; this.set("sit", rnd(1.5, 3)); if (bw && Math.random() < 0.3) this.set("meerkat", 1.5); }
           break;
@@ -1128,7 +1139,7 @@
       this.partyT = (this.partyT || 0) - dt;
       if (this.cushion && !w.furniture.includes(this.cushion)) this.cushion = null;
       if (this.bed) { this.x = this.bed.x; this.y = floor - 4 * w.toyScale; }
-      else if (this.cushion) { this.x = this.cushion.x; this.y = floor - 5 * w.toyScale; }
+      else if (this.cushion) { this.x = this.cushion.x; this.y = floor - (this.cushion.f.nap || 0) * w.toyScale; }
       else if (this.perch && !["held", "fall", "leap"].includes(this.state)) { this.x = this.perch.x + this.perchDx; this.y = this.perch.top; }
       else if (!["held", "fall", "leap", "inbox", "pronk"].includes(this.state) && !(this.state === "spar" && this.vy)) this.y = floor;
       this.watchPointer(dt);
@@ -1166,11 +1177,15 @@
         else if (g === "shelf") { this.facing = Math.sign(this.shelfRef.x - this.x) || this.facing; this.set("prep", rnd(0.4, 0.8)); }
         else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); this.care("scratch"); }
         else if (g === "rug") this.set(pick({ loaf: 3, sploot: 2, roll: 2, knead: 1.2, groom: 1 }), rnd(4, 10));
-        else if (g === "plant") { const f = w.furniture.find((f) => f.kind === "plant"); this.facing = Math.sign(f.x - this.x) || this.facing; this.set("nibble", rnd(1.5, 2.6)); }
-        else if (g === "fish") { const f = w.furniture.find((f) => f.kind === "aquarium"); this.facing = Math.sign(f.x - this.x) || this.facing; this.set("fishWatch", rnd(4, 8)); }
+        else if (g === "plant") { const f = this.fRef; this.facing = Math.sign(f.x - this.x) || this.facing; this.set("nibble", rnd(1.5, 2.6)); }
+        else if (g === "fish") { const f = this.fRef; this.facing = Math.sign(f.x - this.x) || this.facing; this.set("fishWatch", rnd(4, 8)); }
         else if (g === "cushion") {
-          const f = w.furniture.find((f) => f.kind === "cushion");
-          if (f && !f.occupant) { f.occupant = this; f.claimed = null; this.cushion = f; this.x = f.x; this.set(Math.random() < 0.5 ? "loaf" : "knead", rnd(4, 9)); } else this.think();
+          const f = this.fRef;
+          if (f && !f.occupant) {
+            f.occupant = this; f.claimed = null; this.cushion = f; this.x = f.x;
+            if (f.kind === "house") this.set("sleep", rnd(25, 60)); else this.set(Math.random() < 0.5 ? "loaf" : "knead", rnd(4, 9));
+            this.care("bed");
+          } else this.think();
         }
         else if (g === "you") { this.set("knead", rnd(1.5, 2.5)); this.care("napNear"); }
         else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7) * ((this.mods && this.mods._eat) || 1)); this.care("fed"); }
@@ -1346,8 +1361,10 @@
       }
     }
 
+    get hidden() { return !!(this.cushion && this.cushion.kind === "house"); }
     render(ctx) {
       const R = this.R; R.clear();
+      if (this.hidden) return;                          // fast asleep inside the cat house
       R.grey = !!(this.profile && window.CatLife && window.CatLife.isElder(this.profile));
       const a = { t: this.t, st: this.stateT, phase: this.phase, blink: this.blink, eyes: this.state === "happy" ? "happy" : this.eyes, peekEyes: null, look: this.look };
       POSES[this.pose()](R, a);
@@ -1380,7 +1397,7 @@
       find: for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) if (R.m[y * SW + x]) { top = y; break find; }
       const target = this.y - GROUND * s + dy + top * s - 4;
       this.tagY = this.tagY == null || Math.abs(this.tagY - target) > 80 ? target : this.tagY + (target - this.tagY) * 0.18;
-      const L = window.CatLife, name = this.profile ? this.profile.name : L ? L.t("strayTag")(this.stray.trust) : "?";
+      const L = window.CatLife, name = this.profile ? `${this.profile.name} ${this.profile.sex === "f" ? "♀" : this.profile.sex === "m" ? "♂" : ""}`.trim() : L ? L.t("strayTag")(this.stray.trust) : "?";
       const fs = Math.round(clamp(8 + w.scale * 2.4, 11, 20)), love = !!this.profile && this.profile.love >= 80;
       ctx.save();
       ctx.font = `700 ${fs}px "Pixelify Sans", ui-monospace, monospace`;
@@ -1850,12 +1867,15 @@
 
   // ---------------------------------------------------------------- furniture you buy with stars
   // rug, potted plant, cushion, cat tree and a little aquarium; drag them anywhere along the floor
+  // nap: a spot one cat can sleep in (the cat house hides it inside)
   const FURN = {
-    rug:     { w: 60, h: 6, price: 6 },
-    plant:   { w: 18, h: 30, price: 4 },
-    cushion: { w: 30, h: 9, price: 5 },
-    tree:    { w: 44, h: 80, price: 10 },
-    aquarium:{ w: 30, h: 26, price: 8 },
+    plant:   { w: 18, h: 30, price: 8 },
+    rug:     { w: 60, h: 6, price: 12 },
+    cushion: { w: 30, h: 9, price: 10, nap: 5 },
+    bed:     { w: 30, h: 13, price: 12, nap: 4 },
+    aquarium:{ w: 30, h: 26, price: 18 },
+    house:   { w: 36, h: 34, price: 22, nap: 0 },
+    tree:    { w: 44, h: 80, price: 25 },
   };
   function paintFurniture(kind, R) {
     R.clear();
@@ -1871,6 +1891,13 @@
       R.rect(3, 40, 28, 5, 1); R.rect(13, 14, 30, 5, 1);                            // two platforms
       for (let y = 19; y < 27; y++) R.put(39, y, 4); R.circle(39, 28, 2.2, 5);      // a pom-pom on a string
     }
+    else if (kind === "bed") { R.ellipse(15, 8, 14.5, 4.6, 1); R.ellipse(15, 7, 11, 2.6, 2); R.ellipse(15, 7.6, 9, 1.8, 3); R.rect(1, 9, 28, 3, 1); }
+    else if (kind === "house") {
+      R.tri(18, 0, 0, 13, 36, 13, 1); R.tri(18, 3, 4, 12, 32, 12, 2);                       // roof
+      R.rect(3, 12, 30, 21, 3); for (let y = 15; y < 33; y += 4) R.rect(3, y, 30, 1, 4);      // wooden walls
+      R.ellipse(18, 27, 7, 8, 5); R.rect(11, 27, 14, 6, 5);                                    // round door
+      R.circle(18, 7.5, 1.6, 6);                                                              // a little heart window
+    }
     else if (kind === "aquarium") {
       R.rect(0, 2, 30, 2, 4); R.rect(1, 4, 28, 16, 1); R.rect(2, 6, 26, 12, 2); R.rect(2, 17, 26, 3, 3); R.rect(0, 20, 30, 6, 4);
       for (const [x, h] of [[6, 6], [9, 4], [22, 7]]) for (let y = 17 - h; y < 17; y++) R.put(x + (y % 2), y, 5);
@@ -1880,10 +1907,12 @@
     rug: { 1: { c: [178, 70, 78], lit: true }, 2: { c: [236, 200, 128] }, 3: { c: [96, 128, 176] } },
     plant: { 1: { c: [198, 106, 66], lit: true }, 2: { c: [168, 86, 52], lit: true }, 3: { c: [98, 172, 92], lit: true }, 4: { c: [62, 128, 66], lit: true } },
     cushion: { 1: { c: [128, 104, 206], lit: true }, 2: { c: [160, 138, 228] }, 3: { c: [236, 196, 92] } },
+    bed: { 1: { c: [92, 156, 214], lit: true }, 2: { c: [244, 226, 200] }, 3: { c: [255, 240, 222] } },
+    house: { 1: { c: [214, 86, 86], lit: true }, 2: { c: [184, 64, 70] }, 3: { c: [222, 176, 120], lit: true }, 4: { c: [196, 148, 96] }, 5: { c: [58, 40, 34] }, 6: { c: [255, 210, 120] } },
     tree: { 1: { c: [218, 200, 176], lit: true }, 2: { c: [196, 166, 116] }, 3: { c: [166, 136, 92] }, 4: { c: [90, 70, 60] }, 5: { c: [255, 120, 160], lit: true } },
     aquarium: { 1: { c: [198, 228, 240], lit: true }, 2: { c: [110, 176, 222] }, 3: { c: [232, 206, 146] }, 4: { c: [70, 78, 98], lit: true }, 5: { c: [70, 150, 90] } },
   };
-  const FURN_OUTLINE = { rug: [96, 40, 44], plant: [70, 50, 34], cushion: [70, 50, 110], tree: [96, 74, 52], aquarium: [44, 52, 70] };
+  const FURN_OUTLINE = { rug: [96, 40, 44], plant: [70, 50, 34], cushion: [70, 50, 110], bed: [44, 74, 110], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70] };
   function furnitureThumb(kind, ctx) {
     const f = FURN[kind], sp = new Sprite(f.w, f.h); paintFurniture(kind, sp.R);
     const img = sp.paint(FURN_PAL[kind], FURN_OUTLINE[kind]), W = ctx.canvas.width, H = ctx.canvas.height, k = Math.min((W - 4) / f.w, (H - 4) / f.h);
@@ -1908,10 +1937,16 @@
       if (kind === "aquarium") this.fish = [{ x: 8, y: 9, d: 1, c: "#ff8a3d" }, { x: 20, y: 13, d: -1, c: "#ffd34d" }];
     }
     hit(px, py) { const s = this.world.toyScale, hw = this.f.w * s / 2; return Math.abs(px - this.x) < hw && py > this.y - this.f.h * s && py < this.y + 2; }
-    grab() { this.held = true; } release() { this.held = false; } click() { this.world.burst(this.x, this.y - this.f.h * this.world.toyScale, "note", "#b08d57", 1); }
+    grab() { this.held = true; } release() { this.held = false; }
+    click() {
+      const o = this.occupant; if (o && this.world.cats.includes(o)) { o.set("stretch", 1.4); return; }      // knock knock: whoever's napping wakes up
+      this.world.burst(this.x, this.y - this.f.h * this.world.toyScale, "note", "#b08d57", 1);
+    }
     update(dt) {
       const w = this.world, s = w.toyScale; this.t += dt; this.y = w.floor;
       if (this.held) this.x += (clamp(w.pointer.x, this.f.w * s / 2, w.W - this.f.w * s / 2) - this.x) * Math.min(1, dt * 14);
+      if (this.occupant && (!w.cats.includes(this.occupant) || this.occupant.cushion !== this)) this.occupant = null;
+      if (this.kind === "house" && this.occupant && Math.random() < dt * 0.5) w.burst(this.x + 3 * s, this.y - 16 * s, "z", "#8a6b55", 1, { rise: true });
       if (this.fish) for (const f of this.fish) { f.x += f.d * dt * 4; if (f.x < 4 || f.x > 25) f.d *= -1; f.y += Math.sin(this.t * 2 + f.x) * dt * 1.5; f.y = clamp(f.y, 7, 15); }
     }
     render(ctx) {
@@ -1992,6 +2027,7 @@
   const GLYPH = {
     heart: ["01100110", "11111111", "11111111", "01111110", "00111100", "00011000"],
     what: ["0110", "1001", "0001", "0010", "0100", "0000", "0100"],
+    sad: ["01100110", "11101111", "11011111", "01101110", "00110100", "00011000"],
     z: ["11111", "00010", "00100", "01000", "11111"],
     spark: ["00100", "00100", "11011", "00100", "00100"],
     dust: ["0110", "1111", "0110"],
@@ -2016,6 +2052,13 @@
       requestAnimationFrame((t) => this.frame(t));
     }
     stray() { return this.cats.find((c) => c.stray); }
+    // a lonely cat packs up: it walks slowly to the nearest edge and is gone (unless you win it back on the way)
+    catLeaves(c) {
+      if (c.leaving) return;
+      const m = SW * c.s / 2; c.leaving = c.x < this.W / 2 ? m : this.W - m;
+      if (c.perch) c.hopDown && c.hopDown();
+      c.set("walk", 60, { target: c.leaving }); this.burst(c.x, c.y - 34 * c.s, "sad", "#7d8fb3", 2);
+    }
     addStray() {
       if (this.stray()) return this.stray();
       const side = Math.random() < 0.5 ? -1 : 1, coat = COAT_KEYS[Math.floor(Math.random() * COAT_KEYS.length)];
@@ -2076,14 +2119,13 @@
       for (let i = 0; i < n; i++) { const b = new Bird(this, dir, y + rnd(-30, 30), i === 0 && (o.land ?? Math.random() < 0.3)); b.x -= dir * i * rnd(30, 60); this.birds.push(b); }
     }
     placeFurniture(kind, x) {
-      let f = this.furniture.find((f) => f.kind === kind); if (f) return f;
-      f = new Furniture(this, kind, x ?? this.spot()); this.furniture.push(f);
+      const f = new Furniture(this, kind, x ?? this.spot()); this.furniture.push(f);
       if (f.platforms) this.shelves.push(...f.platforms);
       this.furniture.sort((a, b) => (a.kind === "rug" ? -1 : 0) - (b.kind === "rug" ? -1 : 0));
       return f;
     }
     removeFurniture(kind) {
-      const f = this.furniture.find((f) => f.kind === kind); if (!f) return;
+      const f = typeof kind === "string" ? [...this.furniture].reverse().find((f) => f.kind === kind) : kind; if (!f) return;
       if (f.platforms) { this.shelves = this.shelves.filter((s) => !f.platforms.includes(s)); this.cats.forEach((c) => { if (f.platforms.includes(c.perch)) { c.perch = null; c.set("fall", 5); } }); }
       this.cats.forEach((c) => { if (c.cushion === f) { c.cushion = null; c.set("sit", 2); } });
       this.furniture = this.furniture.filter((x) => x !== f);

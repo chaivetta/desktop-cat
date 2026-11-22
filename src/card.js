@@ -50,6 +50,7 @@
           <div class="cc-pane" data-pane="cat">
           <section class="cc-sec"><div class="cc-label"><span data-l="love"></span><small class="cc-mood"></small></div><div class="cc-hearts"></div></section>
           <section class="cc-sec"><div class="cc-label"><span data-l="growth"></span><small class="cc-next"></small></div><div class="cc-grow"><i></i></div><div class="cc-steps"></div></section>
+          <p class="cc-lonely" hidden></p>
           <section class="cc-sec"><div class="cc-label"><span data-l="traits"></span></div><div class="cc-chips"></div></section>
           <section class="cc-sec cc-tricks"><div class="cc-label"><span data-l="tricks"></span><small class="cc-thint"></small></div><div class="cc-trk"></div></section>
           <section class="cc-sec"><label class="cc-toggle"><input type="checkbox"><span class="cc-switch"></span><span data-t="showName"></span></label></section>
@@ -94,7 +95,7 @@
         </div>
         <div class="cc-foot">
           <span class="cc-born"></span>
-          <span class="cc-tools"><button class="cc-pin" type="button" data-title="pin" hidden>📍</button><button class="cc-snd" type="button" data-title="sound" hidden>🔊</button><button class="cc-mic" type="button" data-title="voices" hidden>🎙️</button><span class="cc-sizer" title=""><button type="button" data-z="-1">−</button><b>🔍</b><button type="button" data-z="1">+</button></span>
+          <span class="cc-tools"><button class="cc-pin" type="button" data-title="pin" hidden>📍</button><button class="cc-snd" type="button" data-title="sound" hidden>🔊</button><button class="cc-mic" type="button" data-title="voices" hidden>🎙️</button><label class="cc-sizer" title=""><b>🔍</b><input type="range" min="0.5" max="1.1" step="0.02"></label>
           <span class="cc-lang"><button type="button" data-lang="tr">TR</button>·<button type="button" data-lang="en">EN</button></span></span>
         </div>
         <div class="cc-flash"></div>
@@ -105,11 +106,11 @@
     const form = q(".cc-rename"), input = form.querySelector("input");
 
     let cat = null, raf = 0, last = 0, pt = 0, blinkT = 2, blink = false, lastLove = null, logKey = "", tabKey = "", tickT = 0;
-    let pane = "cat", kind = "hat", design = null, wardKey = "", size = SIZES.includes(opts.size) ? opts.size : 0.66;
+    let pane = "cat", kind = "hat", design = null, wardKey = "", size = opts.size >= 0.5 && opts.size <= 1.1 ? +opts.size : 0.66;
     // where you've put the card: null = follow the cat; { x, y, up } = left edge, and the top (or bottom when "up") edge
     let pinned = opts.pos && Number.isFinite(opts.pos.x) ? opts.pos : null;
     const T = () => L.STR[L.lang];
-    const setSize = (z) => { size = z; root.style.setProperty("--z", z); };
+    const setSize = (z) => { size = Math.max(0.5, Math.min(1.1, +z)); root.style.setProperty("--z", size); const r = root.querySelector(".cc-sizer input"); if (r && document.activeElement !== r) r.value = size; };
     setSize(size);
 
     // ------------------------------------------------ drawing
@@ -231,10 +232,10 @@
     function renderHome(t) {
       q(".cc-ht").textContent = `🏠 ${t.home}`; q(".cc-hwallet").textContent = t.wallet(L.wallet.stars); q(".cc-hhelp").textContent = t.homeHint;
       const H = L.home, html = Object.keys(DC.FURN).map((k) => {
-        const own = H.owned.includes(k), placed = !!world.furniture.find((f) => f.kind === k), price = DC.FURN[k].price, [nm, ds] = t.furn[k];
-        const btn = own ? `<button type="button" class="cc-pill${placed ? "" : " gold"}" data-fu="${placed ? "away" : "place"}">${esc(placed ? t.putAway : t.place)}</button>`
-          : `<button type="button" class="cc-pill gold" data-fu="buy"${L.wallet.stars < price ? " disabled" : ""}>⭐ ${price}</button>`;
-        return `<div class="cc-item${own ? " own" : ""}" data-k="${k}"><canvas width="64" height="56" data-f="${k}"></canvas><div><b>${esc(nm)}</b><small>${esc(ds)}</small></div>${btn}</div>`;
+        const own = H.owned[k] || 0, out = world.furniture.filter((f) => f.kind === k).length, price = DC.FURN[k].price, [nm, ds] = t.furn[k];
+        const btns = `<button type="button" class="cc-pill gold" data-fu="buy"${L.wallet.stars < price ? " disabled" : ""}>⭐ ${price}</button>`
+          + (own ? `<span class="cc-fbtns"><button type="button" class="cc-pill" data-fu="place"${out >= own ? " disabled" : ""}>${esc(t.place)}</button><button type="button" class="cc-pill" data-fu="away"${out ? "" : " disabled"}>${esc(t.putAway)}</button></span>` : "");
+        return `<div class="cc-item${own ? " own" : ""}" data-k="${k}"><canvas width="64" height="56" data-f="${k}"></canvas><div><b>${esc(nm)}</b><small>${esc(ds)}</small>${own ? `<small class="cc-own">${esc(t.ownedN(own, out))}</small>` : ""}</div><div class="cc-fcol">${btns}</div></div>`;
       }).join("");
       const box = q(".cc-items"); if (box.dataset.v === html) return; box.innerHTML = html; box.dataset.v = html;
       box.querySelectorAll("canvas[data-f]").forEach((k) => DC.furnitureThumb(k.dataset.f, k.getContext("2d")));
@@ -281,7 +282,8 @@
       root.querySelectorAll("[data-pane]").forEach((d) => { d.hidden = d.dataset.pane !== pane; });
       q(".cc-name").textContent = p.name;
       const days = Math.floor((now - p.born) / 864e5);
-      q(".cc-sub").textContent = `${L.COAT_NAMES[p.coat] ? L.COAT_NAMES[p.coat][lang] : p.coat} · ${t.age(days)}`;
+      q(".cc-sub").textContent = `${L.COAT_NAMES[p.coat] ? L.COAT_NAMES[p.coat][lang] : p.coat} · ${p.sex === "f" ? t.sexF : t.sexM} · ${t.age(days)}`;
+      const lone = q(".cc-lonely"); lone.hidden = !L.isLonely(p); lone.textContent = t.lonely;
       const st = L.stage(p); q(".cc-stage").textContent = `${st.e} ${st[lang]}`;
       const bd = q(".cc-bday"); bd.hidden = !L.isBirthday(p); bd.title = t.birthdayToday;
       const hearts = Array.from({ length: 10 }, (_, i) => { const f = clamp((p.love - i * 10) / 10, 0, 1); return heart(f >= 0.9 ? 1 : f >= 0.4 ? 0.5 : 0); }).join("");
@@ -450,10 +452,10 @@
     q(".cc-items").onclick = (e) => {
       const b = e.target.closest("[data-fu]"); if (!b) return; const k = b.closest("[data-k]").dataset.k, H = L.home;
       if (b.dataset.fu === "buy") {
-        const price = DC.FURN[k].price; if (L.wallet.stars < price || H.owned.includes(k)) return;
-        L.wallet.stars -= price; H.owned.push(k); floatUp("⭐", b);
+        const price = DC.FURN[k].price; if (L.wallet.stars < price) return;
+        L.wallet.stars -= price; H.owned[k] = (H.owned[k] || 0) + 1; floatUp("⭐", b);
         const f = world.placeFurniture(k); world.confetti(f.x, world.floor - 30, 20);
-      } else if (b.dataset.fu === "place") world.placeFurniture(k);
+      } else if (b.dataset.fu === "place") { if (world.furniture.filter((f) => f.kind === k).length < (H.owned[k] || 0)) world.placeFurniture(k); }
       else world.removeFurniture(k);
       L.changed(); q(".cc-items").dataset.v = ""; update();
     };
@@ -534,8 +536,10 @@
       const p = cat.profile, pickK = (o) => { const ks = Object.keys(o); return ks[Math.floor(Math.random() * ks.length)]; };
       p.acc = {};
       const open = (k) => Object.fromEntries(Object.entries(W[k]).filter(([d]) => !L.price(k, d)));   // only what's unlocked
-      for (const k of ["hat", "collar", "outfit"]) if (Math.random() < 0.75) p.acc[k] = `${pickK(open(k))}:${pickK(W.schemes)}`;
-      if (!Object.keys(p.acc).length) p.acc.hat = `${pickK(open("hat"))}:${pickK(W.schemes)}`;
+      const kinds = ["hat", "collar", "outfit"].filter((k) => Object.keys(open(k)).length);
+      if (!kinds.length) { kind = "hat"; design = Object.keys(W.hat)[0]; wardKey = ""; renderWardrobe(); return; }   // nothing bought yet: show what's for sale
+      for (const k of kinds) if (Math.random() < 0.75) p.acc[k] = `${pickK(open(k))}:${pickK(W.schemes)}`;
+      if (!Object.keys(p.acc).length) p.acc[kinds[0]] = `${pickK(open(kinds[0]))}:${pickK(W.schemes)}`;
       L.care(cat, "dress", { kind: Object.keys(p.acc)[0], item: Object.values(p.acc)[0] });
       design = p.acc[kind] ? p.acc[kind].split(":")[0] : null; wardKey = ""; tabKey = ""; L.changed(); update(); floatUp("✨", e.currentTarget);
     };
@@ -549,10 +553,8 @@
     q('[data-r="ask"]').onclick = () => { q(".cc-confirm").hidden = false; q('[data-r="ask"]').hidden = true; };
     q('[data-r="no"]').onclick = () => { q(".cc-confirm").hidden = true; q('[data-r="ask"]').hidden = false; };
     q('[data-r="yes"]').onclick = () => { const c = cat; q(".cc-confirm").hidden = true; q('[data-r="ask"]').hidden = false; if (opts.onRemove) opts.onRemove(c); };
-    root.querySelectorAll("[data-z]").forEach((b) => b.onclick = () => {
-      const i = clamp(SIZES.indexOf(size) + Number(b.dataset.z), 0, SIZES.length - 1); setSize(SIZES[i]); if (opts.onSize) opts.onSize(size);
-      requestAnimationFrame(place);
-    });
+    q(".cc-sizer input").value = size;
+    q(".cc-sizer input").addEventListener("input", (e) => { setSize(e.target.value); if (opts.onSize) opts.onSize(size); requestAnimationFrame(place); });
     addEventListener("resize", () => { if (!root.hidden) place(); });
     root.querySelectorAll("[data-lang]").forEach((b) => b.onclick = () => { L.lang = b.dataset.lang; logKey = ""; tabKey = ""; wardKey = ""; update(); if (opts.onLang) opts.onLang(L.lang); });
     addEventListener("keydown", (e) => { if (e.key === "Escape" && !root.hidden) api.close(); });
@@ -576,6 +578,7 @@
       close() { root.hidden = true; cancelAnimationFrame(raf); raf = 0; if (opts.onClose) opts.onClose(); },
       refresh() { if (!root.hidden) update(); },
       get size() { return size; },
+      setSize: (z) => { setSize(z); if (!root.hidden) requestAnimationFrame(place); },
     };
     return api;
   }

@@ -1,0 +1,57 @@
+/* ⚙️ settings: a round button by the floor, and a panel in the same storybook style as the cat cards */
+.st-fab {
+  position: fixed; right: 14px; bottom: 14px; z-index: 40; width: 42px; height: 42px; border: 0; border-radius: 50%;
+  background: #fff7ec; font-size: 20px; cursor: pointer; opacity: .6; transition: opacity .15s, transform .15s;
+  box-shadow: 0 0 0 2.5px #5b3a29, 0 3px 0 2.5px #5b3a29;
+}
+.st-fab:hover { opacity: 1; transform: rotate(30deg); }
+.st {
+  position: fixed; right: 14px; z-index: 41; width: 330px; max-height: var(--maxh, 70vh); display: flex; flex-direction: column;
+  border-radius: 22px; background: #fff7ec; color: #5b3a29; font: 700 13px/1.3 "Nunito", sans-serif; overflow: hidden;
+  box-shadow: 0 0 0 3px #5b3a29, 0 6px 0 3px #5b3a29, 0 18px 40px rgba(60, 30, 10, .25); animation: st-in .18s ease-out;
+}
+.st[hidden] { display: none; }
+@keyframes st-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+.st-head { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; background: repeating-radial-gradient(circle at 0 0, #ffe9d6 0 2px, #fff1e2 2px 9px); border-bottom: 2px dashed rgba(91, 58, 41, .25); }
+.st-head b { font: 700 19px "Pixelify Sans", monospace; flex: 1; }
+.st-wallet { font: 700 14px "Pixelify Sans", monospace; }
+.st-x { width: 30px; height: 30px; border: 0; border-radius: 10px; background: #fff; cursor: pointer; font: 700 18px/1 "Nunito", sans-serif; color: #5b3a29; box-shadow: 0 0 0 2px #5b3a29, 0 2px 0 2px #5b3a29; }
+.st-body { overflow-y: auto; padding: 4px 14px 14px; scrollbar-width: thin; }
+.st section { padding: 10px 0 8px; border-bottom: 2px dashed rgba(91, 58, 41, .15); }
+.st section:last-child { border-bottom: 0; }
+.st h3 { margin: 0 0 8px; font: 700 14px "Pixelify Sans", monospace; display: flex; align-items: baseline; gap: 6px; }
+.st h3 small { margin-left: auto; font: 800 11px "Nunito", sans-serif; opacity: .6; }
+.st-coats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.st-coat { width: 26px; height: 26px; border: 0; border-radius: 50%; cursor: pointer; background: linear-gradient(135deg, var(--a) 55%, var(--b) 55%); box-shadow: 0 0 0 2px #5b3a29; }
+.st-coat.dice { background: #fff; font-size: 14px; }
+.st-coat:hover { transform: scale(1.12); }
+.st-coat:disabled { opacity: .35; cursor: default; transform: none; }
+.st-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+.st-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.st-b {
+  border: 0; border-radius: 12px; padding: 7px 6px; cursor: pointer; background: #fff; color: #5b3a29; font: 800 11.5px/1.2 "Nunito", sans-serif;
+  box-shadow: 0 0 0 2px rgba(91, 58, 41, .3), 0 2px 0 2px rgba(91, 58, 41, .3); text-align: center;
+}
+.st-b:hover { background: #fff1e2; }
+.st-b:active { transform: translateY(1px); box-shadow: 0 0 0 2px rgba(91, 58, 41, .3); }
+.st-b.pink { background: #ffe1ea; }
+.st-b.gold { background: #ffd34d; grid-column: 1 / -1; font-size: 13px; padding: 9px; box-shadow: 0 0 0 2px #5b3a29, 0 3px 0 2px #5b3a29; }
+.st-b.ghost { background: transparent; }
+.st-b.red { background: #ff8fa3; color: #fff; }
+.st-b.tog.on { background: #ffd0d7; box-shadow: 0 0 0 2px #e2557a, 0 2px 0 2px #e2557a; }
+.st-range { display: grid; gap: 4px; margin: 6px 0 10px; }
+.st-range span { display: flex; justify-content: space-between; font-size: 12px; }
+.st-range b { font: 700 12px "Pixelify Sans", monospace; opacity: .7; }
+.st-range input { -webkit-appearance: none; appearance: none; width: 100%; height: 10px; border-radius: 99px; background: #f2e1da; box-shadow: inset 0 0 0 2px rgba(91, 58, 41, .25); outline: none; }
+.st-range input::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #ff8fab; cursor: grab; box-shadow: 0 0 0 2.5px #5b3a29, 0 2px 0 2.5px #5b3a29; }
+.st-range input::-moz-range-thumb { width: 22px; height: 22px; border: 0; border-radius: 50%; background: #ff8fab; cursor: grab; box-shadow: 0 0 0 2.5px #5b3a29; }
+.st-sw { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; cursor: pointer; font-size: 12.5px; }
+.st-sw input { display: none; }
+.st-sw i { position: relative; width: 38px; height: 22px; border-radius: 99px; background: #e8d6cc; box-shadow: inset 0 0 0 2px rgba(91, 58, 41, .3); transition: background .15s; flex: none; }
+.st-sw i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #5b3a29; transition: left .15s; }
+.st-sw input:checked + i { background: #6fd3a8; }
+.st-sw input:checked + i::after { left: 19px; }
+.st-seg-l { font-size: 12px; margin: 2px 0 5px; }
+.st-seg { display: flex; gap: 3px; padding: 3px; border-radius: 12px; background: #f6e7de; box-shadow: inset 0 0 0 2px rgba(91, 58, 41, .18); margin-bottom: 8px; }
+.st-seg button { flex: 1; border: 0; border-radius: 9px; padding: 6px 4px; background: none; cursor: pointer; color: #5b3a29; font: 800 11.5px "Nunito", sans-serif; opacity: .65; }
+.st-seg button.on { background: #fff; opacity: 1; box-shadow: 0 0 0 2px #5b3a29; }

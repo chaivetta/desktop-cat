@@ -5,23 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Desktop Cat</title>
 <link rel="stylesheet" href="card.css">
+<link rel="stylesheet" href="settings.css">
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:transparent;user-select:none;-webkit-user-select:none}
   #stage{position:fixed;inset:0;display:block;touch-action:none}
   body.demo{background:linear-gradient(#f4efe6 0 78%,#d9c7a8 78% 100%)}
   @media (prefers-color-scheme: dark){ body.demo{background:linear-gradient(#1e1a16 0 78%,#3a2f24 78% 100%)} }
-  .panel{position:fixed;left:16px;top:16px;right:16px;max-width:560px;font:15px/1.4 Georgia,serif;color:#1f1b16;
-         background:rgba(244,239,230,.92);border:1px solid #b08d57;padding:14px 16px;display:none}
-  @media (prefers-color-scheme: dark){ .panel{background:rgba(30,26,22,.92);color:#f1e8da} }
-  body.demo .panel{display:block}
-  .panel h1{font:italic 600 26px Georgia,serif;margin:0 0 4px}
-  .panel p{margin:0 0 10px;opacity:.75;font-style:italic}
-  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
-  .panel button{font:12px Georgia,serif;letter-spacing:.08em;border:1px solid #b08d57;background:transparent;color:inherit;padding:6px 10px;cursor:pointer}
-  .panel button:hover{background:rgba(176,141,87,.15)}
-  .sw{width:22px;height:22px;padding:0!important;border-radius:50%}
-  .panel button.hl{border-color:#ff8fab;background:#ffe1ea;color:#5b3a29}
-  .panel h1 .lang{float:right;font:600 12px Georgia,serif;letter-spacing:.1em;margin-top:4px}
   .gamebox{position:fixed;left:50%;top:80px;transform:translateX(-50%);z-index:50;min-width:280px;padding:16px 20px;border-radius:18px;background:#fff7ec;color:#5b3a29;
     font:700 15px "Nunito",sans-serif;text-align:center;box-shadow:0 0 0 3px #5b3a29,0 6px 0 3px #5b3a29}
   .gamebox[hidden]{display:none}
@@ -34,58 +23,10 @@
 </head>
 <body>
 <canvas id="stage"></canvas>
-<div class="panel" id="panel">
-  <h1>Desktop Cat <button id="lang" class="lang">EN</button></h1>
-  <p data-i="intro"></p>
-  <div class="row" id="coats"><span data-i="adopt" style="opacity:.7;margin-right:4px"></span></div>
-  <div class="row">
-    <button id="yarn" data-i="yarn"></button>
-    <button id="mouse" data-i="mouse"></button>
-    <button id="box" data-i="box"></button>
-    <button id="feed" data-i="feed"></button>
-    <button id="laser"></button>
-  </div>
-  <div class="row">
-    <button id="wand"></button>
-    <button id="catnip" data-i="catnip"></button>
-    <button id="butterfly" data-i="butterfly"></button>
-    <button id="bed" data-i="bed"></button>
-    <button id="post" data-i="post"></button>
-    <button id="shelf" data-i="shelf"></button>
-    <button id="clear" data-i="clear"></button>
-  </div>
-  <div class="row">
-    <button id="cards" class="hl" data-i="cards"></button>
-    <button id="remove" data-i="remove"></button>
-    <button id="removeAll" data-i="removeAll"></button>
-    <button id="purr"></button>
-    <button id="meow"></button>
-    <button id="night"></button>
-  </div>
-  <div class="row">
-    <button id="tasks"></button>
-    <button id="breed"></button>
-    <button id="seasons"></button>
-    <button id="birds"></button>
-    <button id="strays"></button>
-  </div>
-  <div class="row">
-    <button id="game" class="hl" data-i="game"></button>
-    <button id="bird" data-i="bird"></button>
-    <button id="stray" data-i="stray"></button>
-  </div>
-  <div class="row">
-    <span data-i="catSize" style="opacity:.7;margin:0 2px 0 0"></span>
-    <button id="smaller">−</button>
-    <button id="bigger">+</button>
-    <span data-i="toySize" style="opacity:.7;margin:0 2px 0 6px"></span>
-    <button id="toysSmaller">−</button>
-    <button id="toysBigger">+</button>
-  </div>
-</div>
 <script src="cat.js"></script>
 <script src="profile.js"></script>
 <script src="card.js"></script>
+<script src="settings.js"></script>
 <script>
 (() => {
   const { World, COATS, COAT_KEYS, SCALE_MIN, SCALE_MAX } = window.DesktopCat;
@@ -94,20 +35,6 @@
   const KEY = "desktop-cat:v2", OLD_KEY = "desktop-cat:v1";
   const read = (k) => { try { return JSON.parse(localStorage.getItem(k)) || null; } catch { return null; } };
 
-  // every word the page shows, in both languages (the tray menu has its own copy in main.js)
-  const UI = {
-    en: { intro: "Click a cat to pet it, drag it to pick it up. Right-click a cat to open its card. Bring out a toy — most of them can be dragged around too.",
-      adopt: "Adopt:", yarn: "Yarn", mouse: "Wind-up mouse", box: "Box", feed: "Feed", laser: "Laser", wand: "Feather wand", catnip: "Catnip", butterfly: "Butterfly",
-      bed: "Cat bed", post: "Scratching post", shelf: "Wall shelf", clear: "Put toys away", cards: "Cat cards", remove: "Remove a cat", removeAll: "Remove all cats",
-      sure: "Sure? Click again", purr: "Purring", meow: "Meowing", on: "on", off: "off", night: "Night", auto: "follow the clock", day: "always day", nightOn: "always night",
-      catSize: "Cat size:", toySize: "Toy size:", tasks: "Daily tasks", breed: "Kittens", seasons: "Seasons", birds: "Birds", strays: "Stray cats", game: "🔴 Laser hunt", bird: "Call a bird", stray: "Call a stray" },
-    tr: { intro: "Sevmek için kediye tıkla, kucağa almak için sürükle. Kartını açmak için kediye sağ tıkla. Bir oyuncak çıkar; çoğunu sürükleyebilirsin.",
-      adopt: "Sahiplen:", yarn: "Yumak", mouse: "Kurmalı fare", box: "Kutu", feed: "Mama ver", laser: "Lazer", wand: "Tüylü olta", catnip: "Kedi otu", butterfly: "Kelebek",
-      bed: "Kedi yatağı", post: "Tırmalama direği", shelf: "Duvar rafı", clear: "Oyuncakları topla", cards: "Kedi kartları", remove: "Bir kediyi kaldır", removeAll: "Tüm kedileri kaldır",
-      sure: "Emin misin? Tekrar tıkla", purr: "Mırlama", meow: "Miyavlama", on: "açık", off: "kapalı", night: "Gece", auto: "saate göre", day: "hep gündüz", nightOn: "hep gece",
-      catSize: "Kedi boyu:", toySize: "Oyuncak boyu:", tasks: "Günlük görevler", breed: "Yavrulama", seasons: "Mevsimler", birds: "Kuşlar", strays: "Sokak kedileri", game: "🔴 Lazer avı", bird: "Kuş çağır", stray: "Sokak kedisi çağır" },
-  };
-  const ui = (k) => UI[L.lang][k];
 
   // your own meow recordings live in IndexedDB (they're too big for localStorage), in three groups by age
   const Voices = (() => {
@@ -137,9 +64,14 @@
     saved = { cats: L.migrate(old.cats || []), scale: old.scale || 3, toyScale: old.toyScale || old.scale || 3 };
   }
   if (saved.lang) L.lang = saved.lang;
-  L.tasksOn = saved.tasksOn ?? true; L.breedOn = saved.breedOn ?? true;
+  L.tasksOn = true; L.breedOn = saved.breedOn ?? true;
   L.loadWallet(saved.wallet, saved.cats);
-  if (saved.home) L.home = { owned: saved.home.owned || [], placed: saved.home.placed || {} };
+  // furniture: how many of each you own, and where each one stands (older saves had one of each)
+  if (saved.home) {
+    const ow = saved.home.owned, pl = saved.home.placed;
+    L.home.owned = Array.isArray(ow) ? Object.fromEntries(ow.map((k) => [k, 1])) : ow || {};
+    L.home.placed = Array.isArray(pl) ? pl : Object.entries(pl || {}).map(([k, x]) => ({ k, x }));
+  }
   if (saved.game) L.game = { best: 0, day: "", stars: 0, ...saved.game };
   // "days together" count from your very first cat
   L.since = saved.since || Math.min(Date.now(), ...saved.cats.map((p) => p.born || Date.now())); L.togetherDone = saved.togetherDone || 0;
@@ -154,7 +86,7 @@
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
         tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn,
-        home: { owned: L.home.owned, placed: Object.fromEntries(world.furniture.map((f) => [f.kind, +(f.x / world.W).toFixed(4)])) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
+        home: { owned: L.home.owned, placed: world.furniture.map((f) => ({ k: f.kind, x: +(f.x / world.W).toFixed(4) })) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
   };
   let saveT = 0; L.onChange = () => { clearTimeout(saveT); saveT = setTimeout(save, 400); card && card.refresh(); };
@@ -172,7 +104,13 @@
   saved.cats.forEach((p, i) => setTimeout(() => { world.addCat(null, p); }, 350 * i));
   Voices.load();
   // furniture back where you left it
-  Object.entries(L.home.placed).forEach(([k, fx]) => { if (L.home.owned.includes(k) && DesktopCat.FURN[k]) world.placeFurniture(k, fx * world.W); });
+  const placedN = {};
+  L.home.placed.forEach(({ k, x }) => { placedN[k] = (placedN[k] || 0) + 1; if (DesktopCat.FURN[k] && placedN[k] <= (L.home.owned[k] || 0)) world.placeFurniture(k, x * world.W); });
+  // a lonely cat that walked out: the others remember
+  world.onCatLeft = (c) => {
+    world.cats.forEach((o) => { if (o.profile) L.write(o.profile, "left", { n: c.profile.name }); });
+    if (card.cat === c) card.close(); save(); card.refresh();
+  };
   // a stray who's been fed three times moves in
   world.onAdoptStray = (c) => {
     const p = L.make(c.coat, { taken: world.cats.filter((x) => x.profile).map((x) => x.profile.name), g0: 0.6, love: 55, quiet: true });
@@ -185,8 +123,9 @@
   world.onGameEnd = (score) => {
     const t = L.STR[L.lang], today = new Date().toDateString(); if (L.game.day !== today) { L.game.day = today; L.game.stars = 0; }
     const best = score > (L.game.best || 0); if (best) L.game.best = score;
-    let st = (score >= 15 ? 3 : score >= 10 ? 2 : score >= 5 ? 1 : 0) + (best && score >= 5 ? 1 : 0);
-    const capped = st > 0 && L.game.stars >= 6; st = Math.max(0, Math.min(st, 6 - L.game.stars)); L.game.stars += st; L.wallet.stars += st;
+    // stars are hard to come by: 1 for 12+, 2 for 20+, and at most 2 a day from the game
+    let st = score >= 20 ? 2 : score >= 12 ? 1 : 0;
+    const capped = st > 0 && L.game.stars >= 2; st = Math.max(0, Math.min(st, 2 - L.game.stars)); L.game.stars += st; L.wallet.stars += st;
     gameBox.innerHTML = `<b>🔴 ${t.game}</b><p>${t.gameOver(score, st, best)}</p>${capped ? `<small>${t.gameCap}</small>` : ""}<small>${t.bestL(L.game.best)}</small><div><button data-g="again">${t.again}</button><button data-g="close">${t.closeB}</button></div>`;
     gameBox.hidden = false; if (st) world.confetti(innerWidth / 2, 120, 40); L.changed(); save();
   };
@@ -224,43 +163,21 @@
   function haveKitten(force) {
     const r = L.tryBreed(world, force); if (!r) return null;
     const [a, b] = r.parents, s = world.scale;
-    const c = world.addCat(null, r.profile);
-    c.x = (a.x + b.x) / 2; c.y = world.floor - 40 * s;
+    const kits = r.kits.map((p, i) => { const k = world.addCat(null, p); k.x = (a.x + b.x) / 2 + (i - (r.kits.length - 1) / 2) * 24 * s; k.y = world.floor - (40 + i * 10) * s; return k; }), c = kits[0];
     [a, b].forEach((p) => { world.burst(p.x, p.y - 32 * p.s, "heart", "#e2557a", 4); if (!["held", "fall", "leap", "inbox", "sleep"].includes(p.state) && !p.bed && !p.perch) p.set("happy", 3, { eyes: null }); });
     world.confetti(c.x, world.floor - 30 * s, 28); world.meow(c); save();
-    return c;
+    return kits;
   }
   setInterval(() => haveKitten(false), 60000);
   window.DesktopCatDemo = { haveKitten };
 
-  // laser and feather wand are on/off toys; keep the buttons (or the tray menu) in step
+  // keep the settings panel (and the few tray items) in step
   function syncToggles() {
-    if (bridge) {
-      bridge.setLaser(world.laser); bridge.setWand(!!world.wand);
-      bridge.setSettings({ purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode, lang: L.lang, tasksOn: L.tasksOn, breedOn: L.breedOn, seasonsOn: world.seasonsOn, birdsOn: world.birdsOn, strayOn: world.strayOn });
-      return;
-    }
-    const on = (v) => ui(v ? "on" : "off");
-    document.getElementById("laser").textContent = `${ui("laser")}${world.laser ? ": " + ui("on") : ""}`;
-    document.getElementById("wand").textContent = `${ui("wand")}${world.wand ? ": " + ui("on") : ""}`;
-    document.getElementById("purr").textContent = `${ui("purr")}: ${on(world.purrOn)}`;
-    document.getElementById("meow").textContent = `${ui("meow")}: ${on(world.meowOn)}`;
-    document.getElementById("night").textContent = `${ui("night")}: ${ui({ auto: "auto", day: "day", night: "nightOn" }[world.nightMode])}`;
-    document.getElementById("tasks").textContent = `🎯 ${ui("tasks")}: ${on(L.tasksOn)}`;
-    document.getElementById("breed").textContent = `🍼 ${ui("breed")}: ${on(L.breedOn)}`;
-    document.getElementById("seasons").textContent = `❄️ ${ui("seasons")}: ${on(world.seasonsOn)}`;
-    document.getElementById("birds").textContent = `🐦 ${ui("birds")}: ${on(world.birdsOn)}`;
-    document.getElementById("strays").textContent = `🐈 ${ui("strays")}: ${on(world.strayOn)}`;
+    if (bridge) bridge.setSettings({ lang: L.lang });
+    if (settings) settings.sync();
   }
-  // one language for everything: the page, the cards and the tray menu
-  function applyLang() {
-    document.documentElement.lang = L.lang;
-    document.querySelectorAll("[data-i]").forEach((el) => { el.textContent = ui(el.dataset.i); });
-    const lb = document.getElementById("lang"); if (lb) lb.textContent = L.lang === "tr" ? "EN" : "TR";
-    document.querySelectorAll("#coats .sw").forEach((b) => { b.title = L.COAT_NAMES[b.dataset.coat][L.lang]; });
-    if (bridge) bridge.setCoats(COAT_KEYS.map(k => ({ key: k, name: L.COAT_NAMES[k][L.lang] })));
-    syncToggles();
-  }
+  // one language for everything: the settings, the cards and the tray
+  function applyLang() { document.documentElement.lang = L.lang; syncToggles(); }
   const act = {
     // a new cat always arrives as a kitten, and asks for a name
     add: (coat) => {
@@ -276,7 +193,6 @@
     meow: (on) => { world.meowOn = typeof on === "boolean" ? on : !world.meowOn; save(); syncToggles(); if (world.meowOn) world.meow(world.cats[0]); },
     // the card's 🔊 button: everything off, or everything back on
     mute: () => { const any = world.purrOn || world.meowOn; world.purrOn = world.meowOn = !any; save(); syncToggles(); card.refresh(); },
-    tasks: (on) => { L.tasksOn = typeof on === "boolean" ? on : !L.tasksOn; save(); syncToggles(); card.refresh(); },
     birds: (on) => { world.birdsOn = typeof on === "boolean" ? on : !world.birdsOn; save(); syncToggles(); },
     strays: (on) => { world.strayOn = typeof on === "boolean" ? on : !world.strayOn; save(); syncToggles(); },
     bird: () => world.addBird({ land: Math.random() < 0.6 }),
@@ -298,6 +214,9 @@
     bed: () => world.addBed(),
     post: () => world.addPost(),
     clear: () => { world.clearToys(); syncToggles(); },
+    // the size sliders: cats, toys
+    setScale: (k, v) => { world[k] = Math.max(SCALE_MIN, Math.min(SCALE_MAX, +v)); save(); },
+    settings: () => settings.open(),
     bigger: () => { world.scale = Math.min(SCALE_MAX, world.scale + 1); save(); },
     smaller: () => { world.scale = Math.max(SCALE_MIN, world.scale - 1); save(); },
     toysBigger: () => { world.toyScale = Math.min(SCALE_MAX, world.toyScale + 1); save(); },
@@ -308,37 +227,19 @@
   const catAt = (e) => { const h = world.hitTest(e.clientX, e.clientY); return h && h.cat; };
   addEventListener("contextmenu", (e) => { const c = catAt(e); if (c) { e.preventDefault(); card.open(c); } });
   addEventListener("dblclick", (e) => {
-    if (e.target.closest && e.target.closest(".ui, .panel")) return;
+    if (e.target.closest && e.target.closest(".ui")) return;
     if (catAt(e)) return;
     if (!bridge && !world.hitTest(e.clientX, e.clientY)) world.throwYarn(e.clientX, e.clientY);
   });
 
-  if (bridge) {
-    bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](["laser", "wand", "purr", "meow", "tasks", "breed", "seasons", "birds", "strays"].includes(cmd.type) ? cmd.on : cmd.type === "night" ? cmd.mode : cmd.type === "lang" ? cmd.lang : cmd.coat); });
-    applyLang();
-  } else {
-    const box = document.getElementById("coats");
-    COAT_KEYS.forEach(k => {
-      const b = document.createElement("button"); b.className = "sw"; b.dataset.coat = k;
-      b.style.background = `linear-gradient(135deg, ${COATS[k].body} 55%, ${COATS[k].accent} 55%)`;
-      b.onclick = () => act.add(k); box.appendChild(b);
-    });
-    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "shelf", "clear", "cards", "remove", "purr", "meow", "night", "lang", "tasks", "breed", "seasons", "birds", "strays", "game", "bird", "stray"].forEach(id => document.getElementById(id).onclick = () => act[id]());
-    // removing every cat asks twice
-    const ra = document.getElementById("removeAll");
-    ra.onclick = () => {
-      if (ra.dataset.sure) { act.removeAll(); ra.textContent = ui("removeAll"); delete ra.dataset.sure; return; }
-      ra.dataset.sure = 1; ra.textContent = ui("sure"); setTimeout(() => { delete ra.dataset.sure; ra.textContent = ui("removeAll"); }, 3000);
-    };
-    applyLang();
-    document.getElementById("laser").onclick = () => act.laser();
-    document.getElementById("wand").onclick = () => act.wand();
-    document.getElementById("bigger").onclick = act.bigger;
-    document.getElementById("smaller").onclick = act.smaller;
-    document.getElementById("toysBigger").onclick = act.toysBigger;
-    document.getElementById("toysSmaller").onclick = act.toysSmaller;
-    setTimeout(() => { if (!world.yarn) world.throwYarn(); }, 2500);
-  }
+  var settings = window.CatSettings.create({
+    world, act, bridge, card: () => card,
+    setCardSize: (v) => { card.setSize(v); save(); },
+    onClose: () => { overUI = false; syncIgnore(); },
+  });
+  if (bridge) bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](cmd.on ?? cmd.mode ?? cmd.lang ?? cmd.coat); });
+  applyLang();
+  if (!bridge) setTimeout(() => { if (!world.yarn) world.throwYarn(); }, 2500);
 })();
 </script>
 </body>
