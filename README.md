@@ -109,6 +109,16 @@ Buy as many of each as you like and drag them anywhere. Cats loaf and roll on th
 
 Twenty more: they nap in the **basket**, **heat pad** (glows at night), **hammock**, **armchair** and **sofa**, hide in the **igloo**, climb the **stool** and **bookshelf**, nibble the **cat grass**, bat the **track ball**, **treat dispenser** and **ball pit**, walk on the **piano**, stare at the **mirror**, **fan**, **clock** pendulum and flickering **TV**, and doze by the **lamp** and the **radio** (music makes love fade a little slower). The **statue** is just for show.
 
+![Cat wheel, cardboard castle, teepee, beanbag, cardboard lounger, rocking chair, fireplace, window, lava lamp, Christmas tree, cactus scratcher and automatic feeder](docs/furniture-more.png)
+
+And twelve more: they run in the **cat wheel**, hide in the **cardboard castle** (and climb on top) and the **teepee**, nap on the **beanbag**, the **cardboard lounger** and the **rocking chair**, doze in front of the crackling **fireplace** (a warm home keeps love longer, more so in winter), watch the sky through the **window** (moon and stars at night), stare at the **lava lamp**, bat the baubles on the twinkling **Christmas tree** and scratch the **cactus**. The **automatic feeder** fills an empty bowl from your cupboard when someone's hungry, once every 8 hours.
+
+### 🧳 Guest cats
+
+<img src="docs/guest.png" width="520" alt="A neighbour asks you to look after their cat for a day">
+
+Now and then a neighbour asks you to look after their cat for a day. Accept and it moves in for 24 hours. When the owner comes back they pay you: more for a happy, fed, clean cat, more for a home full of things it can use, and more as your sitter rating grows. If the guest gets ill, goes hungry for too long or is left alone and unloved, they take it back and pay nothing, and your rating drops.
+
 ### Visitors
 
 <img src="docs/visitors.png" width="520" alt="A bird pecking at the floor and a shy stray cat">

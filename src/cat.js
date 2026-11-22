@@ -954,7 +954,7 @@
         case "rug": { const f = this.fRef; return f && w.furniture.includes(f) ? clamp(f.x + (this.rugOff || 0), 20, w.W - 20) : null; }
         case "plant": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * 12 * w.toyScale : null; }
         case "tunnel": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x + this.tunSide * 27 * w.toyScale : null; }
-        case "spot": { const f = this.fRef; if (!f || !w.furniture.includes(f)) return null; return f.f.act === "roll" || f.f.act === "knead" ? f.x : f.x - (this.x < f.x ? 1 : -1) * (f.f.w / 2 * w.toyScale + 10 * this.s); }
+        case "spot": { const f = this.fRef; if (!f || !w.furniture.includes(f)) return null; return f.f.act === "roll" || f.f.act === "knead" || f.f.on ? f.x : f.x - (this.x < f.x ? 1 : -1) * (f.f.w / 2 * w.toyScale + 10 * this.s); }
         case "drink": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * (10 * w.toyScale + 12 * this.s) : null; }
         case "litter": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x : null; }
         case "cushion": { const f = this.fRef; return f && w.furniture.includes(f) && (!f.occupant || f.occupant === this) ? f.x : null; }
@@ -1005,7 +1005,7 @@
           this.hissedAt = st; this.facing = Math.sign(st.x - this.x) || this.facing; this.set("arch", rnd(1.4, 2.2));
         }
       }
-      if (this.leaving && this.profile && this.profile.love >= 30) {             // you won it back
+      if (this.leaving && this.profile && !this.profile.guest && this.profile.love >= 30) {             // you won it back
         this.leaving = false; this.set("happy", 2.5, { eyes: null }); w.burst(this.x, this.y - 34 * s, "heart", "#e2557a", 4);
       }
       if (this.stray) {
@@ -2024,6 +2024,19 @@
     lamp:    { w: 14, h: 50, price: 60, role: "decor", durable: true },
     radio:   { w: 24, h: 16, price: 85, role: "decor", durable: true },
     statue:  { w: 20, h: 36, price: 300, role: "decor", durable: true },
+    // round 3: more places to run, hide, nap and stare
+    wheel:   { w: 42, h: 44, price: 260, role: "play", act: "gallop", on: true },
+    castle:  { w: 40, h: 46, price: 240, nap: 0, hide: true, perch: [[0, 46, 16]] },
+    teepee:  { w: 34, h: 36, price: 95, nap: 0, hide: true },
+    beanbag: { w: 32, h: 14, price: 75, nap: 8 },
+    scratcher:{ w: 36, h: 10, price: 40, nap: 6 },
+    rocker:  { w: 30, h: 34, price: 160, nap: 13 },
+    fireplace:{ w: 44, h: 38, price: 320, nap: 0, durable: true },
+    window:  { w: 38, h: 46, price: 210, role: "watch", durable: true },
+    lavalamp:{ w: 12, h: 30, price: 70, role: "watch", durable: true },
+    xmastree:{ w: 34, h: 58, price: 180, role: "play", act: "bat", durable: true },
+    cactus:  { w: 16, h: 30, price: 55, role: "play", act: "swipe" },
+    feeder:  { w: 22, h: 30, price: 400, role: "decor", durable: true },
     tunnel:  { w: 52, h: 16, price: 45 },
     fountain:{ w: 20, h: 24, price: 90, durable: true },
     litter:  { w: 30, h: 12, price: 35, durable: true },
@@ -2079,6 +2092,47 @@
       R.rect(2, 26, 16, 10, 1); R.rect(1, 25, 18, 2, 1);
       R.ellipse(10, 19, 6, 6.5, 2); R.circle(10, 9, 4.6, 2); R.tri(6, 7, 8, 6, 6.5, 2, 2); R.tri(12, 6, 14, 7, 13.5, 2, 2); R.limb(15, 22, 18, 12, 1.4, 2); R.put(9, 9, 3); R.put(11, 9, 3);
     }
+    else if (kind === "wheel") {
+      R.rect(4, 40, 34, 4, 1); R.rect(19, 22, 4, 18, 1);                                   // stand
+      for (let a = 0; a < 64; a++) { const t = a / 64 * Math.PI * 2; R.rect(21 + Math.cos(t) * 19, 21 + Math.sin(t) * 19, 2, 2, 2); }   // the rim
+      R.circle(21, 21, 2.5, 3);
+    }
+    else if (kind === "castle") {
+      R.rect(4, 14, 32, 32, 1); for (let y = 18; y < 46; y += 5) R.rect(4, y, 32, 1, 2);
+      for (const x of [4, 12, 20, 28]) R.rect(x, 10, 5, 4, 1);                             // battlements
+      R.rect(0, 6, 8, 40, 3); R.rect(32, 6, 8, 40, 3); R.tri(0, 6, 8, 6, 4, -2, 4); R.tri(32, 6, 40, 6, 36, -2, 4);   // towers
+      R.ellipse(20, 40, 6, 9, 5); R.rect(14, 40, 12, 6, 5); R.rect(3, 20, 2, 4, 5); R.rect(35, 20, 2, 4, 5);
+    }
+    else if (kind === "teepee") {
+      R.tri(17, 2, 0, 36, 34, 36, 1); for (let y = 10; y < 36; y += 7) for (let x = 0; x < 34; x += 4) if (Math.abs(x + 2 - 17) < (y - 2) / 2) R.put(x + 2, y, 2);
+      R.tri(17, 14, 10, 36, 24, 36, 3); R.limb(13, 0, 17, 4, 0.8, 4); R.limb(21, 0, 17, 4, 0.8, 4);
+    }
+    else if (kind === "beanbag") { R.ellipse(16, 9, 15.5, 5, 1); R.ellipse(16, 6, 10, 3.6, 2); R.ellipse(12, 5, 3, 1.2, 3); }
+    else if (kind === "scratcher") { for (let x = 0; x < 36; x++) { const y = 2 + Math.round(Math.sin(Math.PI * x / 35) * -2 + 2); R.rect(x, y, 1, 10 - y, x % 3 ? 1 : 2); } R.rect(0, 8, 36, 2, 3); }
+    else if (kind === "rocker") {
+      R.rect(3, 0, 4, 22, 1); R.rect(3, 2, 2, 18, 2); R.rect(3, 12, 24, 4, 1); R.rect(6, 10, 20, 2, 3);       // back and seat with a cushion
+      R.rect(5, 16, 2, 14, 1); R.rect(23, 16, 2, 14, 1); R.rect(24, 8, 2, 8, 1);
+      for (let x = 0; x < 30; x++) R.put(x, 31 + Math.round(((x - 15) / 15) ** 2 * 2), 1);
+    }
+    else if (kind === "fireplace") {
+      R.rect(0, 0, 44, 5, 1); R.rect(2, 5, 40, 33, 2); for (let y = 8; y < 38; y += 5) for (let x = (y % 10 ? 2 : 6); x < 42; x += 8) R.rect(x, y, 1, 4, 3);
+      R.rect(10, 14, 24, 24, 4); R.ellipse(22, 14, 12, 4, 4); R.rect(12, 33, 20, 3, 5);
+    }
+    else if (kind === "window") {
+      R.rect(0, 0, 38, 42, 1); R.rect(2, 2, 34, 36, 2); R.rect(18, 2, 2, 36, 1); R.rect(2, 19, 34, 2, 1);
+      R.rect(-1, 38, 40, 4, 3); R.rect(1, 42, 2, 4, 3); R.rect(35, 42, 2, 4, 3);
+    }
+    else if (kind === "lavalamp") { R.tri(6, 0, 2, 4, 10, 4, 1); R.rect(2, 4, 8, 3, 1); R.ellipse(6, 15, 4, 9, 2); R.tri(1, 24, 11, 24, 6, 20, 1); R.rect(1, 24, 10, 6, 1); }
+    else if (kind === "xmastree") {
+      for (let i = 0; i < 3; i++) R.tri(17, 2 + i * 14, 4 - i * 2, 22 + i * 14, 30 + i * 2, 22 + i * 14, 1);
+      R.rect(14, 50, 6, 4, 2); R.rect(10, 53, 14, 5, 3);
+      R.tri(17, -3, 14, 3, 20, 3, 4);
+    }
+    else if (kind === "cactus") { R.rect(5, 2, 6, 22, 1); R.ellipse(8, 2, 3, 2, 1); R.rect(1, 8, 3, 7, 1); R.rect(1, 14, 5, 2, 1); R.rect(12, 6, 3, 8, 1); R.rect(10, 12, 5, 2, 1); for (let y = 4; y < 22; y += 3) R.put(7 + (y % 2), y, 2); R.rect(2, 24, 12, 6, 3); R.rect(1, 23, 14, 2, 3); }
+    else if (kind === "feeder") {
+      R.rect(3, 0, 16, 3, 1); R.rect(4, 3, 14, 16, 2); R.rect(6, 5, 10, 10, 3); for (let y = 9; y < 15; y++) for (let x = 7; x < 15; x += 2) R.put(x + (y % 2), y, 4);
+      R.rect(2, 19, 18, 6, 1); R.ellipse(11, 26, 10, 3, 1); R.ellipse(11, 25, 7, 1.2, 4); R.put(16, 21, 5);
+    }
     else if (kind === "bed") { R.ellipse(15, 8, 14.5, 4.6, 1); R.ellipse(15, 7, 11, 2.6, 2); R.ellipse(15, 7.6, 9, 1.8, 3); R.rect(1, 9, 28, 3, 1); }
     else if (kind === "house") {
       R.tri(18, 0, 0, 13, 36, 13, 1); R.tri(18, 3, 4, 12, 32, 12, 2);                       // roof
@@ -2121,11 +2175,25 @@
     bed: { 1: { c: [92, 156, 214], lit: true }, 2: { c: [244, 226, 200] }, 3: { c: [255, 240, 222] } },
     house: { 1: { c: [214, 86, 86], lit: true }, 2: { c: [184, 64, 70] }, 3: { c: [222, 176, 120], lit: true }, 4: { c: [196, 148, 96] }, 5: { c: [58, 40, 34] }, 6: { c: [255, 210, 120] } },
     tree: { 1: { c: [218, 200, 176], lit: true }, 2: { c: [196, 166, 116] }, 3: { c: [166, 136, 92] }, 4: { c: [90, 70, 60] }, 5: { c: [255, 120, 160], lit: true } },
+    wheel: { 1: { c: [140, 110, 90], lit: true }, 2: { c: [120, 200, 230], lit: true }, 3: { c: [250, 230, 160] } },
+    castle: { 1: { c: [210, 180, 140], lit: true }, 2: { c: [180, 150, 110] }, 3: { c: [196, 166, 126], lit: true }, 4: { c: [220, 80, 100], lit: true }, 5: { c: [70, 50, 40] } },
+    teepee: { 1: { c: [250, 236, 210], lit: true }, 2: { c: [240, 120, 120] }, 3: { c: [80, 60, 50] }, 4: { c: [150, 110, 70] } },
+    beanbag: { 1: { c: [250, 170, 70], lit: true }, 2: { c: [255, 196, 110], lit: true }, 3: { c: [255, 230, 180] } },
+    scratcher: { 1: { c: [212, 170, 120], lit: true }, 2: { c: [180, 136, 90] }, 3: { c: [160, 120, 80] } },
+    rocker: { 1: { c: [170, 110, 70], lit: true }, 2: { c: [140, 90, 56] }, 3: { c: [120, 180, 220], lit: true } },
+    fireplace: { 1: { c: [150, 100, 70], lit: true }, 2: { c: [196, 100, 80], lit: true }, 3: { c: [160, 76, 60] }, 4: { c: [40, 30, 28] }, 5: { c: [110, 70, 40] } },
+    window: { 1: { c: [250, 248, 240], lit: true }, 2: { c: [150, 200, 240] }, 3: { c: [200, 160, 110], lit: true } },
+    lavalamp: { 1: { c: [190, 190, 200], lit: true }, 2: { c: [140, 80, 200] } },
+    xmastree: { 1: { c: [60, 150, 80], lit: true }, 2: { c: [120, 80, 50] }, 3: { c: [210, 60, 70], lit: true }, 4: { c: [255, 210, 70], lit: true } },
+    cactus: { 1: { c: [100, 170, 90], lit: true }, 2: { c: [240, 240, 210] }, 3: { c: [210, 120, 80], lit: true } },
+    feeder: { 1: { c: [240, 240, 245], lit: true }, 2: { c: [200, 210, 220] }, 3: { c: [180, 220, 240] }, 4: { c: [160, 100, 60] }, 5: { c: [80, 220, 120] } },
     aquarium: { 1: { c: [198, 228, 240], lit: true }, 2: { c: [110, 176, 222] }, 3: { c: [232, 206, 146] }, 4: { c: [70, 78, 98], lit: true }, 5: { c: [70, 150, 90] } },
   };
   const FURN_OUTLINE = { rug: [96, 40, 44], plant: [70, 50, 34], cushion: [70, 50, 110], bed: [44, 74, 110], basket: [96, 64, 36], heatpad: [120, 60, 50], hammock: [80, 60, 44], igloo: [90, 110, 140], armchair: [44, 90, 64], sofa: [110, 50, 60], stool: [100, 70, 40],
     bookshelf: [80, 50, 30], catgrass: [80, 60, 40], track: [140, 90, 30], dispenser: [50, 90, 120], ballpit: [40, 80, 130], piano: [30, 26, 30], mirror: [120, 90, 40], fan: [90, 100, 110],
-    clock: [70, 44, 26], tv: [30, 30, 36], lamp: [100, 80, 60], radio: [110, 50, 40], statue: [120, 90, 30], tunnel: [110, 60, 30], fountain: [60, 90, 120], litter: [50, 90, 70], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70] };
+    clock: [70, 44, 26], tv: [30, 30, 36], lamp: [100, 80, 60], radio: [110, 50, 40], statue: [120, 90, 30], tunnel: [110, 60, 30], fountain: [60, 90, 120], litter: [50, 90, 70], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70],
+    wheel: [70, 56, 46], castle: [110, 84, 60], teepee: [110, 80, 60], beanbag: [150, 90, 30], scratcher: [110, 80, 50], rocker: [90, 56, 34], fireplace: [80, 50, 36], window: [110, 86, 60],
+    lavalamp: [80, 80, 90], xmastree: [30, 80, 40], cactus: [50, 90, 50], feeder: [90, 100, 110] };
   function furnitureThumb(kind, ctx) {
     const f = FURN[kind], sp = new Sprite(f.w, f.h); paintFurniture(kind, sp.R);
     const img = sp.paint(FURN_PAL[kind], FURN_OUTLINE[kind]), W = ctx.canvas.width, H = ctx.canvas.height, k = Math.min((W - 4) / f.w, (H - 4) / f.h);
@@ -2142,6 +2210,7 @@
     hit() { return false; }
     update() {} render() {}
   }
+  const dt0 = (f) => f.dt || 0.016;
   class Furniture {
     constructor(world, kind, x, item) {
       this.world = world; this.kind = kind; this.x = x; this.y = world.floor; this.held = false; this.occupant = null; this.f = FURN[kind];
@@ -2163,7 +2232,7 @@
       this.world.burst(this.x, this.y - this.f.h * this.world.toyScale, "note", "#b08d57", 1);
     }
     update(dt) {
-      const w = this.world, s = w.toyScale; this.t += dt; this.y = w.floor;
+      const w = this.world, s = w.toyScale; this.t += dt; this.dt = dt; this.y = w.floor;
       if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - dt * 2 / 86400);   // two points a day
       if (!this.usable && this.occupant) { const o = this.occupant; this.occupant = null; if (o.cushion === this) { o.cushion = null; o.set("stretch", 1.4); } }
       if (this.held) this.x += (clamp(w.pointer.x, this.f.w * s / 2, w.W - this.f.w * s / 2) - this.x) * Math.min(1, dt * 14);
@@ -2196,6 +2265,33 @@
         const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, r); g.addColorStop(0, this.kind === "lamp" ? "rgba(255,220,140,.45)" : "rgba(255,140,90,.35)"); g.addColorStop(1, "rgba(255,220,140,0)");
         ctx.fillStyle = g; ctx.fillRect(lx - r, ly - r, r * 2, r * 2);
       }
+      if (this.kind === "wheel") {                     // spokes turn, fast when someone's running in it
+        const run = w.cats.some((k) => k.state === "gallop" && k.fRef === this); this.spin = (this.spin || 0) + dt0(this) * (run ? 9 : 0.4);
+        ctx.strokeStyle = "#5aa9c9"; ctx.lineWidth = s; for (let i = 0; i < 4; i++) { const a = this.spin + i * Math.PI / 4; ctx.beginPath(); ctx.moveTo(x0 + (21 - Math.cos(a) * 18) * s, y0 + (21 - Math.sin(a) * 18) * s); ctx.lineTo(x0 + (21 + Math.cos(a) * 18) * s, y0 + (21 + Math.sin(a) * 18) * s); ctx.stroke(); }
+      }
+      if (this.kind === "fireplace") {                 // a crackling fire, warm glow
+        const ph = this.t * 9; const cols = ["#ff6a2a", "#ffb02e", "#ffe27a"];
+        for (let i = 0; i < 7; i++) { const h = 6 + Math.abs(Math.sin(ph + i * 1.7)) * 9, x = x0 + (13 + i * 2.8) * s; ctx.fillStyle = cols[i % 3]; ctx.fillRect(Math.round(x), Math.round(y0 + (33 - h) * s), Math.round(2 * s), Math.round(h * s)); }
+        const g = ctx.createRadialGradient(this.x, y0 + 28 * s, 0, this.x, y0 + 28 * s, 60 * s); g.addColorStop(0, `rgba(255,150,60,${w.isNight() ? 0.32 : 0.14})`); g.addColorStop(1, "rgba(255,150,60,0)");
+        ctx.fillStyle = g; ctx.fillRect(this.x - 60 * s, y0 - 32 * s, 120 * s, 100 * s);
+        if (Math.random() < 0.03) w.burst(this.x + rnd(-6, 6) * s, y0 + 16 * s, "spark", "#ffb02e", 1, { rise: true });
+      }
+      if (this.kind === "window") {                     // what's outside: day or night sky, a drifting cloud
+        const night = w.isNight(), wx = w.weather && w.weather.kind;
+        for (const [px, py] of [[2, 2], [20, 2], [2, 21], [20, 21]]) { ctx.fillStyle = night ? "#2a3560" : wx === "rain" || wx === "storm" ? "#9fb1c4" : "#a9dcf5"; ctx.fillRect(x0 + px * s, y0 + py * s, 16 * s, 17 * s); }
+        if (night) { ctx.fillStyle = "#fff3b0"; ctx.beginPath(); ctx.arc(x0 + 28 * s, y0 + 9 * s, 3 * s, 0, 7); ctx.fill(); ctx.fillStyle = "#fff"; for (const [a, b] of [[6, 6], [12, 12], [25, 27], [8, 30]]) ctx.fillRect(x0 + a * s, y0 + b * s, s, s); }
+        else { const cx = ((this.t * 2) % 40) - 6; ctx.fillStyle = "#fff"; ctx.fillRect(x0 + Math.max(2, cx) * s, y0 + 7 * s, Math.max(0, Math.min(8, 36 - cx)) * s, 3 * s); ctx.fillRect(x0 + Math.max(2, cx + 2) * s, y0 + 5 * s, Math.max(0, Math.min(4, 34 - cx)) * s, 2 * s); }
+        ctx.fillStyle = "#fff"; ctx.fillRect(x0 + 18 * s, y0 + 2 * s, 2 * s, 36 * s); ctx.fillRect(x0 + 2 * s, y0 + 19 * s, 34 * s, 2 * s);
+      }
+      if (this.kind === "lavalamp") {                   // slow blobs going up and down
+        ctx.fillStyle = "#ff7bc0"; for (let i = 0; i < 3; i++) { const yy = 15 + Math.sin(this.t * 0.6 + i * 2.1) * 6; ctx.beginPath(); ctx.arc(x0 + (5 + (i % 2) * 2) * s, y0 + yy * s, (1.6 + i * 0.4) * s, 0, 7); ctx.fill(); }
+        if (w.isNight()) { const g = ctx.createRadialGradient(this.x, y0 + 15 * s, 0, this.x, y0 + 15 * s, 40 * s); g.addColorStop(0, "rgba(200,110,255,.3)"); g.addColorStop(1, "rgba(200,110,255,0)"); ctx.fillStyle = g; ctx.fillRect(this.x - 40 * s, y0 - 25 * s, 80 * s, 80 * s); }
+      }
+      if (this.kind === "xmastree") {                   // twinkling lights
+        const cols = ["#ff5a6a", "#ffd34d", "#6ad0ff", "#9be59b"], ph = Math.floor(this.t * 2.5);
+        [[12, 14], [21, 18], [9, 28], [25, 31], [14, 38], [6, 45], [20, 44], [28, 47], [17, 24]].forEach(([a, b], i) => { ctx.fillStyle = cols[(i + ph) % 4]; ctx.fillRect(x0 + a * s, y0 + b * s, 2 * s, 2 * s); });
+      }
+      if (this.kind === "feeder" && c > 0) { ctx.fillStyle = Math.sin(this.t * 3) > 0 ? "#4be07a" : "#1f7a3c"; ctx.fillRect(x0 + 16 * s, y0 + 21 * s, s, s); }
       if (this.kind === "radio" && Math.random() < 0.012) w.burst(this.x + 4 * s, this.y - 16 * s, "note", "#b08d57", 1, { rise: true });
       if (this.kind === "fountain") {                   // a little arc of water
         ctx.fillStyle = "#7cc6f2"; const ph = (this.t * 6) % 1;

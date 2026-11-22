@@ -191,6 +191,10 @@
         dispenser: ["Mama topu", "Pati atınca mama döker"], ballpit: ["Top havuzu", "İçinde yuvarlanır"], piano: ["Oyuncak piyano", "Tuşlarına basıp müzik yapar"],
         mirror: ["Ayna", "Kendine bakıp şaşırır"], fan: ["Vantilatör", "Dönen pervaneyi izler"], clock: ["Duvar saati", "Sallanan sarkacı izler"], tv: ["Televizyon", "Ekranın karşısına oturup izler"],
         lamp: ["Lambader", "Geceleri odayı aydınlatır"], radio: ["Radyo", "Hafif müzik çalar; kediler daha huzurlu (sevgi daha yavaş azalır)"], statue: ["Altın kedi heykeli", "Sadece çok havalı 👑"],
+        wheel: ["Koşu tekerleği", "İçinde koşturup enerji atarlar"], castle: ["Karton şato", "İçinde gizlice uyurlar, tepesine çıkarlar"], teepee: ["Çadır", "Saklanıp uyuyacak gizli bir köşe"],
+        beanbag: ["Armut koltuk", "Yumuşacık, içine gömülüp uyurlar"], scratcher: ["Karton tırmalama yatağı", "Hem tırmalar hem üstünde uyurlar"], rocker: ["Sallanan sandalye", "Minderinde uyumaya bayılırlar"],
+        fireplace: ["Şömine", "Önünde mışıl mışıl uyurlar; sıcacık ev sevgiyi korur (kışın daha çok)"], window: ["Pencere", "Dışarıyı izlerler; gece ay ve yıldızlar"], lavalamp: ["Lav lambası", "Ağır ağır süzülen baloncuklar, gece mor ışık"],
+        xmastree: ["Yılbaşı ağacı", "Yanıp sönen ışıklar; süslere pati atarlar"], cactus: ["Kaktüs tırmalama", "Sisal kaktüs, pati pati tırmalarlar"], feeder: ["Otomatik mama makinesi", "Kap boşken aç kedi olursa dolaptan kendisi mama koyar (8 saatte bir)"],
         tunnel: ["Kedi tüneli", "İçinden koşa koşa geçer, saklanır"], fountain: ["Su çeşmesi", "Taze su; kediler gelip içer"], litter: ["Kum kabı", "Temiz tutarsan kediler daha mutlu; kirlenince tıkla, temizle"], bed: ["Kedi yatağı", "Yumuşacık, içinde kıvrılıp uyur"], house: ["Kedi kulübesi", "İçine girip saklanarak uyur"], rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
         tree: ["Kedi ağacı", "İki katlı, tepesine tırmanır"], aquarium: ["Akvaryum", "Balıkları izler, cama pati atar"] },
       game: "Lazer avı", gameHelp: "30 saniye: lazerle kedileri parlayan yıldızlara götür!", again: "Tekrar oyna", closeB: "Kapat",
@@ -249,6 +253,10 @@
         dispenser: ["Treat ball", "Spills kibble when batted"], ballpit: ["Ball pit", "Rolls around in it"], piano: ["Toy piano", "Walks on the keys and makes music"],
         mirror: ["Mirror", "Is very surprised by the other cat"], fan: ["Fan", "Watches the blades go round"], clock: ["Grandfather clock", "Watches the pendulum swing"], tv: ["Television", "Sits in front of the screen and watches"],
         lamp: ["Floor lamp", "Lights the room at night"], radio: ["Radio", "Plays soft music; the cats feel calmer (love fades slower)"], statue: ["Golden cat statue", "Just very fancy 👑"],
+        wheel: ["Cat wheel", "They run and run inside it"], castle: ["Cardboard castle", "They nap hidden inside and climb on top"], teepee: ["Teepee", "A secret corner to hide and nap"],
+        beanbag: ["Beanbag", "Squishy; they sink in and sleep"], scratcher: ["Cardboard lounger", "For scratching and napping on"], rocker: ["Rocking chair", "They love napping on its cushion"],
+        fireplace: ["Fireplace", "They doze in front of it; a warm home keeps love (more in winter)"], window: ["Window", "They watch the outside; the moon and stars at night"], lavalamp: ["Lava lamp", "Slow floating blobs, a purple glow at night"],
+        xmastree: ["Christmas tree", "Twinkling lights; they bat the baubles"], cactus: ["Cactus scratcher", "A sisal cactus to scratch at"], feeder: ["Automatic feeder", "When the bowl is empty and a cat is hungry, it fills it from your cupboard (every 8 hours)"],
         tunnel: ["Cat tunnel", "Dashes through it and hides inside"], fountain: ["Water fountain", "Fresh water; the cats come for a drink"], litter: ["Litter box", "Keep it clean and the cats are happier; click it to clean"], bed: ["Cat bed", "Soft and round, curls up in it"], house: ["Cat house", "Crawls inside to sleep, hidden away"], rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
         tree: ["Cat tree", "Two levels to climb up to"], aquarium: ["Aquarium", "Watches the fish and paws at the glass"] },
       game: "Laser hunt", gameHelp: "30 seconds: use the laser to lead the cats onto the twinkling stars!", again: "Play again", closeB: "Close",
@@ -587,7 +595,7 @@
       if (!L.breedOn && !force) return null;
       const cats = world.cats.filter((c) => c.profile);
       if (cats.length >= MAX_CATS) return null;
-      const now = Date.now(), ready = (c) => !c.leaving && L.growth(c.profile) >= 1 && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
+      const now = Date.now(), ready = (c) => !c.leaving && !c.profile.guest && L.growth(c.profile) >= 1 && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
         && !["held", "fall", "leap"].includes(c.state);
       const pairs = [];
       for (const a of cats) for (const b of cats) {
@@ -619,7 +627,7 @@
     // ------------------------------------------------ loneliness
     isLonely(p) { return !!p && p.love < LONELY && !L.hasBuff(p, "calm"); },
     lonely(cat, dt) {
-      const p = cat.profile; if (!L.isLonely(p) || cat.leaving) return;
+      const p = cat.profile; if (!L.isLonely(p) || cat.leaving || p.guest) return;
       if (Date.now() - (p.lastL.lonely || 0) > 3 * 3.6e6) { p.lastL.lonely = Date.now(); L.write(p, "lonely"); L.changed(); }
       const w = cat.world; if (w && Math.random() < dt / 25) w.burst(cat.x, cat.y - 34 * cat.s, "sad", "#7d8fb3", 1);
       const per = (LEAVE_PER_HOUR[L.stage(p).id] || 0) + (p.sick && Date.now() - p.sick > 24 * 3.6e6 ? 0.05 : 0);   // left sick and alone for a day: anyone might go
@@ -651,7 +659,7 @@
       L.addXP(cat, dt / 120);
       const boxes = cat.world ? cat.world.furniture.filter((f) => f.kind === "litter") : [];
       const litterK = !boxes.length ? 1 : boxes.some((f) => (f.item.dirty || 0) < 4) ? 0.8 : 1.4;     // clean box: love lasts longer; only dirty ones: it fades faster
-      const radio = cat.world && cat.world.furniture.some((f) => f.kind === "radio") ? 0.9 : 1;
+      const radio = (cat.world && cat.world.furniture.some((f) => f.kind === "radio") ? 0.9 : 1) * (cat.world && cat.world.furniture.some((f) => f.kind === "fireplace") ? (cat.world.season() === "winter" ? 0.8 : 0.92) : 1);
       if (!L.hasBuff(p, "glow")) p.love = Math.max(0, p.love - dt * LOVE_FADE * (L.isHungry(p) ? 1.5 : 1) * (p.sick ? 1.5 : 1) * litterK * radio);
       // getting grubby, and sometimes poorly
       L.dirty(p, dt * CLEAN_FADE_PER_DAY / 86400);

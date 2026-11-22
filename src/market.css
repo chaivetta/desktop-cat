@@ -152,3 +152,14 @@
 .mk-buy.play { background: #c9f0dc; }
 .mk-buy.play.on { background: #ff8fa3; color: #fff; }
 .mk-wide { width: 100%; margin-top: 12px; border: 0; border-radius: 12px; padding: 9px; cursor: pointer; background: #fff; color: #5b3a29; font: 800 12.5px "Nunito", sans-serif; box-shadow: 0 0 0 2px rgba(91, 58, 41, .3), 0 2px 0 2px rgba(91, 58, 41, .3); }
+
+/* 🧳 a neighbour's note: look after my cat? */
+.gs-box { position: fixed; left: 50%; transform: translateX(-50%); z-index: 45; display: flex; align-items: center; gap: 10px; max-width: min(460px, 92vw); padding: 10px 12px; border-radius: 18px;
+  background: #fff7ec; color: #5b3a29; font: 700 13px/1.35 "Nunito", sans-serif; box-shadow: 0 0 0 3px #5b3a29, 0 5px 0 3px #5b3a29, 0 14px 30px rgba(60, 30, 10, .25); animation: gs-in .25s ease-out; }
+.gs-box[hidden] { display: none; }
+@keyframes gs-in { from { opacity: 0; transform: translate(-50%, 10px); } }
+.gs-box canvas { width: 44px; height: 44px; flex: none; border-radius: 50%; background: #ffe9d6; image-rendering: pixelated; box-shadow: 0 0 0 2px #5b3a29; }
+.gs-box p { margin: 0; flex: 1; }
+.gs-box div { display: flex; flex-direction: column; gap: 5px; }
+.gs-box button { border: 0; border-radius: 10px; padding: 6px 10px; cursor: pointer; background: #fff; color: #5b3a29; font: 800 12px "Nunito", sans-serif; box-shadow: 0 0 0 2px #5b3a29, 0 2px 0 2px #5b3a29; white-space: nowrap; }
+.gs-box button.gold { background: #ffd34d; }

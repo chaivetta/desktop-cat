@@ -31,6 +31,7 @@
 <script src="market.js"></script>
 <script src="weather.js"></script>
 <script src="games.js"></script>
+<script src="guests.js"></script>
 <script>
 (() => {
   const { World, COATS, COAT_KEYS, SCALE_MIN, SCALE_MAX } = window.DesktopCat;
@@ -72,6 +73,7 @@
   if (saved.pantry) Object.assign(L.pantry, saved.pantry);
   if (saved.econ) L.econ = { ...L.econ, ...saved.econ };
   if (saved.luck) L.luck = { ...L.luck, ...saved.luck };
+  if (saved.guests) L.guests = saved.guests;
   if (Array.isArray(saved.toys)) L.toys = saved.toys.includes("yarn") ? saved.toys : ["yarn", ...saved.toys];
   L.loadWallet(saved.wallet, saved.cats);
   // furniture: every piece you own, with its condition and where it stands (older saves kept counts per kind)
@@ -99,7 +101,7 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
-        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys,
+        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, guests: L.guests,
         home: { items: L.home.items.map((it) => { const f = world.furniture.find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
   };
@@ -148,6 +150,15 @@
   });
   // meals come out of the cupboard; when it's empty, the market opens on the food shelf
   let preferMeal = null;
+  // the automatic feeder: when the bowl is empty and someone's hungry, it fills it from the cupboard (once every 8 hours)
+  setInterval(() => {
+    const f = world.furniture.find((f) => f.kind === "feeder" && f.usable); if (!f) return;
+    if (Date.now() - (f.item.fedAt || 0) < 8 * 3.6e6) return;
+    if (world.bowl && world.bowl.food > 0.05) return;
+    if (!world.cats.some((c) => c.profile && L.isHungry(c.profile))) return;
+    const k = L.takeMeal(null); if (!k) return; L.pantry[k]++;     // just checking there's a meal; feed() takes it
+    f.item.fedAt = Date.now(); world.feed(); world.burst(f.x, world.floor - 30 * world.toyScale, "note", "#4be07a", 2); save();
+  }, 60e3);
   world.onFeed = () => { const k = L.takeMeal(preferMeal); if (!k) { market.open("food", market.t().empty); return null; } save(); return k; };
   // cleaning the litter box takes a scoop of litter from the cupboard
   function cleanLitter(f) {
@@ -170,6 +181,7 @@
   }, 60000);
   // a lonely cat that walked out: the others remember
   world.onCatLeft = (c) => {
+    if (c.profile && c.profile.guest) { if (card.cat === c) card.close(); save(); card.refresh(); return; }     // a guest going home
     world.cats.forEach((o) => { if (o.profile) L.write(o.profile, "left", { n: c.profile.name }); });
     if (card.cat === c) card.close(); save(); card.refresh();
   };
@@ -309,6 +321,8 @@
   });
 
   // 🎮 mini games
+  // 🧳 guest cats from the neighbours
+  var guests = window.CatGuests.create({ world, save: () => save() }); window.CatGuests.now = guests;
   var games = window.CatGames.create({ world, playLaser: () => act.playGame(), onClose: () => { overUI = false; syncIgnore(); } });
   // the real weather outside: rain, snow, storms, fog, clouds (refreshed every 20 minutes)
   const weather = window.CatWeather.create({

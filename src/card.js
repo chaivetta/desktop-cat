@@ -295,7 +295,7 @@
       root.querySelectorAll("[data-pane]").forEach((d) => { d.hidden = d.dataset.pane !== pane; });
       q(".cc-name").textContent = p.name;
       const days = Math.floor((now - p.born) / 864e5);
-      q(".cc-sub").textContent = `${L.COAT_NAMES[p.coat] ? L.COAT_NAMES[p.coat][lang] : p.coat} · ${p.sex === "f" ? t.sexF : t.sexM} · ${t.age(days)}`;
+      q(".cc-sub").textContent = p.guest && window.CatGuests.now ? window.CatGuests.now.tag(p) : `${L.COAT_NAMES[p.coat] ? L.COAT_NAMES[p.coat][lang] : p.coat} · ${p.sex === "f" ? t.sexF : t.sexM} · ${t.age(days)}`;
       const lone = q(".cc-lonely"), hungry = L.isHungry(p), grubby = L.clean(p) < 25;
       const warn = [p.sick ? t.sickL : "", hungry ? t.hungry : "", L.isLonely(p) ? t.lonely : "", grubby ? t.grubby : ""].filter(Boolean);
       lone.hidden = !warn.length; lone.textContent = warn.join(" · "); lone.classList.toggle("sick", !!p.sick);

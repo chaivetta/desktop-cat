@@ -47,6 +47,7 @@
         ["🎯", "Görevler", "Her görev 1🪙, bir kedinin üç görevi de bitince +3🪙 ve 1⭐."],
         ["🔴", "Lazer avı", "Yakalanan her iki yıldıza 1🪙 (günde en çok 25🪙). 20 ve üstü skor 1⭐ (günde bir kez). Lazer gerekir."],
         ["💻", "Bilgisayar başında", "Sen bilgisayarı kullandıkça her 15 dakikada 1🪙 (günde en çok 20🪙)."],
+        ["🧳", "Misafir kediler", "Ara sıra komşular kedilerini bir günlüğüne bırakmak ister. İyi bakarsan para verirler; evin ne kadar güzelse o kadar çok. Hasta ya da ilgisiz kalırsa para yok, ünün düşer."],
         ["⭐", "Yıldızlar", "Yıldızlarla yeni kedi cinslerinin kilidini (Kediler sekmesi) ve kartın dolabındaki şapka, aksesuar, kıyafetleri açarsın."],
       ],
       today: (pc, g) => `Bugün: bilgisayardan ${pc}/20🪙 · oyundan ${g}/25🪙`,
@@ -98,6 +99,7 @@
         ["🎯", "Tasks", "1🪙 per task, +3🪙 and 1⭐ when all three of a cat's tasks are done."],
         ["🔴", "Laser hunt", "1🪙 for every two stars caught (up to 25🪙 a day). A score of 20+ earns 1⭐ (once a day). Needs the laser."],
         ["💻", "At your computer", "1🪙 every 15 minutes while you're using your computer (up to 20🪙 a day)."],
+        ["🧳", "Guest cats", "Now and then a neighbour leaves their cat with you for a day. Look after it well and they pay; the nicer your home, the more. If it gets ill or neglected, no pay and your name suffers."],
         ["⭐", "Stars", "Stars unlock new cat coats (the Cats tab) and the hats, accessories and outfits in the card's wardrobe."],
       ],
       today: (pc, g) => `Today: ${pc}/20🪙 from the computer · ${g}/25🪙 from the game`,
@@ -174,7 +176,7 @@
             <button type="button" class="mk-buy big" data-spin="1"${spinning || L.wallet.coins < L.WHEEL_COST ? " disabled" : ""}>${esc(s.spin(L.WHEEL_COST))}</button>
             <details class="mk-odds"><summary>${esc(s.odds)}</summary><small>${esc(s.oddsNote)}</small><ul>${L.WHEEL.map((r) => `<li><span>${segLabel(r, s)}</span><b>${(r[1] / tot * 100).toFixed(1).replace(".0", "")}%</b></li>`).join("")}</ul></details></div>`;
       } else {
-        body = `<div class="mk-ways">${s.ways.map(([e, h, d]) => `<div class="mk-way"><span>${e}</span><div><b>${esc(h)}</b><small>${esc(d)}</small></div></div>`).join("")}</div><p class="mk-today">${esc(s.today(E.pc, E.game))}</p>`;
+        body = `<div class="mk-ways">${s.ways.map(([e, h, d]) => `<div class="mk-way"><span>${e}</span><div><b>${esc(h)}</b><small>${esc(d)}</small></div></div>`).join("")}</div><p class="mk-today">${esc(s.today(E.pc, E.game))}</p>${L.guests ? `<p class="mk-today">🧳 ${L.lang === "tr" ? "Bakıcı ünün" : "Sitter rating"}: ${"★".repeat(Math.max(0, Math.round(L.guests.rep / 2)))}${"☆".repeat(5 - Math.max(0, Math.round(L.guests.rep / 2)))} · ${L.lang === "tr" ? "bakılan" : "looked after"}: ${L.guests.done}</p>` : ""}`;
       }
       root.innerHTML = `
         <div class="mk-head"><b>🛒 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">${s.coins(L.wallet.coins)}</span><span class="star">${s.stars(L.wallet.stars)}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
