@@ -343,13 +343,22 @@
     takeMeal(k) { const order = k ? [k] : ["dry", "wet", "premium", "fish", ...Object.keys(FOOD).filter((x) => FOOD[x].meal && x !== "premium")]; const f = order.find((x) => (L.pantry[x] || 0) > 0); if (!f) return null; L.pantry[f]--; L.changed(); return f; },
     home: { items: [] },
     toys: ["yarn"],                       // toys you've bought (the yarn is free); see TOY_PRICES
-    TOY_PRICES: { mouse: 30, box: 20, butterfly: 40, wand: 50, post: 60, shelf: 45, laser: 80, brush: 40 },
+    TOY_PRICES: { yarn: 12, mouse: 30, box: 20, butterfly: 40, wand: 50, post: 60, shelf: 45, laser: 80, brush: 40 },
+    // toys wear out too: a little every time they're played with, a little each day they're left out; at 0 they're gone
+    toyCond: {},
+    TOY_WEAR: { yarn: 1.5, mouse: 2, butterfly: 2, wand: 1, laser: 0.4, box: 2, post: 1.2, shelf: 0.6, brush: 4 },
+    toyCondOf(k) { return L.toys.includes(k) ? Math.round(L.toyCond[k] ?? 100) : 0; },
+    wearToy(k, n) {
+      if (!L.toys.includes(k)) return;
+      L.toyCond[k] = Math.max(0, (L.toyCond[k] ?? 100) - (n ?? L.TOY_WEAR[k] ?? 1));
+      if (L.toyCond[k] <= 0) { L.toys = L.toys.filter((x) => x !== k); delete L.toyCond[k]; if (L.onToyBroke) L.onToyBroke(k); L.changed(); }
+    },
     // cat coats: the ginger tabby is free, every other coat is unlocked once with stars, then adopted for free
     COAT_PRICES: { black: 8, white: 8, grey: 10, tuxedo: 14, calico: 16, siamese: 20 },
     hasCoat(c) { return !L.COAT_PRICES[c] || (L.wallet.coats || []).includes(c); },
     buyCoat(c) { const p = L.COAT_PRICES[c]; if (!p || L.hasCoat(c) || L.wallet.stars < p) return false; L.wallet.stars -= p; (L.wallet.coats = L.wallet.coats || []).push(c); L.changed(); return true; },
-    hasToy(k) { return !L.TOY_PRICES[k] || L.toys.includes(k); },
-    buyToy(k) { const p = L.TOY_PRICES[k]; if (!p || L.toys.includes(k) || L.wallet.coins < p) return false; L.wallet.coins -= p; L.toys.push(k); L.changed(); return true; },                  // every piece of furniture you own: { id, k, cond (0-100), x (share of the screen width, or null when stored) }
+    hasToy(k) { return !L.TOY_PRICES[k] || L.toys.includes(k); },      // the yarn is free only the first time
+    buyToy(k) { const p = L.TOY_PRICES[k]; if (!p || L.toys.includes(k) || L.wallet.coins < p) return false; L.wallet.coins -= p; L.toys.push(k); L.toyCond[k] = 100; L.changed(); return true; },                  // every piece of furniture you own: { id, k, cond (0-100), x (share of the screen width, or null when stored) }
     game: { best: 0, day: "", stars: 0 },      // stars from tasks, shared by all cats, and the wardrobe designs bought with them
     PRICES,
     // load the wallet from a save; designs someone is already wearing stay theirs
@@ -495,6 +504,9 @@
       if (kind === "litter" || kind === "play" || kind === "fight") L.dirty(p, kind === "litter" ? 6 : kind === "fight" ? 3 : 0.4);
       if (arg.oid && ["boop", "race", "fight"].includes(kind)) { p.bond = p.bond || {}; p.bond[arg.oid] = Math.min(50, (p.bond[arg.oid] || 0) + (kind === "fight" ? 0.5 : 1)); }
       if (L.tasksOn) L.taskEvent(cat, kind + (arg.toyKey ? ":" + arg.toyKey : ""));
+      // playing wears the toy out
+      const worn = kind === "play" ? { feather: "wand" }[arg.toyKey] || arg.toyKey : { box: "box", scratch: "post", shelf: "shelf" }[kind];
+      if (worn && L.TOY_WEAR[worn]) L.wearToy(worn);
     },
 
     // ------------------------------------------------ memories: the big moments, kept as little polaroids

@@ -74,7 +74,9 @@
   if (saved.econ) L.econ = { ...L.econ, ...saved.econ };
   if (saved.luck) L.luck = { ...L.luck, ...saved.luck };
   if (saved.guests) L.guests = saved.guests;
-  if (Array.isArray(saved.toys)) L.toys = saved.toys.includes("yarn") ? saved.toys : ["yarn", ...saved.toys];
+  // toys: what you own and how worn it is (an older save gets its free yarn back once)
+  if (Array.isArray(saved.toys)) L.toys = saved.toyCond ? saved.toys.slice() : saved.toys.includes("yarn") ? saved.toys : ["yarn", ...saved.toys];
+  if (saved.toyCond) L.toyCond = { ...saved.toyCond };
   L.loadWallet(saved.wallet, saved.cats);
   // furniture: every piece you own, with its condition and where it stands (older saves kept counts per kind)
   const newId = () => Math.random().toString(36).slice(2, 9);
@@ -101,7 +103,7 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
-        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, guests: L.guests,
+        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, toyCond: L.toyCond, guests: L.guests,
         home: { items: L.home.items.map((it) => { const f = world.furniture.find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
   };
@@ -146,7 +148,8 @@
     catCount: () => world.cats.filter((c) => c.profile).length,
     catCountOf: (coat) => world.cats.filter((c) => c.profile && c.coat === coat).length,
     playToy: (k) => { if (act[k]) act[k](); },
-    toyOn: (k) => (k === "laser" ? !!world.laser : k === "wand" ? !!world.wand : false),
+    toyOn: (k) => act.toyOut(k),
+    storeToy: (k) => act.storeToy(k),
     clearToys: () => act.clear(),
     onClose: () => { overUI = false; syncIgnore(); },
   });
@@ -292,7 +295,20 @@
     lang: (l) => { L.lang = l === "tr" || l === "en" ? l : L.lang === "tr" ? "en" : "tr"; applyLang(); card.refresh(); save(); },
     night: (mode) => { const order = ["auto", "night", "day"]; world.nightMode = order.includes(mode) ? mode : order[(order.indexOf(world.nightMode) + 1) % 3]; save(); syncToggles(); },
     cards: () => { const c = card.cat && world.cats.includes(card.cat) ? card.cat : world.cats.find((c) => c.profile); if (c) card.open(c); else act.add(); },
-    yarn: () => world.throwYarn(),
+    yarn: () => need("yarn", () => world.throwYarn()),
+    // putting a toy back in the inventory (it stops wearing out while it's put away)
+    storeToy: (k) => {
+      if (k === "yarn") world.yarn = null;
+      else if (k === "mouse") world.mouse = null;
+      else if (k === "butterfly") world.butterfly = null;
+      else if (k === "box") { world.boxes.forEach((b) => { if (b.occupant) b.occupant.hopOut(); }); world.boxes = []; }
+      else if (k === "post") { if (world.post && world.post.user) world.post.user.set("sit", 2); world.post = null; }
+      else if (k === "shelf") world.shelves = world.shelves.filter((s) => s.isPlatform);
+      else if (k === "laser") world.setLaser(false);
+      else if (k === "wand") world.setWand(false);
+      syncToggles();
+    },
+    toyOut: (k) => ({ yarn: !!world.yarn, mouse: !!world.mouse, butterfly: !!world.butterfly, box: world.boxes.length > 0, post: !!world.post, shelf: world.shelves.some((s) => !s.isPlatform), laser: !!world.laser, wand: !!world.wand })[k] || false,
     mouse: () => need("mouse", () => world.addMouse()),
     box: () => need("box", () => world.addBox()),
     feed: () => world.feed(),
@@ -320,7 +336,7 @@
   addEventListener("dblclick", (e) => {
     if (e.target.closest && e.target.closest(".ui")) return;
     if (catAt(e)) return;
-    if (!bridge && !world.hitTest(e.clientX, e.clientY)) world.throwYarn(e.clientX, e.clientY);
+    if (!bridge && L.hasToy("yarn") && !world.hitTest(e.clientX, e.clientY)) world.throwYarn(e.clientX, e.clientY);
   });
 
   // 🎮 mini games
@@ -353,7 +369,20 @@
   });
   if (bridge) bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](cmd.on ?? cmd.mode ?? cmd.lang ?? cmd.coat); });
   applyLang();
-  if (!bridge) setTimeout(() => { if (!world.yarn) world.throwYarn(); }, 2500);
+  if (!bridge) setTimeout(() => { if (!world.yarn && L.hasToy("yarn")) world.throwYarn(); }, 2500);
+  // toys left out wear a little every day (3 points), and a toy worn to nothing is gone
+  setInterval(() => { for (const k of L.toys.slice()) if (act.toyOut(k)) L.wearToy(k, 3 / 1440); save(); }, 60e3);
+  L.onToyBroke = (k) => {
+    act.storeToy(k);
+    const nm = market.t().toys[k] ? market.t().toys[k][0] : k, e = market.t().toyE[k] || "🧸";
+    toast(L.lang === "tr" ? `${e} ${nm} eskiyip parçalandı! Marketten yenisini alabilirsin.` : `${e} The ${nm.toLowerCase()} wore out! You can buy a new one in the market.`);
+    world.burst(world.W / 2, world.floor - 40, "dust", "rgba(140,120,100,.6)", 6); inventory.render(); market.render();
+  };
+  // a little note above the floor for things that just happened
+  const toastBox = document.createElement("div"); toastBox.className = "ui gs-box"; toastBox.hidden = true; document.body.appendChild(toastBox);
+  let toastT = 0;
+  function toast(msg) { toastBox.innerHTML = `<p></p>`; toastBox.querySelector("p").textContent = msg; toastBox.style.bottom = `${Math.max(12, innerHeight - world.floor + 70)}px`; toastBox.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { toastBox.hidden = true; }, 7000); }
+  toastBox.onclick = () => { toastBox.hidden = true; };
 })();
 </script>
 </body>

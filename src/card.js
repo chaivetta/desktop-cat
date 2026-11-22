@@ -559,7 +559,7 @@
       if (k === "brush") {
         if (!L.hasToy("brush")) { if (opts.onNeed) opts.onNeed("brush", t.needBrush); return; }
         if (Date.now() - (p.brushedAt || 0) < 30 * 60e3) { floatUp("⏳", b); return; }
-        p.brushedAt = Date.now(); p.clean = Math.min(100, L.clean(p) + 30); L.addLove(cat, 3); L.write(p, "brush"); world.purr();
+        p.brushedAt = Date.now(); L.wearToy("brush"); p.clean = Math.min(100, L.clean(p) + 30); L.addLove(cat, 3); L.write(p, "brush"); world.purr();
         world.burst(cat.x, cat.y - 20 * cat.s, "spark", "#fff3a0", 4); floatUp("🪮", b);
       } else if (k === "bath") {
         if (!(L.pantry.shampoo > 0)) { if (opts.onNeed) opts.onNeed("shampoo"); return; }

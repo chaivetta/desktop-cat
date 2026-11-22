@@ -2,6 +2,8 @@
 (() => {
   const STR = {
     tr: {
+      pickOne: "Bir şeye dokun: ne yapabileceğin burada çıkar 👆", stow: "🎒 Envantere koy", noFood: "Dolap boş. Marketten mama alabilirsin.", noToys: "Oyuncağın yok. Marketten alabilirsin.",
+      toyNote: "Oyuncaklar envantere gelir; oradan çıkarır ya da geri koyarsın. Oynadıkça (ve dışarıda kaldıkça) eskir, bitince yenisini alman gerekir.", inInv: (c) => `🎒 Envanterde · %${c}`, again: "Bir daha",
       catsT: "Kediler", toysT: "Oyuncak", posts: "gönderi", atHome: "evde", price: "fiyat", free: "Ücretsiz", unlocked: "Açık",
       adopt: "🐾 Yavrusunu sahiplen", unlock: (n) => `🔒 Kilidi aç ⭐ ${n}`, needStars: (n) => `⭐ ${n} yıldız daha lazım`, full: "Evin dolu (en çok 8 kedi)",
       catsNote: "Sarman ücretsiz. Diğer cinsler görevlerden kazandığın yıldızlarla bir kez açılır, sonra istediğin kadar sahiplenirsin.",
@@ -41,7 +43,7 @@
       },
       put: "Ortaya koy", store: "Kaldır", repair: (n) => `Tamir 🪙 ${n}`, sell: (n) => `Sat 🪙 ${n}`, out: "Ortada", stored: "Depoda", worn: "Eskimiş", broken: "Kırık",
       durable: "Eskimez", noItems: "Henüz eşyan yok. Eşyalar sekmesinden alabilirsin.", cond: "Durumu",
-      wearNote: "Çoğu eşya kullandıkça ve zamanla eskir; ✨ Eskimez yazanlar hariç. Kırılan eşyayı kediler kullanmaz; tamir edebilir ya da satabilirsin.",
+      wearNote: "Çoğu eşya ve oyuncak kullandıkça ve zamanla eskir (✨ Eskimez yazanlar hariç). Kırılan eşyayı tamir edebilir ya da satabilirsin; biten oyuncak gider.",
       needMore: (n) => `${n} altın daha lazım`,
       ways: [
         ["🎯", "Görevler", "Her görev 1🪙, bir kedinin üç görevi de bitince +3🪙 ve 1⭐."],
@@ -54,6 +56,8 @@
       pantry: "Dolap", empty: "Mama bitti! Buradan alabilirsin 🥣",
     },
     en: {
+      pickOne: "Tap something to see what you can do with it 👆", stow: "🎒 Put away", noFood: "The cupboard is empty. Buy food in the market.", noToys: "No toys yet. Buy some in the market.",
+      toyNote: "Toys go to your inventory, where you take them out or put them away. They wear out with play (and while left out); when one's gone you'll need a new one.", inInv: (c) => `🎒 In inventory · ${c}%`, again: "Again",
       catsT: "Cats", toysT: "Toys", posts: "posts", atHome: "at home", price: "price", free: "Free", unlocked: "Unlocked",
       adopt: "🐾 Adopt a kitten", unlock: (n) => `🔒 Unlock for ⭐ ${n}`, needStars: (n) => `⭐ ${n} more stars needed`, full: "Your home is full (8 cats at most)",
       catsNote: "The ginger tabby is free. Every other coat is unlocked once with stars from tasks, then you can adopt as many as you like.",
@@ -93,7 +97,7 @@
       },
       put: "Place", store: "Put away", repair: (n) => `Repair 🪙 ${n}`, sell: (n) => `Sell 🪙 ${n}`, out: "Out", stored: "Stored", worn: "Worn", broken: "Broken",
       durable: "Never wears out", noItems: "You don't own anything yet. Have a look under Furniture.", cond: "Condition",
-      wearNote: "Most things wear out with use and over time, except the ones marked ✨ Never wears out. Cats won't use something broken; repair it or sell it.",
+      wearNote: "Most things and toys wear out with use and over time (not the ones marked ✨ Never wears out). Repair or sell broken things; a worn-out toy is gone.",
       needMore: (n) => `${n} more coins needed`,
       ways: [
         ["🎯", "Tasks", "1🪙 per task, +3🪙 and 1⭐ when all three of a cat's tasks are done."],
@@ -115,7 +119,7 @@
     const root = document.createElement("div");
     root.className = "ui mk"; root.hidden = true;
     document.body.append(fab, root);
-    let tab = o.only || "cats", coatSel = "ginger", note = "", key = "", result = "", spinning = false, wheelAngle = 0;
+    let tab = o.only || "cats", coatSel = "ginger", sel = "", note = "", key = "", result = "", spinning = false, wheelAngle = 0;
     const t = () => STR[L.lang] || STR.en;
 
     const repairCost = (it) => Math.ceil(DC.FURN[it.k].price * 0.5 * (1 - it.cond / 100));
@@ -124,7 +128,7 @@
 
     function render() {
       const s = t(), H = L.home, E = L.econToday();
-      const k = [L.lang, tab, coatSel, (L.wallet.coats || []).join(), o.catCount ? o.catCount() : 0, o.toyOn ? ["laser", "wand"].map(o.toyOn).join() : "", L.toys.join(), note, result, L.luck.chestDay, spinning, L.wallet.coins, L.wallet.stars, JSON.stringify(L.pantry), H.items.map((i) => `${i.id}${Math.round(i.cond)}${i.x != null}`).join()].join("|");
+      const k = [L.lang, tab, sel, JSON.stringify(L.toyCond), coatSel, (L.wallet.coats || []).join(), o.catCount ? o.catCount() : 0, o.toyOn ? Object.keys(L.TOY_PRICES).map(o.toyOn).join() : "", L.toys.join(), note, result, L.luck.chestDay, spinning, L.wallet.coins, L.wallet.stars, JSON.stringify(L.pantry), H.items.map((i) => `${i.id}${Math.round(i.cond)}${i.x != null}`).join()].join("|");
       if (k === key) return; key = k;
       // the inventory has its own panel (🎒 on the card); the market keeps the shop tabs
       const tabs = o.only ? [] : [["cats", "🐱", s.catsT], ["food", "🍗", s.food], ["toys", "🧸", s.toysT], ["furniture", "🛋️", s.furniture], ["luck", "🎁", s.luck], ["earn", "🪙", s.earn]];
@@ -138,34 +142,25 @@
       } else if (tab === "cats") {
         body = catsTab(s);
       } else if (tab === "toys") {
-        // only the yarn is free; everything else is bought once, then taken out (or switched on) from here
-        const ks = ["yarn", ...Object.keys(L.TOY_PRICES)];
-        body = `<div class="mk-grid">${ks.map((k) => { const price = L.TOY_PRICES[k] || 0, own = L.hasToy(k), [nm, ds] = s.toys[k];
-            let btn;
-            if (!own) btn = `<button type="button" class="mk-buy" data-toy="${k}"${L.wallet.coins < price ? " disabled" : ""}>${s.buy(price)}</button>`;
-            else if (k === "brush") btn = `<span class="mk-have">✓</span>`;
-            else if (k === "laser" || k === "wand") { const on = o.toyOn && o.toyOn(k); btn = `<button type="button" class="mk-buy play${on ? " on" : ""}" data-play="${k}">${esc(on ? s.toyOff : s.toyOn)}</button>`; }
-            else btn = `<button type="button" class="mk-buy play" data-play="${k}">${esc(s.toyPlay)}</button>`;
-            return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, !price ? s.yarnFree : k === "brush" && own ? s.onCard : own ? s.ownedToy : "", btn); }).join("")}</div>
-          <button type="button" class="mk-wide" data-clear="1">${esc(s.clearToys)}</button>`;
+        // toys are bought here and live in the inventory (🎒), where you take them out or put them away; they wear out with play
+        body = `<p class="mk-note">${esc(s.toyNote)}</p><div class="mk-grid">${Object.keys(L.TOY_PRICES).map((k) => { const price = L.TOY_PRICES[k], own = L.toys.includes(k), [nm, ds] = s.toys[k];
+            const btn = own ? `<span class="mk-have">✓</span>` : `<button type="button" class="mk-buy" data-toy="${k}"${L.wallet.coins < price ? " disabled" : ""}>${s.buy(price)}</button>`;
+            return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? s.inInv(L.toyCondOf(k)) : "", btn); }).join("")}</div>`;
       } else if (tab === "furniture") {
         body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${Object.entries(DC.FURN).map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
           return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`); }).join("")}</div>`;
       } else if (tab === "mine") {
-        // the cupboard: everything you've bought to eat or use, with what to do with it
-        body = `<h4 class="mk-h">🧺 ${esc(s.pantryH)}</h4><div class="mk-list">${Object.entries(L.FOOD).filter(([f, d]) => !d.buff || L.pantry[f]).map(([f, d]) => { const n = L.pantry[f] || 0;
-            const act = f === "treat" ? `<small class="mk-tn">${esc(s.treatNote)}</small>` : `<button type="button" class="gold" data-use="${f}"${n ? "" : " disabled"}>${esc(s.use[f] || s.useMeal)}</button>`;
-            return `<div class="mk-prow${n ? "" : " zero"}"><span class="mk-pe">${d.e}</span><div class="mk-info"><b>${esc(s.foods[f][0])}</b><small>×${n}</small></div><div class="mk-acts">${act}${n ? "" : `<button type="button" class="ghost" data-tab="food">${esc(s.buyMore)}</button>`}</div></div>`; }).join("")}</div>
-          <h4 class="mk-h">🛋️ ${esc(s.thingsH)}</h4>`;
-        body += H.items.length ? `<p class="mk-note">${esc(s.wearNote)}</p><div class="mk-list">${H.items.map((it) => {
-          const [nm] = L.t("furn")[it.k], dur = DC.FURN[it.k].durable; if (dur) it.cond = 100;
-          const c = Math.round(it.cond), lab = condLabel(it, s), rc = repairCost(it);
-          return `<div class="mk-row${it.cond <= 0 ? " broken" : ""}" data-id="${it.id}"><canvas width="64" height="48" data-f="${it.k}"></canvas>
-            <div class="mk-info"><b>${esc(nm)}</b><small>${esc(it.x != null ? s.out : s.stored)}${lab ? ` · <em>${esc(lab)}</em>` : ""}</small>
-              ${dur ? `<small class="mk-dur">✨ ${esc(s.durable)}</small>` : `<span class="mk-cond" title="${esc(s.cond)} ${c}%"><i style="--c:${c}%;--h:${Math.round(c * 1.2)}"></i></span>`}</div>
-            <div class="mk-acts"><button type="button" data-it="${it.x != null ? "store" : "put"}">${esc(it.x != null ? s.store : s.put)}</button>
-              ${!dur && it.cond < 90 ? `<button type="button" class="gold" data-it="repair"${L.wallet.coins < rc ? " disabled" : ""}>${esc(s.repair(rc))}</button>` : ""}
-              <button type="button" class="ghost" data-it="sell">${esc(s.sell(sellPrice(it)))}</button></div></div>`; }).join("")}</div>` : `<p class="mk-empty">🪑<br>${esc(s.noItems)}</p>`;
+        // icons in a grid: food, toys and things; tap one to see what you can do with it
+        const foods = Object.keys(L.FOOD).filter((f) => (L.pantry[f] || 0) > 0), toys = L.toys.filter((k) => s.toys[k]), items = H.items;
+        const bar = (c) => `<span class="iv-bar"><i style="--c:${c}%;--h:${Math.round(c * 1.2)}"></i></span>`;
+        const tile = (id, pic, badge, extra, out) => `<button type="button" class="iv-tile${sel === id ? " sel" : ""}${out ? " out" : ""}" data-sel="${id}">${pic}${badge ? `<b class="iv-n">${badge}</b>` : ""}${extra}</button>`;
+        const grid = (h, list, empty) => `<h4 class="mk-h">${h}</h4>${list.length ? `<div class="iv-grid">${list.join("")}</div>` : `<p class="iv-empty">${esc(empty)}</p>`}`;
+        if (!sel || !((sel.startsWith("f:") && foods.includes(sel.slice(2))) || (sel.startsWith("t:") && toys.includes(sel.slice(2))) || (sel.startsWith("i:") && items.some((i) => i.id === sel.slice(2))))) sel = "";
+        body = `<div class="iv-detail">${detail(s)}</div>`
+          + grid(`🧺 ${esc(s.pantryH)}`, foods.map((f) => tile("f:" + f, `<span class="iv-e">${L.FOOD[f].e}</span>`, "×" + L.pantry[f], "", false)), s.noFood)
+          + grid(`🧸 ${esc(s.toysH)}`, toys.map((k) => tile("t:" + k, `<span class="iv-e">${s.toyE[k]}</span>`, "", bar(L.toyCondOf(k)), o.toyOn && o.toyOn(k))), s.noToys)
+          + grid(`🛋️ ${esc(s.thingsH)}`, items.map((it) => { if (DC.FURN[it.k].durable) it.cond = 100; return tile("i:" + it.id, `<canvas width="56" height="42" data-f="${it.k}"></canvas>`, "", DC.FURN[it.k].durable ? "" : bar(Math.round(it.cond)), it.x != null); }), s.noItems)
+          + `<div class="iv-foot"><button type="button" class="mk-wide" data-clear="1">${esc(s.clearToys)}</button><small>${esc(s.wearNote)}</small></div>`;
       } else if (tab === "luck") {
         const ready = L.chestReady(), left = (() => { const m = new Date(); m.setHours(24, 0, 0, 0); const d = m - Date.now(); return `${Math.floor(d / 3.6e6)}sa ${Math.floor(d / 6e4) % 60}dk`; })();
         const tot = L.WHEEL.reduce((a, r) => a + r[1], 0);
@@ -211,6 +206,30 @@
     function drawCats() {
       root.querySelectorAll("canvas[data-av]").forEach((cv) => { const g = cv.getContext("2d"), k = cv.width / 52; DC.portrait(g, cv.dataset.av, { scale: k > 1.3 ? 1.5 : 1, dx: 2, dy: 3 }); });
       root.querySelectorAll("canvas[data-post]").forEach((cv, i) => { const g = cv.getContext("2d"); g.fillStyle = "rgba(91,58,41,.08)"; g.fillRect(0, 96, 120, 24); DC.portrait(g, coatSel, { scale: 2, dx: 0, dy: 6, pose: cv.dataset.post, t: 0.4, blink: cv.dataset.post === "sleep" }); });
+    }
+    // what you can do with the selected thing
+    function detail(s) {
+      if (!sel) return `<p class="iv-hint">${esc(s.pickOne)}</p>`;
+      const [kind, id] = [sel.slice(0, 1), sel.slice(2)];
+      const head = (pic, nm, sub) => `<div class="iv-dh">${pic}<div><b>${esc(nm)}</b><small>${sub}</small></div></div>`;
+      if (kind === "f") {
+        const f = id, d = L.FOOD[f], n = L.pantry[f] || 0;
+        const btn = f === "treat" ? `<small class="mk-tn">${esc(s.treatNote)}</small>` : `<button type="button" class="gold" data-use="${f}">${esc(s.use[f] || s.useMeal)}</button>`;
+        return head(`<span class="iv-e big">${d.e}</span>`, s.foods[f][0], `×${n} · ${esc(s.foods[f][1])}`) + `<div class="iv-acts">${btn}<button type="button" class="ghost" data-tab="food">${esc(s.buyMore)}</button></div>`;
+      }
+      if (kind === "t") {
+        const k = id, out = o.toyOn && o.toyOn(k), c = L.toyCondOf(k), [nm, ds] = s.toys[k];
+        let btns;
+        if (k === "brush") btns = `<small class="mk-tn">${esc(s.onCard)}</small>`;
+        else if (k === "laser" || k === "wand") btns = `<button type="button" class="${out ? "" : "gold"}" data-play="${k}">${esc(out ? s.toyOff : s.toyOn)}</button>`;
+        else btns = out ? `<button type="button" data-stow="${k}">${esc(s.stow)}</button><button type="button" class="gold" data-play="${k}">${esc(s.again)}</button>` : `<button type="button" class="gold" data-play="${k}">${esc(s.toyPlay)}</button>`;
+        return head(`<span class="iv-e big">${s.toyE[k]}</span>`, nm, `${esc(out ? s.out : s.stored)} · ${esc(s.cond)} ${c}%${c < 30 ? ` · <em>${esc(s.worn)}</em>` : ""}<br>${esc(ds)}`) + `<div class="iv-acts">${btns}</div>`;
+      }
+      const it = L.home.items.find((i) => i.id === id), [nm, ds] = L.t("furn")[it.k], dur = DC.FURN[it.k].durable, c = Math.round(it.cond), lab = condLabel(it, s), rc = repairCost(it);
+      return head(`<canvas width="64" height="48" data-f="${it.k}"></canvas>`, nm, `${esc(it.x != null ? s.out : s.stored)}${dur ? ` · ✨ ${esc(s.durable)}` : ` · ${esc(s.cond)} ${c}%`}${lab ? ` · <em>${esc(lab)}</em>` : ""}<br>${esc(ds)}`)
+        + `<div class="iv-acts" data-id="${it.id}"><button type="button" class="${it.x != null ? "" : "gold"}" data-it="${it.x != null ? "store" : "put"}">${esc(it.x != null ? s.stow : s.put)}</button>
+          ${!dur && it.cond < 90 ? `<button type="button" class="gold" data-it="repair"${L.wallet.coins < rc ? " disabled" : ""}>${esc(s.repair(rc))}</button>` : ""}
+          <button type="button" class="ghost" data-it="sell">${esc(s.sell(sellPrice(it)))}</button></div>`;
     }
     function segLabel(r, s) { const [k, , rg] = r; return k === "coins" ? `🪙 ${rg[0]}` : L.FOOD[k] ? `${L.FOOD[k].e} ${s.foods[k][0]}` : { nothing: "🙈 ", star: "⭐ ", furniture: "🛋️ ", cloth: "👑 " }[k] + s.seg[k]; }
     // the wheel: one slice per prize (slices are equal; the real odds are listed underneath)
@@ -284,6 +303,8 @@
         setTimeout(() => { spinning = false; result = prizeText(r.prize, t()); key = ""; render(); const p = r.prize.k; if (p !== "nothing") world.confetti(innerWidth / 2, 140, p === "furniture" || p === "cloth" || p === "star" ? 70 : 16); }, 3500);
         return;
       }
+      if (b.dataset.sel) { sel = sel === b.dataset.sel ? "" : b.dataset.sel; key = ""; return render(); }
+      if (b.dataset.stow) { o.storeToy && o.storeToy(b.dataset.stow); pop(b, "🎒"); key = ""; return render(); }
       if (b.dataset.coat) { coatSel = b.dataset.coat; key = ""; return render(); }
       if (b.dataset.unlock) { if (L.buyCoat(b.dataset.unlock)) { note = t().unlockedMsg(L.COAT_NAMES[b.dataset.unlock][L.lang]); world.confetti(innerWidth / 2, 140, 40); } key = ""; return render(); }
       if (b.dataset.adopt) { o.adopt && o.adopt(b.dataset.adopt); return; }

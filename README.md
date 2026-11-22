@@ -89,11 +89,13 @@ You start with one **ginger tabby**. Every other coat (black, white, grey tabby,
 | :-- | :-- |
 | **🪙 Coins** | Earned slowly: tasks (1🪙 each, +3🪙 for all three), the laser hunt (1🪙 for every two stars caught, 25 a day at most) and simply using your computer (1🪙 every 15 active minutes, 20 a day at most). Spent on food, toys and furniture |
 | **⭐ Stars** | Only from finishing all of a cat's tasks, or a laser-hunt score of 20+ (once a day). Spent on the wardrobe |
-| **🧸 Toys** | All toys live in the market's 🧸 Toys tab. Only the yarn is free; the wind-up mouse, box, butterfly, feather wand, scratching post, wall shelf, laser pointer and brush are bought once with coins, then taken out (or switched on) from the same tab |
+| **🧸 Toys** | Bought in the market's 🧸 Toys tab (your first yarn is free) and kept in the inventory, where you take them out, put them away or switch them on. Toys wear out with play and while left out; when one is worn to nothing it's gone and you buy a new one |
 | **🍗 Food** | Dry food (two meals for 10🪙), wet food, fish feasts, treats (they make teaching tricks easier), catnip and cat litter. The bowl only fills from your cupboard |
-| **🎒 Inventory** | Its own panel (🎒 on the card): the cupboard (put food in the bowl, drop catnip, clean the litter box) and every piece of furniture: place it, put it away, repair it or sell it |
+| **🎒 Inventory** | Its own panel (🎒 on the card), laid out as icons with a little wear bar: tap one to use it, take it out or put it away. The cupboard (put food in the bowl, drop catnip, clean the litter box) and every piece of furniture: place it, put it away, repair it or sell it |
 | **🍱 Special meals** | 22 dishes (salmon, shrimp, chicken soup, caviar, birthday cake…), each giving a buff for a few hours: **full** (hunger lasts twice as long), **glow** (love fades slower), **grow**, **healthy** (cures sickness), **energy**, **calm**, **shiny** (love ×1.5), **smart** (tricks are easier), **lucky**, **sleepy** and **royal**. Active buffs show on the card |
 | **🎁 Luck** | A free gift chest once a day, and a wheel of luck for 25🪙. Mostly coins and food; furniture, a star or a new outfit only very, very rarely (the odds are listed under the wheel) |
+
+<img src="docs/inventory.png" width="300" alt="The inventory: food, toys and furniture as icons, with what you can do with the selected one">
 
 ### Home
 
