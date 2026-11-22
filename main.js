@@ -59,6 +59,7 @@ function buildMenu() {
       { type: "separator" },
       { label: "Put the toys away", click: () => send({ type: "clear" }) },
     ] },
+    { label: "Cat cards…", click: () => { win.showInactive(); send({ type: "cards" }); } },
     { label: "Feed the cats", click: () => send({ type: "feed" }) },
     { label: "Remove a cat", click: () => send({ type: "remove" }) },
     { type: "separator" },

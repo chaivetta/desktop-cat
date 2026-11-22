@@ -457,6 +457,20 @@
     }
   }
 
+  // ---------------------------------------------------------------- portraits (for the cat card)
+  const portraitCache = { pal: {} };
+  function portrait(ctx, coat, o = {}) {
+    const R = portraitCache.R || (portraitCache.R = new Raster()); R.clear();
+    const c = portraitCache.c || (portraitCache.c = Object.assign(document.createElement("canvas"), { width: SW, height: SH }));
+    const g = c.getContext("2d"), img = portraitCache.img || (portraitCache.img = g.createImageData(SW, SH));
+    (POSES[o.pose] || POSES.sit)(R, { t: o.t || 0, st: 1, phase: o.phase || 0, blink: !!o.blink, eyes: o.eyes || null, look: o.look || null });
+    const pal = portraitCache.pal[coat] || (portraitCache.pal[coat] = buildPalette(coat));
+    shade(R, pal, img); g.putImageData(img, 0, 0);
+    const k = o.scale || 2, W = ctx.canvas.width, H = ctx.canvas.height;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(c, Math.round((W - SW * k) / 2 + (o.dx ?? 4) * k), Math.round((H - SH * k) / 2 + (o.dy || 0) * k), SW * k, SH * k);
+  }
+
   // ---------------------------------------------------------------- toy sprites (same lit + outlined look)
   function toyImage(R, pal, outline, ctx, img) {
     const d = img.data; d.fill(0); const W = R.w, H = R.h;
@@ -493,9 +507,13 @@
       this.ctx = this.canvas.getContext("2d"); this.img = this.ctx.createImageData(SW, SH);
       this.t = rnd(0, 10); this.phase = 0; this.blinkT = rnd(2, 5); this.blink = false;
       this.boopCool = rnd(5, 15); this.fightCool = rnd(20, 40); this.peek = 0; this.peekTo = 0; this.fed = -1; this.look = null;
+      this.profile = null; this.mods = null; this.size = 1; this.tagY = null;
       this.set("sit", rnd(1, 3));
     }
-    get s() { return this.world.scale; }
+    // kittens are drawn smaller; they grow as they're looked after
+    get s() { return this.profile ? Math.max(1, Math.round(this.world.scale * this.size * 2) / 2) : this.world.scale; }
+    get name() { return this.profile ? this.profile.name : "?"; }
+    care(kind, arg) { if (window.CatLife && this.profile) window.CatLife.care(this, kind, arg); }
     set(state, dur = 3, extra = {}) {
       if (this.state === "inbox" && state !== "inbox" && this.box) { this.box.occupant = null; this.box = null; }
       if (this.bed && !["knead", "sleep", "stretch", "yawn"].includes(state)) { this.bed.occupant = null; this.bed = null; }
@@ -531,6 +549,7 @@
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
       if (foe) wt.fight = 1.4;
       if (wt.yarn || wt.mouse || wt.dangle || wt.butterfly) { wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; }
+      if (this.mods) for (const k in wt) if (this.mods[k]) wt[k] *= this.mods[k];      // personality
       const n = pick(wt);
       if (n === "walk") { const m = SW * this.s; this.set("walk", 12, { target: clamp(this.x + rnd(-420, 420), m, w.W - m) }); }
       else if (n === "sit") this.set("sit", rnd(3, 8));
@@ -541,6 +560,7 @@
         const d = rnd(4, 6.5);
         this.fightCool = foe.fightCool = rnd(40, 80);
         this.set("spar", d, { foe, act: "stance", actT: rnd(0.2, 0.6) }); foe.set("spar", d, { foe: this, act: "stance", actT: rnd(0.3, 0.8) });
+        this.care("fight", { o: foe.name }); foe.care("fight", { o: this.name });
         w.burst((this.x + foe.x) / 2, this.y - 30 * this.s, "spark", "#f7e48c", 1);
       }
       else if (n === "roll") this.set("roll", rnd(3, 5.5));
@@ -584,16 +604,17 @@
     }
     startZoom(race = true) {
       const w = this.world, m = SW * this.s, target = this.x < w.W / 2 ? w.W - m : m, d = rnd(2.4, 4);
-      this.set("zoom", d, { target, laps: 0 });
+      this.set("zoom", d, { target, laps: 0 }); this.care("zoom");
       if (!race) return;
       const buddy = w.cats.find((o) => o !== this && ["sit", "walk", "groom"].includes(o.state) && Math.abs(o.x - this.x) < 110 * this.s);
-      if (buddy && Math.random() < 0.55) buddy.set("zoom", d, { target, laps: 0 });   // a race!
+      if (buddy && Math.random() < 0.55) { buddy.set("zoom", d, { target, laps: 0 }); this.care("race", { o: buddy.name }); buddy.care("race", { o: this.name }); }   // a race!
     }
 
     // ------------------------------------------------ physics + behaviour
     update(dt) {
       const w = this.world, s = this.s, floor = w.floor;
       this.t += dt; this.stateT += dt; this.boopCool -= dt; this.fightCool -= dt;
+      if (this.profile && window.CatLife) window.CatLife.tick(this, dt);
       this.blinkT -= dt; if (this.blinkT <= 0) { this.blink = !this.blink; this.blinkT = this.blink ? 0.14 : rnd(2, 6); }
       if ((w.laser || w.wand) && !["chase", "leap", "stand", "held", "fall", "hunt"].includes(this.state)) this.think();
       if (this.bed && w.bed !== this.bed) this.bed = null;
@@ -646,7 +667,7 @@
         case "bat": {
           const y = w.yarn;
           if (y && !this.swatted && this.stateT > 0.18 && Math.abs(y.x - this.x) < 26 * s) {
-            this.swatted = true; y.vx += this.facing * rnd(260, 520); y.vy -= rnd(160, 380); y.spin += this.facing * 8;
+            this.swatted = true; y.vx += this.facing * rnd(260, 520); y.vy -= rnd(160, 380); y.spin += this.facing * 8; this.care("play", { toyKey: "yarn" });
             w.burst(y.x, y.y, "spark", "#f7e48c", 2);
           }
           if (this.stateT > this.dur) this.set("chase", 6, { goal: "yarn" });
@@ -685,7 +706,7 @@
         }
         case "sniff": {
           if (!w.catnip) { this.set("sit", 1.5); break; }
-          if (this.stateT > this.dur) this.set("nip", rnd(4, 6.5));
+          if (this.stateT > this.dur) { this.set("nip", rnd(4, 6.5)); this.care("catnip"); }
           break;
         }
         case "nip": {                                     // blissed out on catnip
@@ -780,12 +801,13 @@
         else if (g === "catnip") { this.nipped = w.catnip.id; this.facing = Math.sign(w.catnip.x - this.x) || this.facing; this.set("sniff", rnd(1, 1.6)); }
         else if (g === "bed") {
           const b = this.bedRef; b.claimed = null;
-          if (!b.occupant) { b.occupant = this; this.bed = b; this.x = b.x; this.set("knead", rnd(2.5, 4)); } else this.think();
+          if (!b.occupant) { b.occupant = this; this.bed = b; this.x = b.x; this.set("knead", rnd(2.5, 4)); this.care("bed"); } else this.think();
         }
-        else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); } else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7)); }
+        else if (g === "post") { this.facing = Math.sign(w.post.x - this.x) || this.facing; this.set("scratch", rnd(2.5, 4.5)); this.care("scratch"); }
+        else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7) * ((this.mods && this.mods._eat) || 1)); this.care("fed"); }
         else if (g === "box") {
           const b = this.boxRef; b.claimed = null;
-          if (!b.occupant) { b.occupant = this; this.box = b; this.x = b.x; this.set("inbox", rnd(8, 22), { peek: 1, peekTo: 0, peekT: rnd(1, 2), box: b }); w.burst(b.x, floor - 22 * s, "note", "#b08d57", 1); }
+          if (!b.occupant) { b.occupant = this; this.box = b; this.x = b.x; this.set("inbox", rnd(8, 22), { peek: 1, peekTo: 0, peekT: rnd(1, 2), box: b }); w.burst(b.x, floor - 22 * s, "note", "#b08d57", 1); this.care("box"); }
           else this.think();
         }
       }
@@ -802,17 +824,17 @@
       const w = this.world, s = this.s, y = w.yarn;
       if (y && Math.hypot(y.x - px, y.y - py) < y.r + 7 * s && !this.touchedRecently) {
         this.touchedRecently = 0.25;
-        y.vx += this.facing * rnd(220, 420); y.vy -= rnd(150, 320); y.spin += this.facing * 10; w.burst(y.x, y.y, "spark", "#f7e48c", 2);
+        y.vx += this.facing * rnd(220, 420); y.vy -= rnd(150, 320); y.spin += this.facing * 10; w.burst(y.x, y.y, "spark", "#f7e48c", 2); this.care("play", { toyKey: "yarn" });
       }
       const m = w.mouse;
-      if (m && !m.held && Math.abs(m.x - px) < 14 * s && Math.abs(m.y - 4 * s - py) < 22 * s && m.airT <= 0) { m.kick(this.facing); w.burst(m.x, m.y - 6 * s, "spark", "#f7e48c", 3); }
-      if (w.laser && Math.hypot(w.pointer.x - px, w.pointer.y - py) < 12 * s && Math.random() < 0.06) w.burst(w.pointer.x, w.pointer.y, "spark", "#ff5a5a", 1);
+      if (m && !m.held && Math.abs(m.x - px) < 14 * s && Math.abs(m.y - 4 * s - py) < 22 * s && m.airT <= 0) { m.kick(this.facing); w.burst(m.x, m.y - 6 * s, "spark", "#f7e48c", 3); this.care("play", { toyKey: "mouse" }); }
+      if (w.laser && Math.hypot(w.pointer.x - px, w.pointer.y - py) < 12 * s) { this.care("play", { toyKey: "laser" }); if (Math.random() < 0.06) w.burst(w.pointer.x, w.pointer.y, "spark", "#ff5a5a", 1); }
       const f = w.wand;
       if (f && w.pointer.seen && Math.hypot(f.x - px, f.cy - py) < 9 * s + 4 * w.toyScale && !this.touchedF) {
-        this.touchedF = 0.3; f.vx += this.facing * rnd(260, 460); f.vy -= rnd(140, 300); w.burst(f.x, f.cy, "spark", "#f7e48c", 2);
+        this.touchedF = 0.3; f.vx += this.facing * rnd(260, 460); f.vy -= rnd(140, 300); w.burst(f.x, f.cy, "spark", "#f7e48c", 2); this.care("play", { toyKey: "feather" });
       }
       const bf = w.butterfly;
-      if (bf && Math.hypot(bf.x - px, bf.y - py) < 14 * s) bf.scare(this.facing);
+      if (bf && Math.hypot(bf.x - px, bf.y - py) < 14 * s) { bf.scare(this.facing); this.care("play", { toyKey: "butterfly" }); }
       if (this.touchedRecently) this.touchedRecently = Math.max(0, this.touchedRecently - 1 / 60) || 0;
       if (this.touchedF) this.touchedF = Math.max(0, this.touchedF - 1 / 60) || 0;
     }
@@ -868,6 +890,7 @@
         if (Math.abs(dx) < 22 * this.s && Math.sign(dx) === this.facing) {
           this.facing = Math.sign(dx); o.facing = -this.facing;
           this.set("boop", 1.6); o.set("boop", 1.6); this.boopCool = o.boopCool = rnd(25, 45);
+          this.care("boop", { o: o.name }); o.care("boop", { o: this.name });
           this.world.burst((this.x + o.x) / 2, this.y - 28 * this.s, "heart", "#e2557a", 2);
           return;
         }
@@ -912,10 +935,38 @@
       if (this.facing < 0) ctx.scale(-1, 1);
       ctx.drawImage(this.canvas, Math.round(-SW * s / 2), 0, SW * s, SH * s);
       ctx.restore();
+      if (this.profile && this.profile.showName && w.showNames !== false) this.drawTag(ctx, R, dy);
+    }
+
+    // a little speech-bubble name tag floating above the cat
+    drawTag(ctx, R, dy) {
+      const s = this.s, w = this.world;
+      let top = 0;
+      find: for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) if (R.m[y * SW + x]) { top = y; break find; }
+      const target = this.y - GROUND * s + dy + top * s - 4;
+      this.tagY = this.tagY == null || Math.abs(this.tagY - target) > 80 ? target : this.tagY + (target - this.tagY) * 0.18;
+      const name = this.profile.name, fs = Math.round(clamp(8 + w.scale * 2.4, 11, 20)), love = this.profile.love >= 80;
+      ctx.save();
+      ctx.font = `700 ${fs}px "Pixelify Sans", ui-monospace, monospace`;
+      const hp = Math.max(1, Math.round(fs / 9)), hw = love ? 8 * hp + 4 : 0, padX = Math.round(fs * 0.55), h = Math.round(fs * 1.5);
+      const bw = Math.round(ctx.measureText(name).width + padX * 2 + hw);
+      const x0 = Math.round(clamp(this.x - bw / 2, 2, w.W - bw - 2)), y0 = Math.round(this.tagY - h - 6), cx = Math.round(clamp(this.x, x0 + 8, x0 + bw - 8));
+      ctx.fillStyle = "rgba(255,247,236,.95)"; ctx.strokeStyle = "#5b3a29"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(x0 + 0.5, y0 + 0.5, bw, h, h / 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx - 5, y0 + h - 1); ctx.lineTo(cx, y0 + h + 5); ctx.lineTo(cx + 5, y0 + h - 1); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(cx - 5, y0 + h + 0.5); ctx.lineTo(cx, y0 + h + 5.5); ctx.lineTo(cx + 5, y0 + h + 0.5); ctx.stroke();
+      if (love) {
+        ctx.fillStyle = "#e2557a"; const g = GLYPH.heart, hx = x0 + padX, hy = Math.round(y0 + h / 2 - 3 * hp);
+        for (let yy = 0; yy < g.length; yy++) for (let xx = 0; xx < g[yy].length; xx++) if (g[yy][xx] === "1") ctx.fillRect(hx + xx * hp, hy + yy * hp, hp, hp);
+      }
+      ctx.fillStyle = "#5b3a29"; ctx.textBaseline = "middle";
+      ctx.fillText(name, x0 + padX + hw, y0 + h / 2 + 1);
+      ctx.restore();
     }
 
     pet() {
       const w = this.world, s = this.s;
+      this.care("pet");
       if (this.state === "inbox") { this.peekTo = 0; this.peekT = 2.5; w.burst(this.x, this.y - 40 * s, "heart", "#e2557a", 2); w.purr(); return; }
       if (this.state === "sleep") { this.set("stretch", 1.4); w.burst(this.x, this.y - 30 * s, "note", "#b08d57", 1); return; }
       this.set("happy", 2.6, { eyes: null });
@@ -1315,11 +1366,15 @@
     }
     resize() { this.W = innerWidth; this.H = innerHeight; this.canvas.width = this.W; this.canvas.height = this.H; this.canvas.style.width = this.W + "px"; this.canvas.style.height = this.H + "px"; this.floor = this.H - this.floorInset; }
     spot() { return rnd(this.W * 0.15, this.W * 0.85); }
-    addCat(coat) {
-      coat = coat && COATS[coat] ? coat : COAT_KEYS[Math.floor(Math.random() * COAT_KEYS.length)];
-      const c = new Cat(this, coat, this.spot()); c.y = -60; c.set("fall", 5); c.vx = 0; this.cats.push(c); return c;
+    addCat(coat, profile) {
+      coat = profile ? profile.coat : coat && COATS[coat] ? coat : COAT_KEYS[Math.floor(Math.random() * COAT_KEYS.length)];
+      const c = new Cat(this, coat, this.spot());
+      if (profile) { c.profile = profile; if (window.CatLife) { c.mods = window.CatLife.mods(profile); c.size = window.CatLife.size(profile.xp); } }
+      c.y = -60; c.set("fall", 5); c.vx = 0; this.cats.push(c); return c;
     }
-    removeCat() { const c = this.cats.pop(); if (c && c.box) c.box.occupant = null; if (c && c.bed) c.bed.occupant = null; if (this.post && this.post.user === c) this.post.user = null; }
+    removeCat(cat) {
+      const i = cat ? this.cats.indexOf(cat) : this.cats.length - 1; if (i < 0) return;
+      const c = this.cats.splice(i, 1)[0]; if (c && c.box) c.box.occupant = null; if (c && c.bed) c.bed.occupant = null; if (this.post && this.post.user === c) this.post.user = null; }
     throwYarn(x, y) {
       if (this.yarn && this.yarn.held) return;          // never snatch the yarn out of your hand
       this.yarn = new Yarn(this, x ?? this.spot(), y ?? this.floor - 260);
@@ -1395,13 +1450,14 @@
         pos(e); const d = this.drag;
         if (d && !d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 6) {
           d.moved = true;
-          if (d.cat) d.cat.set("held", 1e9);
+          if (d.cat) { d.cat.set("held", 1e9); d.cat.care("held"); }
           if (d.toy && d.toy !== this.yarn) d.toy.grab();
         }
         this.onHover(!!d || !!this.hitTest(e.clientX, e.clientY));
       });
       addEventListener("pointerdown", (e) => {
-        pos(e); const h = this.hitTest(e.clientX, e.clientY); if (!h) return;
+        pos(e); if (e.button !== 0) return;
+        const h = this.hitTest(e.clientX, e.clientY); if (!h) return;
         this.drag = { ...h, sx: e.clientX, sy: e.clientY, moved: false };
         if (h.toy === this.yarn) this.yarn.grab();               // the yarn sticks to the pointer straight away
         try { e.target.setPointerCapture?.(e.pointerId); } catch {}
@@ -1465,5 +1521,5 @@
     }
   }
 
-  window.DesktopCat = { World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6 };
+  window.DesktopCat = { World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait };
 })();

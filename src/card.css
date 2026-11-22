@@ -1,0 +1,169 @@
+/* Desktop Cat — the cat card. Pastel paper, chunky outlines, pixel hearts. */
+@font-face { font-family: "Pixelify Sans"; font-weight: 500; font-display: swap; src: url(fonts/pixelify-sans-latin-500-normal.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Pixelify Sans"; font-weight: 500; font-display: swap; src: url(fonts/pixelify-sans-latin-ext-500-normal.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Pixelify Sans"; font-weight: 700; font-display: swap; src: url(fonts/pixelify-sans-latin-700-normal.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Pixelify Sans"; font-weight: 700; font-display: swap; src: url(fonts/pixelify-sans-latin-ext-700-normal.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Nunito"; font-weight: 600; font-display: swap; src: url(fonts/nunito-latin-600-normal.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Nunito"; font-weight: 600; font-display: swap; src: url(fonts/nunito-latin-ext-600-normal.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Nunito"; font-weight: 800; font-display: swap; src: url(fonts/nunito-latin-800-normal.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Nunito"; font-weight: 800; font-display: swap; src: url(fonts/nunito-latin-ext-800-normal.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
+.cc {
+  --ink: #5b3a29; --paper: #fff8ee; --pink: #ff8fab; --tint: #ffe3c4;
+  position: fixed; z-index: 20; width: 356px; max-width: calc(100vw - 24px);
+  font: 600 14px/1.35 "Nunito", system-ui, sans-serif; color: var(--ink);
+  user-select: none; -webkit-user-select: none;
+}
+.cc[hidden] { display: none; }
+.cc * { box-sizing: border-box; }
+.cc button { font-family: inherit; color: var(--ink); }
+
+/* ---- tabs: one little round portrait per cat, plus a "new kitten" button */
+.cc-tabs { display: flex; gap: 9px; padding: 0 0 12px 10px; flex-wrap: wrap; }
+.cc-tab {
+  position: relative; width: 46px; height: 46px; border: 0; padding: 0; border-radius: 50%; cursor: pointer; overflow: hidden;
+  background: var(--paper); box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px var(--ink); transition: transform .15s;
+}
+.cc-tab canvas { width: 46px; height: 46px; image-rendering: pixelated; display: block; }
+.cc-tab:hover { transform: translateY(-2px); }
+.cc-tab.on { background: #fff; box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px var(--pink), 0 3px 0 5px var(--ink); transform: translateY(-3px); }
+.cc-tab.add { background: #d8f3e6; font: 700 24px/46px "Pixelify Sans", monospace; text-align: center; }
+
+/* ---- the card itself */
+.cc-card {
+  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  max-height: calc(100vh - 100px); background: var(--paper); border-radius: 20px;
+  box-shadow: 0 0 0 3px var(--ink), 0 0 0 7px #ffd9e4, 0 0 0 9px var(--ink), 8px 10px 0 9px rgba(91, 58, 41, .2);
+  animation: cc-pop .38s cubic-bezier(.3, 1.6, .5, 1);
+}
+@keyframes cc-pop { from { transform: scale(.82) translateY(14px); opacity: 0; } }
+
+.cc-x {
+  position: absolute; top: 10px; right: 10px; z-index: 2; width: 30px; height: 30px; border: 0; border-radius: 10px; cursor: pointer;
+  background: #fff; font: 700 18px/1 "Pixelify Sans", monospace; box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px var(--ink);
+}
+.cc-x:active, .cc-mini:active, .cc-btn:active { transform: translateY(2px); box-shadow: 0 0 0 2px var(--ink), 0 1px 0 2px var(--ink); }
+
+.cc-head {
+  position: relative; display: flex; gap: 14px; align-items: center; padding: 16px 16px 14px;
+  background-color: var(--tint);
+  background-image: radial-gradient(rgba(255, 255, 255, .55) 2.2px, transparent 2.7px), radial-gradient(rgba(255, 255, 255, .35) 2.2px, transparent 2.7px);
+  background-size: 18px 18px; background-position: 0 0, 9px 9px;
+  border-bottom: 3px dashed rgba(91, 58, 41, .28);
+}
+.cc-portrait {
+  flex: 0 0 100px; width: 100px; height: 100px; border-radius: 50%; overflow: hidden; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 120%, #ffe9c7 0 45%, #fffaf2 46%);
+  box-shadow: 0 0 0 3px var(--ink), 0 4px 0 3px var(--ink);
+}
+.cc-portrait canvas { width: 100px; height: 100px; image-rendering: pixelated; display: block; }
+.cc-portrait.bounce { animation: cc-bounce .5s; }
+@keyframes cc-bounce { 30% { transform: translateY(-6px) scale(1.04); } 60% { transform: translateY(1px); } }
+
+.cc-id { min-width: 0; padding-right: 26px; }
+.cc-namebox { display: flex; align-items: center; gap: 6px; }
+.cc-namebox[hidden] { display: none; }
+.cc-name { font: 700 27px/1.05 "Pixelify Sans", monospace; letter-spacing: .3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: text; }
+.cc-mini {
+  flex: 0 0 auto; width: 28px; height: 28px; border: 0; border-radius: 9px; cursor: pointer; background: #fff;
+  font: 700 14px/1 "Nunito", sans-serif; box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px var(--ink);
+}
+.cc-rename { display: flex; gap: 6px; align-items: center; }
+.cc-rename[hidden] { display: none; }
+.cc-rename input {
+  width: 128px; min-width: 0; padding: 4px 9px; border: 0; border-radius: 10px; outline: none; background: #fff;
+  font: 700 20px/1.1 "Pixelify Sans", monospace; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink), 0 0 0 4px #fff3; user-select: text;
+}
+.cc-rename input:focus { box-shadow: inset 0 0 0 2px var(--ink), 0 0 0 3px var(--pink); }
+.cc-sub { margin-top: 5px; font-size: 12.5px; opacity: .78; }
+.cc-stage {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 3px 11px 3px 8px; border-radius: 999px;
+  background: #fff; font: 700 12.5px "Pixelify Sans", monospace; box-shadow: 0 0 0 2px var(--ink);
+}
+
+.cc-banner {
+  margin: 12px 16px 0; padding: 9px 12px; border-radius: 12px; background: #fff1b8; font-weight: 800; font-size: 13px;
+  box-shadow: 0 0 0 2px var(--ink); animation: cc-wiggle 1.6s ease-in-out infinite;
+}
+.cc-banner[hidden] { display: none; }
+@keyframes cc-wiggle { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-.8deg); } }
+
+.cc-body { padding: 14px 16px 2px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #e8cdbf transparent; }
+.cc-sec { margin-bottom: 14px; }
+.cc-label { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; font: 700 14px "Pixelify Sans", monospace; }
+.cc-label small { font: 800 11.5px "Nunito", sans-serif; opacity: .72; text-align: right; }
+
+/* pixel hearts */
+.cc-hearts { display: flex; gap: 3px; flex-wrap: nowrap; }
+.cc-hearts.bump { animation: cc-bump .45s; }
+@keyframes cc-bump { 40% { transform: scale(1.08); } }
+.px-heart { width: 28px; height: 22px; shape-rendering: crispEdges; display: block; }
+.px-heart .on { fill: #ff6f91; } .px-heart .hi { fill: #ffd0dc; } .px-heart .off { fill: #f2e1da; } .px-heart .ol { fill: var(--ink); }
+
+/* growing-up bar */
+.cc-grow { position: relative; height: 18px; border-radius: 9px; overflow: hidden; background: #edf3e6; box-shadow: inset 0 0 0 2px var(--ink); }
+.cc-grow > i {
+  display: block; height: 100%; width: 0; border-radius: 9px 0 0 9px; transition: width .7s cubic-bezier(.3, 1.3, .5, 1);
+  background: repeating-linear-gradient(-45deg, #8fd6b4 0 7px, #7fcca7 7px 14px);
+  box-shadow: inset 0 4px 0 rgba(255, 255, 255, .45), inset -2px 0 0 var(--ink), inset 0 0 0 2px var(--ink);
+}
+.cc-steps { position: relative; height: 20px; margin-top: 3px; font-size: 14px; }
+.cc-steps span { position: absolute; top: 0; transform: translateX(-50%); filter: grayscale(1); opacity: .45; transition: .3s; }
+.cc-steps span:first-child { transform: none; } .cc-steps span:last-child { transform: translateX(-100%); }
+.cc-steps span.on { filter: none; opacity: 1; }
+
+/* personality chips */
+.cc-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.cc-chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px 4px 8px; border-radius: 999px;
+  background: var(--c, #ffe9a8); font: 800 12.5px "Nunito", sans-serif; box-shadow: 0 0 0 2px var(--ink);
+}
+.cc-chip.fav { background: #fff; box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 3px #ffd9e4; }
+
+/* the name-tag switch */
+.cc-toggle { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 13px; cursor: pointer; background: #fff; font-weight: 800; font-size: 13px; box-shadow: 0 0 0 2px rgba(91, 58, 41, .22); }
+.cc-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.cc-switch { position: relative; flex: 0 0 auto; width: 44px; height: 24px; border-radius: 12px; background: #ead9cc; box-shadow: inset 0 0 0 2px var(--ink); transition: background .2s; }
+.cc-switch::after {
+  content: "🐾"; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff;
+  display: grid; place-items: center; font-size: 10px; box-shadow: 0 0 0 2px var(--ink); transition: left .22s cubic-bezier(.3, 1.6, .5, 1);
+}
+.cc-toggle input:checked + .cc-switch { background: #ffb3c6; }
+.cc-toggle input:checked + .cc-switch::after { left: 23px; }
+
+/* chunky buttons */
+.cc-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.cc-btn {
+  padding: 10px 4px 9px; border: 0; border-radius: 13px; cursor: pointer; background: var(--b, #ffe1ea);
+  font: 700 14px/1 "Pixelify Sans", monospace; box-shadow: 0 0 0 2px var(--ink), 0 4px 0 2px var(--ink); transform: translateY(-2px);
+}
+.cc-btn:hover { filter: brightness(1.04); }
+
+/* diary */
+.cc-log ol { list-style: none; margin: 0; padding: 4px 10px; max-height: 190px; overflow-y: auto; border-radius: 13px; background: #fff;
+  box-shadow: 0 0 0 2px rgba(91, 58, 41, .22); scrollbar-width: thin; scrollbar-color: #e8cdbf transparent; }
+.cc-log li { display: grid; grid-template-columns: 24px 1fr auto; gap: 7px; align-items: center; padding: 7px 0; font-size: 13px; border-bottom: 2px dotted rgba(91, 58, 41, .16); }
+.cc-log li:last-child { border-bottom: 0; }
+.cc-log li .ico { font-size: 16px; text-align: center; }
+.cc-log li time { font-size: 11px; opacity: .55; white-space: nowrap; }
+.cc-log li.new { animation: cc-in .5s; }
+@keyframes cc-in { from { background: #fff1b8; } }
+.cc-log .empty { padding: 10px 0; text-align: center; opacity: .6; font-style: italic; grid-template-columns: 1fr; }
+
+.cc-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 16px 13px; font-size: 12px; border-top: 2px dotted rgba(91, 58, 41, .16); }
+.cc-born { opacity: .75; }
+.cc-lang button { border: 0; background: none; cursor: pointer; padding: 2px 3px; font: 700 12px "Pixelify Sans", monospace; opacity: .45; }
+.cc-lang button.on { opacity: 1; text-decoration: underline wavy var(--pink); text-underline-offset: 3px; }
+
+.cc-float { position: absolute; z-index: 3; pointer-events: none; font-size: 20px; animation: cc-float 1.1s ease-out forwards; }
+@keyframes cc-float { to { transform: translate(var(--dx, 0), -70px) scale(1.5) rotate(var(--r, 0)); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) { .cc *, .cc { animation: none !important; transition: none !important; } }

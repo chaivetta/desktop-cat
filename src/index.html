@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Desktop Cat</title>
+<link rel="stylesheet" href="card.css">
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:transparent;user-select:none;-webkit-user-select:none}
-  canvas{position:fixed;inset:0;display:block;touch-action:none}
+  #stage{position:fixed;inset:0;display:block;touch-action:none}
   body.demo{background:linear-gradient(#f4efe6 0 78%,#d9c7a8 78% 100%)}
   @media (prefers-color-scheme: dark){ body.demo{background:linear-gradient(#1e1a16 0 78%,#3a2f24 78% 100%)} }
   .panel{position:fixed;left:16px;top:16px;right:16px;max-width:560px;font:15px/1.4 Georgia,serif;color:#1f1b16;
@@ -19,13 +20,14 @@
   .panel button{font:12px Georgia,serif;letter-spacing:.08em;border:1px solid #b08d57;background:transparent;color:inherit;padding:6px 10px;cursor:pointer}
   .panel button:hover{background:rgba(176,141,87,.15)}
   .sw{width:22px;height:22px;padding:0!important;border-radius:50%}
+  .panel button.hl{border-color:#ff8fab;background:#ffe1ea;color:#5b3a29}
 </style>
 </head>
 <body>
 <canvas id="stage"></canvas>
 <div class="panel" id="panel">
   <h1>Desktop Cat</h1>
-  <p>Click a cat to pet it, drag it to pick it up. Bring out a toy — most of them can be dragged around too.</p>
+  <p>Click a cat to pet it, drag it to pick it up. Right-click or double-click a cat to open its card. Bring out a toy — most of them can be dragged around too.</p>
   <div class="row" id="coats"></div>
   <div class="row">
     <button id="yarn">Yarn</button>
@@ -43,6 +45,7 @@
     <button id="clear">Put toys away</button>
   </div>
   <div class="row">
+    <button id="cards" class="hl">Cat cards</button>
     <button id="remove">Remove a cat</button>
     <span style="opacity:.7;margin:0 2px 0 6px">Cats:</span>
     <button id="smaller">−</button>
@@ -53,24 +56,50 @@
   </div>
 </div>
 <script src="cat.js"></script>
+<script src="profile.js"></script>
+<script src="card.js"></script>
 <script>
 (() => {
   const { World, COATS, COAT_KEYS, SCALE_MIN, SCALE_MAX } = window.DesktopCat;
+  const L = window.CatLife;
   const bridge = window.deskcat;                 // present only inside the Electron app
-  const KEY = "desktop-cat:v1";
-  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; } };
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.map(c => c.coat), scale: world.scale, toyScale: world.toyScale })); } catch {} };
+  const KEY = "desktop-cat:v2", OLD_KEY = "desktop-cat:v1";
+  const read = (k) => { try { return JSON.parse(localStorage.getItem(k)) || null; } catch { return null; } };
 
   if (!bridge) document.body.classList.add("demo");
-  const saved = load() || { cats: ["ginger", "black"], scale: 3 };
 
-  let hovering = false;
-  const world = new World(document.getElementById("stage"), {
+  // saved cats are full profiles; an older save (just a list of coats) is brought over as grown-up cats
+  let saved = read(KEY);
+  if (!saved) {
+    const old = read(OLD_KEY) || { cats: ["ginger", "black"], scale: 3 };
+    saved = { cats: L.migrate(old.cats || []), scale: old.scale || 3, toyScale: old.toyScale || old.scale || 3 };
+  }
+  if (saved.lang) L.lang = saved.lang;
+  saved.cats.forEach(L.welcomeBack);
+
+  let world;
+  const save = () => {
+    try { localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale, lang: L.lang })); } catch {}
+  };
+  let saveT = 0; L.onChange = () => { clearTimeout(saveT); saveT = setTimeout(save, 400); card && card.refresh(); };
+  setInterval(save, 10000); addEventListener("beforeunload", save);
+
+  // the window only catches the mouse over a cat, a toy or the card; everywhere else clicks go to the desktop
+  let hovering = false, overCat = false, overUI = false;
+  const syncIgnore = () => { const h = overCat || overUI; if (bridge && h !== hovering) { hovering = h; bridge.setIgnore(!h); } };
+  world = new World(document.getElementById("stage"), {
     scale: saved.scale, toyScale: saved.toyScale || saved.scale, floorInset: bridge ? 2 : Math.round(innerHeight * 0.22) - 40,
-    onHover: (h) => { if (bridge && h !== hovering) { hovering = h; bridge.setIgnore(!h); } }
+    onHover: (h) => { overCat = h; syncIgnore(); }
   });
+  addEventListener("pointermove", (e) => { overUI = !!(e.target.closest && e.target.closest(".ui")); syncIgnore(); }, true);
   if (!bridge) addEventListener("resize", () => { world.floorInset = Math.round(innerHeight * 0.22) - 40; world.resize(); });
-  saved.cats.forEach((c, i) => setTimeout(() => { world.addCat(c); }, 350 * i));
+  saved.cats.forEach((p, i) => setTimeout(() => { world.addCat(null, p); }, 350 * i));
+
+  const card = window.CatCard.create(world, {
+    onAdopt: () => act.add(),
+    onLang: () => save(),
+    onClose: () => { overUI = false; syncIgnore(); },
+  });
 
   // laser and feather wand are on/off toys; keep the buttons (or the tray menu) in step
   function syncToggles() {
@@ -79,8 +108,15 @@
     document.getElementById("wand").textContent = world.wand ? "Feather wand: on" : "Feather wand";
   }
   const act = {
-    add: (coat) => { world.addCat(coat); save(); },
-    remove: () => { world.removeCat(); save(); },
+    // a new cat always arrives as a kitten, and asks for a name
+    add: (coat) => {
+      coat = coat && COATS[coat] ? coat : COAT_KEYS[Math.floor(Math.random() * COAT_KEYS.length)];
+      const p = L.make(coat, { taken: world.cats.map((c) => c.profile && c.profile.name) });
+      const c = world.addCat(null, p); save();
+      setTimeout(() => card.open(c, { naming: true }), 700);
+    },
+    remove: () => { world.removeCat(card.isOpen ? card.cat : undefined); save(); card.refresh(); },
+    cards: () => { const c = card.cat && world.cats.includes(card.cat) ? card.cat : world.cats.find((c) => c.profile); if (c) card.open(c); else act.add(); },
     yarn: () => world.throwYarn(),
     mouse: () => world.addMouse(),
     box: () => world.addBox(),
@@ -98,26 +134,33 @@
     toysSmaller: () => { world.toyScale = Math.max(SCALE_MIN, world.toyScale - 1); save(); },
   };
 
+  // right-click or double-click a cat to open its card
+  const catAt = (e) => { const h = world.hitTest(e.clientX, e.clientY); return h && h.cat; };
+  addEventListener("contextmenu", (e) => { const c = catAt(e); if (c) { e.preventDefault(); card.open(c); } });
+  addEventListener("dblclick", (e) => {
+    if (e.target.closest && e.target.closest(".ui, .panel")) return;
+    const c = catAt(e); if (c) return card.open(c);
+    if (!bridge && !world.hitTest(e.clientX, e.clientY)) world.throwYarn(e.clientX, e.clientY);
+  });
+
   if (bridge) {
     bridge.onCommand((cmd) => { if (act[cmd.type]) act[cmd.type](cmd.type === "laser" || cmd.type === "wand" ? cmd.on : cmd.coat); });
     bridge.setCoats(COAT_KEYS.map(k => ({ key: k, name: COATS[k].name })));
   } else {
     const box = document.getElementById("coats");
-    box.insertAdjacentHTML("beforeend", "<span style='opacity:.7;margin-right:4px'>Add:</span>");
+    box.insertAdjacentHTML("beforeend", "<span style='opacity:.7;margin-right:4px'>Adopt:</span>");
     COAT_KEYS.forEach(k => {
       const b = document.createElement("button"); b.className = "sw"; b.title = COATS[k].name;
       b.style.background = `linear-gradient(135deg, ${COATS[k].body} 55%, ${COATS[k].accent} 55%)`;
       b.onclick = () => act.add(k); box.appendChild(b);
     });
-    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "clear"].forEach(id => document.getElementById(id).onclick = () => act[id]());
+    ["yarn", "mouse", "box", "feed", "catnip", "butterfly", "bed", "post", "clear", "cards", "remove"].forEach(id => document.getElementById(id).onclick = () => act[id]());
     document.getElementById("laser").onclick = () => act.laser();
     document.getElementById("wand").onclick = () => act.wand();
-    document.getElementById("remove").onclick = act.remove;
     document.getElementById("bigger").onclick = act.bigger;
     document.getElementById("smaller").onclick = act.smaller;
     document.getElementById("toysBigger").onclick = act.toysBigger;
     document.getElementById("toysSmaller").onclick = act.toysSmaller;
-    addEventListener("dblclick", (e) => { if (!world.hitTest(e.clientX, e.clientY) && !e.target.closest(".panel")) world.throwYarn(e.clientX, e.clientY); });
     setTimeout(() => { if (!world.yarn) world.throwYarn(); }, 2500);
   }
 })();

@@ -43,6 +43,26 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 
 ![Scratching post, cat bed, catnip, feather wand and a race](docs/toys2.png)
 
+## Every cat has a card
+
+Right-click or double-click a cat (or pick **Cat cards…** from the tray icon) to open its card.
+
+<img src="docs/card.png" width="360" align="right" alt="A cat card: portrait, love hearts, growing-up bar, personality, diary">
+
+- **A name** — new cats arrive as kittens and ask to be named (🎲 suggests one). Click the name to change it any time
+- **Name tag** — show the name in a little speech bubble above the cat's head, or keep it on the card only
+- **Personality** — two random traits per cat, like *Playful*, *Sleepy*, *Cuddly*, *Curious*, *Foodie*, *Tidy*, *Rascal*, *Hunter* or *Lazy*, plus a favourite toy. They really change how the cat behaves: a sleepy cat naps more, a hunter goes after the mouse and the butterfly, a foodie lingers at the bowl
+- **Growing up** — kittens start small and grow as you look after them: petting, feeding, playing, naps in the bed. Kitten 🍼 → young cat 🐱 → grown-up 👑
+- **Love bar** — ten pixel hearts. Petting, feeding and playing (especially with their favourite toy) fill it up; it fades slowly if they're left alone for long
+- **Diary** — what they've been up to: meals, naps, games, races, play-fights, growing up…
+- **Turkish and English** — switch at the bottom of the card
+
+Everything is saved on your computer and remembered next time.
+
+![Name tags above the cats](docs/nametags.png)
+
+<br clear="right">
+
 ## Playing with the cats
 
 | | |
@@ -50,7 +70,8 @@ Pixel cats that live on the bottom edge of your screen. They wander, groom, nap,
 | **Click** a cat | Pet it — hearts and a soft purr (a sleeping cat wakes up and stretches) |
 | **Drag** a cat | Pick it up by the scruff; let go and it lands on its feet |
 | **Drag** a toy | Move the box, bowl or mouse; dangle the yarn, swing it and let go to throw it |
-| **Tray / menu-bar icon** | Add a cat (seven coats), toys, feed them, laser pointer, **cat size** and **toy size** (each from tiny to large), hide them, start with your computer |
+| **Right-click / double-click** a cat | Open its card |
+| **Tray / menu-bar icon** | Cat cards, adopt a kitten (seven coats), toys, feed them, laser pointer, **cat size** and **toy size** (each from tiny to large), hide them, start with your computer |
 
 Seven coats: ginger tabby, black, white, grey tabby, calico, siamese and tuxedo.
 
