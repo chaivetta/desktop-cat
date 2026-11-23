@@ -3,23 +3,23 @@
 (() => {
   const L = window.CatLife;
   const JOBS = [
-    { id: "hunt", e: "🐭", h: 1, coins: [5, 12], xp: 10 },
-    { id: "visit", e: "🏡", h: 3, coins: [14, 28], xp: 25, food: 0.5 },
-    { id: "explore", e: "🗺️", h: 8, coins: [35, 75], xp: 60, food: 0.6, find: 0.35, star: 0.06 },
+    { id: "hunt", e: "🐭", h: 1, coins: [3, 7], xp: 10 },
+    { id: "visit", e: "🏡", h: 3, coins: [9, 17], xp: 25, food: 0.4 },
+    { id: "explore", e: "🗺️", h: 8, coins: [22, 45], xp: 60, food: 0.5, find: 0.3, star: 0.04 },
   ];
   // job offers that come in now and then for one of your cats (better pay than the jobs you pick yourself)
   const OFFERS = [
-    { id: "mice", e: "🐭", h: 8, coins: [55, 95], xp: 55, food: 0.4 }, { id: "scout", e: "🔭", h: 1, coins: [6, 12], xp: 10 },
-    { id: "birds", e: "🐦", h: 2, coins: [14, 24], xp: 18 }, { id: "cafe", e: "☕", h: 4, coins: [28, 48], xp: 30 },
-    { id: "library", e: "📚", h: 6, coins: [42, 68], xp: 42 }, { id: "model", e: "📸", h: 2, coins: [20, 36], xp: 20, genes: true },
-    { id: "therapy", e: "🏥", h: 3, coins: [18, 32], xp: 40 }, { id: "fisher", e: "🎣", h: 5, coins: [30, 52], xp: 35, fish: true },
-    { id: "night", e: "🌙", h: 10, coins: [75, 125], xp: 70, star: 0.08 },
+    { id: "mice", e: "🐭", h: 8, coins: [35, 60], xp: 55, food: 0.4 }, { id: "scout", e: "🔭", h: 1, coins: [5, 9], xp: 10 },
+    { id: "birds", e: "🐦", h: 2, coins: [10, 16], xp: 18 }, { id: "cafe", e: "☕", h: 4, coins: [18, 30], xp: 30 },
+    { id: "library", e: "📚", h: 6, coins: [26, 42], xp: 42 }, { id: "model", e: "📸", h: 2, coins: [12, 24], xp: 20, genes: true },
+    { id: "therapy", e: "🏥", h: 3, coins: [12, 20], xp: 40 }, { id: "fisher", e: "🎣", h: 5, coins: [20, 32], xp: 35, fish: true },
+    { id: "night", e: "🌙", h: 10, coins: [50, 80], xp: 70, star: 0.05 },
   ];
   const STR = {
     tr: {
       title: "💼 İşe gönder", jobs: { hunt: "Fare avı", visit: "Komşu ziyareti", explore: "Çöplük keşfi" }, hrs: (h) => `${h} sa`,
       away: (j, m) => `💼 ${j}: ${m >= 60 ? `${Math.floor(m / 60)} sa ${m % 60} dk` : `${m} dk`} sonra döner`,
-      cant: { kitten: "Yavrular işe gidemez", sick: "Hasta kedi işe gidemez", hungry: "Aç kedi işe gidemez" },
+      cant: { kitten: "Yavrular işe gidemez", sick: "Hasta kedi işe gidemez", hungry: "Aç kedi işe gidemez, önce mama ver", tired: "Yorgun, biraz dinlensin", limit: "Bugün yeterince çalıştı (günde en çok 3 iş)" },
       back: (n, j, what) => `🎒 ${n} ${j} dönüşü: ${what}`, gone: (n) => `👋 ${n} işe gitti`,
       found: (x) => `buldu: ${x}`, star: "⭐ bir yıldız!",
       hint: "Kedin ekrandan çıkar, süre dolunca (uygulama kapalı olsa bile) ödülle döner. Uzun işler daha iyi ödül getirir. Ara sıra daha iyi ödeyen iş teklifleri de gelir.",
@@ -29,7 +29,7 @@
     en: {
       title: "💼 Send to work", jobs: { hunt: "Mouse hunt", visit: "Visit the neighbours", explore: "Explore the tip" }, hrs: (h) => `${h} h`,
       away: (j, m) => `💼 ${j}: back in ${m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`}`,
-      cant: { kitten: "Kittens can't go to work", sick: "A sick cat can't go", hungry: "A hungry cat can't go" },
+      cant: { kitten: "Kittens can't go to work", sick: "A sick cat can't go", hungry: "A hungry cat can't go; feed it first", tired: "Tired; let it rest a while", limit: "It's worked enough today (3 jobs a day at most)" },
       back: (n, j, what) => `🎒 ${n} is back from the ${j.toLowerCase()}: ${what}`, gone: (n) => `👋 ${n} went to work`,
       found: (x) => `found ${x}`, star: "⭐ a star!",
       hint: "Your cat walks off the screen and comes back with a reward when the time's up (even if the app is closed). Longer jobs bring better rewards. Better-paid job offers come in now and then too.",
@@ -43,10 +43,13 @@
 
   function create(o) {
     const { world, save, toast } = o, DC = window.DesktopCat;
-    const why = (p) => (L.growth(p) < 0.6 ? "kitten" : p.sick ? "sick" : L.isHungry(p) ? "hungry" : "");
+    // a cat can do at most 3 jobs a day, and needs a rest after one (half as long as the job)
+    const jobsToday = (p) => (p.jobDay === new Date().toDateString() ? p.jobN || 0 : 0);
+    const why = (p) => (L.growth(p) < 0.6 ? "kitten" : p.sick ? "sick" : L.isHungry(p) ? "hungry" : Date.now() < (p.restUntil || 0) ? "tired" : jobsToday(p) >= 3 ? "limit" : "");
     function send(cat, id, def) {
       const p = cat.profile, j = def || JOBS.find((x) => x.id === id); if (!p || !j || p.job || p.guest || why(p)) return;
       p.job = { id: j.id, def: def || null, at: Date.now(), until: Date.now() + j.h * 3.6e6 };
+      p.jobN = jobsToday(p) + 1; p.jobDay = new Date().toDateString();
       cat.jobOff = false; cat.set("walk", 60, { target: cat.x < world.W / 2 ? -120 : world.W + 120 });
       toast(t().gone(p.name)); L.changed(); save();
     }
@@ -62,7 +65,8 @@
         L.home.items.push({ id, k, cond: rnd(40, 80), x: null }); got.push(s.found((L.t("furn")[k] || [k])[0]));
       }
       if (j.star && Math.random() < j.star) { L.wallet.stars++; got.push(s.star); }
-      p.fedAt = Date.now(); L.addLove(cat, 5); if (L.gainPXP) L.gainPXP(j.xp);
+      // back hungry and tired: feed it, and let it rest before the next job
+      p.fedAt = Math.min(p.fedAt || 0, Date.now() - 8 * 3.6e6); p.restUntil = Date.now() + j.h * 0.5 * 3.6e6; L.addLove(cat, 3); if (L.gainPXP) L.gainPXP(j.xp);
       // walk back in from the edge
       cat.x = Math.random() < 0.5 ? -60 : world.W + 60; cat.y = world.floor; cat.set("walk", 6, { target: rnd(world.W * 0.2, world.W * 0.8) });
       world.confetti(Math.max(40, Math.min(world.W - 40, cat.x)), world.floor - 60, 20);

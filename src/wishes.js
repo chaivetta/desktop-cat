@@ -9,13 +9,13 @@
       pet: (n) => `biraz sevilmek istiyor (${n} kez)`, fed: { fish: "balık istiyor", wet: "yaş mama istiyor", any: "karnı acıktı, mama istiyor" },
       play: { yarn: "yumakla oynamak istiyor", mouse: "kurmalı fareyle oynamak istiyor", butterfly: "kelebek kovalamak istiyor", feather: "olta ile oynamak istiyor", laser: "lazer kovalamak istiyor" },
       bed: "yatakta uyumak istiyor", brush: "taranmak istiyor", box: "kutuya girmek istiyor",
-      combo: (n) => `${n}x kombo`, line: (n, w, m) => `💭 ${n} ${w} · ${m} dk`, done: (n, c) => `💖 ${n}'ın isteği yerine geldi! +${c}🪙`, miss: (n) => `😿 ${n}'ın isteği gerçekleşmedi, biraz küstü`,
+      combo: (n) => `${n}x kombo`, line: (n, w, m) => `💭 ${n} ${w} · ${m} dk`, done: (n, c) => `💖 ${n}'ın isteği yerine geldi!${c ? ` +${c}🪙` : ""}`, miss: (n) => `😿 ${n}'ın isteği gerçekleşmedi, biraz küstü`,
     },
     en: {
       pet: (n) => `wants some cuddles (${n} times)`, fed: { fish: "wants fish", wet: "wants wet food", any: "is hungry for dinner" },
       play: { yarn: "wants to play with the yarn", mouse: "wants the wind-up mouse", butterfly: "wants to chase the butterfly", feather: "wants the feather wand", laser: "wants to chase the laser" },
       bed: "wants to nap in a bed", brush: "wants to be brushed", box: "wants to sit in a box",
-      combo: (n) => `${n}x combo`, line: (n, w, m) => `💭 ${n} ${w} · ${m} min`, done: (n, c) => `💖 ${n}'s wish came true! +${c}🪙`, miss: (n) => `😿 ${n}'s wish wasn't met; a little sulk`,
+      combo: (n) => `${n}x combo`, line: (n, w, m) => `💭 ${n} ${w} · ${m} min`, done: (n, c) => `💖 ${n}'s wish came true!${c ? ` +${c}🪙` : ""}`, miss: (n) => `😿 ${n}'s wish wasn't met; a little sulk`,
     },
   };
   const t = () => STR[L.lang] || STR.en;
@@ -40,8 +40,10 @@
       p.wish = null; p.wishNext = Date.now() + rnd(GAP[0], GAP[1]) * 60e3; p.wishes = (p.wishes || 0) + 1;
       // a combo: wishes granted one after another (without letting one lapse) pay more, and every 5th brings a star
       const combo = L.stats.combo = (L.stats.combo || 0) + 1; L.stats.wishes = (L.stats.wishes || 0) + 1; L.stats.bestCombo = Math.max(L.stats.bestCombo || 0, combo);
-      const k = 1 + 0.25 * Math.min(8, combo - 1), star = combo % 5 === 0;
-      const coins = L.earn(3 * k * (L.hasBuff(p, "lucky") ? 2 : 1), cat); L.addLove(cat, 8); if (L.gainPXP) L.gainPXP(Math.round(12 * k)); if (star) L.wallet.stars++;
+      const k = 1 + 0.25 * Math.min(4, combo - 1), star = combo % 5 === 0 && (L.econToday().wishStars || 0) < 2;
+      if (star) L.econToday().wishStars = (L.econToday().wishStars || 0) + 1;
+      const E = L.econToday(), want = Math.round(3 * k * (L.hasBuff(p, "lucky") ? 1.5 : 1)), room = Math.max(0, 30 - (E.wish || 0)), give = Math.min(want, room); E.wish = (E.wish || 0) + give;
+      const coins = give ? L.earn(give, cat) : 0; L.addLove(cat, 8); if (L.gainPXP) L.gainPXP(Math.round(12 * k)); if (star) L.wallet.stars++;
       world.confetti(cat.x, cat.y - 40 * cat.s, 14 + combo * 2); world.purr && world.purr();
       toast(t().done(p.name, coins) + (combo > 1 ? ` · 🔥 ${t().combo(combo)}` : "") + (star ? " +⭐" : "")); L.changed(); save();
     }

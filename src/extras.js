@@ -5,9 +5,9 @@
   const H = 3.6e6, DAY = 24 * H;
   const CROPS = {
     catnip: { e: "🌾", h: 1, seed: 5, xp: 3, give: { item: "catnip" } },
-    mint: { e: "🌿", h: 3, seed: 10, xp: 8, give: { coins: 18 } },
+    mint: { e: "🌿", h: 3, seed: 10, xp: 8, give: { coins: 15 } },
     strawberry: { e: "🍓", h: 6, seed: 18, xp: 15, give: { meal: true } },
-    sunflower: { e: "🌻", h: 12, seed: 30, xp: 30, give: { coins: 70, star: 0.05 } },
+    sunflower: { e: "🌻", h: 12, seed: 30, xp: 30, give: { coins: 52, star: 0.04 } },
   };
   const PLOT_PRICE = [0, 0, 80, 200, 400, 800];          // the first two pots are free
   const WATER_FOR = 6 * H, DIES_AFTER = 12 * H;
@@ -32,7 +32,7 @@
       parkHint2: "Kediler geziniyor, yeni arkadaşlar ediniyor. Ne kadar kalırsanız buff o kadar uzun olur.", parkWho: "Kimler gelsin?", parkGo: (n) => `🌳 Parka git (${n} kedi · 30 dk)`, parkNow: (m) => `Parktasınız! ${m} dk kaldı`,
       parkLeave: "🏠 Eve dön", parkRest: (m) => `Kediler dinleniyor; ${m} dk sonra yine gidebilirsiniz`, parkBack: (m, h) => `🌳 Parktan döndünüz (${m} dk): 🤝 Sosyal buff'ı ${h} saat, sevgi arttı`,
       crops: { catnip: "Kedi otu", mint: "Nane", strawberry: "Çilek", sunflower: "Ayçiçeği" },
-      give: { catnip: "1 kedi nanesi", mint: "18🪙", strawberry: "1 özel yemek", sunflower: "70🪙 (+ nadiren ⭐)" },
+      give: { catnip: "1 kedi nanesi", mint: "15🪙", strawberry: "1 özel yemek", sunflower: "52🪙 (+ nadiren ⭐)" },
       plant: (n, p) => `${n} ek · ${p}🪙`, water: "💧 Sula", harvest: "🧺 Topla", dry: "Kurudu! Sula", dead: "Soldu 🥀 · Temizle", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " sa " : ""}${m % 60} dk`,
       empty: "Boş saksı", shopGarden: (can) => can ? "🪴 Marketten yeni saksı al" : "💧 Önce marketten suluk al (1🪙), 🪴 saksılar da orada", gardenHint: "Tohum ek, suluk ile sula; bitki gerçek saatlerle büyür (uygulama kapalıyken de). Su 6 saat yeter; 12 saat susuz kalırsa solar. Yeni saksıları ve suluğu marketin Oyuncak bölümünden alırsın.",
       harvested: (e, w) => `${e} Hasat: ${w}`,
@@ -53,7 +53,7 @@
       parkHint2: "The cats are wandering about and making friends. The longer you stay, the longer the buff.", parkWho: "Who's coming?", parkGo: (n) => `🌳 Go to the park (${n} cats · 30 min)`, parkNow: (m) => `At the park! ${m} min left`,
       parkLeave: "🏠 Go home", parkRest: (m) => `The cats are resting; you can go again in ${m} min`, parkBack: (m, h) => `🌳 Back from the park (${m} min): 🤝 Social buff for ${h} h, more love`,
       crops: { catnip: "Catnip", mint: "Mint", strawberry: "Strawberry", sunflower: "Sunflower" },
-      give: { catnip: "1 catnip", mint: "18🪙", strawberry: "1 special meal", sunflower: "70🪙 (+ rarely ⭐)" },
+      give: { catnip: "1 catnip", mint: "15🪙", strawberry: "1 special meal", sunflower: "52🪙 (+ rarely ⭐)" },
       plant: (n, p) => `Plant ${n} · ${p}🪙`, water: "💧 Water", harvest: "🧺 Harvest", dry: "Dry! Water it", dead: "Wilted 🥀 · Clear", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " h " : ""}${m % 60} min`,
       empty: "Empty pot", shopGarden: (can) => can ? "🪴 Buy another pot in the market" : "💧 Get a watering can in the market first (1🪙); the 🪴 pots are there too", gardenHint: "Plant a seed and water it with the watering can; it grows in real hours (even with the app closed). Water lasts 6 hours; 12 hours dry and it wilts. New pots and the watering can are in the market's Toys section.",
       harvested: (e, w) => `${e} Harvest: ${w}`,
@@ -120,7 +120,7 @@
       E.posts = E.posts.slice(0, 12); L.stats.photos = (L.stats.photos || 0) + 1; L.changed();
     }
     const likesOf = (ps, now = Date.now()) => Math.round(ps.target * Math.pow(Math.min(1, (now - ps.at) / DAY), 0.7));
-    const payOf = (ps) => Math.min(40, Math.floor(ps.target / 8));
+    const payOf = (ps) => Math.min(15, Math.max(1, Math.floor(ps.target / 14)));
     function collect(id) { const ps = X().posts.find((x) => x.id === id); if (!ps || ps.got || Date.now() - ps.at < DAY) return; ps.got = true; L.earn(payOf(ps)); if (L.gainPXP) L.gainPXP(5); L.changed(); }
 
     // ---------------- weekly contest: enter a cat; it's judged when the week rolls over

@@ -311,7 +311,7 @@
         if (gsec.dataset.k !== gk) { gsec.dataset.k = gk;
           gsec.innerHTML = `<div class="cc-label"><span>🧬 ${esc(t.genesT)}</span><small><b class="cc-grade g${gr}">${gr}</b> ${sc}/100</small></div><div class="cc-gbars">${L.GENE_KEYS.map((k) => `<span><i>${esc(t.geneN[k])}</i><b><u style="width:${G[k]}%"></u></b><em>${G[k]}</em></span>`).join("")}</div><p class="cc-gtrend t${p.trend || 0}">${esc(t.geneTrend[p.trend || 0])}</p><small class="cc-ghint">${esc(t.geneHint)}</small>`; } }
       q('[data-c="brush"]').textContent = t.brushB; q('[data-c="bath"]').textContent = world.furniture.some((f) => f.kind === "bathtub" && f.usable) ? t.tubB : `${t.bathB} · ${L.pantry.shampoo || 0}`;
-      q('[data-c="vet"]').textContent = t.vetB(p.sick ? 45 : 25);
+      q('[data-c="vet"]').textContent = t.vetB(p.sick ? 60 : 30);
       const mb = q('[data-c="med"]'); mb.hidden = !p.sick; mb.textContent = `${t.medB} · ${L.pantry.medicine || 0}`;
 
       const st = L.stage(p); q(".cc-stage").textContent = `${st.e} ${st[lang]}`;
@@ -577,7 +577,7 @@
         world.burst(cat.x, cat.y - 24 * cat.s, "spark", "#bfe6ff", 8); if (!["held", "fall"].includes(cat.state)) cat.set("arch", 1.4); floatUp("🫧", b);
       } else if (k === "vet") {
         // 🩺 call the vet: cures an illness, a quick clean-up and a "healthy" buff for 6 hours; once every 6 hours per cat
-        const cost = p.sick ? 45 : 25; if (Date.now() - (p.vetAt || 0) < 6 * 3.6e6) { floatUp("⏳", b); b.title = t.vetWait; return; }
+        const cost = p.sick ? 60 : 30; if (Date.now() - (p.vetAt || 0) < 6 * 3.6e6) { floatUp("⏳", b); b.title = t.vetWait; return; }
         if (L.wallet.coins < cost) { if (opts.onNeed) opts.onNeed("coins"); floatUp("🪙", b); return; }
         L.wallet.coins -= cost; p.vetAt = Date.now(); if (p.sick) L.cure(cat); L.addBuff(p, "healthy", 6); p.clean = Math.min(100, L.clean(p) + 15); L.addLove(cat, 2);
         world.burst(cat.x, cat.y - 30 * cat.s, "heart", "#6fd3a8", 4); floatUp("🩺", b);

@@ -52,7 +52,7 @@
       const items = world.furniture.filter((f) => f.usable && f.f.role !== "decor");
       const kinds = new Set(items.map((f) => f.kind)).size;
       const cond = items.length ? items.reduce((a, f) => a + f.cond, 0) / items.length / 100 : 0;
-      return Math.min(40, Math.round(kinds * 3 * cond));
+      return Math.min(30, Math.round(kinds * 2.5 * cond));
     }
     // the pay: so much a day, plus your home (worth more the longer they stay), times how well it went and your name
     // short stays pay a little, a whole day pays well: base × hours^0.9, plus your home (more of it the longer they stay)

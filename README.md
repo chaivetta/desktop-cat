@@ -144,13 +144,13 @@ Every so often a cat wants something in particular: a fish dinner, its wind-up m
 
 A new 🌱 panel on the card:
 - **Garden:** buy a watering can (1🪙, unlimited water) and more pots in the market, then plant catnip (1 h), mint (3 h), strawberries (6 h) or sunflowers (12 h). They grow in real hours, even with the app closed, as long as they're watered (water lasts 6 hours; 12 hours dry and they wilt). Harvests give catnip, coins, special meals and, rarely, a star. One pot to start; more from the market.
-- **Feed:** tap one of your cats to post its photo (or use 📸 on its card); it collects likes for a day (more for dressed-up, clean, happy cats and big cats); then you collect coins for them. Three posts a day.
+- **Feed:** tap one of your cats to post its photo (or use 📸 on its card); it collects likes for a day (more for dressed-up, clean, happy cats and big cats); then you collect coins for them (15🪙 at most each). Three posts a day.
 - **Weekly contest:** beauty, tricks or love, a different one each week. Enter a cat (20🪙); it's judged when the week ends against six rivals. The top three win trophies, coins and stars.
 - **Festivals:** a Winter Fair, Spring Fair, Summer Festival and Halloween, each with things you can only buy while it's on (a snowman, a gift box, tulips, a beach parasol, a ghost, a cauldron and more) and a daily gift.
 
 ### 💼 Jobs
 
-Send a grown cat out for an hour's mouse hunt, a three-hour visit to the neighbours or an eight-hour trip to the tip. It walks off the screen and comes back (even if the app was closed) with coins, food, sometimes a piece of furniture or a star.
+Send a grown cat out for an hour's mouse hunt, a three-hour visit to the neighbours or an eight-hour trip to the tip. It walks off the screen and comes back (even if the app was closed) with coins, food, sometimes a piece of furniture or a star. A cat does three jobs a day at most and comes back hungry and tired, so feed it and let it rest before the next one.
 
 ### 👋 Coming back
 
@@ -158,7 +158,7 @@ Every day you open the app adds to a login streak, with bigger gifts each day an
 
 ### More life
 
-- **Wish combos:** wishes granted one after another pay more and more; every fifth brings a star. Let one lapse and the combo breaks.
+- **Wish combos:** wishes granted one after another pay more (up to double); every fifth brings a star (two a day at most). Wish coins top out at 30🪙 a day. Let one lapse and the combo breaks.
 - **Big cats show off:** the lion roars (the other cats flinch and the birds flee), the cheetah sprints the length of the screen faster than anything, the others stretch and yawn hugely.
 - **Visitors:** a squirrel dashes past now and then, butterflies flutter by, and at night a hedgehog trundles along. They have their own page in the album.
 - **Achievements:** nineteen goals (look after 100 guests, a 10-wish combo, see the owl, adopt a big cat…), each with a reward.
@@ -179,7 +179,7 @@ Every cat has four genes: shine, colour, pattern and eyes (0–100), and a grade
 
 ### Care: the vet and the bathtub
 
-Call the 🩺 vet from a cat's card (25🪙 for a check-up, 45🪙 if it's ill): it cures illness, tidies the cat up and keeps it healthy for 6 hours. With a bathtub at home, baths need no shampoo (the tub has to dry for 3 hours between baths) and cats mind them less.
+Call the 🩺 vet from a cat's card (30🪙 for a check-up, 60🪙 if it's ill; a pill from the market is cheaper but only cures): it cures illness, tidies the cat up and keeps it healthy for 6 hours. With a bathtub at home, baths need no shampoo (the tub has to dry for 3 hours between baths) and cats mind them less.
 
 ### More jobs, offered
 

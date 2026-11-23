@@ -103,7 +103,7 @@
     treat:  { e: "🍬", price: 6, n: 3, love: 10 },
     catnip: { e: "🌿", price: 8, n: 1 },
     litter: { e: "🪣", price: 12, n: 3 },          // three clean-ups of the litter box
-    medicine: { e: "💊", price: 35, n: 1 },         // cures a sick cat
+    medicine: { e: "💊", price: 30, n: 1 },         // cures a sick cat
     shampoo: { e: "🧴", price: 15, n: 2 },          // two baths
     // special meals: each one gives whoever eats it a buff for a while
     chicken:  { e: "🍗", price: 12, n: 1, meal: true, buff: ["full", 12] },
@@ -350,16 +350,16 @@
     // hand out a prize: returns what was won ({ k, n, item, design })
     grant(row) {
       const [k, , range] = row, out = { k };
-      if (k === "coins") { out.n = range[0] + Math.floor(Math.random() * (range[1] - range[0] + 1)); L.wallet.coins += out.n; }
+      if (k === "coins") { out.n = L.earn(range[0] + Math.floor(Math.random() * (range[1] - range[0] + 1))); }
       else if (FOOD[k]) { out.n = FOOD[k].n; L.pantry[k] = (L.pantry[k] || 0) + out.n; }
       else if (k === "star") { out.n = 1; L.wallet.stars += 1; }
       else if (k === "furniture") {
-        const kinds = Object.keys(window.DesktopCat.FURN), f = kinds[Math.floor(Math.random() * kinds.length)];
+        const kinds = Object.keys(window.DesktopCat.FURN).filter((k) => !window.DesktopCat.FURN[k].event), f = kinds[Math.floor(Math.random() * kinds.length)];      // never a festival-only piece
         out.item = { id: Math.random().toString(36).slice(2, 9), k: f, cond: 100, x: null }; L.home.items.push(out.item);
       } else if (k === "cloth") {
         const locked = []; for (const kind of Object.keys(PRICES)) for (const d of Object.keys(PRICES[kind])) if (L.price(kind, d)) locked.push([kind, d]);
         if (locked.length) { const [kind, d] = locked[Math.floor(Math.random() * locked.length)]; L.wallet.owned.push(`${kind}:${d}`); out.design = [kind, d]; }
-        else { out.k = "coins"; out.n = 50; L.wallet.coins += 50; }
+        else { out.k = "coins"; out.n = L.earn(50); }
       }
       L.changed(); return out;
     },
@@ -625,7 +625,8 @@
       return p.tasks;
     },
     taskEvent(cat, on) {
-      const p = cat.profile, ts = L.tasks(p), now = Date.now();
+      const p = cat.profile; if (!p || p.guest) return;      // guests don't do your tasks
+      const ts = L.tasks(p), now = Date.now();
       let hit = false;
       for (const k of ts.list) {
         const d = TASKS[k.id]; if (!d || d.on !== on || k.n >= d.n) continue;
@@ -638,7 +639,9 @@
         }
       }
       if (hit && !ts.all && ts.list.every((k) => k.n >= TASKS[k.id].n)) {
-        ts.all = true; if (L.gainPXP) L.gainPXP(ALL_REWARD.xp); p.stars = (p.stars || 0) + ALL_REWARD.stars; L.wallet.stars += ALL_REWARD.stars; L.earn(ALL_REWARD.coins * (L.hasBuff(p, "lucky") ? 2 : 1), cat); p.streak = (p.streak || 0) + 1;
+        // a star for finishing a cat's tasks, but at most 3 a day across all your cats (so adopting more cats isn't a star farm)
+        const E = L.econToday(), st = (E.taskStars || 0) < 3 ? ALL_REWARD.stars : 0; E.taskStars = (E.taskStars || 0) + st;
+        ts.all = true; if (L.gainPXP) L.gainPXP(ALL_REWARD.xp); p.stars = (p.stars || 0) + st; L.wallet.stars += st; L.earn(ALL_REWARD.coins * (L.hasBuff(p, "lucky") ? 2 : 1), cat); p.streak = (p.streak || 0) + 1;
         L.addXP(cat, ALL_REWARD.xp); L.addLove(cat, ALL_REWARD.love); L.write(p, "tasksDone");
         if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 30);
       }
