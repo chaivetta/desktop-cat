@@ -37,6 +37,7 @@
 <script src="jobs.js"></script>
 <script src="extras.js"></script>
 <script src="garden.js"></script>
+<script src="pass.js"></script>
 <script src="hub.js"></script>
 <script src="welcome.js"></script>
 <script>
@@ -364,7 +365,11 @@
 
   // right-click a cat to open its card, right above it
   const catAt = (e) => { const h = world.hitTest(e.clientX, e.clientY); return h && h.cat; };
-  addEventListener("contextmenu", (e) => { const c = catAt(e); if (c) { e.preventDefault(); card.open(c); } });
+  addEventListener("contextmenu", (e) => {
+    const h = world.hitTest(e.clientX, e.clientY); if (!h) return;
+    if (h.cat) { e.preventDefault(); card.open(h.cat); }
+    else if (h.toy && h.toy.f && h.toy.f.garden && world.onPotClick) { e.preventDefault(); world.onPotClick(h.toy); }   // 🪴 right-click a pot: plant, water, harvest
+  });
   addEventListener("dblclick", (e) => {
     if (e.target.closest && e.target.closest(".ui")) return;
     if (catAt(e)) return;
@@ -400,12 +405,14 @@
   setTimeout(() => { albumScan(); albumQuiet = false; setInterval(albumScan, 5000); }, 4000);
   function only(p) { const open = p.isOpen; [market, inventory, settings, games, progress, extras].forEach((x) => x.close()); if (!open) p.open(); }
   // the open panel's button stays lit on the card
-  setInterval(() => { const b = document.querySelector(".cc-top .cc-tab.menu"); if (!b) return; b.classList.toggle("on", !!(window.CatHub.now && window.CatHub.now.shown)); b.dataset.lv = L.prog.lvl; }, 1000);
+  setInterval(() => { const b = document.querySelector(".cc-top .cc-tab.menu"); if (!b) return; b.classList.toggle("on", !!(window.CatHub.now && window.CatHub.now.shown)); b.dataset.lv = L.prog.lvl; const n = window.CatPass.now ? window.CatPass.now.readyCount() : 0; if (n) b.dataset.dot = n; else delete b.dataset.dot; }, 1000);
   // 🧳 guest cats from the neighbours
   var guests = window.CatGuests.create({ world, save: () => save() }); window.CatGuests.now = guests;
   var games = window.CatGames.create({ world, playLaser: () => act.playGame(), onClose: () => { overUI = false; syncIgnore(); } });
   // ☰ one menu with tabs for every panel
-  window.CatHub.now = window.CatHub.create({ panels: () => ({ market, inventory, games, park: extras, events: extras, progress, settings }) });
+  // 🐾 the Paw Path (monthly reward track, daily paw quests, dream bubbles)
+  var pass = window.CatPass.now = window.CatPass.create({ world, save: () => save(), toast: (m) => toast(m), onClose: () => { overUI = false; syncIgnore(); } });
+  window.CatHub.now = window.CatHub.create({ panels: () => ({ market, inventory, pass, games, park: extras, events: extras, progress, settings }), badge: () => ({ pass: pass.readyCount() }) });
   // the real weather outside: rain, snow, storms, fog, clouds (refreshed every 20 minutes)
   const weather = window.CatWeather.create({
     world, isOn: () => weatherOn, getLoc: () => weatherLoc, setLoc: (l) => { weatherLoc = l; save(); },

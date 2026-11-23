@@ -3,7 +3,7 @@
   const STR = {
     tr: {
       bowlN: "Mama kabı", bowlD: "Önce ortaya çıkar, sonra dolaptan mamayı koy. İşin bitince envantere geri koyabilirsin.", fillBowl: (n) => `Mamayı koy (${n} öğün)`, noMeal: "Dolapta mama yok",
-      forever: "✨ Bir kere al, sonsuza kadar", inGarden: "Bahçede kullanılır 🌱", potNote: "Saksılar Mobilya bölümünde: masaüstüne koy, tıkla ve ek 🪴", potN: "Saksı", potD: "Bahçene yeni bir saksı (🌱 Bahçe & Etkinlik). En çok 6.", potHave: (n) => `${n} saksın var`,
+      forever: "✨ Bir kere al, sonsuza kadar", inGarden: "Bahçede kullanılır 🌱", potNote: "Saksılar Eşyalar bölümünde: masaüstüne koy, sağ tıkla ve ek 🪴", potN: "Saksı", potD: "Bahçene yeni bir saksı (🌱 Bahçe & Etkinlik). En çok 6.", potHave: (n) => `${n} saksın var`,
       pickOne: "Bir şeye dokun: ne yapabileceğin burada çıkar 👆", stow: "🎒 Envantere koy", noFood: "Dolap boş. Marketten mama alabilirsin.", noToys: "Oyuncağın yok. Marketten alabilirsin.",
       toyNote: "Oyuncaklar envantere gelir; oradan çıkarır ya da geri koyarsın. Oynadıkça (ve dışarıda kaldıkça) eskir, bitince yenisini alman gerekir.", inInv: (c) => `🎒 Envanterde · %${c}`, again: "Bir daha",
       catsT: "Kediler", toysT: "Oyuncak", posts: "gönderi", atHome: "evde", price: "fiyat", free: "Ücretsiz", unlocked: "Açık",
@@ -68,7 +68,7 @@
     },
     en: {
       bowlN: "Food bowl", bowlD: "Take it out first, then put food in it from the cupboard. Put it away when you're done.", fillBowl: (n) => `Fill it (${n} meals)`, noMeal: "No food in the cupboard",
-      forever: "✨ Buy once, keep forever", inGarden: "Used in the garden 🌱", potNote: "Pots are in the Furniture section: put one on your desktop and click it to plant 🪴", potN: "Plant pot", potD: "One more pot for your garden (🌱 Garden & Events). Six at most.", potHave: (n) => `you have ${n}`,
+      forever: "✨ Buy once, keep forever", inGarden: "Used in the garden 🌱", potNote: "Pots are in the Furniture section: put one on your desktop and right-click it to plant 🪴", potN: "Plant pot", potD: "One more pot for your garden (🌱 Garden & Events). Six at most.", potHave: (n) => `you have ${n}`,
       pickOne: "Tap something to see what you can do with it 👆", stow: "🎒 Put away", noFood: "The cupboard is empty. Buy food in the market.", noToys: "No toys yet. Buy some in the market.",
       toyNote: "Toys go to your inventory, where you take them out or put them away. They wear out with play (and while left out); when one's gone you'll need a new one.", inInv: (c) => `🎒 In inventory · ${c}%`, again: "Again",
       catsT: "Cats", toysT: "Toys", posts: "posts", atHome: "at home", price: "price", free: "Free", unlocked: "Unlocked",

@@ -4,14 +4,14 @@
   const L = window.CatLife;
   const NAV_H = 54;
   const TABS = [
-    ["market", "🛒", "Market", "Market"], ["inventory", "🎒", "Envanter", "Inventory"], ["games", "🎮", "Oyunlar", "Games"],
+    ["market", "🛒", "Market", "Market"], ["inventory", "🎒", "Envanter", "Inventory"], ["pass", "🐾", "Pati Yolu", "Paw Path"], ["games", "🎮", "Oyunlar", "Games"],
     ["park", "🌳", "Park", "Park"], ["events", "🎪", "Etkinlik", "Events"], ["progress", "🏅", "Gelişim", "Progress"], ["settings", "⚙️", "Ayarlar", "Settings"],
   ];
   function create(o) {
     const PP = o.panels; let P = {};                   // name -> { open(), close(), isOpen }, filled in once they all exist
     const ready = () => { if (!Object.keys(P).length) { const x = typeof PP === "function" ? PP() : PP; if (Object.values(x).every(Boolean)) P = x; } return Object.keys(P).length > 0; };
     const nav = document.createElement("div"); nav.className = "ui hub"; nav.hidden = true; document.body.appendChild(nav);
-    let cur = null, last = "market", key = "";
+    let cur = null, last = "market", key = "", swapT = 0;
     const isOpen = (n) => { const p = P[n]; if (!p) return false; if (n === "park") return p.isOpen && p.tab === "park"; if (n === "events") return p.isOpen && p.tab !== "park"; return p.isOpen; };
     const all = () => [...new Set(Object.values(P))];
     function render() {
@@ -21,12 +21,17 @@
         + `<button type="button" class="hub-x" data-hub="x">✕</button>`;
     }
     function open(n) {
-      if (!ready()) return; n = n || last; all().forEach((p) => p.isOpen && p.close());
+      if (!ready()) return; n = n || last;
+      // switching tabs: the new panel just appears in place (no pop-in, no jump in size)
+      // (the class stays on while the menu is open: taking it off would replay the animation)
+      const swap = all().some((p) => p.isOpen) || !nav.hidden; clearTimeout(swapT);
+      if (swap) document.body.classList.add("hub-swap"); else swapT = setTimeout(() => { if (!nav.hidden) document.body.classList.add("hub-swap"); }, 300);
+      all().forEach((p) => p.isOpen && p.close());
       cur = n; last = n;
       if (n === "park") P.park.open("park"); else if (n === "events") P.events.open(P.events.tab && P.events.tab !== "park" ? P.events.tab : "contest"); else P[n].open();
       key = ""; render(); nav.hidden = false; place();
     }
-    function close() { if (!ready()) return; all().forEach((p) => p.isOpen && p.close()); cur = null; nav.hidden = true; }
+    function close() { if (!ready()) return; all().forEach((p) => p.isOpen && p.close()); cur = null; nav.hidden = true; document.body.classList.remove("hub-swap"); }
     const toggle = (n) => (cur && (!n || cur === n) && !nav.hidden ? close() : open(n));
     // sit on top of the open panel, with the same width and zoom
     function place() {
@@ -42,7 +47,7 @@
     setInterval(() => {
       if (!ready()) return;
       const open = TABS.map(([n]) => n).find(isOpen);
-      if (!open) { if (!nav.hidden) { nav.hidden = true; cur = null; } return; }
+      if (!open) { if (!nav.hidden) { nav.hidden = true; cur = null; document.body.classList.remove("hub-swap"); } return; }
       if (open !== cur) { cur = open; last = open; key = ""; }
       nav.hidden = false; render(); place();
     }, 250);

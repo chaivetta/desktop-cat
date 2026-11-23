@@ -2445,6 +2445,32 @@
     }
   }
 
+  // ---------------------------------------------------------------- 🫧 dream bubbles: a sleeping cat blows one now and then; it floats up, pop it!
+  const DREAM_E = ["🐟", "🧶", "🐭", "🦋", "🍗", "🐦", "🌙", "💗"];
+  class Dream {
+    constructor(world, cat) {
+      this.world = world; this.x = cat.x + cat.facing * 10 * cat.s; this.y = cat.y - 22 * cat.s; this.t = 0; this.life = 45; this.ph = Math.random() * 6;
+      this.gold = Math.random() < 0.06; this.e = this.gold ? "⭐" : DREAM_E[Math.floor(Math.random() * DREAM_E.length)]; this.r = (this.gold ? 15 : 12) * world.toyScale / 3 * 1.4; this.popped = false;
+    }
+    hit(px, py) { return !this.popped && Math.hypot(px - this.x, py - this.y) < this.r + 6; }
+    grab() {} release() {}
+    click() {
+      if (this.popped) return; this.popped = true; const w = this.world;
+      w.burst(this.x, this.y, "spark", this.gold ? "#ffd34d" : "#bfe6ff", this.gold ? 14 : 7); if (this.gold) w.confetti(this.x, this.y, 20);
+      if (w.onDream) w.onDream(this);
+    }
+    update(dt) { this.t += dt; this.y -= dt * 9 * this.world.toyScale / 3 * 1.4; this.x += Math.sin(this.t * 1.3 + this.ph) * dt * 10; if (this.t > this.life || this.y < 20) this.popped = true; }
+    render(ctx) {
+      const r = this.r * (1 + Math.sin(this.t * 3) * 0.04), a = Math.min(1, this.t * 2, (this.life - this.t) / 3);
+      ctx.save(); ctx.globalAlpha = a;
+      ctx.fillStyle = this.gold ? "rgba(255,226,120,.35)" : "rgba(210,236,255,.35)"; ctx.strokeStyle = this.gold ? "rgba(230,170,40,.95)" : "rgba(120,170,220,.9)"; ctx.lineWidth = Math.max(1.5, r / 9);
+      ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.ellipse(this.x - r * 0.42, this.y - r * 0.45, r * 0.22, r * 0.13, -0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.font = `${Math.round(r * 1.05)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(this.e, this.x, this.y + r * 0.05);
+      ctx.restore();
+    }
+  }
+
   // ---------------------------------------------------------------- furniture you buy with stars
   // rug, potted plant, cushion, cat tree and a little aquarium; drag them anywhere along the floor
   // nap: a spot one cat can sleep in (the cat house hides it inside)
@@ -2760,7 +2786,6 @@
     use() { if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - 1.5 * wearK()); }
     grab() { this.held = true; } release() { this.held = false; }
     click() {
-      if (this.f.garden && this.world.onPotClick) { this.world.onPotClick(this); return; }
       if (this.kind === "litter" && this.item.dirty) { if (this.world.onCleanLitter) this.world.onCleanLitter(this); return; }
       const o = this.occupant; if (o && this.world.cats.includes(o)) { o.set("stretch", 1.4); return; }      // knock knock: whoever's napping wakes up
       this.world.burst(this.x, this.y - this.f.h * this.world.toyScale, "note", "#b08d57", 1);
@@ -2931,7 +2956,7 @@
       this.scale = opts.scale || 3; this.toyScale = opts.toyScale || this.scale; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
       this.wand = null; this.butterfly = null; this.catnip = null; this.catnipId = 0; this.bed = null; this.post = null;
       this.shelves = []; this.cakes = []; this.purrOn = opts.purrOn ?? true; this.meowOn = opts.meowOn ?? true; this.nightMode = opts.nightMode || "auto"; this.seasonsOn = opts.seasonsOn ?? true;
-      this.birds = []; this.birdT = rnd(60, 240); this.critters = []; this.critterT = rnd(120, 400); this.shouts = []; this.sky = []; this.cloudT = rnd(25, 70); this.starT = rnd(20, 60); this.cloudImgs = new Map(); this.birdsOn = opts.birdsOn ?? true; this.furniture = [];
+      this.dreams = []; this.birds = []; this.birdT = rnd(60, 240); this.critters = []; this.critterT = rnd(120, 400); this.shouts = []; this.sky = []; this.cloudT = rnd(25, 70); this.starT = rnd(20, 60); this.cloudImgs = new Map(); this.birdsOn = opts.birdsOn ?? true; this.furniture = [];
       this.strayOn = opts.strayOn ?? true; this.strayT = rnd(600, 1500); this.game = null;
       this.pointer = { x: -1e4, y: -1e4, seen: false }; this.drag = null; this.onHover = opts.onHover || (() => {});
       this.floorInset = opts.floorInset ?? 6; this.audio = null; this.last = performance.now();
@@ -3053,6 +3078,7 @@
       const night = this.isNight(), k = kind || (night ? "hedgehog" : Math.random() < 0.55 ? "squirrel" : "butterflies");
       const c = new Critter(this, k, Math.random() < 0.5 ? 1 : -1); this.critters.push(c); if (this.onCritterSeen) this.onCritterSeen(k); return c;
     }
+    addDream(cat, gold) { const d = new Dream(this, cat); if (gold != null) { d.gold = gold; d.e = gold ? "⭐" : d.e; d.r = (gold ? 15 : 12) * this.toyScale / 3 * 1.4; } this.dreams.push(d); return d; }
     addBird(o = {}) {
       const dir = Math.random() < 0.5 ? 1 : -1, sp = o.sp ? BIRDS.find((b) => b.id === o.sp) : pickBird(this), se = season(), busy = SKY_BUSY[se];
       const top = Math.max(80, this.floor - Math.min(620, this.floor - 60)), y = sp.migr ? rnd(top, top + 140) : this.floor - rnd(200, Math.min(520, this.floor - 60));
@@ -3245,6 +3271,7 @@
       } catch {}
     }
     hitTest(x, y) {
+      for (const d of this.dreams) if (d.hit(x, y)) return { toy: d };
       if (this.yarn && this.yarn.hit(x, y)) return { toy: this.yarn };
       if (this.mouse && this.mouse.hit(x, y)) return { toy: this.mouse };
       if (this.butterfly && this.butterfly.hit(x, y)) return { toy: this.butterfly };
@@ -3321,6 +3348,9 @@
         if (this.landT <= 0 && !this.isNight()) { const sp = pickBird(this); this.addBird({ sp: sp.migr ? "sparrow" : sp.id, n: Math.random() < 0.4 ? 2 : 1, land: true }); this.landT = rnd(2700, 4500); }
       }
       this.birds.forEach((b) => b.update(dt)); this.birds = this.birds.filter((b) => !b.gone());
+      // 🫧 every sleeping cat of yours blows a dream bubble every 6–10 minutes or so (at most four in the air)
+      if (this.dreamsOn && !this.park) for (const c of this.cats) if (c.profile && !c.profile.guest && c.state === "sleep" && !c.hidden && !c.jobOff && this.dreams.length < 4 && Math.random() < dt / 480) this.dreams.push(new Dream(this, c));
+      this.dreams.forEach((d) => d.update(dt)); this.dreams = this.dreams.filter((d) => !d.popped);
       // 🐿️ visitors: a squirrel, a hedgehog (at night) or a few butterflies wander past now and then
       if (this.birdsOn) { this.critterT -= dt; if (this.critterT <= 0) { this.critterT = rnd(360, 900); this.addCritter(); } }
       this.critters.forEach((c) => c.update(dt)); this.critters = this.critters.filter((c) => !c.gone());
@@ -3347,6 +3377,7 @@
       if (this.yarn && this.yarn.held) this.yarn.render(ctx);
       if (this.butterfly) this.butterfly.render(ctx);
       this.birds.forEach((b) => b.render(ctx));
+      this.dreams.forEach((d) => d.render(ctx));
       this.critters.forEach((c) => c.render(ctx));
       for (const x of this.shouts) {                     // a roar, in big bouncy letters
         const a = Math.min(1, 1.6 - x.t), k = 1 + Math.sin(Math.min(1, x.t * 4) * Math.PI) * 0.25, fs = Math.round(clamp(14 + this.scale * 5, 18, 40) * k);

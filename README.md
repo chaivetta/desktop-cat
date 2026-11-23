@@ -91,6 +91,7 @@ The card has a single **☰ Menu** button. It opens one panel with a strip of ta
 | :-- | :-- |
 | **🛒 Market** | Cats (unlock coats with ⭐; the first cat is free), food, toys, seeds, furniture and luck (a daily gift chest and a wheel) |
 | **🎒 Inventory** | Your cupboard, toys and furniture as icons: take out, put away, repair, sell |
+| **🐾 Paw Path** | The monthly reward track and today's paw quests (see below) |
 | **🎮 Games** | Scratch card, memory, whack-a-mouse and the laser hunt. Each costs coins and needs a 15-minute break before you play it again |
 | **🌳 Park** | Take cats out for 30 minutes (see below) |
 | **🎪 Events** | Photo feed, weekly contest, festivals |
@@ -98,6 +99,18 @@ The card has a single **☰ Menu** button. It opens one panel with a strip of ta
 | **⚙️ Settings** | Sizes, sounds, day and night, weather, language, and more |
 
 ![The market: food, the inventory, the wheel of luck and the daily gift chest](docs/market.png)
+
+### 🐾 The Paw Path
+
+<img src="docs/paw-path.png" width="320" alt="The Paw Path: today's paw quests and the monthly track of rewards">
+
+A reward track that starts again every month. Almost everything you do earns **🐾 paw points**: a share of all your XP, three **daily paw quests** (pet your cats 25 times, harvest twice, pop three dream bubbles, have two cats snuggle up, take them to the park…; finish all three for a bonus), and dream bubbles. Every 150 🐾 is a step, and each of the 30 steps has a reward to claim: coins, treats, special meals, a star every five steps, and three big prizes, the royal robe at step 10, the halo at step 20 and the Moon Claw suit at step 30, which also makes you a **🐾 Paw Legend**. The ☰ button shows how many rewards are waiting.
+
+### 🫧 Dream bubbles
+
+<img src="docs/dreams.png" width="260" alt="Dream bubbles floating up from sleeping cats">
+
+Sleeping cats blow dream bubbles now and then: a little fish, a yarn ball, a mouse, a butterfly… floating slowly up the screen. Click one to pop it for coins and paw points before it drifts away. Now and then a golden ⭐ bubble floats up, worth much more, sometimes even a star.
 
 ### Coins and stars
 
@@ -150,7 +163,7 @@ Over fifty pieces of furniture to buy and drag anywhere: beds, cushions, hammock
    | 🌹 Rose | 18 h | 65🪙, sometimes a ⭐ |
    | 🎃 Pumpkin | 24 h | three pumpkin purées |
 
-3. **Click the pot** to plant, **water** it (with the watering can, 1🪙, unlimited water) and **harvest**.
+3. **Right-click the pot** to plant, **water** it (with the watering can, 1🪙, unlimited water) and **harvest**.
 
 Plants grow in real hours, even with the app closed, but only while watered (water lasts 6 hours; 12 hours dry and they wilt). You see them grow in the pot, with a 💧 when they're thirsty and a ✨ when they're ready. <img src="docs/crops.png" width="420" alt="Carrot, blueberry, lavender, rose and pumpkin ready to harvest">
 
@@ -194,7 +207,8 @@ You level up too, slowly. Each level gives a skill point and coins, and opens ro
 | **Click** a cat | Pet it: hearts and a soft purr |
 | **Drag** a cat | Pick it up by the scruff; it lands on its feet |
 | **Drag** a toy or furniture | Move it; dangle and throw the yarn |
-| **Click** a pot | Plant, water, harvest |
+| **Right-click** a pot | Plant, water, harvest |
+| **Click** a dream bubble | Pop it for coins and paw points |
 | **Right-click** a cat | Open its card |
 | **☰ Menu** on the card | Every panel, as tabs |
 | **Tray / menu-bar icon** | Settings, hide or show the cats, quit |

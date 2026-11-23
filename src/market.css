@@ -349,3 +349,27 @@
 .cer button { border: 0; border-radius: 14px; padding: 9px 22px; background: #ffd34d; color: #5b3a29; font: 700 14px "Nunito", sans-serif; cursor: pointer; box-shadow: 0 0 0 3px #5b3a29, 0 4px 0 3px #5b3a29; }
 .mk-buy { position: relative; }
 .mk-buy[data-need]::after { content: attr(data-need); position: absolute; left: 50%; top: 100%; transform: translate(-50%, 5px); font: 800 10px "Nunito", sans-serif; color: #d9485f; white-space: nowrap; opacity: 1; }
+.hub-swap .mk, .hub-swap .st, .hub-swap .hub { animation: none !important; transition: none !important; }
+
+/* 🐾 the Paw Path */
+.pp-top { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 2px 6px; }
+.pp-top b { font: 700 15px "Pixelify Sans", monospace; } .pp-top span { font-size: 12px; opacity: .75; }
+.pp-bar { position: relative; height: 20px; border-radius: 10px; background: #ead9c4; box-shadow: inset 0 0 0 2px #5b3a29; overflow: hidden; }
+.pp-bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #ff9fb5, #ffd34d); transition: width .4s; }
+.pp-bar em { position: relative; display: block; text-align: center; font: 800 12px/20px "Nunito", sans-serif; font-style: normal; }
+.pp-quests { display: grid; gap: 6px; }
+.pp-q { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 12px; background: #fff; box-shadow: 0 0 0 1.5px rgba(91,58,41,.2); }
+.pp-q > span { font-size: 19px; } .pp-q b { font-size: 12px; display: block; margin-bottom: 3px; }
+.pp-q em { font-style: normal; font-size: 12px; text-align: right; } .pp-q em small { display: block; font-size: 10px; color: #c06a2a; }
+.pp-q.done { background: #e4f8ee; box-shadow: 0 0 0 1.5px #2f9e6a; } .pp-q.done em { color: #2f9e6a; font-size: 16px; }
+.pp-mini { display: block; height: 6px; border-radius: 3px; background: #ead9c4; overflow: hidden; } .pp-mini i { display: block; height: 100%; background: #ff9fb5; }
+.pp-all { display: block; text-align: center; margin: 6px 0 8px; opacity: .8; }
+.pp-claimall { margin-bottom: 8px; animation: pp-pulse 1.2s ease-in-out infinite; }
+@keyframes pp-pulse { 50% { transform: scale(1.03); } }
+.pp-track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 4px; }
+.pp-step { position: relative; aspect-ratio: 1; border: 0; border-radius: 12px; background: #f1e6da; color: #5b3a29; display: grid; place-items: center; font: inherit; opacity: .55; box-shadow: 0 0 0 1.5px rgba(91,58,41,.25); }
+.pp-step small { position: absolute; top: 2px; left: 5px; font-size: 9px; opacity: .7; } .pp-step span { font-size: 18px; }
+.pp-step.big { background: #f3e1ff; }
+.pp-step.got { background: #e4f8ee; opacity: .9; } .pp-step.got span { color: #2f9e6a; font-weight: 800; }
+.pp-step.can { opacity: 1; background: #ffd34d; cursor: pointer; box-shadow: 0 0 0 2px #5b3a29, 0 3px 0 2px #5b3a29; animation: pp-pulse 1s ease-in-out infinite; }
+.pp-step.next { opacity: 1; box-shadow: 0 0 0 2px #ff9fb5; }

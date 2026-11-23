@@ -83,7 +83,7 @@
 
     // ---------------- memory
     const CD = () => (L.extra.cool = L.extra.cool || {}), left = (k) => Math.max(0, (CD()[k] || 0) - Date.now()), mins = (k) => Math.ceil(left(k) / 60e3);
-    const pay = (n, k) => { if (L.wallet.coins < n || (k && left(k) > 0)) return false; L.wallet.coins -= n; if (k) CD()[k] = Date.now() + COOL; L.changed(); return true; };
+    const pay = (n, k) => { if (L.wallet.coins < n || (k && left(k) > 0)) return false; L.wallet.coins -= n; if (k) CD()[k] = Date.now() + COOL; L.stats.games = (L.stats.games || 0) + 1; L.changed(); return true; };
     const btn = (k, label, extraOff) => left(k) > 0 ? `<button type="button" class="mk-buy big" disabled>${esc(t().wait(mins(k)))}</button>` : `<button type="button" class="mk-buy big" data-g="${k}"${extraOff ? " disabled" : ""}>${esc(label)}</button>`;
     function startMemory() {
       const faces = ["🐱", "🐟", "🧶", "🐭", "🦋", "🍗"], cards = [...faces, ...faces].sort(() => Math.random() - 0.5);

@@ -201,6 +201,14 @@
       if (k === key) return; key = k;
       let body = "";
       if (false) {
+      } else if (tab === "feed") {
+        const own = world.cats.filter((c) => c.profile && !c.profile.guest && !c.profile.job), wait = Math.max(0, Math.ceil(((E.postNext || 0) - now) / 60e3));
+        body = `<p class="mk-note">${esc(s.feedHint)}</p><p class="pg-pts">${esc(wait ? s.nextPost(wait) : s.canPost)}</p>`
+          + (!wait ? `<h4 class="mk-h">${esc(s.share)}</h4><div class="ct-pick">${own.map((c) => `<button type="button" data-share="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}" data-g="${c.profile.id}"></canvas>${esc(c.profile.name)}</button>`).join("")}</div>` : "")
+          + `<h4 class="mk-h">${esc(s.posts)}</h4>` + (E.posts.length ? `<div class="fd-grid">${E.posts.map((ps) => {
+          const done = now - ps.at >= DAY;
+          return `<div class="fd-post"><canvas width="120" height="110" data-post="${ps.id}"></canvas><b>${esc(ps.name)}</b><span class="fd-like">${esc(s.likes(likesOf(ps, now)))}</span>${ps.got ? `<small>${esc(s.collected)}</small>` : done ? `<button type="button" class="gold" data-collect="${ps.id}">${esc(s.collect(payOf(ps)))}</button>` : `<small>⏳ ${esc(s.grow(Math.ceil((ps.at + DAY - now) / 60e3)))}</small>`}</div>`;
+        }).join("")}</div>` : `<p class="iv-empty">${esc(s.noPosts)}</p>`);
       } else if (tab === "park") {
         const S = PK(), own = world.cats.filter((c) => c.profile && !c.profile.job && !c.npc);
         if (world.park) body = `<div class="ev-head">🌳<b>${esc(s.parkNow(Math.max(1, Math.ceil((S.until - now) / 60e3))))}</b><small>${esc(s.parkHint2)}</small></div><button type="button" class="mk-wide gold" data-leave="1">${esc(s.parkLeave)}</button>`;

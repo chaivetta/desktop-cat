@@ -101,7 +101,7 @@
         const coins = pay(g.base, h, care, g.vip);
         const stars = care > 0.85 ? 3 : care > 0.55 ? 2 : 1; L.guests.rep += (stars === 3 ? 0.5 : stars === 2 ? 0.15 : -0.5) * (stars > 1 ? repUp : 1);
         if (L.gainPXP) L.gainPXP(Math.round((6 + stars * 4) * Math.min(4, Math.sqrt(h))));
-        L.earn(coins); if (stars === 3 && Math.random() < 0.15) { L.wallet.stars++; }
+        L.earn(coins); if (stars === 3 && Math.random() < 0.15) { L.wallet.stars++; } L.stats.guestsPaid = (L.stats.guestsPaid || 0) + 1;
         world.confetti(c.x, world.floor - 30, stars * 12);
         show(`<p>${s.paid(owner, p.name, coins, stars)}</p>`, 9000);
       }
