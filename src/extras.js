@@ -190,9 +190,11 @@
             <h4 class="mk-h">${esc(s.evItems)}</h4><div class="ev-items">${ev.items.map((f) => `<div><canvas width="64" height="56" data-f="${f}"></canvas><small>${esc((L.t("furn")[f] || [f])[0])} · ${DC.FURN[f].price}🪙</small></div>`).join("")}</div>`;
         } else { const n = nextEvent(); body = `<div class="ev-head">📅<b>${esc(n ? s.evNext(s.evNames[n.e.id], n.days) : "")}</b></div>`; }
       }
+      const _body = root.querySelector(".mk-body"), _sc = _body && root.dataset.tab === String(tab) ? _body.scrollTop : 0; root.dataset.tab = String(tab);
       root.innerHTML = `<div class="mk-head"><b>🌱 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">🪙 ${L.wallet.coins}</span><span class="star">⭐ ${L.wallet.stars}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
         <div class="mk-tabs">${["garden", "feed", "contest", "event"].map((id) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${{ garden: "🌱", feed: "📸", contest: "🏆", event: eventNow() ? eventNow().e : "📅" }[id]}</span>${esc(s.tabs[id])}</button>`).join("")}</div>
         <div class="mk-body">${body}</div>`;
+      if (_sc) { const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = _sc; }
       root.querySelectorAll("canvas[data-post]").forEach((cv) => { const ps = E.posts.find((x) => x.id === cv.dataset.post); if (!ps) return; const g = cv.getContext("2d"); g.fillStyle = ["#ffe1ea", "#dff3ff", "#fff1b8", "#e4f8ee", "#f1e4ff"][hash(ps.id) % 5]; g.fillRect(0, 0, 120, 110); DC.portrait(g, ps.coat, { scale: 2, dx: 0, dy: 6, pose: ps.pose, acc: ps.acc, t: 0.4 }); });
       root.querySelectorAll("canvas[data-av]").forEach((cv) => DC.portrait(cv.getContext("2d"), cv.dataset.av, { scale: 1, dx: 2, dy: 2 }));
       root.querySelectorAll("canvas[data-f]").forEach((cv) => DC.furnitureThumb(cv.dataset.f, cv.getContext("2d")));

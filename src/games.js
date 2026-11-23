@@ -147,9 +147,11 @@
       } else {
         body = `<p class="mk-note">${esc(s.laserHint)}</p><div class="gm-row"><button type="button" class="mk-buy big" data-g="laser"${L.hasToy("laser") && L.wallet.coins < FEE.laser ? " disabled" : ""}>${esc(L.hasToy("laser") ? s.fee(FEE.laser) : "🔒 " + s.play)}</button></div>`;
       }
+      const _body = root.querySelector(".mk-body"), _sc = _body && root.dataset.tab === String(tab) ? _body.scrollTop : 0; root.dataset.tab = String(tab);
       root.innerHTML = `<div class="mk-head gm-head"><b>🎮 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">🪙 ${L.wallet.coins}</span><span class="star">⭐ ${L.wallet.stars}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
         <div class="mk-tabs">${tabs.map(([id, em, l]) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}">${em} ${esc(l)}</button>`).join("")}</div>
         ${msg ? `<div class="mk-result">${esc(msg)}</div>` : ""}<div class="mk-body">${body}<p class="mk-today">${esc(s.today(e.mem, e.whack))}</p></div>`;
+      if (_sc) { const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = _sc; }
       const cv = root.querySelector(".gm-ticket canvas"); if (cv) setupScratch(cv);
       renderWhack(); tickTime();
     }

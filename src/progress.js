@@ -159,9 +159,11 @@
           }).join("")}</div>${foot}`;
         }).join("");
       }
+      const _body = root.querySelector(".mk-body"), _sc = _body && root.dataset.tab === String(tab) ? _body.scrollTop : 0; root.dataset.tab = String(tab);
       root.innerHTML = `<div class="mk-head"><b>🏅 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">🪙 ${L.wallet.coins}</span><span class="star">⭐ ${L.wallet.stars}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
         <div class="mk-tabs">${["level", "skills", "album", "ach"].map((id) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${{ level: "⭐", skills: "🌳", album: "📖", ach: "🏆" }[id]}</span>${esc(s.tabs[id])}</button>`).join("")}</div>
         <div class="mk-body">${body}</div>`;
+      if (_sc) { const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = _sc; }
       // pictures in the album (silhouettes for what you haven't found yet)
       root.querySelectorAll("canvas[data-f]").forEach((cv) => { DC.furnitureThumb(cv.dataset.f, cv.getContext("2d")); });
       root.querySelectorAll("canvas[data-c]").forEach((cv) => { DC.portrait(cv.getContext("2d"), cv.dataset.c, { scale: 0.75, dx: 1, dy: 2 }); });

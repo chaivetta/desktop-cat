@@ -186,11 +186,13 @@
       } else {
         body = `<div class="mk-ways">${s.ways.map(([e, h, d]) => `<div class="mk-way"><span>${e}</span><div><b>${esc(h)}</b><small>${esc(d)}</small></div></div>`).join("")}</div><p class="mk-today">${esc(s.today(E.pc, E.game))}</p>${L.guests ? `<p class="mk-today">🧳 ${L.lang === "tr" ? "Bakıcı ünün" : "Sitter rating"}: ${"★".repeat(Math.max(0, Math.round(L.guests.rep / 2)))}${"☆".repeat(5 - Math.max(0, Math.round(L.guests.rep / 2)))} · ${L.lang === "tr" ? "bakılan" : "looked after"}: ${L.guests.done}</p>` : ""}`;
       }
+      const _body = root.querySelector(".mk-body"), _sc = _body && root.dataset.tab === String(tab) ? _body.scrollTop : 0; root.dataset.tab = String(tab);
       root.innerHTML = `
         <div class="mk-head"><b>${o.only ? "🎒 " + esc(s.mine) : "🛒 " + esc(s.title)}</b><span class="mk-wal"><span class="coin">${s.coins(L.wallet.coins)}</span><span class="star">${s.stars(L.wallet.stars)}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
         ${o.only ? "" : `<div class="mk-tabs">${tabs.map(([id, e, l]) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${e}</span>${esc(l)}</button>`).join("")}</div>`}
         ${note ? `<div class="mk-flash">${esc(note)}</div>` : ""}
         <div class="mk-body">${body}</div>`;
+      if (_sc) { const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = _sc; }
       root.querySelectorAll("canvas[data-f]").forEach((c) => DC.furnitureThumb(c.dataset.f, c.getContext("2d")));
       const wc = root.querySelector(".mk-wheel canvas"); if (wc) drawWheel(wc, s);
       if (tab === "cats") drawCats();
@@ -300,6 +302,13 @@
     function close() { root.hidden = true; note = ""; o.onClose && o.onClose(); }
     fab.onclick = () => (root.hidden ? open() : close());
 
+    // after a buy the list redraws; keep the button you pressed exactly under the pointer, so you can press it again
+    root.addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b || b.disabled || b.dataset.tab || b.dataset.a) return;
+      const attr = Object.keys(b.dataset)[0]; if (!attr) return;
+      const sel = `[data-${attr.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase())}="${CSS.escape(b.dataset[attr])}"]`, y0 = b.getBoundingClientRect().top;
+      setTimeout(() => { const nb = root.querySelector(sel), body = root.querySelector(".mk-body"); if (nb && body) body.scrollTop += nb.getBoundingClientRect().top - y0; }, 0);
+    }, true);
     root.addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b || b.disabled) return;
       if (b.dataset.a === "close") return close();
