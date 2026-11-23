@@ -32,7 +32,7 @@
     snowleo: { name: "Snow leopard", body: "#dcdcd8", belly: "#f6f6f2", accent: "#3e4248", accent2: "#a9aeb4", eye: "#8fc8d8", pattern: "rosette", big: 1.35, wild: true, morph: "big" },
     panther: { name: "Black panther",body: "#24232b", belly: "#24232b", accent: "#18171d", eye: "#9bd84a", pattern: "solid", outline: "#08080b", big: 1.4, wild: true, morph: "big" },
     tiger:   { name: "Tiger",        body: "#ea8a2e", belly: "#fbf3e6", accent: "#1d1714", eye: "#e8c547", pattern: "tiger", big: 1.45, wild: true, morph: "big" },
-    lion:    { name: "Lion",         body: "#d9a75e", belly: "#f3dfbd", accent: "#5a3a20", accent2: "#9a5a26", eye: "#d9a23a", pattern: "lion", big: 1.5, wild: true, mane: true, morph: "big" },
+    lion:    { name: "Lion",         body: "#d9a75e", belly: "#f3dfbd", accent: "#6a3e1c", accent2: "#a5622a", eye: "#d9a23a", pattern: "lion", big: 1.5, wild: true, mane: true, morph: "big" },
   };
   const COAT_KEYS = Object.keys(COATS);
 
@@ -728,13 +728,17 @@
       if (h && !h.front && !h.flip) { const ex = Math.round(h.x + h.d * 2.2), ey = Math.round(h.y - 1); for (let k = 2; k <= 4; k++) { const x = ex + (k > 3 ? h.d : 0), i = at(x, ey + k); if (i >= 0 && R.part[i] === PART.HEAD && (R.m[i] === M.BODY || R.m[i] === M.BELLY)) R.m[i] = M.ACCENT; } }
     }
   }
-  // a lion's mane: a thick ruff round the head, only where nothing else is drawn
+  // a lion's mane: a big shaggy ruff round the head that spills down over the neck and chest, darker at its tufted edge
   function mane(R, P) {
     if (!P.mane || !R.head || R.head.flip) return;
-    const h = R.head, cx = h.front ? h.x : h.x - h.d * 0.8, cy = h.y + 1.2;
-    for (let y = Math.floor(cy - 9); y <= cy + 9; y++) for (let x = Math.floor(cx - 9); x <= cx + 9; x++) {
-      const dx = (x + 0.5 - cx) / 8.6, dy = (y + 0.5 - cy) / 8.2, k = dx * dx + dy * dy;
-      if (k <= 1 && !R.get(x, y) && (k < 0.8 || (x + y) % 2)) R.put(x, y, M.ACCENT2, PART.BODY);
+    const h = R.head, cx = h.front ? h.x : h.x - h.d * 1.6, cy = h.y + 2.6, rx = 11.5, ry = 11;
+    for (let y = Math.floor(cy - ry - 2); y <= cy + ry + 2; y++) for (let x = Math.floor(cx - rx - 2); x <= cx + rx + 2; x++) {
+      const dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry, k = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dy, dx);
+      const edge = 1 + 0.14 * Math.cos(ang * 11) + 0.06 * Math.cos(ang * 5 + 1);        // tufts all round
+      if (k > edge || y >= GROUND - 1) continue;
+      const m = R.get(x, y), part = R.partAt(x, y);
+      if (m && !(part === PART.BODY || part === PART.CHEST)) continue;                 // never over the face, ears, legs or tail
+      R.put(x, y, k > edge - 0.2 || (k > 0.55 && (x + 2 * y) % 5 === 0) ? M.ACCENT : M.ACCENT2, PART.BODY);
     }
   }
   function dress(R, acc) {
