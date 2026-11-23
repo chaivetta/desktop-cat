@@ -2830,8 +2830,9 @@
         const gr = g.createLinearGradient(0, f - 260, 0, f); gr.addColorStop(0, "rgba(170,225,160,0)"); gr.addColorStop(1, "rgba(150,210,130,.55)"); g.fillStyle = gr; g.fillRect(0, f - 260, W, 260);
         for (let x = 0; x < W; x += 14 * k) { px(x, f - 26 * k, 3 * k, 24 * k, "#e8d6b8"); px(x, f - 28 * k, 3 * k, 2 * k, "#c9b08a"); }
         px(0, f - 20 * k, W, 2 * k, "#d9c29c"); px(0, f - 12 * k, W, 2 * k, "#d9c29c");
-        const tree = (x, s) => { px(x - 3 * k * s, f - 40 * k * s, 6 * k * s, 40 * k * s, "#8a5a36"); for (const [dx, dy, r, col] of [[0, -58, 20, "#5fae54"], [-14, -46, 14, "#6dbf5f"], [14, -46, 14, "#6dbf5f"], [-6, -66, 12, "#7fcf6e"], [8, -64, 10, "#7fcf6e"]]) { g.fillStyle = col; g.beginPath(); g.arc(x + dx * k * s, f + dy * k * s, r * k * s, 0, 7); g.fill(); } };
-        for (const [x, s] of [[0.06, 1.2], [0.27, 0.9], [0.52, 1.3], [0.76, 1], [0.95, 1.15]]) tree(W * x, s);
+        // pixel-art trees: a lumpy canopy lit from the top left, a dark outline, a few leaf clusters, a trunk with bark and roots
+        const tree = (x, sz, seed) => { const t = parkTree(seed), m = Math.max(2, Math.round(k * sz)); g.imageSmoothingEnabled = false; g.drawImage(t, Math.round(x - (t.width * m) / 2), Math.round(f - t.height * m + m), t.width * m, t.height * m); };
+        for (const [x, sz, seed] of [[0.06, 1.25, 1], [0.27, 0.95, 2], [0.52, 1.35, 3], [0.76, 1.05, 4], [0.95, 1.2, 5]]) tree(W * x, sz, seed);
         const bx = W * 0.38; px(bx, f - 14 * k, 34 * k, 3 * k, "#b07a48"); px(bx, f - 22 * k, 34 * k, 3 * k, "#b07a48"); px(bx + 2 * k, f - 11 * k, 2 * k, 11 * k, "#5b3a29"); px(bx + 30 * k, f - 11 * k, 2 * k, 11 * k, "#5b3a29");
         const lx = W * 0.64; px(lx, f - 60 * k, 2 * k, 60 * k, "#3d4256"); px(lx - 3 * k, f - 66 * k, 8 * k, 6 * k, "#3d4256"); px(lx - 2 * k, f - 65 * k, 6 * k, 4 * k, "#ffe9a0");
         const pdx = W * 0.85; g.fillStyle = "#7cc8ec"; g.beginPath(); g.ellipse(pdx, f - 2 * k, 30 * k, 5 * k, 0, 0, 7); g.fill(); g.fillStyle = "#b8e6f8"; g.fillRect(pdx - 12 * k, f - 4 * k, 8 * k, k);
@@ -3339,6 +3340,42 @@
       }
       ctx.globalAlpha = 1;
     }
+  }
+
+  // ---------------------------------------------------------------- a pixel-art park tree (drawn once per seed, then scaled up crisp)
+  const treeCache = {};
+  function parkTree(seed) {
+    if (treeCache[seed]) return treeCache[seed];
+    let r = seed * 9301 + 17; const rr = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+    const W = 40, H = 62, cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
+    const put = (x, y, c) => { g.fillStyle = c; g.fillRect(x, y, 1, 1); };
+    // the canopy: a few overlapping blobs
+    const blobs = [[20, 18, 13], [11, 24, 9], [29, 24, 9], [15, 12, 8], [26, 12, 8], [20, 28, 10]].map(([x, y, rad]) => [x + (rr() - 0.5) * 3, y + (rr() - 0.5) * 2, rad * (0.9 + rr() * 0.2)]);
+    const leaf = (x, y) => blobs.some(([cx, cy, rad]) => (x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= rad * rad);
+    // the trunk and roots
+    const trunk = (x, y) => (y >= 30 && y < H - 2 && Math.abs(x + 0.5 - 20) <= 3 + (y > H - 8 ? (y - (H - 8)) * 0.8 : 0)) || (y >= 34 && y <= 38 && ((x >= 23 && x <= 27 && y - 34 <= x - 23 && y - 34 >= x - 25)));
+    const OUT = "#2f4a2a", L1 = "#9be07c", L2 = "#6fc25a", L3 = "#4f9f45", L4 = "#3b7d39", T1 = "#a8784a", T2 = "#8a5a36", T3 = "#64402a", TO = "#3e2a1e";
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (leaf(x, y)) {
+        const up = !leaf(x, y - 1), lf = !leaf(x - 1, y), dn = !leaf(x, y + 1), rt = !leaf(x + 1, y);
+        const lightness = (x - 20) * 0.6 + (y - 18);                                  // light from the top left
+        let c = lightness < -10 ? L1 : lightness < 2 ? L2 : lightness < 12 ? L3 : L4;
+        if (up || lf) c = c === L4 ? L3 : L1;                                         // a lit rim
+        if (dn || rt) c = L4;                                                         // shadowed underside
+        if ((x * 7 + y * 13) % 17 === 0 && c !== L4) c = L1;                          // little glints in the leaves
+        if ((x * 5 + y * 11) % 23 === 0 && c === L2) c = L3;
+        put(x, y, c);
+      } else if (trunk(x, y)) {
+        const edgeL = !trunk(x - 1, y), edgeR = !trunk(x + 1, y);
+        put(x, y, edgeL ? T1 : edgeR ? T3 : (y + x * 3) % 7 === 0 ? T3 : T2);       // bark lines
+      }
+    }
+    // a dark outline round everything
+    const solid = (x, y) => x >= 0 && y >= 0 && x < W && y < H && (leaf(x, y) || trunk(x, y));
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!solid(x, y) && (solid(x - 1, y) || solid(x + 1, y) || solid(x, y - 1) || solid(x, y + 1))) put(x, y, leaf(x - 1, y) || leaf(x + 1, y) || leaf(x, y - 1) || leaf(x, y + 1) ? OUT : TO);
+    // a few round fruit or blossom dots on some trees
+    if (seed % 2) for (let i = 0; i < 6; i++) { const x = Math.round(10 + rr() * 20), y = Math.round(8 + rr() * 20); if (leaf(x, y) && leaf(x + 1, y + 1)) { put(x, y, seed % 4 === 1 ? "#ff8fab" : "#ffd34d"); put(x + 1, y, seed % 4 === 1 ? "#ffc2d1" : "#fff1a0"); } }
+    return (treeCache[seed] = cv);
   }
 
   // ---------------------------------------------------------------- visitors: a squirrel, a hedgehog, a little cloud of butterflies
