@@ -136,7 +136,8 @@
     outfit: { sweater: 4, stripes: 4, dots: 6, plaid: 6, zigzag: 7, overalls: 8, raincoat: 9, vertical: 9, diagonal: 10, stars: 15,
       pocket: 6, dash: 7, bold: 8, hearts: 9, checker: 10, waves: 11, hoodie: 12, floral: 13, argyle: 16, camo: 18 },
   };
-  const MAX_CATS = 8, KIT_COOL = 24 * 3.6e6;           // breeding: at most 8 cats, a mother or father rests a day between litters
+  const KIT_COOL = 24 * 3.6e6;
+  const SK = (id) => (L.sk ? L.sk(id) : 0);              // a rank in your skill tree (progress.js)           // breeding: at most 8 cats, a mother or father rests a day between litters
   // Love fades when nobody pays attention. A lonely kitten or young cat may pack up and leave;
   // grown-ups stay, and a wise old cat only very rarely wanders off.
   const LOVE_FADE = 8 / 3600, LONELY = 15, LEAVE_PER_HOUR = { kitten: 0.12, young: 0.12, adult: 0, elder: 0.012 };
@@ -201,7 +202,7 @@
         tunnel: ["Kedi tüneli", "İçinden koşa koşa geçer, saklanır"], fountain: ["Su çeşmesi", "Taze su; kediler gelip içer"], litter: ["Kum kabı", "Temiz tutarsan kediler daha mutlu; kirlenince tıkla, temizle"], bed: ["Kedi yatağı", "Yumuşacık, içinde kıvrılıp uyur"], house: ["Kedi kulübesi", "İçine girip saklanarak uyur"], rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
         tree: ["Kedi ağacı", "İki katlı, tepesine tırmanır"], aquarium: ["Akvaryum", "Balıkları izler, cama pati atar"] },
       game: "Lazer avı", gameHelp: "30 saniye: lazerle kedileri parlayan yıldızlara götür!", again: "Tekrar oyna", closeB: "Kapat",
-      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", settings: "Ayarlar", games: "Oyunlar", inventory: "Envanter", bestL: (n) => `Rekor: ${n}`,
+      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", settings: "Ayarlar", games: "Oyunlar", inventory: "Envanter", progress: "Gelişim", bestL: (n) => `Rekor: ${n}`,
       sexF: "♀ Dişi", sexM: "♂ Erkek", sickL: "🤒 Hasta: ilaç ver ya da iyileştiren bir mama", grubby: "🫧 Çok kirli: tara ya da yıka",
       care: "Bakım", brushB: "🪮 Tara", bathB: "🛁 Yıka", medB: "💊 İlaç ver", cleanL: (n) => `🫧 Temizlik %${n}`, needBrush: "Önce marketten bir fırça al 🪮",
       buffN: { full: "Tok", glow: "Sevgi kalkanı", grow: "Hızlı büyüme", healthy: "Sağlıklı", energy: "Enerjik", calm: "Huzurlu", shiny: "Parlak", smart: "Zeki", lucky: "Şanslı", sleepy: "Uykucu", royal: "Kraliyet" }, lonely: "Kendini yalnız hissediyor 💔 Biraz ilgi lazım", leftHome: (n) => `${n} evden ayrıldı 💔`,
@@ -266,7 +267,7 @@
         tunnel: ["Cat tunnel", "Dashes through it and hides inside"], fountain: ["Water fountain", "Fresh water; the cats come for a drink"], litter: ["Litter box", "Keep it clean and the cats are happier; click it to clean"], bed: ["Cat bed", "Soft and round, curls up in it"], house: ["Cat house", "Crawls inside to sleep, hidden away"], rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
         tree: ["Cat tree", "Two levels to climb up to"], aquarium: ["Aquarium", "Watches the fish and paws at the glass"] },
       game: "Laser hunt", gameHelp: "30 seconds: use the laser to lead the cats onto the twinkling stars!", again: "Play again", closeB: "Close",
-      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", settings: "Settings", games: "Games", inventory: "Inventory", bestL: (n) => `Best: ${n}`,
+      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", settings: "Settings", games: "Games", inventory: "Inventory", progress: "Progress", bestL: (n) => `Best: ${n}`,
       sexF: "♀ Female", sexM: "♂ Male", sickL: "🤒 Sick: give medicine or a healing meal", grubby: "🫧 Very grubby: brush or bath",
       care: "Care", brushB: "🪮 Brush", bathB: "🛁 Bath", medB: "💊 Medicine", cleanL: (n) => `🫧 Clean ${n}%`, needBrush: "Buy a brush in the market first 🪮",
       buffN: { full: "Full", glow: "Love shield", grow: "Growth boost", healthy: "Healthy", energy: "Energetic", calm: "Calm", shiny: "Shiny", smart: "Clever", lucky: "Lucky", sleepy: "Sleepy", royal: "Royal" }, lonely: "Feeling lonely 💔 needs some attention", leftHome: (n) => `${n} left home 💔`,
@@ -310,7 +311,9 @@
 
   const L = {
     lang: (navigator.language || "en").toLowerCase().startsWith("tr") ? "tr" : "en",
-    NAMES, TRAITS, TOYS, STAGES, ADULT, STR, LOG_ICON, COAT_NAMES, TASKS, MAX_CATS, TRICKS, LESSONS,
+    NAMES, TRAITS, TOYS, STAGES, ADULT, STR, LOG_ICON, COAT_NAMES, TASKS, TRICKS, LESSONS,
+    // room for your own cats grows with your level (4 at first, 8 at level 13); guests don't take it up
+    get MAX_CATS() { return L.catSlots ? L.catSlots() : 8; },
     since: Date.now(), togetherDone: 0,  // the day your first cat arrived, and how many "days together" parties so far
     tasksOn: true, breedOn: true,         // both can be switched off in the settings
     wallet: { stars: 0, coins: 0, owned: [] },
@@ -356,13 +359,13 @@
     toyCondOf(k) { return L.toys.includes(k) ? Math.round(L.toyCond[k] ?? 100) : 0; },
     wearToy(k, n) {
       if (!L.toys.includes(k)) return;
-      L.toyCond[k] = Math.max(0, (L.toyCond[k] ?? 100) - (n ?? L.TOY_WEAR[k] ?? 1));
+      L.toyCond[k] = Math.max(0, (L.toyCond[k] ?? 100) - (n ?? L.TOY_WEAR[k] ?? 1) * (1 - 0.12 * SK("k2")));
       if (L.toyCond[k] <= 0) { L.toys = L.toys.filter((x) => x !== k); delete L.toyCond[k]; if (L.onToyBroke) L.onToyBroke(k); L.changed(); }
     },
     // cat coats: the ginger tabby is free, every other coat is unlocked once with stars, then adopted for free
     COAT_PRICES: { black: 8, white: 8, grey: 10, tuxedo: 14, calico: 16, siamese: 20 },
     hasCoat(c) { return !L.COAT_PRICES[c] || (L.wallet.coats || []).includes(c); },
-    buyCoat(c) { const p = L.COAT_PRICES[c]; if (!p || L.hasCoat(c) || L.wallet.stars < p) return false; L.wallet.stars -= p; (L.wallet.coats = L.wallet.coats || []).push(c); L.changed(); return true; },
+    buyCoat(c) { const p = L.COAT_PRICES[c]; if (!p || L.hasCoat(c) || L.wallet.stars < p) return false; L.wallet.stars -= p; (L.wallet.coats = L.wallet.coats || []).push(c); if (L.gainPXP) L.gainPXP(20); L.changed(); return true; },
     hasToy(k) { return !L.TOY_PRICES[k] || L.toys.includes(k); },      // the yarn is free only the first time
     buyToy(k) { const p = L.TOY_PRICES[k]; if (!p || L.toys.includes(k) || L.wallet.coins < p) return false; L.wallet.coins -= p; L.toys.push(k); L.toyCond[k] = 100; L.changed(); return true; },                  // every piece of furniture you own: { id, k, cond (0-100), x (share of the screen width, or null when stored) }
     game: { best: 0, day: "", stars: 0 },      // stars from tasks, shared by all cats, and the wardrobe designs bought with them
@@ -426,7 +429,7 @@
       return p;
     },
     growth(p) { return p.g != null ? clamp(p.g, 0.1, 1) : clamp((p.g0 ?? 1) + (Date.now() - (p.gT || Date.now())) / 864e5 * GROW_PER_DAY, 0.1, 1); },
-    isHungry(p) { return !!p && Date.now() - (p.fedAt || 0) > HUNGRY_AFTER * (L.hasBuff(p, "full") ? 2 : 1); },
+    isHungry(p) { return !!p && Date.now() - (p.fedAt || 0) > HUNGRY_AFTER * (L.hasBuff(p, "full") ? 2 : 1) * (1 + 0.1 * SK("c1")); },
     growing(p) { return !!p && !L.isHungry(p) && !p.sick && p.love >= 30 && L.growth(p) < 1; },
     // ---------------- buffs
     BUFFS,
@@ -499,7 +502,7 @@
         let love = r.love;
         for (const t of p.traits) love *= TRAITS[t].love || 1;
         if (arg.toyKey && arg.toyKey === p.fav) love *= 1.6;
-        L.addXP(cat, r.xp); L.addLove(cat, love);
+        L.addXP(cat, r.xp); L.addLove(cat, love); if (L.gainPXP) L.gainPXP(r.xp * (kind === "pet" ? 0.3 : 1));
       }
       if (now - (p.lastL[key] || 0) > r.log) { p.lastL[key] = now; L.write(p, kind, arg); L.changed(); }
       if (kind === "fed") {
@@ -544,9 +547,9 @@
       }
       // a treat from the cupboard makes the lesson go much better
       const treat = !learned && (L.pantry.treat || 0) > 0; if (treat) L.pantry.treat--;
-      const ok = learned || Math.random() < 0.12 + n * 0.03 + p.love / 900 + (treat ? 0.22 : 0) + (L.hasBuff(p, "smart") ? 0.2 : 0) - (p.sick ? 0.1 : 0);
+      const ok = learned || Math.random() < 0.12 + n * 0.03 + p.love / 900 + (treat ? 0.22 : 0) + (L.hasBuff(p, "smart") ? 0.2 : 0) - (p.sick ? 0.1 : 0) + SK("c4") * 0.05;
       if (ok && !learned) {
-        p.tricks[id] = n + 1; L.addXP(cat, 4); L.addLove(cat, 2);
+        p.tricks[id] = n + 1; L.addXP(cat, 4); L.addLove(cat, 2); if (L.gainPXP) L.gainPXP(8);
         if (n + 1 >= LESSONS) { L.write(p, "trick", { id }); L.remember(p, "trick", { id }); if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 24); }
         L.changed();
       }
@@ -587,13 +590,13 @@
         if (now - (k.t || 0) < 1500) continue;           // the laser fires every frame: count at most one every 1.5 s
         k.t = now; k.n++; hit = true;
         if (k.n >= d.n) {
-          L.addXP(cat, TASK_REWARD.xp); L.addLove(cat, TASK_REWARD.love); L.write(p, "task", { task: k.id });
+          L.addXP(cat, TASK_REWARD.xp); L.addLove(cat, TASK_REWARD.love); if (L.gainPXP) L.gainPXP(TASK_REWARD.xp); L.write(p, "task", { task: k.id });
           L.wallet.stars += TASK_REWARD.stars; p.stars = (p.stars || 0) + TASK_REWARD.stars; L.earn(TASK_REWARD.coins * (L.hasBuff(p, "lucky") ? 2 : 1), cat);
           const w = cat.world, s = cat.s; if (w) { w.burst(cat.x, cat.y - 34 * s, "spark", "#ffd34d", 4); w.burst(cat.x, cat.y - 30 * s, "heart", "#e2557a", 2); }
         }
       }
       if (hit && !ts.all && ts.list.every((k) => k.n >= TASKS[k.id].n)) {
-        ts.all = true; p.stars = (p.stars || 0) + ALL_REWARD.stars; L.wallet.stars += ALL_REWARD.stars; L.earn(ALL_REWARD.coins * (L.hasBuff(p, "lucky") ? 2 : 1), cat); p.streak = (p.streak || 0) + 1;
+        ts.all = true; if (L.gainPXP) L.gainPXP(ALL_REWARD.xp); p.stars = (p.stars || 0) + ALL_REWARD.stars; L.wallet.stars += ALL_REWARD.stars; L.earn(ALL_REWARD.coins * (L.hasBuff(p, "lucky") ? 2 : 1), cat); p.streak = (p.streak || 0) + 1;
         L.addXP(cat, ALL_REWARD.xp); L.addLove(cat, ALL_REWARD.love); L.write(p, "tasksDone");
         if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 30);
       }
@@ -611,8 +614,8 @@
     // Called once a minute; returns the new kitten's profile, or null.
     tryBreed(world, force = false) {
       if (!L.breedOn && !force) return null;
-      const cats = world.cats.filter((c) => c.profile);
-      if (cats.length >= MAX_CATS) return null;
+      const cats = world.cats.filter((c) => c.profile && !c.profile.guest);
+      if (cats.length >= L.MAX_CATS) return null;
       const now = Date.now(), ready = (c) => !c.leaving && !c.profile.guest && L.growth(c.profile) >= 1 && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
         && !["held", "fall", "leap"].includes(c.state);
       const pairs = [];
@@ -625,7 +628,7 @@
       pairs.sort((x, y) => y[2] - x[2]);
       const [a, b] = pairs[0], taken = cats.map((c) => c.profile.name);
       // a litter: usually one, sometimes two or three (never more than there's room for)
-      const r0 = Math.random(), size = Math.min(MAX_CATS - cats.length, r0 < 0.6 ? 1 : r0 < 0.9 ? 2 : 3), kits = [];
+      const r0 = Math.random(), size = Math.min(L.MAX_CATS - cats.length, r0 < 0.6 ? 1 : r0 < 0.9 ? 2 : 3), kits = [];
       for (let i = 0; i < size; i++) {
         const r = Math.random(), coat = r < 0.45 ? a.profile.coat : r < 0.9 ? b.profile.coat : pickOne(Object.keys(COAT_NAMES));
         const k = L.make(coat, { taken, love: 60, quiet: true }); taken.push(k.name);
@@ -666,7 +669,7 @@
     },
     addLove(cat, n) {
       const p = cat.profile, before = p.love;
-      if (n > 0) n *= (L.hasBuff(p, "shiny") ? 1.5 : 1) * (L.clean(p) < 30 ? 0.7 : 1);       // a shiny cat loves more; a grubby one less
+      if (n > 0) n *= (L.hasBuff(p, "shiny") ? 1.5 : 1) * (L.clean(p) < 30 ? 0.7 : 1) * (1 + 0.1 * SK("c3"));       // a shiny cat loves more; a grubby one less
       p.love = clamp(p.love + n, 0, 100);
       if (before < 100 && p.love >= 100 && now() - (p.lastL.lovemax || 0) > 6 * 3.6e6) { p.lastL.lovemax = now(); L.write(p, "lovemax"); if (!p.memLove) { p.memLove = 1; L.remember(p, "lovemax"); } L.changed(); }
     },
@@ -682,7 +685,7 @@
       // getting grubby, and sometimes poorly
       L.dirty(p, dt * CLEAN_FADE_PER_DAY / 86400);
       if (!p.sick && !L.hasBuff(p, "healthy")) {
-        const risk = SICK_PER_HOUR * (L.isHungry(p) ? 4 : 1) * (L.clean(p) < 25 ? 2.5 : 1) * (litterK > 1 ? 2 : 1) * (L.isElder(p) ? 1.5 : 1);
+        const risk = SICK_PER_HOUR * (1 - 0.15 * SK("c2")) * (L.isHungry(p) ? 4 : 1) * (L.clean(p) < 25 ? 2.5 : 1) * (litterK > 1 ? 2 : 1) * (L.isElder(p) ? 1.5 : 1);
         if (Math.random() < risk * dt / 3600) { p.sick = Date.now(); L.write(p, "sick"); L.changed(); }
       }
       if (p.sick && L.hasBuff(p, "healthy")) L.cure(cat);

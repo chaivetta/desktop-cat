@@ -124,11 +124,20 @@ Eight more: a **pumpkin house** to hide in, a **bathtub** full of bubbles and a 
 
 **Birds** now come in ten kinds: sparrows and pigeons most often, then bluebirds, robins, canaries, crows, magpies and cardinals, a rare parrot, and at night, very rarely, an owl.
 
+### 🏅 Your progress
+
+<img src="docs/skills.png" width="300" alt="The skill tree"> <img src="docs/album.png" width="300" alt="The album of birds, cat coats and furniture">
+
+You grow too. Petting, feeding, playing, tasks, tricks, guests and mini games give you XP, and levelling up is slow on purpose (80 × level^1.8 XP for the next one). Every level gives a skill point and coins (and a star every 5 levels), and it opens more: room for more cats (4 at first, 8 at level 13) and pricier furniture in the market.
+
+- **Skill tree:** three branches. 🏨 Hotel (better guest pay, more guest rooms, a better name, VIP guests), 🍗 Care (cats stay full longer, fall ill less, love more, learn tricks easier) and 🛠️ Craft (cheaper repairs, things wear slower, better selling prices, more coins from computer time). Deeper skills open as you spend points in a branch.
+- **Album:** every bird you've seen, every cat coat you've had and every piece of furniture you've owned. New entries give XP; a finished page gives stars and coins. The parrot is rare, and the owl only comes at night.
+
 ### 🧳 Guest cats
 
 <img src="docs/guest.png" width="520" alt="A neighbour asks you to look after their cat for a day">
 
-Like a little cat hotel: every 1–2 hours (at most 7 a day) a neighbour asks you to look after their cat, for anything from a day to a week (several guests can stay at once if there is room). The pay is per day. When the owner comes back they pay you: more for a happy, fed, clean cat, more for a home full of things it can use, and more as your sitter rating grows. If the guest gets ill, goes hungry for too long or is left alone and unloved, they take it back and pay nothing, and your rating drops.
+Like a little cat hotel: every 1–2 hours (at most 7 a day) a neighbour asks you to look after their cat. Most stay an hour or two; now and then one stays longer, at most a day, and pays well. The pay goes by the hour. You have one guest room to start with (the Spare room skill adds more). When the owner comes back they pay you: more for a happy, fed, clean cat, more for a home full of things it can use, and more as your sitter rating grows. If the guest gets ill, goes hungry for too long or is left alone and unloved, they take it back and pay nothing, and your rating drops.
 
 ### Visitors
 

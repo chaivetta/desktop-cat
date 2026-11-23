@@ -98,6 +98,7 @@
     }
     function finishMemory(won) {
       mem.over = true; const e = E(), s = t();
+      if (L.gainPXP) L.gainPXP(won ? 6 : 2);
       if (won) { const c = Math.max(0, Math.min(Math.max(3, 16 - (mem.moves - 6)), CAP - e.mem)); e.mem += c; if (c) L.earn(c); msg = s.memWin(mem.moves, c); world.confetti(innerWidth / 2, 160, 16); }
       else msg = s.timeUp;
       L.changed(); render();
@@ -110,7 +111,7 @@
     function tickWhack() {
       if (!whack || whack.over) return; const now = Date.now();
       if (now >= whack.end) {
-        whack.over = true; const e = E(), c = Math.max(0, Math.min(Math.floor(whack.score / 2), CAP - e.whack)); e.whack += c; if (c) L.earn(c);
+        whack.over = true; if (L.gainPXP) L.gainPXP(2 + Math.floor(whack.score / 4)); const e = E(), c = Math.max(0, Math.min(Math.floor(whack.score / 2), CAP - e.whack)); e.whack += c; if (c) L.earn(c);
         msg = t().whackEnd(whack.score, c); L.changed(); render(); return;
       }
       whack.holes = whack.holes.map((h) => (h && h < now ? 0 : h));

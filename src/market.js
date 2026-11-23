@@ -124,13 +124,13 @@
     let tab = o.only || "cats", coatSel = "ginger", sel = "", note = "", key = "", result = "", spinning = false, wheelAngle = 0;
     const t = () => STR[L.lang] || STR.en;
 
-    const repairCost = (it) => Math.ceil(DC.FURN[it.k].price * 0.5 * (1 - it.cond / 100));
-    const sellPrice = (it) => Math.floor(DC.FURN[it.k].price * 0.3 * Math.max(0.2, it.cond / 100));
+    const repairCost = (it) => Math.ceil(DC.FURN[it.k].price * 0.5 * (1 - it.cond / 100) * (1 - 0.15 * (L.sk ? L.sk("k1") : 0)));
+    const sellPrice = (it) => Math.floor(DC.FURN[it.k].price * 0.3 * Math.max(0.2, it.cond / 100) * (1 + 0.2 * (L.sk ? L.sk("k3") : 0)));
     const condLabel = (it, s) => it.cond <= 0 ? s.broken : it.cond < 40 ? s.worn : "";
 
     function render() {
       const s = t(), H = L.home, E = L.econToday();
-      const k = [L.lang, tab, sel, JSON.stringify(L.toyCond), coatSel, (L.wallet.coats || []).join(), o.catCount ? o.catCount() : 0, o.toyOn ? Object.keys(L.TOY_PRICES).map(o.toyOn).join() : "", o.bowl ? o.bowl().out() : "", L.toys.join(), note, result, L.luck.chestDay, spinning, L.wallet.coins, L.wallet.stars, JSON.stringify(L.pantry), H.items.map((i) => `${i.id}${Math.round(i.cond)}${i.x != null}`).join()].join("|");
+      const k = [L.lang, tab, sel, L.prog ? L.prog.lvl : 1, JSON.stringify(L.toyCond), coatSel, (L.wallet.coats || []).join(), o.catCount ? o.catCount() : 0, o.toyOn ? Object.keys(L.TOY_PRICES).map(o.toyOn).join() : "", o.bowl ? o.bowl().out() : "", L.toys.join(), note, result, L.luck.chestDay, spinning, L.wallet.coins, L.wallet.stars, JSON.stringify(L.pantry), H.items.map((i) => `${i.id}${Math.round(i.cond)}${i.x != null}`).join()].join("|");
       if (k === key) return; key = k;
       // the inventory has its own panel (🎒 on the card); the market keeps the shop tabs
       const tabs = o.only ? [] : [["cats", "🐱", s.catsT], ["food", "🍗", s.food], ["toys", "🧸", s.toysT], ["furniture", "🛋️", s.furniture], ["luck", "🎁", s.luck], ["earn", "🪙", s.earn]];
@@ -150,7 +150,7 @@
             return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? s.inInv(L.toyCondOf(k)) : "", btn); }).join("")}</div>`;
       } else if (tab === "furniture") {
         body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${Object.entries(DC.FURN).map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
-          return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`); }).join("")}</div>`;
+          return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", (L.furnLevel && L.prog.lvl < L.furnLevel(d.price) ? `<button type="button" class="mk-buy" disabled>🔒 ${L.lang === "tr" ? "Sv." : "Lv."} ${L.furnLevel(d.price)}</button>` : `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`)); }).join("")}</div>`;
       } else if (tab === "mine") {
         // icons in a grid: food, toys and things; tap one to see what you can do with it
         const foods = Object.keys(L.FOOD).filter((f) => (L.pantry[f] || 0) > 0), toys = L.toys.filter((k) => s.toys[k]), items = H.items;

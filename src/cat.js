@@ -1977,7 +1977,7 @@
       this.world = world; this.dir = dir; const ts = world.toyScale;
       this.x = dir > 0 ? -20 : world.W + 20; this.base = y; this.y = y; this.vx = dir * rnd(110, 160) * ts / 3; this.vy = 0;
       this.t = rnd(0, 6); this.state = "fly"; this.landX = land ? rnd(world.W * 0.15, world.W * 0.85) : null; this.peckT = 0; this.seen = new Set();
-      this.sp_ = pickBird(world); this.col = this.sp_.body; this.kind = this.sp_.id;
+      this.sp_ = pickBird(world); this.col = this.sp_.body; this.kind = this.sp_.id; if (world.onBirdSeen) world.onBirdSeen(this.kind);
       this.sp = new Sprite(16, 13);
     }
     scare() {
@@ -2294,6 +2294,7 @@
     update() {} render() {}
   }
   const dt0 = (f) => f.dt || 0.016;
+  const wearK = () => 1 - 0.12 * (window.CatLife && window.CatLife.sk ? window.CatLife.sk("k2") : 0);     // the "Built to last" skill
   class Furniture {
     constructor(world, kind, x, item) {
       this.world = world; this.kind = kind; this.x = x; this.y = world.floor; this.held = false; this.occupant = null; this.f = FURN[kind];
@@ -2307,7 +2308,7 @@
     // things wear out: a little with every use, a little every day; at 0 they're broken until you repair them
     get cond() { return this.item.cond; }
     get usable() { return this.item.cond > 0; }
-    use() { if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - 1.5); }
+    use() { if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - 1.5 * wearK()); }
     grab() { this.held = true; } release() { this.held = false; }
     click() {
       if (this.kind === "litter" && this.item.dirty) { if (this.world.onCleanLitter) this.world.onCleanLitter(this); return; }
@@ -2316,7 +2317,7 @@
     }
     update(dt) {
       const w = this.world, s = w.toyScale; this.t += dt; this.dt = dt; this.y = w.floor;
-      if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - dt * 2 / 86400);   // two points a day
+      if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - dt * 2 / 86400 * wearK());   // two points a day
       if (!this.usable && this.occupant) { const o = this.occupant; this.occupant = null; if (o.cushion === this) { o.cushion = null; o.set("stretch", 1.4); } }
       if (this.held) this.x += (clamp(w.pointer.x, this.f.w * s / 2, w.W - this.f.w * s / 2) - this.x) * Math.min(1, dt * 14);
       if (this.occupant && (!w.cats.includes(this.occupant) || this.occupant.cushion !== this)) this.occupant = null;
@@ -3030,5 +3031,11 @@
     }
   }
 
-  window.DesktopCat = { BIRDS, World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE, FURN, furnitureThumb };
+  // a bird for the album
+  function birdThumb(ctx, id) {
+    const B = BIRDS.find((b) => b.id === id) || BIRDS[0], W = ctx.canvas.width, H = ctx.canvas.height, k = 2 / (B.big || 1);
+    const fake = { sp_: B, sp: new Sprite(16, 13), state: "peck", t: 0, x: W / 2, y: H - 3, dir: 1, world: { toyScale: k } };
+    Bird.prototype.render.call(fake, ctx);
+  }
+  window.DesktopCat = { BIRDS, birdThumb, World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE, FURN, furnitureThumb };
 })();

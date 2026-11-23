@@ -32,6 +32,7 @@
 <script src="weather.js"></script>
 <script src="games.js"></script>
 <script src="guests.js"></script>
+<script src="progress.js"></script>
 <script>
 (() => {
   const { World, COATS, COAT_KEYS, SCALE_MIN, SCALE_MAX } = window.DesktopCat;
@@ -74,6 +75,8 @@
   if (saved.econ) L.econ = { ...L.econ, ...saved.econ };
   if (saved.luck) L.luck = { ...L.luck, ...saved.luck };
   if (saved.guests) L.guests = saved.guests;
+  // your level, skills and album
+  if (saved.prog) L.prog = { ...L.prog, ...saved.prog, skills: { ...saved.prog.skills }, album: { birds: [], coats: [], furn: [], ...saved.prog.album }, claimed: { ...saved.prog.claimed } };
   // toys: what you own and how worn it is (an older save gets its free yarn back once)
   if (Array.isArray(saved.toys)) L.toys = saved.toyCond ? saved.toys.slice() : saved.toys.includes("yarn") ? saved.toys : ["yarn", ...saved.toys];
   if (saved.toyCond) L.toyCond = { ...saved.toyCond };
@@ -103,7 +106,7 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
-        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, toyCond: L.toyCond, guests: L.guests,
+        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, toyCond: L.toyCond, guests: L.guests, prog: L.prog,
         bowl: world.bowl ? { out: true, x: +(world.bowl.x / world.W).toFixed(4), food: +world.bowl.food.toFixed(3), kind: world.bowl.foodKind } : { out: false, food: bowlFood },
         home: { items: L.home.items.map((it) => { const f = world.furniture.find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
@@ -155,7 +158,7 @@
     storeItem: (it) => { const f = world.furniture.find((f) => f.item === it); if (f) world.removeFurniture(f); it.x = null; save(); },
     // the cat tab: adopt a kitten of an unlocked coat; the toy tab: take a toy out (or switch the laser / wand)
     adopt: (coat) => { market.close(); act.add(coat); },
-    catCount: () => world.cats.filter((c) => c.profile).length,
+    catCount: () => world.cats.filter((c) => c.profile && !c.profile.guest).length,
     catCountOf: (coat) => world.cats.filter((c) => c.profile && c.coat === coat).length,
     playToy: (k) => { if (act[k]) act[k](); },
     toyOn: (k) => act.toyOut(k),
@@ -195,7 +198,7 @@
   setInterval(() => {
     if (world.idleFor() > 120 || document.hidden) return;
     const E = L.econToday(); E.min = (E.min || 0) + 1;
-    if (E.min % 15 === 0 && E.pc < 20) { E.pc++; L.earn(1); }
+    if (E.min % 15 === 0 && E.pc < 20 + 5 * L.sk("k4")) { E.pc++; L.earn(1); }
   }, 60000);
   // a lonely cat that walked out: the others remember
   world.onCatLeft = (c) => {
@@ -213,6 +216,7 @@
   // the laser game: stars for a good score (up to six a day from the game), and a record to beat
   const gameBox = document.createElement("div"); gameBox.className = "ui gamebox"; gameBox.hidden = true; document.body.appendChild(gameBox);
   world.onGameEnd = (score) => {
+    L.gainPXP(2 + Math.floor(score / 5));
     const t = L.STR[L.lang], E = L.econToday();
     const best = score > (L.game.best || 0); if (best) L.game.best = score;
     // 1 coin for every two stars caught (25 a day at most), and a star for a score of 20+ (once a day)
@@ -237,6 +241,7 @@
     onNeed: (k, msg) => market.open(k === "brush" ? "toys" : "food", msg || (L.lang === "tr" ? "Bu marketten alınır 🛒" : "Get this in the market 🛒")),
     onMarket: () => only(market),
     onInventory: () => only(inventory),
+    onProgress: () => only(progress),
     onSettings: () => only(settings),
     onGames: () => only(games),
     onRemove: (c) => { world.removeCat(c); save(); card.refresh(); },
@@ -284,7 +289,7 @@
       // only the ginger tabby is free; other coats are unlocked with stars in the market's cat tab
       if (coat && COATS[coat] && !L.hasCoat(coat)) return market.open("cats");
       if (!coat || !COATS[coat]) { const ok = COAT_KEYS.filter(L.hasCoat); coat = ok[Math.floor(Math.random() * ok.length)]; }
-      if (world.cats.filter((c) => c.profile).length >= (L.MAX_CATS || 8)) return;
+      if (world.cats.filter((c) => c.profile && !c.profile.guest).length >= L.MAX_CATS) return;
       const p = L.make(coat, { taken: world.cats.map((c) => c.profile && c.profile.name) });
       const c = world.addCat(null, p); save();
       setTimeout(() => card.open(c, { naming: true }), 700);
@@ -356,9 +361,17 @@
   // 🎒 the inventory: the cupboard and your things, in a panel of its own (same wiring as the market)
   var inventory = window.CatMarket.create({ ...market.opts, only: "mine" });
   // one panel beside the card at a time: tapping its button again closes it
-  function only(p) { const open = p.isOpen; [market, inventory, settings, games].forEach((x) => x.close()); if (!open) p.open(); }
+  // 🏅 your level, skill tree and album
+  var progress = window.CatProgress.create({ world, onClose: () => { overUI = false; syncIgnore(); } });
+  L.onLevelUp = (n) => { toast(progress.t().up(n)); world.confetti(world.W / 2, world.floor - 120, 70); };
+  let albumQuiet = true;                                 // the first look around fills the album without a stream of notes
+  L.onAlbum = (page, id) => { if (albumQuiet) return; const nm = page === "birds" ? progress.t().birdN[id] : page === "coats" ? L.COAT_NAMES[id][L.lang] : (L.t("furn")[id] || [id])[0]; toast(progress.t().newEntry(nm)); };
+  world.onBirdSeen = (id) => L.albumAdd("birds", id);
+  const albumScan = () => { world.cats.forEach((c) => { if (c.profile && !c.profile.guest) L.albumAdd("coats", c.profile.coat); }); L.home.items.forEach((it) => L.albumAdd("furn", it.k)); };
+  setTimeout(() => { albumScan(); albumQuiet = false; setInterval(albumScan, 5000); }, 4000);
+  function only(p) { const open = p.isOpen; [market, inventory, settings, games, progress].forEach((x) => x.close()); if (!open) p.open(); }
   // the open panel's button stays lit on the card
-  setInterval(() => document.querySelectorAll(".cc-top .cc-tab.tool").forEach((b, i) => b.classList.toggle("on", !![games, market, inventory, settings][i] && [games, market, inventory, settings][i].isOpen)), 300);
+  setInterval(() => { const P = [games, market, inventory, progress, settings]; document.querySelectorAll(".cc-top .cc-tab.tool").forEach((b, i) => { b.classList.toggle("on", !!P[i] && P[i].isOpen); if (i === 3) b.dataset.lv = L.prog.lvl; }); }, 300);
   // 🧳 guest cats from the neighbours
   var guests = window.CatGuests.create({ world, save: () => save() }); window.CatGuests.now = guests;
   var games = window.CatGames.create({ world, playLaser: () => act.playGame(), onClose: () => { overUI = false; syncIgnore(); } });
