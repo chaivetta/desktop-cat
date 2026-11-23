@@ -30,7 +30,7 @@
         c1: ["Doyurucu tarif", "Kediler +%10 / kademe daha uzun tok kalır"], c2: ["Sağlıklı yaşam", "Hastalanma şansı -%15 / kademe"], c3: ["Sevgi dolu", "Kazanılan sevgi +%10 / kademe"], c4: ["Usta eğitmen", "Numara öğretme şansı +%5 / kademe"],
         k1: ["Tamirci", "Tamir -%15 / kademe ucuz"], k2: ["Sağlam yapı", "Eşya ve oyuncaklar -%12 / kademe yavaş eskir"], k3: ["Hurdacı", "Satış fiyatı +%20 / kademe"], k4: ["Altın parmak", "Bilgisayar başında kazanılan altın sınırı +5 / kademe"],
       },
-      learn: "Öğren", locked: (n) => `🔒 Bu dalda ${n} puan harca`, full: "Tamam", noPts: "Puan yok",
+      you: "Sen", tapNode: "Bir dala dokun: ne işe yaradığını ve öğrenip öğrenemeyeceğini gör. Bir dalda puan harcadıkça alttakiler açılır.", learn: "Öğren", locked: (n) => `🔒 Bu dalda ${n} puan harca`, full: "Tamam", noPts: "Puan yok",
       pages: { birds: "🐦 Kuşlar", critters: "🐿️ Ziyaretçiler", coats: "🐱 Kedi cinsleri", furn: "🛋️ Eşyalar" }, critN: { squirrel: "Sincap", hedgehog: "Kirpi", butterflies: "Kelebekler" },
       birdN: { sparrow: "Serçe", pigeon: "Güvercin", bluebird: "Mavi kuş", robin: "Kızılgerdan", canary: "Kanarya", cardinal: "Kardinal", crow: "Karga", magpie: "Saksağan", parrot: "Papağan", owl: "Baykuş" },
       claim: (r) => `🎁 Ödülü al: ${r}`, claimed: "✓ Ödül alındı", reward: (st, c) => `⭐${st} + ${c}🪙`, albumHint: "Bir sayfayı tamamlayınca ödülünü alırsın. Nadir kuşlar: papağan, gece de baykuş.",
@@ -53,7 +53,7 @@
         c1: ["Hearty recipes", "Cats stay full 10% longer per rank"], c2: ["Healthy living", "15% less chance of falling ill per rank"], c3: ["Full of love", "+10% love gained per rank"], c4: ["Master trainer", "+5% trick success per rank"],
         k1: ["Handy", "Repairs 15% cheaper per rank"], k2: ["Built to last", "Things and toys wear 12% slower per rank"], k3: ["Haggler", "Sell for 20% more per rank"], k4: ["Golden touch", "+5 to the daily coins from computer time per rank"],
       },
-      learn: "Learn", locked: (n) => `🔒 Spend ${n} points in this branch`, full: "Maxed", noPts: "No points",
+      you: "You", tapNode: "Tap a node to see what it does and whether you can learn it. Spending points in a branch opens the ones below.", learn: "Learn", locked: (n) => `🔒 Spend ${n} points in this branch`, full: "Maxed", noPts: "No points",
       pages: { birds: "🐦 Birds", critters: "🐿️ Visitors", coats: "🐱 Cat coats", furn: "🛋️ Furniture" }, critN: { squirrel: "Squirrel", hedgehog: "Hedgehog", butterflies: "Butterflies" },
       birdN: { sparrow: "Sparrow", pigeon: "Pigeon", bluebird: "Bluebird", robin: "Robin", canary: "Canary", cardinal: "Cardinal", crow: "Crow", magpie: "Magpie", parrot: "Parrot", owl: "Owl" },
       claim: (r) => `🎁 Claim: ${r}`, claimed: "✓ Claimed", reward: (st, c) => `⭐${st} + ${c}🪙`, albumHint: "Finish a page to claim its reward. Rare birds: the parrot, and the owl at night.",
@@ -112,7 +112,7 @@
   function create(o) {
     const { world } = o, DC = window.DesktopCat;
     const root = document.createElement("div"); root.className = "ui mk pg"; root.hidden = true; document.body.appendChild(root);
-    let tab = "level", key = "", placeT = 0;
+    let tab = "level", key = "", placeT = 0, skSel = null;
     const t = () => STR[L.lang] || STR.en;
     const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
     const spentIn = (b) => SKILLS[b].reduce((a, k) => a + L.sk(k.id), 0);
@@ -134,15 +134,19 @@
           ${FURN_LVL.slice(1).map(([, l], i) => `<li class="${P.lvl >= l ? "ok" : ""}">${esc(s.furnAt(FURN_LVL[i][0], l))}</li>`).join("")}</ul>`;
         void nextCats; void nextFurn;
       } else if (tab === "skills") {
-        body = `<p class="pg-pts">${esc(s.pts(P.pts))}</p>` + Object.entries(SKILLS).map(([b, list]) => {
-          const spent = spentIn(b);
-          return `<h4 class="mk-h">${esc(s.branches[b])} <small>${spent}</small></h4><div class="pg-sk">${list.map((k, i) => {
-            const r = L.sk(k.id), [nm, ds] = s.sk[k.id], gate = i * 2, open = spent >= gate || r > 0;
-            const btn = r >= k.max ? `<span class="pg-full">${esc(s.full)}</span>` : !open ? `<span class="pg-lock">${esc(s.locked(gate))}</span>`
-              : `<button type="button" data-learn="${k.id}"${P.pts < 1 ? " disabled" : ""}>${esc(P.pts < 1 ? s.noPts : s.learn)}</button>`;
-            return `<div class="pg-skill${open ? "" : " off"}"><span class="pg-ic">${k.e}</span><div><b>${esc(nm)}</b><small>${esc(ds)}</small><span class="pg-dots">${"●".repeat(r)}${"○".repeat(k.max - r)}</span></div>${btn}</div>`;
-          }).join("")}</div>`;
-        }).join("");
+        // a real tree: you at the root, three branches growing down, lines lighting up as you learn
+        const all = Object.values(SKILLS).flat(), sel = all.find((k) => k.id === skSel);
+        body = `<p class="pg-pts">${esc(s.pts(P.pts))}</p><div class="sk-tree"><svg class="sk-lines"></svg><div class="sk-root" data-node="root">🐾<small>${esc(s.you)}</small></div>`
+          + Object.entries(SKILLS).map(([b, list]) => { const spent = spentIn(b);
+            return `<div class="sk-col"><b class="sk-bt">${esc(s.branches[b])}</b>${list.map((k, i) => {
+              const r = L.sk(k.id), open = spent >= i * 2 || r > 0, st = r >= k.max ? "max" : r > 0 ? "some" : open ? (P.pts > 0 ? "ready" : "open") : "locked";
+              return `<button type="button" class="sk-node ${st}${skSel === k.id ? " sel" : ""}" data-node="${k.id}" data-br="${b}" data-i="${i}"><span>${k.e}</span><i>${"●".repeat(r)}${"○".repeat(k.max - r)}</i></button>`;
+            }).join("")}</div>`; }).join("") + `</div>`;
+        if (sel) {
+          const b = Object.keys(SKILLS).find((x) => SKILLS[x].includes(sel)), i = SKILLS[b].indexOf(sel), r = L.sk(sel.id), open = spentIn(b) >= i * 2 || r > 0, [nm, ds] = s.sk[sel.id];
+          const btn = r >= sel.max ? `<span class="pg-full">${esc(s.full)}</span>` : !open ? `<span class="pg-lock">${esc(s.locked(i * 2))}</span>` : `<button type="button" data-learn="${sel.id}"${P.pts < 1 ? " disabled" : ""}>${esc(P.pts < 1 ? s.noPts : s.learn)}</button>`;
+          body += `<div class="pg-skill sk-detail"><span class="pg-ic">${sel.e}</span><div><b>${esc(nm)}</b><small>${esc(ds)}</small><span class="pg-dots">${"●".repeat(r)}${"○".repeat(sel.max - r)}</span></div>${btn}</div>`;
+        } else body += `<p class="mk-note sk-tip">${esc(s.tapNode)}</p>`;
       } else if (tab === "ach") {
         body = `<div class="pg-ach">${ACH.map(([id, e, f, goal, [c, st]]) => {
           const v = Math.min(goal, f(world)), done = v >= goal, got = P.claimed["a:" + id];
@@ -164,6 +168,20 @@
         <div class="mk-tabs">${["level", "skills", "album", "ach"].map((id) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${{ level: "⭐", skills: "🌳", album: "📖", ach: "🏆" }[id]}</span>${esc(s.tabs[id])}</button>`).join("")}</div>
         <div class="mk-body">${body}</div>`;
       if (_sc) { const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = _sc; }
+      // the tree's lines: root → each branch's first skill, then skill → skill down the branch (gold once learned)
+      const tree = root.querySelector(".sk-tree");
+      if (tree) {
+        const svg = tree.querySelector(".sk-lines"), T = tree.getBoundingClientRect(), z = T.width / (tree.offsetWidth || T.width) || 1;      // the panel may be scaled with the card
+        const c = (el) => { const r = el.getBoundingClientRect(); return [(r.left + r.width / 2 - T.left) / z, (r.top + r.height / 2 - T.top) / z]; };
+        svg.setAttribute("width", tree.offsetWidth); svg.setAttribute("height", tree.offsetHeight); let d = "";
+        const rootEl = tree.querySelector(".sk-root"), [rx, ry] = c(rootEl);
+        for (const b of Object.keys(SKILLS)) {
+          const nodes = [...tree.querySelectorAll(`.sk-node[data-br="${b}"]`)];
+          nodes.forEach((n, i) => { const [x1, y1] = i ? c(nodes[i - 1]) : [rx, ry], [x2, y2] = c(n), lit = L.sk(SKILLS[b][i].id) > 0;
+            d += `<path d="M${x1} ${y1} C ${x1} ${(y1 + y2) / 2}, ${x2} ${(y1 + y2) / 2}, ${x2} ${y2}" class="${lit ? "lit" : ""}"/>`; });
+        }
+        svg.innerHTML = d;
+      }
       // pictures in the album (silhouettes for what you haven't found yet)
       root.querySelectorAll("canvas[data-f]").forEach((cv) => { DC.furnitureThumb(cv.dataset.f, cv.getContext("2d")); });
       root.querySelectorAll("canvas[data-c]").forEach((cv) => { DC.portrait(cv.getContext("2d"), cv.dataset.c, { scale: 0.75, dx: 1, dy: 2 }); });
@@ -174,6 +192,7 @@
       const b = e.target.closest("button"); if (!b) return;
       if (b.dataset.a === "close") return close();
       if (b.dataset.tab) { tab = b.dataset.tab; key = ""; return render(); }
+      if (b.dataset.node && b.dataset.node !== "root") { skSel = skSel === b.dataset.node ? null : b.dataset.node; key = ""; return render(); }
       if (b.dataset.learn) {
         const id = b.dataset.learn, def = Object.values(SKILLS).flat().find((k) => k.id === id);
         if (L.prog.pts > 0 && L.sk(id) < def.max) { L.prog.pts--; L.prog.skills[id] = L.sk(id) + 1; world.confetti(innerWidth / 2, 140, 16); L.changed(); }

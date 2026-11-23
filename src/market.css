@@ -265,3 +265,24 @@
 .wb-card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; } .wb-card li { padding: 7px 10px; border-radius: 12px; background: #fff; box-shadow: 0 0 0 1.5px rgba(91, 58, 41, .15); }
 .wb-card button { justify-self: center; border: 0; border-radius: 12px; padding: 9px 28px; cursor: pointer; background: #ffd34d; color: #5b3a29; font: 700 15px "Pixelify Sans", monospace; box-shadow: 0 0 0 2px #5b3a29, 0 3px 0 2px #5b3a29; }
 .cc-top { gap: 6px; } .cc-tab.tool { width: 42px; height: 42px; font-size: 19px; }
+.ct-pick button.on { background: #e4f8ee; box-shadow: 0 0 0 2px #2f9e6a, 0 2px 0 2px #2f9e6a; }
+
+/* 🌳 skill tree */
+.sk-tree { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); padding-top: 72px; margin: 6px 0 10px; }
+.sk-lines { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+.sk-lines path { fill: none; stroke: #d9c8bc; stroke-width: 4; stroke-dasharray: 6 5; stroke-linecap: round; }
+.sk-lines path.lit { stroke: #f0b429; stroke-dasharray: none; stroke-width: 5; }
+.sk-root { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; align-content: center; font-size: 22px; background: radial-gradient(circle at 35% 30%, #fff3b0, #ffd34d 60%, #f0a830); box-shadow: 0 0 0 2.5px #5b3a29, 0 3px 0 2.5px #5b3a29; z-index: 1; }
+.sk-root small { font: 700 9px "Pixelify Sans", monospace; margin-top: -2px; }
+.sk-col { display: flex; flex-direction: column; align-items: center; gap: 22px; z-index: 1; }
+.sk-bt { font: 700 11px "Pixelify Sans", monospace; text-align: center; background: #fff7ec; padding: 2px 6px; border-radius: 8px; margin-bottom: -10px; }
+.sk-node { position: relative; width: 52px; height: 52px; border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center; align-content: center; background: #fff; box-shadow: 0 0 0 2.5px #cdbfb6, 0 3px 0 2.5px #cdbfb6; transition: transform .12s; }
+.sk-node span { font-size: 22px; line-height: 1; } .sk-node i { font-style: normal; font-size: 8px; letter-spacing: 1px; color: #e2557a; margin-top: 2px; }
+.sk-node:hover { transform: scale(1.08); }
+.sk-node.locked { opacity: .45; filter: grayscale(.8); }
+.sk-node.ready { box-shadow: 0 0 0 2.5px #e2557a, 0 3px 0 2.5px #e2557a; animation: sk-pulse 1.4s ease-in-out infinite; }
+.sk-node.some { background: #fff7cc; box-shadow: 0 0 0 2.5px #f0b429, 0 3px 0 2.5px #c98a10; }
+.sk-node.max { background: radial-gradient(circle at 35% 30%, #fff3b0, #ffd34d); box-shadow: 0 0 0 2.5px #5b3a29, 0 3px 0 2.5px #5b3a29, 0 0 14px #ffd34d; }
+.sk-node.sel { transform: scale(1.12); outline: 3px solid #8fd0ff; outline-offset: 3px; }
+@keyframes sk-pulse { 50% { box-shadow: 0 0 0 2.5px #e2557a, 0 3px 0 2.5px #e2557a, 0 0 0 7px rgba(226, 85, 122, .18); } }
+.sk-detail { margin-top: 4px; } .sk-tip { text-align: center; }

@@ -89,7 +89,7 @@ You start with one **ginger tabby**. Every other coat (black, white, grey tabby,
 | :-- | :-- |
 | **🪙 Coins** | Earned slowly: tasks (1🪙 each, +3🪙 for all three), the laser hunt (1🪙 for every two stars caught, 25 a day at most) and simply using your computer (1🪙 every 15 active minutes, 20 a day at most). Spent on food, toys and furniture |
 | **⭐ Stars** | Only from finishing all of a cat's tasks, or a laser-hunt score of 20+ (once a day). Spent on the wardrobe |
-| **🧸 Toys** | Bought in the market's 🧸 Toys tab (your first yarn is free) and kept in the inventory, where you take them out, put them away or switch them on. Toys wear out with play and while left out; when one is worn to nothing it's gone and you buy a new one |
+| **🧸 Toys** | Bought in the market's 🧸 Toys tab (your first yarn is free) and kept in the inventory, where you take them out, put them away or switch them on. Toys wear out with play and while left out; when one is worn to nothing it's gone and you buy a new one. Tools (the brush, laser pointer, feather wand and watering can) are bought once and last forever |
 | **🍗 Food** | Dry food (two meals for 10🪙), wet food, fish feasts, treats (they make teaching tricks easier), catnip and cat litter. The bowl only fills from your cupboard |
 | **🥣 Food bowl** | Kept in the inventory: take it out, then fill it from the cupboard (or click the bowl). An empty bowl says so with a little tag; clicking it never sends you shopping. Put it away when you're done; leftover food stays in it |
 | **🎒 Inventory** | Its own panel (🎒 on the card), laid out as icons with a little wear bar: tap one to use it, take it out or put it away. The cupboard (put food in the bowl, drop catnip, clean the litter box) and every piece of furniture: place it, put it away, repair it or sell it |
@@ -143,7 +143,7 @@ Every so often a cat wants something in particular: a fish dinner, its wind-up m
 <img src="docs/garden.png" width="300" alt="The garden: pots with catnip and a sunflower">
 
 A new 🌱 panel on the card:
-- **Garden:** plant catnip (1 h), mint (3 h), strawberries (6 h) or sunflowers (12 h). They grow in real hours, even with the app closed, as long as they're watered (water lasts 6 hours; 12 hours dry and they wilt). Harvests give catnip, coins, special meals and, rarely, a star. Two pots to start, more for coins.
+- **Garden:** buy a watering can (1🪙, unlimited water) and more pots in the market, then plant catnip (1 h), mint (3 h), strawberries (6 h) or sunflowers (12 h). They grow in real hours, even with the app closed, as long as they're watered (water lasts 6 hours; 12 hours dry and they wilt). Harvests give catnip, coins, special meals and, rarely, a star. One pot to start; more from the market.
 - **Feed:** tap one of your cats to post its photo (or use 📸 on its card); it collects likes for a day (more for dressed-up, clean, happy cats and big cats); then you collect coins for them. Three posts a day.
 - **Weekly contest:** beauty, tricks or love, a different one each week. Enter a cat (20🪙); it's judged when the week ends against six rivals. The top three win trophies, coins and stars.
 - **Festivals:** a Winter Fair, Spring Fair, Summer Festival and Halloween, each with things you can only buy while it's on (a snowman, a gift box, tulips, a beach parasol, a ghost, a cauldron and more) and a daily gift.
@@ -165,11 +165,17 @@ Every day you open the app adds to a login streak, with bigger gifts each day an
 
 ![The lion roars](docs/roar.png)
 
+### 🌳 The cat park
+
+![Cats at the park, with strange cats, trees, a bench and a pond](docs/park.png)
+
+From the 🌱 panel's Park tab, take some of your cats out for 30 minutes. Your things stay home and the bottom of the screen turns into a park, with a fence, trees, a bench, a lamp post, flowers and a pond. Strange cats wander in too, and the cats meet, sniff, boop and play. Back home they get the 🤝 Social buff (up to 6 hours): their genes improve twice as fast and they gain love. Once every 3 hours.
+
 ### 🧬 Genes
 
 ![The same coats with poor, average and great genes](docs/genes.png)
 
-Every cat has four genes: shine, colour, pattern and eyes (0–100), and a grade from D to S shown on its card. Great genes give a vivid, glossy coat that glints now and then; poor ones a pale, washed-out cat with faded markings. Kittens take after their parents (with a little luck), strays usually have rough genes, and big cats come with good ones. Genes count in beauty contests and in photo likes, and a cat with good genes earns more modelling.
+Every cat has four genes: shine, colour, pattern and eyes (0–100), and a grade from D to S shown on its card. Genes drift with care, very slowly (like growing up): a loved, fed, clean, healthy cat gains a gene point every couple of hours; a neglected one loses them, and the card shows which way it's going. Kittens of well-cared-for parents are born a little better, of neglected ones a little worse. Great genes give a vivid, glossy coat that glints now and then; poor ones a pale, washed-out cat with faded markings. Kittens take after their parents (with a little luck), strays usually have rough genes, and big cats come with good ones. Genes count in beauty contests and in photo likes, and a cat with good genes earns more modelling.
 
 ### Care: the vet and the bathtub
 
@@ -189,7 +195,7 @@ Cats now chatter at birds with their jaws going, nod off sitting up, wave a paw 
 
 You grow too. Petting, feeding, playing, tasks, tricks, guests and mini games give you XP, and levelling up is slow on purpose (80 × level^1.8 XP for the next one). Every level gives a skill point and coins (and a star every 5 levels), and it opens more: room for more cats (4 at first, 8 at level 13) and pricier furniture in the market.
 
-- **Skill tree:** three branches. 🏨 Hotel (better guest pay, more guest rooms, a better name, VIP guests), 🍗 Care (cats stay full longer, fall ill less, love more, learn tricks easier) and 🛠️ Craft (cheaper repairs, things wear slower, better selling prices, more coins from computer time). Deeper skills open as you spend points in a branch.
+- **Skill tree:** drawn as a real tree, with you at the root and three branches growing down; the lines light up gold as you learn. 🏨 Hotel (better guest pay, more guest rooms, a better name, VIP guests), 🍗 Care (cats stay full longer, fall ill less, love more, learn tricks easier) and 🛠️ Craft (cheaper repairs, things wear slower, better selling prices, more coins from computer time). Deeper skills open as you spend points in a branch.
 - **Album:** every bird you've seen, every cat coat you've had and every piece of furniture you've owned. New entries give XP; a finished page gives stars and coins. The parrot is rare, and the owl only comes at night.
 
 ### 🧳 Guest cats

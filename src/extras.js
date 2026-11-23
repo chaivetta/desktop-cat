@@ -27,11 +27,14 @@
 
   const STR = {
     tr: {
-      title: "Bahçe & Etkinlik", tabs: { garden: "Bahçe", feed: "Akış", contest: "Yarışma", event: "Etkinlik" },
+      title: "Bahçe & Etkinlik", tabs: { garden: "Bahçe", park: "Park", feed: "Akış", contest: "Yarışma", event: "Etkinlik" },
+      parkHint: "Kedilerini 30 dakikalığına parka götür. Eşyalar evde kalır, ekranın altı parka döner; başka kediler de gelir, koklaşıp oynarlar. Dönünce 🤝 Sosyal buff'ı alırlar: genleri iki kat hızlı iyileşir, sevgi kazanırlar. 3 saatte bir gidilebilir.",
+      parkHint2: "Kediler geziniyor, yeni arkadaşlar ediniyor. Ne kadar kalırsanız buff o kadar uzun olur.", parkWho: "Kimler gelsin?", parkGo: (n) => `🌳 Parka git (${n} kedi · 30 dk)`, parkNow: (m) => `Parktasınız! ${m} dk kaldı`,
+      parkLeave: "🏠 Eve dön", parkRest: (m) => `Kediler dinleniyor; ${m} dk sonra yine gidebilirsiniz`, parkBack: (m, h) => `🌳 Parktan döndünüz (${m} dk): 🤝 Sosyal buff'ı ${h} saat, sevgi arttı`,
       crops: { catnip: "Kedi otu", mint: "Nane", strawberry: "Çilek", sunflower: "Ayçiçeği" },
       give: { catnip: "1 kedi nanesi", mint: "18🪙", strawberry: "1 özel yemek", sunflower: "70🪙 (+ nadiren ⭐)" },
       plant: (n, p) => `${n} ek · ${p}🪙`, water: "💧 Sula", harvest: "🧺 Topla", dry: "Kurudu! Sula", dead: "Soldu 🥀 · Temizle", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " sa " : ""}${m % 60} dk`,
-      empty: "Boş saksı", buyPlot: (p) => `🪴 Yeni saksı · ${p}🪙`, gardenHint: "Tohum ek, sula; bitki gerçek saatlerle büyür (uygulama kapalıyken de). Su 6 saat yeter; 12 saat susuz kalırsa solar.",
+      empty: "Boş saksı", shopGarden: (can) => can ? "🪴 Marketten yeni saksı al" : "💧 Önce marketten suluk al (1🪙), 🪴 saksılar da orada", gardenHint: "Tohum ek, suluk ile sula; bitki gerçek saatlerle büyür (uygulama kapalıyken de). Su 6 saat yeter; 12 saat susuz kalırsa solar. Yeni saksıları ve suluğu marketin Oyuncak bölümünden alırsın.",
       harvested: (e, w) => `${e} Hasat: ${w}`,
       feedHint: "Bir kedine dokun, fotoğrafı paylaşılsın (kartındaki 📸 de aynı işi yapar). Fotoğraf bir gün boyunca beğeni toplar, sonra beğenileri altına çevirirsin. Kıyafetli, bakımlı, mutlu ve genleri iyi kediler daha çok beğenilir. Günde en çok 3 paylaşım.", share: "📸 Kimi paylaşalım?", posts: "🖼️ Paylaşımların",
       likes: (n) => `♥ ${n}`, collect: (c) => `Beğenileri topla · ${c}🪙`, collected: "✓ toplandı", noPosts: "Henüz fotoğraf yok. Kedinin kartından 📸 Fotoğraf çek!", today: (n) => `Bugün ${n}/3 paylaşım`,
@@ -45,11 +48,14 @@
       gift: "🎁 Günlük etkinlik hediyesini al", giftTaken: "✓ Bugünün hediyesi alındı", giftGot: (w) => `🎁 Etkinlik hediyesi: ${w}`,
     },
     en: {
-      title: "Garden & Events", tabs: { garden: "Garden", feed: "Feed", contest: "Contest", event: "Event" },
+      title: "Garden & Events", tabs: { garden: "Garden", park: "Park", feed: "Feed", contest: "Contest", event: "Event" },
+      parkHint: "Take your cats to the park for 30 minutes. Your things stay home and the bottom of the screen becomes a park; other cats come too, and they sniff and play. Back home they get the 🤝 Social buff: genes improve twice as fast and they gain love. Once every 3 hours.",
+      parkHint2: "The cats are wandering about and making friends. The longer you stay, the longer the buff.", parkWho: "Who's coming?", parkGo: (n) => `🌳 Go to the park (${n} cats · 30 min)`, parkNow: (m) => `At the park! ${m} min left`,
+      parkLeave: "🏠 Go home", parkRest: (m) => `The cats are resting; you can go again in ${m} min`, parkBack: (m, h) => `🌳 Back from the park (${m} min): 🤝 Social buff for ${h} h, more love`,
       crops: { catnip: "Catnip", mint: "Mint", strawberry: "Strawberry", sunflower: "Sunflower" },
       give: { catnip: "1 catnip", mint: "18🪙", strawberry: "1 special meal", sunflower: "70🪙 (+ rarely ⭐)" },
       plant: (n, p) => `Plant ${n} · ${p}🪙`, water: "💧 Water", harvest: "🧺 Harvest", dry: "Dry! Water it", dead: "Wilted 🥀 · Clear", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " h " : ""}${m % 60} min`,
-      empty: "Empty pot", buyPlot: (p) => `🪴 New pot · ${p}🪙`, gardenHint: "Plant a seed and water it; it grows in real hours (even with the app closed). Water lasts 6 hours; 12 hours dry and it wilts.",
+      empty: "Empty pot", shopGarden: (can) => can ? "🪴 Buy another pot in the market" : "💧 Get a watering can in the market first (1🪙); the 🪴 pots are there too", gardenHint: "Plant a seed and water it with the watering can; it grows in real hours (even with the app closed). Water lasts 6 hours; 12 hours dry and it wilts. New pots and the watering can are in the market's Toys section.",
       harvested: (e, w) => `${e} Harvest: ${w}`,
       feedHint: "Tap one of your cats to post its photo (📸 on its card does the same). A photo gathers likes for a day, then you turn the likes into coins. Dressed-up, clean, happy cats with good genes get more. At most 3 posts a day.", share: "📸 Who shall we post?", posts: "🖼️ Your posts",
       likes: (n) => `♥ ${n}`, collect: (c) => `Collect likes · ${c}🪙`, collected: "✓ collected", noPosts: "No photos yet. Take one with 📸 on a cat's card!", today: (n) => `Today ${n}/3 posts`,
@@ -71,7 +77,7 @@
     const root = document.createElement("div"); root.className = "ui mk ex"; root.hidden = true; document.body.appendChild(root);
     let tab = "garden", key = "", placeT = 0, picking = false;
     const t = () => STR[L.lang] || STR.en;
-    L.extra = Object.assign({ plots: [null, null], posts: [], postDay: "", postN: 0, contest: null, trophies: [], giftDay: "" }, L.extra || {});
+    L.extra = Object.assign({ plots: [null], posts: [], postDay: "", postN: 0, contest: null, trophies: [], giftDay: "" }, L.extra || {});
     const X = () => L.extra;
 
     // ---------------- garden
@@ -90,7 +96,7 @@
       }
     }
     function plant(i, k) { const c = CROPS[k]; if (X().plots[i] || L.wallet.coins < c.seed) return; L.wallet.coins -= c.seed; const now = Date.now(); X().plots[i] = { k, at: now, wateredAt: now, grown: 0, lastT: now }; L.changed(); }
-    function water(i) { const p = X().plots[i]; if (!p || p.dead) return; growGarden(); p.wateredAt = Date.now(); world.burst(innerWidth / 2, 200, "spark", "#6ad0ff", 4); L.changed(); }
+    function water(i) { const p = X().plots[i]; if (!p || p.dead) return; if (!L.hasToy("can")) { o.needCan && o.needCan(); return; } growGarden(); p.wateredAt = Date.now(); world.burst(innerWidth / 2, 200, "spark", "#6ad0ff", 4); L.changed(); }
     function harvest(i) {
       const p = X().plots[i]; if (plotState(p) !== "ready") return; const c = CROPS[p.k], s = t(); let what = [];
       if (c.give.item) { L.pantry[c.give.item] = (L.pantry[c.give.item] || 0) + 1; what.push(L.FOOD[c.give.item].e); }
@@ -138,6 +144,27 @@
     }
     function enter(id) { if (X().contest || L.wallet.coins < 20) return; L.wallet.coins -= 20; X().contest = { week: weekKey(), cat: id }; picking = false; L.changed(); }
 
+    // ---------------- 🌳 the cat park: take some cats out for 30 minutes; meeting other cats gives them the "social" buff
+    const PARK_MIN = 30, PARK_COOL = 3 * H;
+    let parkSel = null;
+    const PK = () => (X().park = X().park || { until: 0, ids: [], at: 0, next: 0 });
+    function goPark(ids) {
+      const S = PK(), now = Date.now(); if (world.park || now < S.next || !ids.length) return;
+      S.at = now; S.until = now + PARK_MIN * 60e3; S.ids = ids; world.enterPark(ids, 3 + Math.floor(Math.random() * 3)); close(); L.changed(); save();
+    }
+    function leavePark() {
+      const S = PK(), now = Date.now(); if (!S.at) return;
+      const mins = Math.max(0, Math.min(PARK_MIN, (Math.min(now, S.until) - S.at) / 60e3)), s = t();
+      if (world.park) world.exitPark();
+      for (const id of S.ids) { const c = world.cats.find((x) => x.profile && x.profile.id === id); if (!c) continue; if (mins >= 3) { L.addBuff(c.profile, "social", Math.min(6, mins / 5)); L.addLove(c, Math.min(15, mins / 2)); } }
+      if (mins >= 3) { if (L.gainPXP) L.gainPXP(Math.round(mins)); L.stats.parks = (L.stats.parks || 0) + 1; toast(s.parkBack(Math.round(mins), Math.min(6, mins / 5).toFixed(1))); }
+      S.at = 0; S.until = 0; S.ids = []; S.next = now + PARK_COOL; L.changed(); save();
+    }
+    world.onSocial = (a, b) => { for (const c of [a, b]) if (c.profile) { L.addLove(c, 1); if (L.gainPXP) L.gainPXP(1); } L.stats.social = (L.stats.social || 0) + 1; };
+    setInterval(() => { const S = PK(); if (S.at && Date.now() >= S.until) leavePark(); }, 5000);
+    // closed the app mid-visit: the visit simply ends (with whatever time was spent)
+    setTimeout(() => { const S = PK(); if (S.at && !world.park) leavePark(); }, 3000);
+
     // ---------------- festival gift
     function gift() {
       const ev = eventNow(), today = new Date().toDateString(); if (!ev || X().giftDay === today) return;
@@ -164,7 +191,7 @@
           const btn = st === "ready" ? `<button type="button" class="gold" data-harvest="${i}">${esc(s.harvest)}</button>` : st === "dead" ? `<button type="button" data-clear="${i}">${esc(s.dead)}</button>` : `<button type="button" class="${st === "dry" ? "gold" : ""}" data-water="${i}">${esc(st === "dry" ? s.dry : s.water)}</button>`;
           const wet = Math.max(0, Math.ceil((p.wateredAt + WATER_FOR - now) / 60e3));
           return `<div class="gd-pot ${st}"><div class="gd-pic${st === "ready" ? " bob" : ""}">${pic}</div><b>${esc(s.crops[p.k])}</b><span class="gd-bar"><i style="width:${pct}%"></i></span><small>${st === "ready" ? "✓" : st === "dead" ? "" : `⏳ ${esc(s.grow(left))} · 💧 ${esc(s.grow(wet))}`}</small>${btn}</div>`;
-        }).join("")}</div>${E.plots.length < PLOT_PRICE.length ? `<button type="button" class="mk-wide" data-plot="1"${L.wallet.coins < PLOT_PRICE[E.plots.length] ? " disabled" : ""}>${esc(s.buyPlot(PLOT_PRICE[E.plots.length]))}</button>` : ""}`;
+        }).join("")}</div><button type="button" class="mk-wide" data-shop="1">${esc(s.shopGarden(L.hasToy("can")))}</button>`;
       } else if (tab === "feed") {
         const today = new Date().toDateString(), n = E.postDay === today ? E.postN : 0;
         const own = world.cats.filter((c) => c.profile && !c.profile.guest && !c.profile.job);
@@ -174,6 +201,15 @@
           const done = now - ps.at >= DAY;
           return `<div class="fd-post"><canvas width="120" height="110" data-post="${ps.id}"></canvas><b>${esc(ps.name)}</b><span class="fd-like">${esc(s.likes(likesOf(ps, now)))}</span>${ps.got ? `<small>${esc(s.collected)}</small>` : done ? `<button type="button" class="gold" data-collect="${ps.id}">${esc(s.collect(payOf(ps)))}</button>` : `<small>⏳ ${esc(s.grow(Math.ceil((ps.at + DAY - now) / 60e3)))}</small>`}</div>`;
         }).join("")}</div>` : `<p class="iv-empty">${esc(s.noPosts)}</p>`);
+      } else if (tab === "park") {
+        const S = PK(), own = world.cats.filter((c) => c.profile && !c.profile.job && !c.npc);
+        if (world.park) body = `<div class="ev-head">🌳<b>${esc(s.parkNow(Math.max(1, Math.ceil((S.until - now) / 60e3))))}</b><small>${esc(s.parkHint2)}</small></div><button type="button" class="mk-wide gold" data-leave="1">${esc(s.parkLeave)}</button>`;
+        else if (now < S.next) body = `<div class="ev-head">🌳<b>${esc(s.parkRest(Math.ceil((S.next - now) / 60e3)))}</b></div><p class="mk-note">${esc(s.parkHint)}</p>`;
+        else {
+          if (!parkSel) parkSel = new Set(own.map((c) => c.profile.id));
+          body = `<p class="mk-note">${esc(s.parkHint)}</p><h4 class="mk-h">${esc(s.parkWho)}</h4><div class="ct-pick">${own.map((c) => `<button type="button" class="${parkSel.has(c.profile.id) ? "on" : ""}" data-ptog="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}" data-g="${c.profile.id}"></canvas>${esc(c.profile.name)}${parkSel.has(c.profile.id) ? " ✓" : ""}</button>`).join("")}</div>
+            <button type="button" class="mk-wide gold" data-gopark="1"${parkSel.size ? "" : " disabled"}>${esc(s.parkGo(parkSel.size))}</button>`;
+        }
       } else if (tab === "contest") {
         const kind = contestKind(wk), C = E.contest && E.contest.week === wk ? E.contest : null, mine = C && world.cats.find((c) => c.profile && c.profile.id === C.cat);
         const d = new Date(), daysLeft = 7 - ((d.getDay() + 6) % 7);
@@ -195,7 +231,7 @@
       }
       const _body = root.querySelector(".mk-body"), _sc = _body && root.dataset.tab === String(tab) ? _body.scrollTop : 0; root.dataset.tab = String(tab);
       root.innerHTML = `<div class="mk-head"><b>🌱 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">🪙 ${L.wallet.coins}</span><span class="star">⭐ ${L.wallet.stars}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
-        <div class="mk-tabs">${["garden", "feed", "contest", "event"].map((id) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${{ garden: "🌱", feed: "📸", contest: "🏆", event: eventNow() ? eventNow().e : "📅" }[id]}</span>${esc(s.tabs[id])}</button>`).join("")}</div>
+        <div class="mk-tabs">${["garden", "park", "feed", "contest", "event"].map((id) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${{ garden: "🌱", park: "🌳", feed: "📸", contest: "🏆", event: eventNow() ? eventNow().e : "📅" }[id]}</span>${esc(s.tabs[id])}</button>`).join("")}</div>
         <div class="mk-body">${body}</div>`;
       if (_sc) { const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = _sc; }
       root.querySelectorAll("canvas[data-post]").forEach((cv) => { const ps = E.posts.find((x) => x.id === cv.dataset.post); if (!ps) return; const g = cv.getContext("2d"); g.fillStyle = ["#ffe1ea", "#dff3ff", "#fff1b8", "#e4f8ee", "#f1e4ff"][hash(ps.id) % 5]; g.fillRect(0, 0, 120, 110); DC.portrait(g, ps.coat, { scale: 2, dx: 0, dy: 6, pose: ps.pose, acc: ps.acc, genes: ps.genes, t: 0.4 }); });
@@ -211,11 +247,15 @@
       else if (d.water) water(+d.water);
       else if (d.harvest) harvest(+d.harvest);
       else if (d.clear) { X().plots[+d.clear] = null; L.changed(); }
+      else if (d.shop) { close(); o.openShop && o.openShop(); return; }
       else if (d.plot) { const p = PLOT_PRICE[X().plots.length]; if (L.wallet.coins >= p) { L.wallet.coins -= p; X().plots.push(null); L.changed(); } }
       else if (d.collect) collect(d.collect);
       else if (d.pick) picking = true;
       else if (d.enter) enter(d.enter);
       else if (d.gift) gift();
+      else if (d.ptog) { if (!parkSel) parkSel = new Set(); parkSel.has(d.ptog) ? parkSel.delete(d.ptog) : parkSel.add(d.ptog); }
+      else if (d.gopark) { goPark([...(parkSel || [])]); parkSel = null; return; }
+      else if (d.leave) leavePark();
       else if (d.share) { const c = world.cats.find((x) => x.profile && x.profile.id === d.share); if (c) { L.care(c, "photo"); L.remember(c.profile, "photo"); world.burst(c.x, c.y - 40 * c.s, "spark", "#fff", 6); } }
       key = ""; render(); save();
     });
@@ -230,7 +270,7 @@
     // background: the garden keeps growing, contests get judged
     setInterval(() => { growGarden(); judge(); }, 60e3); setTimeout(() => { growGarden(); judge(); }, 7000);
     const readyCount = () => { growGarden(); return X().plots.filter((p) => plotState(p) === "ready").length; };
-    return { open, close, get isOpen() { return !root.hidden; }, t, readyCount, eventNow, EVENTS, judge, contestKind, scoreOf, standing };
+    return { open, close, get isOpen() { return !root.hidden; }, t, readyCount, eventNow, EVENTS, judge, contestKind, scoreOf, standing, goPark, leavePark };
   }
   window.CatExtras = { create, eventNow, EVENTS };
 })();

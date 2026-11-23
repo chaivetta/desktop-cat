@@ -3,10 +3,11 @@
   const STR = {
     tr: {
       bowlN: "Mama kabı", bowlD: "Önce ortaya çıkar, sonra dolaptan mamayı koy. İşin bitince envantere geri koyabilirsin.", fillBowl: (n) => `Mamayı koy (${n} öğün)`, noMeal: "Dolapta mama yok",
+      forever: "✨ Bir kere al, sonsuza kadar", inGarden: "Bahçede kullanılır 🌱", potN: "Saksı", potD: "Bahçene yeni bir saksı (🌱 Bahçe & Etkinlik). En çok 6.", potHave: (n) => `${n} saksın var`,
       pickOne: "Bir şeye dokun: ne yapabileceğin burada çıkar 👆", stow: "🎒 Envantere koy", noFood: "Dolap boş. Marketten mama alabilirsin.", noToys: "Oyuncağın yok. Marketten alabilirsin.",
       toyNote: "Oyuncaklar envantere gelir; oradan çıkarır ya da geri koyarsın. Oynadıkça (ve dışarıda kaldıkça) eskir, bitince yenisini alman gerekir.", inInv: (c) => `🎒 Envanterde · %${c}`, again: "Bir daha",
       catsT: "Kediler", toysT: "Oyuncak", posts: "gönderi", atHome: "evde", price: "fiyat", free: "Ücretsiz", unlocked: "Açık",
-      adopt: "🐾 Yavrusunu sahiplen", adoptFree: "🐾 İlk kedin, ücretsiz sahiplen", adoptStar: (n) => `🐾 Sahiplen · ⭐${n}`, needStar: "Sahiplenmek için ⭐1 lazım", unlock: (n) => `🔒 Kilidi aç ⭐ ${n}`, needStars: (n) => `⭐ ${n} yıldız daha lazım`, full: (n) => `Evin dolu (şu an en çok ${n} kedi; seviye atladıkça artar)`,
+      adoptCost: "sahiplenme", unlockCost: "kilidi açmak", adopt: "🐾 Yavrusunu sahiplen", adoptFree: "🐾 İlk kedin, ücretsiz sahiplen", adoptStar: (n) => `🐾 Sahiplen · ⭐${n}`, needStar: "Sahiplenmek için ⭐1 lazım", unlock: (n) => `🔒 Kilidi aç ⭐ ${n}`, needStars: (n) => `⭐ ${n} yıldız daha lazım`, full: (n) => `Evin dolu (şu an en çok ${n} kedi; seviye atladıkça artar)`,
       catsNote: "İlk kedin Sarman, ücretsiz. Diğer cinslerin kilidi yıldızla bir kez açılır; sonraki her sahiplenme ⭐1. 👑 işaretliler büyük kediler: nadir, pahalı ve kocaman.",
       unlockedMsg: (n) => `🎉 ${n} artık seninle! Sahiplenebilirsin`,
       bios: { cream: "Krem rengi tekir, yumuşacık ve sakin 🍦", chocolate: "Bitter çikolata rengi, tatlı mı tatlı 🍫", russian: "Gümüşümsü mavi tüyler, yeşil gözler, biraz utangaç 💚",
@@ -15,7 +16,7 @@
         cheetah: "👑 En hızlı koşucu; benekli, ince uzun bir yıldırım", puma: "👑 Dağların sessiz avcısı, düz kahverengi tüylü", leopard: "👑 Gül desenli benekleriyle görkemli", snowleo: "👑 Karlı dağların hayaleti, gri gül benekli",
         panther: "👑 Gece gibi kara, parlayan yeşil gözler", tiger: "👑 Simsiyah çizgili, kocaman turuncu kaplan", lion: "👑 Yelesiyle evin kralı; herkesten büyük",
         ginger: "Turuncu çizgili, mama düşkünü, en tatlı başlangıç 🧡", black: "Gece kadar kara, sarı gözlü, sessiz ama hep yanında 🌙", white: "Bembeyaz pamuk, mavi gözlü, biraz nazlı ☁️", grey: "Gri tekir, meraklı ve oyunbaz 🐾", tuxedo: "Smokinli beyefendi, her an bir davete hazır 🎩", calico: "Üç renkli şans kedisi, karakteri güçlü 🍀", siamese: "Siyam: konuşkan, mavi gözlü, ilgi ister 💙" },
-      caps: ["merhaba 👋", "uyku vakti 💤", "ekmek modu 🍞", "gerin gerin", "temizlik 🫧", "göbek göster 😹"],
+      caps: ["merhaba 👋", "uyku vakti 💤", "oynayalım mı? 🎾", "parti! 🎉", "göbek göster 😹", "kuş gördüm 🐦", "kurbağa modu 🐸", "esneme 🥱", "bere günü 🧶"],
       toyPlay: "Çıkar", toyOn: "Aç", toyOff: "Kapat", onCard: "Kartta kullanılır", clearToys: "🧺 Oyuncakları topla", yarnFree: "Ücretsiz",
       title: "Market", food: "Mama", furniture: "Eşyalar", mine: "Envanter", earn: "Kazan", luck: "Şans",
       pantryH: "Dolap", thingsH: "Eşyalar", use: { catnip: "Yere at", litter: "Kum kabını temizle", medicine: "Karttaki kediye ver", shampoo: "Karttaki kediyi yıka" }, useMeal: "Kaba koy",
@@ -26,8 +27,8 @@
       prize: { nothing: "Bu sefer boş çıktı 🙈", coins: (n) => `${n} altın kazandın! 🪙`, star: "Bir yıldız! ⭐", food: (e, nm, n) => `${e} ${nm} (×${n}) dolaba eklendi`, furniture: (nm) => `🎉 İnanılmaz! Bir ${nm} kazandın, envanterde`, cloth: (nm) => `👑 Efsane! Yeni bir model açıldı: ${nm}` },
       seg: { nothing: "Boş", furniture: "Eşya", cloth: "Kıyafet", star: "Yıldız" },
       toysH: "Oyuncaklar", homeH: "Ev eşyaları", ownedToy: "Senin ✓",
-      toyE: { yarn: "🧶", mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
-      toys: { yarn: ["Yumak", "Fırlat, yakalasınlar. Yumağı ya da ipini tutup sallayabilirsin"], brush: ["Kedi fırçası", "Kartta 'Tara' ile kedini tararsın; temizlik ve sevgi"], mouse: ["Kurmalı fare", "Kurunca koşturur, kediler avlar"], box: ["Karton kutu", "İçine girip saklanırlar"], butterfly: ["Kelebek", "Uçuşur, kediler peşinden koşar"],
+      toyE: { can: "💧", yarn: "🧶", mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
+      toys: { can: ["Suluk", "Bahçeyi sulamak için. Bir kere al, su sınırsız ✨"], yarn: ["Yumak", "Fırlat, yakalasınlar. Yumağı ya da ipini tutup sallayabilirsin"], brush: ["Kedi fırçası", "Kartta 'Tara' ile kedini tararsın; temizlik ve sevgi"], mouse: ["Kurmalı fare", "Kurunca koşturur, kediler avlar"], box: ["Karton kutu", "İçine girip saklanırlar"], butterfly: ["Kelebek", "Uçuşur, kediler peşinden koşar"],
         wand: ["Tüylü olta", "Farenle sallarsın, zıplayıp yakalamaya çalışırlar"], post: ["Tırmalama direği", "Tırnaklarını biler"], shelf: ["Duvar rafı", "Yükseğe zıplayıp otururlar"],
         laser: ["Lazer", "Kırmızı noktayı kovalarlar. Lazer avı oyunu için gerekli"] },
       coins: (n) => `🪙 ${n}`, stars: (n) => `⭐ ${n}`, buy: (n) => `🪙 ${n}`, inStock: (n) => `Dolapta: ${n}`, owned: (n) => `${n} tane var`,
@@ -63,10 +64,11 @@
     },
     en: {
       bowlN: "Food bowl", bowlD: "Take it out first, then put food in it from the cupboard. Put it away when you're done.", fillBowl: (n) => `Fill it (${n} meals)`, noMeal: "No food in the cupboard",
+      forever: "✨ Buy once, keep forever", inGarden: "Used in the garden 🌱", potN: "Plant pot", potD: "One more pot for your garden (🌱 Garden & Events). Six at most.", potHave: (n) => `you have ${n}`,
       pickOne: "Tap something to see what you can do with it 👆", stow: "🎒 Put away", noFood: "The cupboard is empty. Buy food in the market.", noToys: "No toys yet. Buy some in the market.",
       toyNote: "Toys go to your inventory, where you take them out or put them away. They wear out with play (and while left out); when one's gone you'll need a new one.", inInv: (c) => `🎒 In inventory · ${c}%`, again: "Again",
       catsT: "Cats", toysT: "Toys", posts: "posts", atHome: "at home", price: "price", free: "Free", unlocked: "Unlocked",
-      adopt: "🐾 Adopt a kitten", adoptFree: "🐾 Your first cat, free", adoptStar: (n) => `🐾 Adopt · ⭐${n}`, needStar: "You need ⭐1 to adopt", unlock: (n) => `🔒 Unlock for ⭐ ${n}`, needStars: (n) => `⭐ ${n} more stars needed`, full: (n) => `Your home is full (${n} cats for now; more as you level up)`,
+      adoptCost: "to adopt", unlockCost: "to unlock", adopt: "🐾 Adopt a kitten", adoptFree: "🐾 Your first cat, free", adoptStar: (n) => `🐾 Adopt · ⭐${n}`, needStar: "You need ⭐1 to adopt", unlock: (n) => `🔒 Unlock for ⭐ ${n}`, needStars: (n) => `⭐ ${n} more stars needed`, full: (n) => `Your home is full (${n} cats for now; more as you level up)`,
       catsNote: "Your first cat, the ginger tabby, is free. Other coats are unlocked once with stars; every adoption after the first costs ⭐1. The 👑 ones are big cats: rare, pricey and huge.",
       unlockedMsg: (n) => `🎉 ${n} is yours! You can adopt one now`,
       bios: { cream: "A soft, calm cream tabby 🍦", chocolate: "Dark chocolate brown and very sweet 🍫", russian: "Silvery blue coat, green eyes, a little shy 💚",
@@ -75,7 +77,7 @@
         cheetah: "👑 The fastest runner: spotted, long and lean", puma: "👑 The quiet hunter of the mountains, plain tawny coat", leopard: "👑 Grand, with rosette spots", snowleo: "👑 Ghost of the snowy mountains, grey rosettes",
         panther: "👑 Black as night, glowing green eyes", tiger: "👑 A huge orange tiger with jet black stripes", lion: "👑 King of the house with a great mane; bigger than all",
         ginger: "Orange stripes, loves food, the sweetest start 🧡", black: "Black as night, yellow eyes, quiet but always near 🌙", white: "Soft as cotton, blue eyes, a little fussy ☁️", grey: "Grey tabby, curious and playful 🐾", tuxedo: "A gentleman in a tux, always ready for a party 🎩", calico: "Lucky three-colour cat with lots of character 🍀", siamese: "Siamese: chatty, blue-eyed, wants attention 💙" },
-      caps: ["hello 👋", "nap time 💤", "loaf mode 🍞", "big stretch", "bath time 🫧", "belly up 😹"],
+      caps: ["hello 👋", "nap time 💤", "wanna play? 🎾", "party! 🎉", "belly up 😹", "saw a bird 🐦", "frog mode 🐸", "big yawn 🥱", "beanie day 🧶"],
       toyPlay: "Take out", toyOn: "On", toyOff: "Off", onCard: "Used from the card", clearToys: "🧺 Put toys away", yarnFree: "Free",
       title: "Market", food: "Food", furniture: "Furniture", mine: "Inventory", earn: "Earn", luck: "Luck",
       pantryH: "Cupboard", thingsH: "Things", use: { catnip: "Drop it", litter: "Clean the litter box", medicine: "Give to the open card's cat", shampoo: "Bath the open card's cat" }, useMeal: "Fill the bowl",
@@ -86,8 +88,8 @@
       prize: { nothing: "Nothing this time 🙈", coins: (n) => `You won ${n} coins! 🪙`, star: "A star! ⭐", food: (e, nm, n) => `${e} ${nm} (×${n}) added to the cupboard`, furniture: (nm) => `🎉 Amazing! You won a ${nm}, it's in your inventory`, cloth: (nm) => `👑 Legendary! A new design unlocked: ${nm}` },
       seg: { nothing: "Nothing", furniture: "Furniture", cloth: "Outfit", star: "Star" },
       toysH: "Toys", homeH: "Furniture", ownedToy: "Yours ✓",
-      toyE: { yarn: "🧶", mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
-      toys: { yarn: ["Yarn", "Throw it for them, or swing it by the ball or the string"], brush: ["Cat brush", "Brush your cat from its card: cleaner and happier"], mouse: ["Wind-up mouse", "Scurries about; the cats hunt it"], box: ["Cardboard box", "They climb in and hide"], butterfly: ["Butterfly", "Flutters about; the cats chase it"],
+      toyE: { can: "💧", yarn: "🧶", mouse: "🐭", box: "📦", butterfly: "🦋", wand: "🪶", post: "🪵", shelf: "🪜", laser: "🔴", brush: "🪮" },
+      toys: { can: ["Watering can", "For watering the garden. Buy it once; the water never runs out ✨"], yarn: ["Yarn", "Throw it for them, or swing it by the ball or the string"], brush: ["Cat brush", "Brush your cat from its card: cleaner and happier"], mouse: ["Wind-up mouse", "Scurries about; the cats hunt it"], box: ["Cardboard box", "They climb in and hide"], butterfly: ["Butterfly", "Flutters about; the cats chase it"],
         wand: ["Feather wand", "Swing it with your mouse; they leap for it"], post: ["Scratching post", "For sharpening claws"], shelf: ["Wall shelf", "They leap up and lounge on it"],
         laser: ["Laser pointer", "They chase the red dot. Needed for the laser hunt"] },
       coins: (n) => `🪙 ${n}`, stars: (n) => `⭐ ${n}`, buy: (n) => `🪙 ${n}`, inStock: (n) => `In the cupboard: ${n}`, owned: (n) => `you own ${n}`,
@@ -157,20 +159,21 @@
         // toys are bought here and live in the inventory (🎒), where you take them out or put them away; they wear out with play
         body = `<p class="mk-note">${esc(s.toyNote)}</p><div class="mk-grid">${Object.keys(L.TOY_PRICES).map((k) => { const price = L.TOY_PRICES[k], own = L.toys.includes(k), [nm, ds] = s.toys[k];
             const btn = own ? `<span class="mk-have">✓</span>` : `<button type="button" class="mk-buy" data-toy="${k}"${L.wallet.coins < price ? " disabled" : ""}>${s.buy(price)}</button>`;
-            return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? s.inInv(L.toyCondOf(k)) : "", btn); }).join("")}</div>`;
+            return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? (L.TOOLS.includes(k) ? s.forever : s.inInv(L.toyCondOf(k))) : L.TOOLS.includes(k) ? s.forever : "", btn); }).join("")}
+            ${(() => { const n = (L.extra && L.extra.plots ? L.extra.plots.length : 1), p = L.POT_PRICES[n - 1]; return card(`<div class="mk-emo">🪴</div>`, s.potN, s.potD, s.potHave(n), p ? `<button type="button" class="mk-buy" data-pot="1"${L.wallet.coins < p ? " disabled" : ""}>${s.buy(p)}</button>` : `<span class="mk-have">✓</span>`); })()}</div>`;
       } else if (tab === "furniture") {
         body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${(() => { const ev = window.CatExtras && window.CatExtras.eventNow(); return Object.entries(DC.FURN).filter(([, d]) => !d.event || (ev && ev.id === d.event)).sort((a, b) => (b[1].event ? 1 : 0) - (a[1].event ? 1 : 0)); })().map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
           return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", (L.furnLevel && L.prog.lvl < L.furnLevel(d.price) ? `<button type="button" class="mk-buy" disabled>🔒 ${L.lang === "tr" ? "Sv." : "Lv."} ${L.furnLevel(d.price)}</button>` : `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`)); }).join("")}</div>`;
       } else if (tab === "mine") {
         // icons in a grid: food, toys and things; tap one to see what you can do with it
         const foods = Object.keys(L.FOOD).filter((f) => (L.pantry[f] || 0) > 0), toys = L.toys.filter((k) => s.toys[k]), items = H.items;
-        const bar = (c) => `<span class="iv-bar"><i style="--c:${c}%;--h:${Math.round(c * 1.2)}"></i></span>`;
+        const bar = (c) => c >= 100 && false ? "" : `<span class="iv-bar"><i style="--c:${c}%;--h:${Math.round(c * 1.2)}"></i></span>`;
         const tile = (id, pic, badge, extra, out) => `<button type="button" class="iv-tile${sel === id ? " sel" : ""}${out ? " out" : ""}" data-sel="${id}">${pic}${badge ? `<b class="iv-n">${badge}</b>` : ""}${extra}</button>`;
         const grid = (h, list, empty) => `<h4 class="mk-h">${h}</h4>${list.length ? `<div class="iv-grid">${list.join("")}</div>` : `<p class="iv-empty">${esc(empty)}</p>`}`;
         if (!sel || !(sel === "b:bowl" || (sel.startsWith("f:") && foods.includes(sel.slice(2))) || (sel.startsWith("t:") && toys.includes(sel.slice(2))) || (sel.startsWith("i:") && items.some((i) => i.id === sel.slice(2))))) sel = "";
         body = `<div class="iv-detail">${detail(s)}</div>`
           + grid(`🧺 ${esc(s.pantryH)}`, foods.map((f) => tile("f:" + f, `<span class="iv-e">${L.FOOD[f].e}</span>`, "×" + L.pantry[f], "", false)), s.noFood)
-          + grid(`🧸 ${esc(s.toysH)}`, toys.map((k) => tile("t:" + k, `<span class="iv-e">${s.toyE[k]}</span>`, "", bar(L.toyCondOf(k)), o.toyOn && o.toyOn(k))), s.noToys)
+          + grid(`🧸 ${esc(s.toysH)}`, toys.map((k) => tile("t:" + k, `<span class="iv-e">${s.toyE[k]}</span>`, L.TOOLS.includes(k) ? "∞" : "", L.TOOLS.includes(k) ? "" : bar(L.toyCondOf(k)), o.toyOn && o.toyOn(k))), s.noToys)
           + grid(`🛋️ ${esc(s.thingsH)}`, [tile("b:bowl", `<span class="iv-e">🥣</span>`, "", "", o.bowl && o.bowl().out())].concat(items.map((it) => { if (DC.FURN[it.k].durable) it.cond = 100; return tile("i:" + it.id, `<canvas width="56" height="42" data-f="${it.k}"></canvas>`, "", DC.FURN[it.k].durable ? "" : bar(Math.round(it.cond)), it.x != null); })), s.noItems)
           + `<div class="iv-foot"><button type="button" class="mk-wide" data-clear="1">${esc(s.clearToys)}</button><small>${esc(s.wearNote)}</small></div>`;
       } else if (tab === "luck") {
@@ -198,7 +201,9 @@
       if (tab === "cats") drawCats();
     }
     // 🐱 the cats, like a little photo profile each: a round picture, a bio, and a grid of "posts"
-    const POSTS = [["sit", "#ffe1ea"], ["sleep", "#dff3ff"], ["loaf", "#fff1b8"], ["stretch", "#e4f8ee"], ["groom", "#f1e4ff"], ["bellyUp", "#ffe9d6"]];
+    // nine different poses for the profile grid, each with its own little extra (a hat, a toy) so no two look alike
+    const POSTS = [["wave", "#ffe1ea", {}], ["sleep", "#dff3ff", {}], ["playBow", "#fff1b8", {}], ["meerkat", "#e4f8ee", { hat: "party:candy" }], ["bellyUp", "#ffe9d6", {}],
+      ["chatter", "#e8f1fb", {}], ["sploot", "#f1e4ff", { collar: "bowtie:cherry" }], ["yawn", "#fff7cc", {}], ["loaf", "#ffe1ea", { hat: "beanie:ocean" }]];
     const likes = (c, i) => { let h = 2166136261; for (const ch of c + "#" + i) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return 60 + ((h >>> 0) % 900); };
     function catsTab(s) {
       const DCk = DC.COAT_KEYS, c = coatSel, own = L.hasCoat(c), price = L.COAT_PRICES[c] || 0, nm = L.COAT_NAMES[c][L.lang];
@@ -211,7 +216,7 @@
       return `<div class="ig-stories">${DCk.map((k) => `<button type="button" class="ig-st${k === c ? " sel" : ""}${L.hasCoat(k) ? "" : " locked"}${L.WILD.includes(k) ? " wild" : ""}" data-coat="${k}"><span class="ig-ring"><canvas width="52" height="52" data-av="${k}"></canvas></span><small>${esc(L.COAT_NAMES[k][L.lang])}</small></button>`).join("")}</div>
         <div class="ig-prof">
           <div class="ig-top"><span class="ig-ring big${own ? "" : " locked"}"><canvas width="84" height="84" data-av="${c}"></canvas></span>
-            <div class="ig-stats"><div><b>${POSTS.length}</b><small>${esc(s.posts)}</small></div><div><b>${home}</b><small>${esc(s.atHome)}</small></div><div><b>${!price ? esc(s.free) : own ? "✓" : "⭐" + price}</b><small>${esc(!price || !own ? s.price : s.unlocked)}</small></div></div></div>
+            <div class="ig-stats"><div><b>${POSTS.length}</b><small>${esc(s.posts)}</small></div><div><b>${home}</b><small>${esc(s.atHome)}</small></div><div><b>${own ? (o.catCount && o.catCount() === 0 ? esc(s.free) : "⭐" + L.ADOPT_STARS) : "⭐" + price}</b><small>${esc(own ? s.adoptCost : s.unlockCost)}</small></div></div></div>
           <b class="ig-name">${esc(nm)}</b><small class="ig-handle">${esc(handle)}</small>
           <p class="ig-bio">${esc(s.bios[c] || "")}</p>
           ${btn}
@@ -221,7 +226,7 @@
     }
     function drawCats() {
       root.querySelectorAll("canvas[data-av]").forEach((cv) => { const g = cv.getContext("2d"), k = cv.width / 52; DC.portrait(g, cv.dataset.av, { scale: k > 1.3 ? 1.5 : 1, dx: 2, dy: 3 }); });
-      root.querySelectorAll("canvas[data-post]").forEach((cv, i) => { const g = cv.getContext("2d"); g.fillStyle = "rgba(91,58,41,.08)"; g.fillRect(0, 96, 120, 24); DC.portrait(g, coatSel, { scale: 2, dx: 0, dy: 6, pose: cv.dataset.post, t: 0.4, blink: cv.dataset.post === "sleep" }); });
+      root.querySelectorAll("canvas[data-post]").forEach((cv, i) => { const g = cv.getContext("2d"); g.fillStyle = "rgba(91,58,41,.08)"; g.fillRect(0, 96, 120, 24); const P = POSTS.find((x) => x[0] === cv.dataset.post); DC.portrait(g, coatSel, { scale: 2, dx: 0, dy: 6, pose: cv.dataset.post, t: 1.3, acc: P ? P[2] : {}, genes: { shine: 80, tone: 75, pattern: 75, eyes: 80 } }); });
     }
     // what you can do with the selected thing
     function detail(s) {
@@ -242,9 +247,10 @@
         const k = id, out = o.toyOn && o.toyOn(k), c = L.toyCondOf(k), [nm, ds] = s.toys[k];
         let btns;
         if (k === "brush") btns = `<small class="mk-tn">${esc(s.onCard)}</small>`;
+        else if (k === "can") btns = `<small class="mk-tn">${esc(s.inGarden)}</small>`;
         else if (k === "laser" || k === "wand") btns = `<button type="button" class="${out ? "" : "gold"}" data-play="${k}">${esc(out ? s.toyOff : s.toyOn)}</button>`;
         else btns = out ? `<button type="button" data-stow="${k}">${esc(s.stow)}</button><button type="button" class="gold" data-play="${k}">${esc(s.again)}</button>` : `<button type="button" class="gold" data-play="${k}">${esc(s.toyPlay)}</button>`;
-        return head(`<span class="iv-e big">${s.toyE[k]}</span>`, nm, `${esc(out ? s.out : s.stored)} · ${esc(s.cond)} ${c}%${c < 30 ? ` · <em>${esc(s.worn)}</em>` : ""}<br>${esc(ds)}`) + `<div class="iv-acts">${btns}</div>`;
+        return head(`<span class="iv-e big">${s.toyE[k]}</span>`, nm, `${L.TOOLS.includes(k) ? esc(s.forever) : `${esc(out ? s.out : s.stored)} · ${esc(s.cond)} ${c}%${c < 30 ? ` · <em>${esc(s.worn)}</em>` : ""}`}<br>${esc(ds)}`) + `<div class="iv-acts">${btns}</div>`;
       }
       const it = L.home.items.find((i) => i.id === id), [nm, ds] = L.t("furn")[it.k], dur = DC.FURN[it.k].durable, c = Math.round(it.cond), lab = condLabel(it, s), rc = repairCost(it);
       return head(`<canvas width="64" height="48" data-f="${it.k}"></canvas>`, nm, `${esc(it.x != null ? s.out : s.stored)}${dur ? ` · ✨ ${esc(s.durable)}` : ` · ${esc(s.cond)} ${c}%`}${lab ? ` · <em>${esc(lab)}</em>` : ""}<br>${esc(ds)}`)
@@ -334,6 +340,7 @@
       if (b.dataset.sel) { sel = sel === b.dataset.sel ? "" : b.dataset.sel; key = ""; return render(); }
       if (b.dataset.bowl) { const B = o.bowl(); B[b.dataset.bowl](); pop(b, "🥣"); key = ""; return render(); }
       if (b.dataset.stow) { o.storeToy && o.storeToy(b.dataset.stow); pop(b, "🎒"); key = ""; return render(); }
+      if (b.dataset.pot) { const n = L.extra.plots.length, p = L.POT_PRICES[n - 1]; if (p && L.wallet.coins >= p) { L.wallet.coins -= p; L.extra.plots.push(null); pop(b, "🪴"); L.changed(); } key = ""; return render(); }
       if (b.dataset.coat) { coatSel = b.dataset.coat; key = ""; return render(); }
       if (b.dataset.unlock) { if (L.buyCoat(b.dataset.unlock)) { note = t().unlockedMsg(L.COAT_NAMES[b.dataset.unlock][L.lang]); world.confetti(innerWidth / 2, 140, 40); } key = ""; return render(); }
       if (b.dataset.adopt) { o.adopt && o.adopt(b.dataset.adopt); return; }

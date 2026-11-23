@@ -128,7 +128,10 @@
     caviar:   { e: "🫙", price: 60, n: 1, meal: true, buff: ["royal", 12], love: 10 },
   };
   // buffs from special meals: what each one does is checked where it matters
-  const BUFFS = { full: "🍽️", glow: "💖", grow: "🌱", healthy: "🛡️", energy: "⚡", calm: "🕊️", shiny: "✨", smart: "🧠", lucky: "🍀", sleepy: "💤", royal: "👑" };
+  const BUFFS = { full: "🍽️", glow: "💖", grow: "🌱", healthy: "🛡️", energy: "⚡", calm: "🕊️", shiny: "✨", smart: "🧠", lucky: "🍀", sleepy: "💤", royal: "👑", social: "🤝" };
+  // genes drift with care, very slowly: a well-loved, fed, clean, healthy cat gains a gene point every couple of hours the app is open;
+  // a neglected one loses one a little faster. The park's "social" buff doubles the gain.
+  const GENE_UP = 1 / 7200, GENE_DOWN = 1 / 5400;
   // sickness and cleanliness: a cat can catch something (hungry, dirty or near a dirty litter box makes it likelier);
   // a sick cat doesn't grow and loses love faster until it gets medicine (or a healing meal)
   const SICK_PER_HOUR = 0.012, CLEAN_FADE_PER_DAY = 6;
@@ -213,11 +216,11 @@
         tunnel: ["Kedi tüneli", "İçinden koşa koşa geçer, saklanır"], fountain: ["Su çeşmesi", "Taze su; kediler gelip içer"], litter: ["Kum kabı", "Temiz tutarsan kediler daha mutlu; kirlenince tıkla, temizle"], bed: ["Kedi yatağı", "Yumuşacık, içinde kıvrılıp uyur"], house: ["Kedi kulübesi", "İçine girip saklanarak uyur"], rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
         tree: ["Kedi ağacı", "İki katlı, tepesine tırmanır"], aquarium: ["Akvaryum", "Balıkları izler, cama pati atar"] },
       game: "Lazer avı", gameHelp: "30 saniye: lazerle kedileri parlayan yıldızlara götür!", again: "Tekrar oyna", closeB: "Kapat",
-      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", genesT: "Genler", geneN: { shine: "Parlaklık", tone: "Renk", pattern: "Desen", eyes: "Gözler" }, geneHint: "İyi genler tüyü parlak ve canlı, kötüler soluk yapar. Güzellik yarışmasında ve beğenilerde işe yarar; yavrular anne babasına çeker.",
+      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", geneTrend: { 1: "📈 İyi bakılıyor: genleri çok yavaş iyileşiyor (parkta iki kat hızlı)", 0: "➖ Genleri şimdilik değişmiyor; sevgi, mama ve temizlikle iyileşir", "-1": "📉 İhmal ediliyor: genleri yavaşça kötüleşiyor" }, genesT: "Genler", geneN: { shine: "Parlaklık", tone: "Renk", pattern: "Desen", eyes: "Gözler" }, geneHint: "İyi genler tüyü parlak ve canlı, kötüler soluk yapar. Güzellik yarışmasında ve beğenilerde işe yarar; yavrular anne babasına çeker.",
       settings: "Ayarlar", games: "Oyunlar", inventory: "Envanter", progress: "Gelişim", extras: "Bahçe & Etkinlik", bestL: (n) => `Rekor: ${n}`,
       sexF: "♀ Dişi", sexM: "♂ Erkek", sickL: "🤒 Hasta: ilaç ver ya da iyileştiren bir mama", grubby: "🫧 Çok kirli: tara ya da yıka",
       care: "Bakım", vetB: (n) => `🩺 Veteriner · ${n}🪙`, vetWait: "Veteriner yakın zamanda baktı", tubB: "🛁 Küvette yıka", tubWait: "Küvet daha kurumadı (3 saatte bir)", brushB: "🪮 Tara", bathB: "🛁 Yıka", medB: "💊 İlaç ver", cleanL: (n) => `🫧 Temizlik %${n}`, needBrush: "Önce marketten bir fırça al 🪮",
-      buffN: { full: "Tok", glow: "Sevgi kalkanı", grow: "Hızlı büyüme", healthy: "Sağlıklı", energy: "Enerjik", calm: "Huzurlu", shiny: "Parlak", smart: "Zeki", lucky: "Şanslı", sleepy: "Uykucu", royal: "Kraliyet" }, lonely: "Kendini yalnız hissediyor 💔 Biraz ilgi lazım", leftHome: (n) => `${n} evden ayrıldı 💔`,
+      buffN: { social: "Sosyal", full: "Tok", glow: "Sevgi kalkanı", grow: "Hızlı büyüme", healthy: "Sağlıklı", energy: "Enerjik", calm: "Huzurlu", shiny: "Parlak", smart: "Zeki", lucky: "Şanslı", sleepy: "Uykucu", royal: "Kraliyet" }, lonely: "Kendini yalnız hissediyor 💔 Biraz ilgi lazım", leftHome: (n) => `${n} evden ayrıldı 💔`,
       strayTag: (n) => `Sokak kedisi ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Lazer avı · ⏱ ${t} · ⭐ ${n}`,
       voices: "Kedi sesleri", back: "Geri", addFiles: "Ses ekle", voiceN: (n) => n ? `${n} kayıt` : "henüz yok",
       voice_kitten: "Yavru miyavı", voice_adult: "Yetişkin miyavı", voice_elder: "Yaşlı miyavı", voice_purr: "Mırlama",
@@ -282,11 +285,11 @@
         tunnel: ["Cat tunnel", "Dashes through it and hides inside"], fountain: ["Water fountain", "Fresh water; the cats come for a drink"], litter: ["Litter box", "Keep it clean and the cats are happier; click it to clean"], bed: ["Cat bed", "Soft and round, curls up in it"], house: ["Cat house", "Crawls inside to sleep, hidden away"], rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
         tree: ["Cat tree", "Two levels to climb up to"], aquarium: ["Aquarium", "Watches the fish and paws at the glass"] },
       game: "Laser hunt", gameHelp: "30 seconds: use the laser to lead the cats onto the twinkling stars!", again: "Play again", closeB: "Close",
-      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", genesT: "Genes", geneN: { shine: "Shine", tone: "Colour", pattern: "Pattern", eyes: "Eyes" }, geneHint: "Good genes make a glossy, vivid coat; poor ones a pale, washed-out one. They count in beauty contests and likes; kittens take after their parents.",
+      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", geneTrend: { 1: "📈 Well cared for: its genes are slowly getting better (twice as fast after the park)", 0: "➖ Its genes are steady for now; love, food and a clean coat improve them", "-1": "📉 Neglected: its genes are slowly getting worse" }, genesT: "Genes", geneN: { shine: "Shine", tone: "Colour", pattern: "Pattern", eyes: "Eyes" }, geneHint: "Good genes make a glossy, vivid coat; poor ones a pale, washed-out one. They count in beauty contests and likes; kittens take after their parents.",
       settings: "Settings", games: "Games", inventory: "Inventory", progress: "Progress", extras: "Garden & Events", bestL: (n) => `Best: ${n}`,
       sexF: "♀ Female", sexM: "♂ Male", sickL: "🤒 Sick: give medicine or a healing meal", grubby: "🫧 Very grubby: brush or bath",
       care: "Care", vetB: (n) => `🩺 Vet · ${n}🪙`, vetWait: "The vet saw this cat recently", tubB: "🛁 Bath in the tub", tubWait: "The tub needs to dry (every 3 hours)", brushB: "🪮 Brush", bathB: "🛁 Bath", medB: "💊 Medicine", cleanL: (n) => `🫧 Clean ${n}%`, needBrush: "Buy a brush in the market first 🪮",
-      buffN: { full: "Full", glow: "Love shield", grow: "Growth boost", healthy: "Healthy", energy: "Energetic", calm: "Calm", shiny: "Shiny", smart: "Clever", lucky: "Lucky", sleepy: "Sleepy", royal: "Royal" }, lonely: "Feeling lonely 💔 needs some attention", leftHome: (n) => `${n} left home 💔`,
+      buffN: { social: "Social", full: "Full", glow: "Love shield", grow: "Growth boost", healthy: "Healthy", energy: "Energetic", calm: "Calm", shiny: "Shiny", smart: "Clever", lucky: "Lucky", sleepy: "Sleepy", royal: "Royal" }, lonely: "Feeling lonely 💔 needs some attention", leftHome: (n) => `${n} left home 💔`,
       strayTag: (n) => `Stray ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Laser hunt · ⏱ ${t} · ⭐ ${n}`,
       voices: "Cat sounds", back: "Back", addFiles: "Add sounds", voiceN: (n) => n ? `${n} recording${n > 1 ? "s" : ""}` : "none yet",
       voice_kitten: "Kitten meow", voice_adult: "Grown-up meow", voice_elder: "Old cat meow", voice_purr: "Purr",
@@ -368,13 +371,17 @@
     takeMeal(k) { const order = k ? [k] : ["dry", "wet", "premium", "fish", ...Object.keys(FOOD).filter((x) => FOOD[x].meal && x !== "premium")]; const f = order.find((x) => (L.pantry[x] || 0) > 0); if (!f) return null; L.pantry[f]--; L.changed(); return f; },
     home: { items: [] },
     toys: ["yarn"],                       // toys you've bought (the yarn is free); see TOY_PRICES
-    TOY_PRICES: { yarn: 25, mouse: 30, box: 20, butterfly: 40, wand: 50, post: 60, shelf: 45, laser: 80, brush: 40 },
+    TOY_PRICES: { can: 1, yarn: 25, mouse: 30, box: 20, butterfly: 40, wand: 50, post: 60, shelf: 45, laser: 80, brush: 40 },
     // toys wear out too: a little every time they're played with, a little each day they're left out; at 0 they're gone
     toyCond: {},
-    TOY_WEAR: { yarn: 1.5, mouse: 2, butterfly: 2, wand: 1, laser: 0.4, box: 2, post: 1.2, shelf: 0.6, brush: 4 },
-    toyCondOf(k) { return L.toys.includes(k) ? Math.round(L.toyCond[k] ?? 100) : 0; },
+    TOY_WEAR: { yarn: 1.5, mouse: 2, butterfly: 2, box: 2, post: 1.2, shelf: 0.6 },
+    // tools: bought once, used forever (the brush, the laser pointer, the feather wand, the watering can)
+    TOOLS: ["brush", "laser", "wand", "can"],
+    // garden pots: one comes free, the rest are bought in the market (each a bit dearer)
+    POT_PRICES: [40, 80, 150, 250, 400],
+    toyCondOf(k) { return L.toys.includes(k) ? (L.TOOLS.includes(k) ? 100 : Math.round(L.toyCond[k] ?? 100)) : 0; },
     wearToy(k, n) {
-      if (!L.toys.includes(k)) return;
+      if (!L.toys.includes(k) || L.TOOLS.includes(k)) return;
       L.toyCond[k] = Math.max(0, (L.toyCond[k] ?? 100) - (n ?? L.TOY_WEAR[k] ?? 1) * (1 - 0.12 * SK("k2")));
       if (L.toyCond[k] <= 0) { L.toys = L.toys.filter((x) => x !== k); delete L.toyCond[k]; if (L.onToyBroke) L.onToyBroke(k); L.changed(); }
     },
@@ -438,9 +445,10 @@
     // 0–100 each. Good genes make a glowing, vivid cat; poor ones a pale, washed-out one. Kittens take after their parents.
     GENE_KEYS: ["shine", "tone", "pattern", "eyes"],
     rollGenes(range = [20, 80]) { const g = {}; for (const k of L.GENE_KEYS) g[k] = Math.round(range[0] + Math.random() * (range[1] - range[0])); return g; },
-    inheritGenes(a, b) {
+    // kittens of well-cared-for parents come out a little better (and of neglected ones a little worse): bias −6…+6
+    inheritGenes(a, b, bias = 0) {
       const g = {};
-      for (const k of L.GENE_KEYS) { const pa = (a && a[k]) ?? 50, pb = (b && b[k]) ?? 50, base = Math.random() < 0.5 ? (pa + pb) / 2 : Math.random() < 0.5 ? pa : pb; g[k] = Math.round(clamp(base + (Math.random() - 0.5) * 24 + (Math.random() < 0.08 ? 20 : 0), 1, 100)); }
+      for (const k of L.GENE_KEYS) { const pa = (a && a[k]) ?? 50, pb = (b && b[k]) ?? 50, base = Math.random() < 0.5 ? (pa + pb) / 2 : Math.random() < 0.5 ? pa : pb; g[k] = Math.round(clamp(base + bias + (Math.random() - 0.5) * 20 + (Math.random() < 0.08 ? 15 : 0), 1, 100)); }
       return g;
     },
     geneScore(p) { const g = p && p.genes; if (!g) return 50; return Math.round(L.GENE_KEYS.reduce((a, k) => a + (g[k] ?? 50), 0) / L.GENE_KEYS.length); },
@@ -665,7 +673,7 @@
       const r0 = Math.random(), size = Math.min(L.MAX_CATS - cats.length, r0 < 0.6 ? 1 : r0 < 0.9 ? 2 : 3), kits = [];
       for (let i = 0; i < size; i++) {
         const r = Math.random(), coat = r < 0.45 ? a.profile.coat : r < 0.9 ? b.profile.coat : pickOne(Object.keys(COAT_NAMES).filter((c) => !WILD.includes(c)));
-        const k = L.make(coat, { taken, love: 60, quiet: true, genes: L.inheritGenes(a.profile.genes, b.profile.genes) }); taken.push(k.name);
+        const k = L.make(coat, { taken, love: 60, quiet: true, genes: L.inheritGenes(a.profile.genes, b.profile.genes, clamp(((a.profile.love + b.profile.love) / 2 - 50) / 7 + (a.profile.trend || 0) + (b.profile.trend || 0), -6, 6)) }); taken.push(k.name);
         k.log = []; k.parents = [a.profile.id, b.profile.id];
         k.parentInfo = [a, b].map((c) => ({ id: c.profile.id, name: c.profile.name, coat: c.profile.coat }));
         L.write(k, "bornOf", { a: a.profile.name, b: b.profile.name }); L.remember(k, "bornOf", { a: a.profile.name, b: b.profile.name });
@@ -711,6 +719,19 @@
     tick(cat, dt) {
       const p = cat.profile; if (!p) return;
       p.seen = Date.now();
+      if (p.genes && !p.guest) {
+        const good = p.love >= 70 && !L.isHungry(p) && !p.sick && L.clean(p) >= 60, bad = p.love < 30 || L.isHungry(p) || p.sick || L.clean(p) < 25;
+        p.trend = good ? 1 : bad ? -1 : 0;
+        const rate = good ? GENE_UP * (L.hasBuff(p, "social") ? 2 : 1) * (1 + 0.1 * SK("c3")) : bad ? -GENE_DOWN : 0;
+        if (rate) {
+          p.gq = (p.gq || 0) + rate * dt;
+          if (Math.abs(p.gq) >= 1) {
+            const step = Math.sign(p.gq); p.gq -= step;
+            const keys = L.GENE_KEYS.filter((k) => (step > 0 ? p.genes[k] < 100 : p.genes[k] > 1)), k = keys[Math.floor(Math.random() * keys.length)];
+            if (k) { p.genes[k] = clamp(p.genes[k] + step, 1, 100); if (window.DesktopCat && window.DesktopCat.buildPalette) cat.P = window.DesktopCat.buildPalette(cat.coat, p.genes); L.changed(); }
+          }
+        }
+      }
       L.addXP(cat, dt / 120);
       const boxes = cat.world ? cat.world.furniture.filter((f) => f.kind === "litter") : [];
       const litterK = !boxes.length ? 1 : boxes.some((f) => (f.item.dirty || 0) < 4) ? 0.8 : 1.4;     // clean box: love lasts longer; only dirty ones: it fades faster

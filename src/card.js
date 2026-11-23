@@ -307,9 +307,9 @@
       if (window.CatJobs && window.CatJobs.now) window.CatJobs.now.fill(q(".cc-job"), cat);
       // 🧬 genes: a grade and four little bars
       const G = p.genes, gsec = q(".cc-genes"); gsec.hidden = !G;
-      if (G) { const sc = L.geneScore(p), gr = L.geneGrade(sc), gk = [lang, sc, ...L.GENE_KEYS.map((k) => G[k])].join(",");
+      if (G) { const sc = L.geneScore(p), gr = L.geneGrade(sc), gk = [lang, sc, p.trend || 0, ...L.GENE_KEYS.map((k) => G[k])].join(",");
         if (gsec.dataset.k !== gk) { gsec.dataset.k = gk;
-          gsec.innerHTML = `<div class="cc-label"><span>🧬 ${esc(t.genesT)}</span><small><b class="cc-grade g${gr}">${gr}</b> ${sc}/100</small></div><div class="cc-gbars">${L.GENE_KEYS.map((k) => `<span><i>${esc(t.geneN[k])}</i><b><u style="width:${G[k]}%"></u></b><em>${G[k]}</em></span>`).join("")}</div><small class="cc-ghint">${esc(t.geneHint)}</small>`; } }
+          gsec.innerHTML = `<div class="cc-label"><span>🧬 ${esc(t.genesT)}</span><small><b class="cc-grade g${gr}">${gr}</b> ${sc}/100</small></div><div class="cc-gbars">${L.GENE_KEYS.map((k) => `<span><i>${esc(t.geneN[k])}</i><b><u style="width:${G[k]}%"></u></b><em>${G[k]}</em></span>`).join("")}</div><p class="cc-gtrend t${p.trend || 0}">${esc(t.geneTrend[p.trend || 0])}</p><small class="cc-ghint">${esc(t.geneHint)}</small>`; } }
       q('[data-c="brush"]').textContent = t.brushB; q('[data-c="bath"]').textContent = world.furniture.some((f) => f.kind === "bathtub" && f.usable) ? t.tubB : `${t.bathB} · ${L.pantry.shampoo || 0}`;
       q('[data-c="vet"]').textContent = t.vetB(p.sick ? 45 : 25);
       const mb = q('[data-c="med"]'); mb.hidden = !p.sick; mb.textContent = `${t.medB} · ${L.pantry.medicine || 0}`;

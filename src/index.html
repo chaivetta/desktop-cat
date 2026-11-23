@@ -112,8 +112,8 @@
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
         tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, toyCond: L.toyCond, guests: L.guests, prog: L.prog, extra: L.extra, seen: Date.now(),
-        bowl: world.bowl ? { out: true, x: +(world.bowl.x / world.W).toFixed(4), food: +world.bowl.food.toFixed(3), kind: world.bowl.foodKind } : { out: false, food: bowlFood },
-        home: { items: L.home.items.map((it) => { const f = world.furniture.find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
+        bowl: (() => { const B = world.park ? world.park.stash.bowl : world.bowl; return B ? { out: true, x: +(B.x / world.W).toFixed(4), food: +B.food.toFixed(3), kind: B.foodKind } : { out: false, food: bowlFood }; })(),
+        home: { items: L.home.items.map((it) => { const f = (world.park ? world.park.stash.furniture : world.furniture).find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
   };
   let saveT = 0; L.onChange = () => { clearTimeout(saveT); saveT = setTimeout(save, 400); card && card.refresh(); };
@@ -376,7 +376,8 @@
   // 💼 jobs
   var jobs = window.CatJobs.create({ world, save: () => save(), toast: (m) => toast(m) }); window.CatJobs.now = jobs;
   // 🌱 garden, photo feed, weekly contest, festivals
-  var extras = window.CatExtras.now = window.CatExtras.create({ world, save: () => save(), toast: (m) => toast(m), onClose: () => { overUI = false; syncIgnore(); } });
+  var extras = window.CatExtras.now = window.CatExtras.create({ world, save: () => save(), toast: (m) => toast(m), openShop: () => market.open("toys"),
+    needCan: () => { extras.close(); market.open("toys", L.lang === "tr" ? "Sulamak için önce bir suluk al 💧 (1🪙, su sınırsız)" : "Get a watering can first 💧 (1🪙, unlimited water)"); }, onClose: () => { overUI = false; syncIgnore(); } });
   // 👋 login streak + "while you were away" card (created before the others report what happened)
   window.CatWelcome.create({ world, awayMin: saved.seen ? Math.max(0, Math.round((Date.now() - saved.seen) / 60e3)) : 0, readyCount: () => extras.readyCount(), toast: (m) => toast(m),
     onOpen: () => { overUI = true; syncIgnore(); }, onClose: () => { overUI = false; syncIgnore(); } });

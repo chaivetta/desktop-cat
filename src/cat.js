@@ -976,7 +976,7 @@
     }
     bounds() { const s = this.s; return { x: this.x - SW * s / 2, y: this.y - GROUND * s, w: SW * s, h: (GROUND + 2) * s }; }
     hit(px, py) {
-      if (this.hidden || this.jobOff) return false;     // inside the cat house: knock on the house instead
+      if (this.hidden || this.jobOff || this.parkAway) return false;     // inside the cat house: knock on the house instead
       const b = this.bounds(), s = this.s;
       if (this.state === "inbox") return px >= b.x + 12 * s && px <= b.x + b.w - 12 * s && py >= b.y + (4 + this.peek * 14) * s && py <= this.world.floor - 14 * s;
       return px >= b.x + 6 * s && px <= b.x + b.w - 6 * s && py >= b.y + 4 * s && py <= b.y + b.h;
@@ -1178,6 +1178,7 @@
       const w = this.world, s = this.s, floor = w.floor;
       this.t += dt; this.stateT += dt; this.boopCool -= dt; this.fightCool -= dt; this.zoomCool = (this.zoomCool || 0) - dt;
       // 💼 away at work: walk off the screen, then nothing until it comes back (its needs wait too)
+      if (this.parkAway) return;                        // stayed home while the others are at the park
       if (this.profile && this.profile.job) {
         if (this.jobOff) return;
         if (this.x < -80 || this.x > w.W + 80) { this.jobOff = true; return; }
@@ -1682,7 +1683,7 @@
     get hidden() { return !!(this.cushion && this.cushion.f.hide) || this.state === "tunnel"; }
     render(ctx) {
       const R = this.R; R.clear();
-      if (this.hidden || this.jobOff) return;           // fast asleep inside the cat house, or away at work
+      if (this.hidden || this.jobOff || this.parkAway) return;   // asleep in the cat house, away at work, or not at the park
       R.grey = !!(this.profile && window.CatLife && window.CatLife.isElder(this.profile));
       const a = { t: this.t, st: this.stateT, phase: this.phase, blink: this.blink, eyes: this.state === "happy" ? "happy" : this.eyes, peekEyes: null, look: this.look };
       POSES[this.pose()](R, a);
@@ -2794,6 +2795,51 @@
       ctx.fillStyle = "#5b3a29"; ctx.textBaseline = "middle"; ctx.textAlign = "center"; ctx.fillText(label, this.W / 2, y0 + 21); ctx.restore();
     }
     landedBird() { return this.birds.find((b) => b.state === "peck"); }
+    // ---------------- 🌳 the cat park: the home things are put away, a park appears along the floor, strange cats wander about
+    enterPark(ids, nStrangers = 4) {
+      if (this.park) return;
+      const going = new Set(ids);
+      this.park = { stash: { furniture: this.furniture, platforms: this.shelves.filter((s) => s.isPlatform), bowl: this.bowl }, npcs: [], img: null, socialT: 3 };
+      this.furniture = []; this.shelves = this.shelves.filter((s) => !s.isPlatform); this.bowl = null;
+      this.cats.forEach((c) => { c.cushion = null; c.perch = null; if (c.profile && !going.has(c.profile.id)) c.parkAway = true; else if (c.profile) { c.y = this.floor; c.set("walk", 4, { target: rnd(this.W * 0.15, this.W * 0.85) }); } });
+      for (let i = 0; i < nStrangers; i++) { const c = this.addCat(COAT_KEYS[Math.floor(Math.random() * 17)]); c.npc = true; c.x = Math.random() < 0.5 ? -60 : this.W + 60; c.set("walk", 8, { target: rnd(this.W * 0.1, this.W * 0.9) }); this.park.npcs.push(c); }
+    }
+    exitPark() {
+      const P = this.park; if (!P) return;
+      P.npcs.forEach((c) => this.removeCat(c));
+      this.furniture = P.stash.furniture; this.shelves.push(...P.stash.platforms); this.bowl = P.stash.bowl;
+      this.cats.forEach((c) => { c.parkAway = false; c.perch = null; c.y = this.floor; if (c.state !== "held") c.set("sit", 1); });
+      this.park = null;
+    }
+    // now and then two cats in the park meet: a sniff, a boop, a little play
+    parkSocial(dt) {
+      const P = this.park; if (!P) return; P.socialT -= dt; if (P.socialT > 0) return; P.socialT = rnd(4, 9);
+      const here = this.cats.filter((c) => !c.parkAway && !["held", "fall", "leap", "zoom"].includes(c.state));
+      if (here.length < 2) return;
+      const a = here[Math.floor(Math.random() * here.length)], b = here.filter((c) => c !== a).sort((x, y) => Math.abs(x.x - a.x) - Math.abs(y.x - a.x))[0];
+      const mid = (a.x + b.x) / 2, gap = 16 * a.s;
+      a.set("walk", 3, { target: mid - gap }); b.set("walk", 3, { target: mid + gap });
+      setTimeout(() => { if (!this.park) return; a.facing = 1; b.facing = -1; const play = Math.random() < 0.35; a.set(play ? "playBow" : "boop", 1.6); b.set(play ? "pronk" : "boop", 1.6); this.burst(mid, this.floor - 34 * a.s, "heart", "#e2557a", 3); if (this.onSocial) this.onSocial(a, b); }, 2600);
+    }
+    renderPark(ctx) {
+      const P = this.park, W = this.W, H = this.H, k = Math.max(2, Math.round(this.toyScale)), f = this.floor;
+      if (!P.img || P.img.width !== W || P.imgF !== f) {
+        const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); P.img = c; P.imgF = f;
+        const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+        // a soft green glow behind, then the fence, trees, bench, lamp, pond and flowers
+        const gr = g.createLinearGradient(0, f - 260, 0, f); gr.addColorStop(0, "rgba(170,225,160,0)"); gr.addColorStop(1, "rgba(150,210,130,.55)"); g.fillStyle = gr; g.fillRect(0, f - 260, W, 260);
+        for (let x = 0; x < W; x += 14 * k) { px(x, f - 26 * k, 3 * k, 24 * k, "#e8d6b8"); px(x, f - 28 * k, 3 * k, 2 * k, "#c9b08a"); }
+        px(0, f - 20 * k, W, 2 * k, "#d9c29c"); px(0, f - 12 * k, W, 2 * k, "#d9c29c");
+        const tree = (x, s) => { px(x - 3 * k * s, f - 40 * k * s, 6 * k * s, 40 * k * s, "#8a5a36"); for (const [dx, dy, r, col] of [[0, -58, 20, "#5fae54"], [-14, -46, 14, "#6dbf5f"], [14, -46, 14, "#6dbf5f"], [-6, -66, 12, "#7fcf6e"], [8, -64, 10, "#7fcf6e"]]) { g.fillStyle = col; g.beginPath(); g.arc(x + dx * k * s, f + dy * k * s, r * k * s, 0, 7); g.fill(); } };
+        for (const [x, s] of [[0.06, 1.2], [0.27, 0.9], [0.52, 1.3], [0.76, 1], [0.95, 1.15]]) tree(W * x, s);
+        const bx = W * 0.38; px(bx, f - 14 * k, 34 * k, 3 * k, "#b07a48"); px(bx, f - 22 * k, 34 * k, 3 * k, "#b07a48"); px(bx + 2 * k, f - 11 * k, 2 * k, 11 * k, "#5b3a29"); px(bx + 30 * k, f - 11 * k, 2 * k, 11 * k, "#5b3a29");
+        const lx = W * 0.64; px(lx, f - 60 * k, 2 * k, 60 * k, "#3d4256"); px(lx - 3 * k, f - 66 * k, 8 * k, 6 * k, "#3d4256"); px(lx - 2 * k, f - 65 * k, 6 * k, 4 * k, "#ffe9a0");
+        const pdx = W * 0.85; g.fillStyle = "#7cc8ec"; g.beginPath(); g.ellipse(pdx, f - 2 * k, 30 * k, 5 * k, 0, 0, 7); g.fill(); g.fillStyle = "#b8e6f8"; g.fillRect(pdx - 12 * k, f - 4 * k, 8 * k, k);
+        for (let i = 0; i < W / (9 * k); i++) { const x = i * 9 * k + ((i * 37) % 7) * k, col = ["#ff8fab", "#ffd34d", "#ffffff", "#c8a0ff"][i % 4]; if (Math.abs(x - pdx) < 34 * k) continue; px(x, f - 6 * k, k, 5 * k, "#4f9a45"); px(x - k, f - 8 * k, 3 * k, 2 * k, col); }
+        px(0, f - 2 * k, W, H - f + 2 * k, "#8fcf6b"); for (let x = 0; x < W; x += 5 * k) px(x + ((x / k) % 3) * k, f - 3 * k, k, 2 * k, "#6fb855");
+      }
+      ctx.drawImage(P.img, 0, 0);
+    }
     shout(x, y, txt) { this.shouts.push({ x: clamp(x, 60, this.W - 60), y, txt, t: 0 }); }
     addCritter(kind) {
       const night = this.isNight(), k = kind || (night ? "hedgehog" : Math.random() < 0.55 ? "squirrel" : "butterflies");
@@ -3054,12 +3100,14 @@
       if (this.birdsOn) { this.critterT -= dt; if (this.critterT <= 0) { this.critterT = rnd(360, 900); this.addCritter(); } }
       this.critters.forEach((c) => c.update(dt)); this.critters = this.critters.filter((c) => !c.gone());
       this.shouts = this.shouts.filter((x) => (x.t += dt) < 1.6);
+      if (this.park) this.parkSocial(dt);
       this.updateGame(dt);
       if (this.strayOn && !this.isNight() && !this.stray()) { this.strayT -= dt; if (this.strayT <= 0) { this.strayT = rnd(1200, 2700); if (this.cats.filter((c) => c.profile).length < 8) this.addStray(); } }
       this.cats.forEach((c) => c.update(dt));
       if (this.isNight()) this.renderNight(ctx, now);
       this.renderSky(ctx, dt);
       if (this.seasonsOn !== false) this.renderSeason(ctx, dt, now); else if (this.renderWeather(ctx, dt, now) === false && this.seasonOverride === "winter") this.seasonOverride = null;   // real weather shows even with the seasons off
+      if (this.park) this.renderPark(ctx);
       this.furniture.forEach((f) => f.render(ctx));
       if (this.post) this.post.render(ctx);
       this.shelves.forEach((sh) => sh.render(ctx));
@@ -3350,5 +3398,5 @@
     const fake = { sp_: B, sp: new Sprite(16, 13), state: "peck", t: 0, x: W / 2, y: H - 3, dir: 1, world: { toyScale: k } };
     Bird.prototype.render.call(fake, ctx);
   }
-  window.DesktopCat = { BIRDS, birdThumb, critterThumb, World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE, FURN, furnitureThumb };
+  window.DesktopCat = { buildPalette, BIRDS, birdThumb, critterThumb, World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE, FURN, furnitureThumb };
 })();
