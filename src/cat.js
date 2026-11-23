@@ -1200,7 +1200,8 @@
         if (L_.hasBuff(P_, "sleepy")) { wt.sleep *= 2; wt.loaf = (wt.loaf || 0) * 1.5; }
         if (P_.sick) { wt.sleep *= 2; wt.loaf = (wt.loaf || 0) * 2; wt.walk *= 0.5; wt.zoom = 0; wt.pronk = 0; wt.tailChase = 0; }
       }
-      if (w.weather && ["rain", "storm", "snow", "drizzle"].includes(w.weather.kind)) { wt.sleep *= 1.6; wt.loaf = (wt.loaf || 0) * 1.6; wt.zoom = 0; }
+      if (w.weather && ["rain", "storm", "drizzle"].includes(w.weather.kind)) { wt.sleep *= 1.6; wt.loaf = (wt.loaf || 0) * 1.6; wt.zoom = 0; }
+      if (w.weather && w.weather.kind === "snow") { wt.snowSwat = 2.2; wt.shake *= 3; wt.sniffFloor *= 2; wt.pronk = (wt.pronk || 0) + 0.4; wt.sleep *= 1.2; }        // ❄️ snow is for playing in
       if (w.isNight()) { wt.sideLie *= 1.6; wt.curlNap *= 2; wt.shake *= 0.3; wt.sniffFloor *= 0.4; wt.wiggle = 0; wt.sleep *= 3; wt.walk *= 0.4; wt.zoom = 0; wt.loaf *= 2; wt.tailChase = 0; wt.meerkat = 0; wt.pronk = 0; if (wt.fight) wt.fight *= 0.2; if (wt.shelf) wt.shelf *= 0.5; }
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
       if (foe) wt.fight = 0.6;
@@ -1248,6 +1249,7 @@
         w.burst((this.x + foe.x) / 2, this.y - 30 * this.s, "spark", "#f7e48c", 1);
       }
       else if (n === "roll") this.set("roll", rnd(3, 5));
+      else if (n === "snowSwat") { this.facing = Math.random() < 0.5 ? -1 : 1; this.set("snowSwat", rnd(1.6, 2.8)); if (Math.random() < 0.3) w.meow(this); }
       else if (n === "cuddle") { const m = this.cuddleMate; m.cuddler = this; this.set("chase", 16, { goal: "cuddle", fRef: m }); }
       else if (n in IDLE_DUR) { if (n === "chirp" && pt) { this.facing = Math.sign(pt.x - this.x) || this.facing; if (Math.random() < 0.6) w.meow(this); } const d = IDLE_DUR[n]; this.set(n === "curlNap" ? "curl" : n, rnd(d[0], d[1])); }
       else if (n === "loaf") this.set("loaf", rnd(6, 16));
@@ -1578,6 +1580,7 @@
           if (Math.abs(dx) < 8 * s || this.stateT > this.dur) this.set("leap", 3, { vx: this.facing * 160 * s, vy: -230 * s, goal: null });
           break;
         }
+        case "snowSwat": if (Math.random() < dt * 4) w.burst(this.x + this.facing * 10 * s, this.y - 38 * s, "spark", "#ffffff", 2); if (this.stateT > this.dur) this.set(Math.random() < 0.4 ? "shake" : "sit", rnd(1.6, 2.5)); break;
         case "wiggle": if (this.stateT > this.dur) this.set("leap", 3, { vx: this.facing * 130 * s, vy: -200 * s, goal: null }); break;
         case "playBow": if (this.stateT > this.dur) { if (Math.random() < 0.6) this.startZoom(false); else this.set("pronk", 1.2); } break;
         case "tailChase": {
@@ -1859,6 +1862,7 @@
         case "nibble": return "eat";
         case "fishWatch": return Math.sin(this.stateT * 2.3) > 0.72 ? "bat" : "sit";
         case "birdWatch": return "meerkat";
+        case "snowSwat": return "stand";
         case "nip": return "roll";
         case "happy": return "sit";
         default: return this.state in POSES ? this.state : "sit";
@@ -3498,7 +3502,7 @@
         const g = ctx.createLinearGradient(0, this.floor - 260, 0, this.floor); g.addColorStop(0, "rgba(235,238,242,0)"); g.addColorStop(1, "rgba(235,238,242,.55)");
         ctx.fillStyle = g; ctx.fillRect(0, this.floor - 260, this.W, 262); return true;
       }
-      if (wx.kind === "snow") { this.seasonOverride = "winter"; return false; }        // the winter snow, as heavy as the real thing
+      if (wx.kind === "snow") { this.renderSnow(ctx, dt, k, wind); return true; }        // real snow: its own heavy snowfall (with the seasons on or off)
       if (!["drizzle", "rain", "storm"].includes(wx.kind)) return false;
       // rain: streaks slanted by the wind, little splashes on the floor
       const max = wx.kind === "drizzle" ? 70 : wx.kind === "rain" ? 190 : 260, drops = this.drops = (this.drops || []).filter((d) => d.y < this.floor);
@@ -3521,6 +3525,38 @@
       }
       return true;
     }
+    // ❄️ snow: big soft flakes drifting with the wind, a layer that slowly builds up on the floor and on top of the furniture,
+    // little paw prints where the cats walk (the cats themselves swat at the flakes, see think())
+    renderSnow(ctx, dt, k, wind) {
+      const fl = this.snow = (this.snow || []).filter((f) => f.y < this.floor && f.x > -30 && f.x < this.W + 30), max = 230;
+      if (!fl.length) for (let i = 0; i < max * 0.6; i++) fl.push(this.flake(Math.random() * this.floor));
+      while (fl.length < max && Math.random() < dt * 40) fl.push(this.flake(-10));
+      this.snowDepth = Math.min(1, (this.snowDepth || 0) + dt / 600);               // ten minutes to a full layer
+      ctx.save();
+      for (const f of fl) {
+        f.ph += dt; f.y += f.vy * dt; f.x += (Math.sin(f.ph * 1.2) * 14 + wind * 40) * dt;
+        const x = Math.round(f.x / k) * k, y = Math.round(f.y / k) * k, z = f.z * k;
+        ctx.globalAlpha = 0.95;
+        const draw = (dx, dy) => { if (f.z > 1) { ctx.fillRect(x - k + dx, y + k + dy, z + 2 * k, k); ctx.fillRect(x + k + dx, y - k + dy, k, z + 2 * k); ctx.fillRect(x + dx, y + dy, z, z); } else ctx.fillRect(x + dx, y + dy, z, z); };
+        ctx.fillStyle = "rgba(90,110,150,.55)"; draw(k / 2, k / 2); draw(-k / 2, -k / 2);       // a soft outline so it shows on light wallpapers too
+        ctx.fillStyle = "#ffffff"; draw(0, 0);
+      }
+      // the layer on the floor (lumpy) and caps of snow on the furniture
+      const d = this.snowDepth, h = Math.max(1, Math.round(d * 6));
+      ctx.globalAlpha = 0.95; ctx.fillStyle = "#ffffff";
+      for (let x = 0; x < this.W; x += k * 3) { const hh = k * (h + ((x * 7919) % 5 === 0 ? 1 : 0) + ((x * 104729) % 7 === 0 ? 1 : 0)); ctx.fillRect(x, this.floor - hh + k, k * 3, hh); }
+      ctx.fillStyle = "rgba(180,200,230,.6)"; for (let x = 0; x < this.W; x += k * 3) if ((x * 31) % 9 === 0) ctx.fillRect(x, this.floor - k * h + k, k * 3, k);
+      if (d > 0.15) { ctx.fillStyle = "#ffffff"; const ts = this.toyScale;
+        for (const f of this.furniture) { if (f.f.h < 8 || f.held) continue; const w = f.f.w * ts * 0.8, top = f.y - f.f.h * ts, ch = Math.max(k, Math.round(d * 2.5) * k);
+          ctx.fillRect(Math.round(f.x - w / 2), Math.round(top - ch + k), Math.round(w), ch); ctx.fillRect(Math.round(f.x - w / 2 + k), Math.round(top - ch), Math.round(w - 2 * k), k); } }
+      // paw prints that fade
+      this.prints = (this.prints || []).filter((p) => (p.life -= dt) > 0);
+      for (const c of this.cats) if ((c.state === "walk" || c.state === "chase" || c.state === "run") && c.y >= this.floor - 1 && !c.hidden && Math.random() < dt * 3) this.prints.push({ x: c.x + rnd(-6, 6) * c.s / 3, y: this.floor - k * h + k * 2, life: 25 });
+      ctx.fillStyle = "rgba(120,135,165,.55)";
+      for (const p of this.prints) { ctx.globalAlpha = Math.min(1, p.life / 8); ctx.fillRect(Math.round(p.x), Math.round(p.y), k * 1.5, k); ctx.fillRect(Math.round(p.x) + k * 2.5, Math.round(p.y) - k, k * 1.5, k); }
+      ctx.restore();
+    }
+    flake(y) { const z = Math.random() < 0.3 ? 3 : Math.random() < 0.6 ? 2 : 1.5; return { x: Math.random() * (this.W + 200) - 100, y, ph: Math.random() * 6, vy: 24 + Math.random() * 30 + z * 4, z }; }
     thunder() {
       if (!this.purrOn && !this.meowOn) return;
       try {

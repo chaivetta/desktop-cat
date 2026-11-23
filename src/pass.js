@@ -161,6 +161,7 @@
     }
     function open() { root.hidden = false; key = ""; render(); place(); clearInterval(placeT); placeT = setInterval(() => { place(); render(); }, 500); o.onOpen && o.onOpen(); }
     function close() { root.hidden = true; clearInterval(placeT); o.onClose && o.onClose(); }
+    addEventListener("keydown", (e) => { if (e.key === "Escape" && !root.hidden) close(); });
     const readyCount = () => { const x = P(); let n = 0; for (let i = 1; i <= stepOf(x.pp); i++) if (!x.claimed.includes(i)) n++; return n + x.quests.filter((q) => !q.done).length * 0; };
     setTimeout(() => { P(); check(); }, 1500);
     return { open, close, get isOpen() { return !root.hidden; }, readyCount, addPP, t };

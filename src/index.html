@@ -256,7 +256,7 @@
     onMenu: () => window.CatHub.now && window.CatHub.now.toggle(),
     onGames: () => only(games),
     onRemove: (c) => { world.removeCat(c); save(); card.refresh(); },
-    onClose: () => { overUI = false; syncIgnore(); },
+    onClose: () => { if (window.CatHub.now) window.CatHub.now.close(); overUI = false; syncIgnore(); },   // the menu goes with the card
   });
 
   // birthdays and "days together": checked a few seconds after the cats arrive, then every minute
@@ -427,6 +427,7 @@
       toggle: (on) => { weatherOn = on; if (!on) { world.weather = null; world.seasonOverride = null; } save(); weather.refresh(); },
       setCity: async (name) => { try { const l = await weather.findCity(name, L.lang); if (!l) return false; weatherLoc = l; save(); await weather.refresh(true); return true; } catch { return false; } },
       auto: async () => { weatherLoc = null; save(); await weather.refresh(true); },
+      preview: (k) => weather.preview(k),
     },
     setCardSize: (v) => { card.setSize(v); save(); },
     onClose: () => { overUI = false; syncIgnore(); },

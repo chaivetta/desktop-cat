@@ -63,3 +63,8 @@
 
 .st-b.locked { opacity: .55; position: relative; }
 .st-b.locked::after { content: "🔒"; position: absolute; top: -6px; right: -4px; font-size: 12px; }
+.st-sub { margin: 8px 0 4px; font-size: 12px; opacity: .75; }
+.st-wxtry { display: flex; gap: 5px; flex-wrap: wrap; }
+.st-wxtry button { width: 34px; height: 34px; border: 0; border-radius: 50%; background: #fff; font-size: 17px; cursor: pointer; box-shadow: 0 0 0 2px #5b3a29, 0 3px 0 2px #5b3a29; }
+.st-wxtry button.on { background: #ffd34d; }
+.st-wxtry button:active { transform: translateY(2px); }
