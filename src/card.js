@@ -2,6 +2,8 @@
 (() => {
   "use strict";
   const L = window.CatLife, DC = window.DesktopCat, W = DC.WARDROBE;
+  const SEASON_E = { winter: "❄️", spring: "🌸", summer: "☀️", autumn: "🍂" };
+  const SEASON_N = () => (L.lang === "tr" ? { winter: "Kış", spring: "İlkbahar", summer: "Yaz", autumn: "Sonbahar" } : { winter: "Winter", spring: "Spring", summer: "Summer", autumn: "Autumn" });
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const tint = (hex, t) => `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).map((v) => Math.round(v + (255 - v) * t)).join(",")})`;
@@ -173,6 +175,7 @@
         if (kind !== "outfit") delete acc.outfit;
         DC.portrait(k.getContext("2d"), cat.coat, { ...THUMB[kind], acc, genes: cat.profile && cat.profile.genes });
         if (cost) { const lk = document.createElement("span"); lk.className = "cc-lk"; lk.textContent = `🔒${cost}`; b.appendChild(lk); }
+        const se = L.seasonOf(kind, d); if (se) { const sb = document.createElement("span"); sb.className = "cc-season" + (L.inSeason(kind, d) ? " now" : ""); sb.textContent = SEASON_E[se]; sb.title = SEASON_N()[se]; b.appendChild(sb); }
         b.onclick = () => { design = d; if (L.price(kind, d)) { wardKey = ""; renderWardrobe(); return; } wear(`${d}:${d === curD && curS ? curS : (curS || "cherry")}`); };
         box.appendChild(b);
       });
@@ -181,8 +184,8 @@
       ub.hidden = !cost; q(".cc-swatches").hidden = !!cost;
       if (cost) {
         q(".cc-lockname").textContent = `🔒 ${W[kind][design][lang]}`;
-        const buy = q('[data-u="buy"]'); buy.textContent = t.unlock(cost); buy.disabled = L.wallet.stars < cost;
-        q(".cc-need").textContent = L.wallet.stars >= cost ? "" : L.tasksOn ? t.need(cost - L.wallet.stars) : t.needTasks;
+        const buy = q('[data-u="buy"]'), ok = L.inSeason(kind, design), se = L.seasonOf(kind, design); buy.textContent = t.unlock(cost); buy.disabled = L.wallet.stars < cost || !ok;
+        q(".cc-need").textContent = !ok ? (L.lang === "tr" ? `${SEASON_E[se]} Sadece ${SEASON_N()[se].toLocaleLowerCase("tr")} mevsiminde satılır` : `${SEASON_E[se]} Only sold in ${SEASON_N()[se].toLowerCase()}`) : se ? (L.lang === "tr" ? `${SEASON_E[se]} Mevsimlik kostüm: bu mevsim bitmeden al!` : `${SEASON_E[se]} Seasonal costume: get it before the season ends!`) + (L.wallet.stars >= cost ? "" : " " + t.need(cost - L.wallet.stars)) : L.wallet.stars >= cost ? "" : L.tasksOn ? t.need(cost - L.wallet.stars) : t.needTasks;
       }
       q(".cc-swatches").innerHTML = Object.entries(W.schemes).map(([k, sc]) =>
         `<button type="button" class="cc-swatch${design === curD && k === curS ? " on" : ""}" data-s="${k}" title="${esc(sc[lang])}" style="--a:${sc.c[0]};--b:${sc.c[1]};--c:${sc.c[2]}"></button>`).join("");

@@ -374,3 +374,6 @@
 .cc-gtrend.t1 { background: #e4f8ee; color: #2f7a55; } .cc-gtrend.t-1 { background: #ffe8e4; color: #b2443a; }
 .cc-tab.tool.menu { width: auto; padding: 0 14px; border-radius: 23px; display: flex; gap: 6px; align-items: center; }
 .cc-tab.tool.menu span { font-size: 20px; } .cc-tab.tool.menu small { font: 700 13px "Nunito", sans-serif; }
+.cc-season { position: absolute; left: 2px; top: 1px; font-size: 11px; line-height: 1; filter: grayscale(1); opacity: .55; }
+.cc-season.now { filter: none; opacity: 1; animation: cc-season-bob 1.6s ease-in-out infinite; }
+@keyframes cc-season-bob { 50% { transform: translateY(-2px); } }

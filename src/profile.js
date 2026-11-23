@@ -145,7 +145,8 @@
       daisy: 5, ribbon: 6, cowl: 7, tie: 8, sailor: 9, medal: 11, star: 12, ruff: 13, chain: 16, gem: 20 },
     outfit: { sweater: 4, stripes: 4, dots: 6, plaid: 6, zigzag: 7, overalls: 8, raincoat: 9, vertical: 9, diagonal: 10, stars: 15,
       pocket: 6, dash: 7, bold: 8, hearts: 9, checker: 10, waves: 11, hoodie: 12, floral: 13, argyle: 16, camo: 18,
-      nurse: 16, pirate: 16, chef: 16, doctor: 18, police: 20, firefighter: 20, ninja: 22, astronaut: 24, knight: 26, royal: 28, pawhero: 30, moonclaw: 30 },
+      nurse: 16, pirate: 16, chef: 16, doctor: 18, police: 20, firefighter: 20, ninja: 22, astronaut: 24, knight: 26, royal: 28, pawhero: 30, moonclaw: 30,
+      santasuit: 12, elf: 12, snowflake: 10, bunny: 12, ladybug: 10, blossom: 10, hawaiian: 10, lifeguard: 12, pumpkinsuit: 12, vampire: 14, leafy: 10 },
   };
   const KIT_COOL = 24 * 3.6e6;
   const SK = (id) => (L.sk ? L.sk(id) : 0);              // a rank in your skill tree (progress.js)           // breeding: at most 8 cats, a mother or father rests a day between litters
@@ -176,6 +177,7 @@
     greet:   { xp: 2, love: 5, every: 10 * 60e3, log: 10 * 60e3 },
     morning: { xp: 2, love: 3, every: 6 * 3.6e6, log: 6 * 3.6e6 },
     napNear: { xp: 1, love: 2, every: 20 * 60e3, log: 30 * 60e3 },
+    cuddle:  { xp: 4, love: 5, every: 5 * 60e3, log: 30 * 60e3 },
     shelf:   { xp: 2, love: 1, every: 30e3, log: 10 * 60e3 },
   };
 
@@ -238,7 +240,7 @@
         born: (a) => `${a.n} aramıza katıldı`, named: (a) => `Adı artık ${a.n}`, fed: () => "Mamasını afiyetle yedi",
         pet: () => "Sevildi, mır mır mırladı", play: (a) => `${a.toy} ile oynadı`, bed: () => "Yatağında kıvrılıp uyudu",
         scratch: () => "Direkte tırnaklarını biledi", catnip: () => "Kedi otuyla kendinden geçti", zoom: () => "Zoomies! Odayı baştan başa koştu",
-        race: (a) => `${a.o} ile yarıştı`, fight: (a) => `${a.o} ile şakadan dövüştü`, boop: (a) => `${a.o} ile burun buruna geldi`,
+        race: (a) => `${a.o} ile yarıştı`, fight: (a) => `${a.o} ile şakadan dövüştü`, boop: (a) => `${a.o} ile burun buruna geldi`, cuddle: (a) => `${a.o} ile sarılıp uyudu`,
         box: () => "Kutuya saklandı", held: () => "Kucağa alındı", grew: (a) => `Büyüdü, artık ${a.stage}!`, lovemax: () => "Sevgi barı doldu! Sana bayılıyor",
         hello: () => "Seninle masaüstünde yaşamaya başladı",
         dress: (a) => `${a.itemName} ${a.kind === "outfit" ? "giydi" : "taktı"}`, photo: () => "Fotoğrafı çekildi", blink: () => "Sana yavaşça göz kırptı, kedi dilinde \"seni seviyorum\" demek", shelf: () => "Rafa zıplayıp oturdu",
@@ -308,7 +310,7 @@
         born: (a) => `${a.n} joined the family`, named: (a) => `Now called ${a.n}`, fed: () => "Had a lovely dinner",
         pet: () => "Got pets and purred", play: (a) => `Played with the ${a.toy.toLowerCase()}`, bed: () => "Curled up in the bed for a nap",
         scratch: () => "Sharpened claws on the post", catnip: () => "Went wild for catnip", zoom: () => "Zoomies! Sprinted across the room",
-        race: (a) => `Raced ${a.o}`, fight: (a) => `Play-fought with ${a.o}`, boop: (a) => `Booped noses with ${a.o}`,
+        race: (a) => `Raced ${a.o}`, fight: (a) => `Play-fought with ${a.o}`, boop: (a) => `Booped noses with ${a.o}`, cuddle: (a) => `Snuggled up and slept with ${a.o}`,
         box: () => "Hid in a box", held: () => "Got picked up", grew: (a) => `Grew up — now a ${a.stage.toLowerCase()}!`, lovemax: () => "Love bar full! Adores you",
         hello: () => "Moved in on your desktop",
         dress: (a) => `Put on the ${a.itemName}`, photo: () => "Had a photo taken", blink: () => "Gave you a slow blink. That's cat for \"I love you\"", shelf: () => "Jumped up onto the shelf",
@@ -325,7 +327,7 @@
     },
   };
   const LOG_ICON = { born: "🐣", named: "🏷️", fed: "🍗", pet: "💗", play: "🧶", bed: "🛏️", scratch: "🪵", catnip: "🌿", zoom: "💨",
-    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", strayIn: "🏡", drink: "💧", sick: "🤒", cured: "💊", bath: "🛁", brush: "🪮", lonely: "💔", left: "🚪", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
+    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", strayIn: "🏡", drink: "💧", sick: "🤒", cured: "💊", bath: "🛁", brush: "🪮", lonely: "💔", left: "🚪", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", cuddle: "🫂", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
 
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -413,8 +415,11 @@
       const c = (PRICES[kind] || {})[d] || 0;
       return c && !L.wallet.owned.includes(`${kind}:${d}`) ? c : 0;
     },
+    // seasonal costumes can only be bought in their season
+    seasonOf(kind, d) { const W = window.DesktopCat.WARDROBE[kind]; return (W && W[d] && W[d].season) || null; },
+    inSeason(kind, d) { const se = L.seasonOf(kind, d); return !se || window.DesktopCat.season() === se; },
     buy(kind, d) {
-      const c = L.price(kind, d); if (!c || L.wallet.stars < c) return false;
+      const c = L.price(kind, d); if (!c || L.wallet.stars < c || !L.inSeason(kind, d)) return false;
       L.wallet.stars -= c; L.wallet.owned.push(`${kind}:${d}`); L.changed(); return true;
     },
     onChange: null,                     // set by the page: called when anything worth saving happens
@@ -555,7 +560,7 @@
         if (f && f.buff) { L.addBuff(p, f.buff[0], f.buff[1]); if (cat.world) cat.world.burst(cat.x, cat.y - 40 * cat.s, "spark", "#ffd34d", 3); }
       }
       if (kind === "litter" || kind === "play" || kind === "fight") L.dirty(p, kind === "litter" ? 6 : kind === "fight" ? 3 : 0.4);
-      if (arg.oid && ["boop", "race", "fight"].includes(kind)) { p.bond = p.bond || {}; p.bond[arg.oid] = Math.min(50, (p.bond[arg.oid] || 0) + (kind === "fight" ? 0.5 : 1)); }
+      if (arg.oid && ["boop", "race", "fight", "cuddle"].includes(kind)) { p.bond = p.bond || {}; p.bond[arg.oid] = Math.min(50, (p.bond[arg.oid] || 0) + (kind === "fight" ? 0.5 : kind === "cuddle" ? 2 : 1)); }
       if (L.tasksOn) L.taskEvent(cat, kind + (arg.toyKey ? ":" + arg.toyKey : ""));
       // playing wears the toy out
       const worn = kind === "play" ? { feather: "wand" }[arg.toyKey] || arg.toyKey : { box: "box", scratch: "post", shelf: "shelf" }[kind];

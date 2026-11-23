@@ -8,11 +8,16 @@
     mint: { e: "🌿", h: 3, seed: 30, xp: 8, give: { coins: 12 }, col: ["#4fbf7a", "#9be8b8"] },
     strawberry: { e: "🍓", h: 6, seed: 60, xp: 15, give: { meal: true }, col: ["#5fae54", "#ff4f6a"] },
     sunflower: { e: "🌻", h: 12, seed: 100, xp: 30, give: { coins: 40, star: 0.04 }, col: ["#5fae54", "#ffd34d"] },
+    carrot: { e: "🥕", h: 2, seed: 20, xp: 5, give: { coins: 7 }, col: ["#5fae54", "#ff8a2e"] },
+    blueberry: { e: "🫐", h: 4, seed: 45, xp: 10, give: { coins: 16 }, col: ["#4f9a5a", "#4a5fc8"] },
+    lavender: { e: "💜", h: 8, seed: 80, xp: 20, give: { coins: 20, love: 5 }, col: ["#6aa86a", "#a98be0"] },
+    rose: { e: "🌹", h: 18, seed: 130, xp: 40, give: { coins: 65, star: 0.08 }, col: ["#3f8a3a", "#e2414e"] },
+    pumpkin: { e: "🎃", h: 24, seed: 150, xp: 50, give: { food: ["pumpkin", 3] }, col: ["#4f9a4a", "#f28a2e"] },
   };
   const STR = {
     tr: {
-      crops: { catnip: "Kedi otu", mint: "Nane", strawberry: "Çilek", sunflower: "Ayçiçeği" },
-      give: { catnip: "1 kedi nanesi", mint: "12🪙", strawberry: "1 özel yemek", sunflower: "40🪙 (+ nadiren ⭐)" },
+      crops: { catnip: "Kedi otu", mint: "Nane", strawberry: "Çilek", sunflower: "Ayçiçeği", carrot: "Havuç", blueberry: "Yaban mersini", lavender: "Lavanta", rose: "Gül", pumpkin: "Bal kabağı" },
+      give: { catnip: "1 kedi nanesi", mint: "12🪙", strawberry: "1 özel yemek", sunflower: "40🪙 (+ nadiren ⭐)", carrot: "7🪙", blueberry: "16🪙", lavender: "20🪙 + bütün kedilere 💗", rose: "65🪙 (+ bazen ⭐)", pumpkin: "3 balkabağı püresi 🎃" },
       empty: "Boş saksı", plant: "Ne ekelim?", noSeeds: "Hiç tohumun yok. Marketin Oyuncak bölümünden tohum al 🌱", shop: "🛒 Tohum al",
       water: "💧 Sula", needCan: "💧 Suluk lazım (marketten 1🪙)", harvest: "🧺 Hasat et", clear: "🥀 Temizle",
       growing: (m, w) => `⏳ ${m} sonra hazır · 💧 ${w}`, dry: "💧 Susadı! Sulamazsan büyümez, 12 saatte solar", dead: "🥀 Soldu", ready: "✨ Hasada hazır!",
@@ -20,8 +25,8 @@
       seedsH: "🌱 Tohumlar (bir kere al, sınırsız ek)", seedD: (h, g) => `${h} saatte büyür · ${g}`,
     },
     en: {
-      crops: { catnip: "Catnip", mint: "Mint", strawberry: "Strawberry", sunflower: "Sunflower" },
-      give: { catnip: "1 catnip", mint: "12🪙", strawberry: "1 special meal", sunflower: "40🪙 (+ rarely ⭐)" },
+      crops: { catnip: "Catnip", mint: "Mint", strawberry: "Strawberry", sunflower: "Sunflower", carrot: "Carrot", blueberry: "Blueberry", lavender: "Lavender", rose: "Rose", pumpkin: "Pumpkin" },
+      give: { catnip: "1 catnip", mint: "12🪙", strawberry: "1 special meal", sunflower: "40🪙 (+ rarely ⭐)", carrot: "7🪙", blueberry: "16🪙", lavender: "20🪙 + 💗 for every cat", rose: "65🪙 (+ sometimes ⭐)", pumpkin: "3 pumpkin purées 🎃" },
       empty: "Empty pot", plant: "What shall we plant?", noSeeds: "No seeds yet. Buy some in the market's Toys section 🌱", shop: "🛒 Buy seeds",
       water: "💧 Water", needCan: "💧 Needs a watering can (1🪙 in the market)", harvest: "🧺 Harvest", clear: "🥀 Clear",
       growing: (m, w) => `⏳ ready in ${m} · 💧 ${w}`, dry: "💧 Thirsty! It won't grow until watered; it wilts after 12 hours", dead: "🥀 Wilted", ready: "✨ Ready to harvest!",
@@ -58,6 +63,8 @@
       if (c.give.item) { L.pantry[c.give.item] = (L.pantry[c.give.item] || 0) + 1; what.push(L.FOOD[c.give.item].e); }
       if (c.give.coins) what.push(`+${L.earn(c.give.coins)}🪙`);
       if (c.give.meal) { const sp = Object.keys(L.FOOD).filter((f) => L.FOOD[f].buff); const f = sp[Math.floor(Math.random() * sp.length)]; L.pantry[f] = (L.pantry[f] || 0) + 1; what.push(L.FOOD[f].e); }
+      if (c.give.food) { const [f, n] = c.give.food; L.pantry[f] = (L.pantry[f] || 0) + n; what.push(`${L.FOOD[f].e}×${n}`); }
+      if (c.give.love) { world.cats.forEach((k) => { if (k.profile && !k.profile.guest) { k.profile.love = Math.min(100, k.profile.love + c.give.love); world.burst(k.x, k.y - 30 * k.s, "heart", "#a98be0", 1); } }); what.push("💜"); }
       if (c.give.star && Math.random() < c.give.star) { L.wallet.stars++; what.push("⭐"); }
       it.plant = null; L.stats.harvests = (L.stats.harvests || 0) + 1; if (L.gainPXP) L.gainPXP(c.xp);
       toast(t().harvested(c.e, what.join(" "))); L.changed(); save();
@@ -106,12 +113,17 @@
       const sway = Math.round(Math.sin(f.t * 1.6) * (k > 0.3 ? 1 : 0));
       if (st === "dead") { px(-1, -5, 1, 5, "#8a7a5a"); px(-3, -6, 2, 1, "#9a8a6a"); px(1, -4, 2, 1, "#9a8a6a"); return; }
       const leaf = st === "dry" ? "#9aae5a" : c.col[0], hi = st === "dry" ? "#b8c47a" : "#9be07c";
-      const hgt = Math.round(3 + k * (p.k === "sunflower" ? 17 : p.k === "strawberry" ? 8 : 9));
+      const hgt = Math.round(3 + k * ({ sunflower: 17, strawberry: 8, carrot: 5, blueberry: 9, lavender: 11, rose: 13, pumpkin: 4 }[p.k] ?? 9));
       px(0 + sway * 0.5, -hgt, 1, hgt, "#3f8a3a");                                   // stem
       for (let i = 1; i <= Math.min(4, 1 + Math.floor(k * 4)); i++) { const y = -Math.round(hgt * i / 5) - 1, d = i % 2 ? -1 : 1; px(d > 0 ? 1 : -3, y, 3, 1, leaf); px(d > 0 ? 2 : -3, y - 1, 1, 1, hi); }
       if (k >= 1) {                                                                  // the crop itself
         if (p.k === "sunflower") { px(-3 + sway, -hgt - 4, 7, 6, "#ffd34d"); px(-4 + sway, -hgt - 2, 9, 2, "#ffd34d"); px(-1 + sway, -hgt - 3, 3, 3, "#7a4a22"); }
         else if (p.k === "strawberry") { for (const [x, y] of [[-3, -4], [2, -6], [-1, -8]]) { px(x, y, 2, 2, "#ff4f6a"); px(x, y - 1, 2, 1, "#5fae54"); } }
+        else if (p.k === "carrot") { px(-2, -1, 4, 2, "#ff8a2e"); px(-1, 1, 2, 1, "#ff8a2e"); for (const x of [-2, 0, 2]) px(x, -hgt - 2, 1, 3, "#5fae54"); }
+        else if (p.k === "blueberry") { for (const [x, y] of [[-3, -5], [2, -6], [-1, -8], [1, -3], [-3, -9]]) { px(x, y, 2, 2, "#4a5fc8"); px(x, y, 1, 1, "#7f92e6"); } }
+        else if (p.k === "lavender") { for (const x of [-3, 0, 3]) { px(x, -hgt + (x ? 2 : 0), 1, hgt - 4, "#4f8a3a"); for (let y = 0; y < 5; y++) px(x - (y % 2), -hgt - 3 + y + (x ? 2 : 0), 2, 1, y % 2 ? "#a98be0" : "#8a6bd0"); } }
+        else if (p.k === "rose") { px(-2 + sway, -hgt - 3, 5, 4, "#e2414e"); px(-1 + sway, -hgt - 4, 3, 1, "#c8323c"); px(0 + sway, -hgt - 2, 1, 1, "#9e1b31"); }
+        else if (p.k === "pumpkin") { px(-5, -5, 11, 6, "#f28a2e"); px(-6, -4, 13, 4, "#f28a2e"); for (const x of [-3, 0, 3]) px(x, -5, 1, 6, "#c8641e"); px(0, -7, 1, 2, "#6a4a2a"); px(1, -8, 3, 1, "#5fae54"); }
         else if (p.k === "mint") { for (const [x, y] of [[-3, -hgt], [1, -hgt + 1], [-1, -hgt - 2]]) px(x, y, 3, 2, "#4fbf7a"); }
         else { for (let i = -3; i <= 3; i += 2) px(i, -hgt - 2 - (i & 1), 1, 3, "#d9c46a"); }
       } else if (k > 0.5 && p.k === "sunflower") px(-1 + sway, -hgt - 2, 3, 2, "#7cbf5a");

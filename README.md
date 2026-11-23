@@ -33,6 +33,12 @@ Twenty-four coats: seventeen house cats and seven 👑 big cats (cheetah, puma, 
 
 They flop over on their side, curl up like a doughnut with the tail over their nose, lie like a sphinx (thumping the tail, or with a big yawn), scratch an ear with a back foot, glance over their shoulder, give a full-body shake, sniff along the floor, stretch out a paw with the toes spread, stretch a back leg, sit very contented with the tail round their paws, chirp at you, and wiggle their bottom before pouncing on nothing. They sleep in four different ways too.
 
+### 🫂 Snuggling up
+
+<img src="docs/cuddle.png" width="420" alt="Two cats curled up asleep together">
+
+When one cat is asleep, another may come and snuggle in behind it, and they sleep curled up together, with little hearts floating up. It happens on the floor and on a bed, cushion, sofa or beanbag wide enough for two. Friends and family snuggle up most, especially at night, and every snuggle makes them closer friends.
+
 Older moves: loaf, sploot, meerkat, tail chase, happy bounce, slow blink ("I love you"), chattering at birds, nodding off, waving a paw, a play bow, and stalking low across the floor. Belly-up with waving paws is now a rarer treat.
 
 <img src="docs/moves3.png" width="640" alt="Loaf, sploot, meerkat, chasing its tail, a happy bounce, and a slow blink">
@@ -54,6 +60,10 @@ Right-click a cat to open its card. Drag it anywhere; 📍 sends it back; 🔍 c
 - **💼 Work:** shows when the cat is away on a job (jobs come as offers, see below)
 
 <img src="docs/wardrobe-new.png" width="640" alt="Wardrobe designs">
+
+**Seasonal costumes** are only sold in their season (once bought, they're yours all year): ❄️ a Santa suit, an elf costume and a snowflake jumper in winter; 🌸 a bunny suit, a ladybird costume and a blossom dress in spring; ☀️ a Hawaiian shirt and a lifeguard suit in summer; 🍂 a pumpkin costume, a vampire cape and an autumn-leaf jumper in autumn. In the wardrobe, this season's costumes have a bobbing badge.
+
+![The seasonal costumes](docs/costumes-seasonal.png)
 
 ## 🌱 Growing up and care
 
@@ -126,10 +136,23 @@ Over fifty pieces of furniture to buy and drag anywhere: beds, cushions, hammock
 <img src="docs/pots.png" width="420" alt="Pots on the desktop with a ripe catnip and mint"> <img src="docs/pot-popup.png" width="260" alt="Clicking a pot: what shall we plant?">
 
 1. Buy a **pot** in the market's furniture section (as many as you like) and put it anywhere on the floor.
-2. Buy **seeds** in the toys section. Each kind is bought **once**, then you can plant it forever: catnip (1 h), mint (3 h), strawberries (6 h), sunflowers (12 h).
+2. Buy **seeds** in the toys section. Each kind is bought **once**, then you can plant it forever:
+
+   | Plant | Grows in | Harvest |
+   | :-- | :-- | :-- |
+   | 🌾 Catnip | 1 h | a catnip pouch |
+   | 🥕 Carrot | 2 h | 7🪙 |
+   | 🌿 Mint | 3 h | 12🪙 |
+   | 🫐 Blueberry | 4 h | 16🪙 |
+   | 🍓 Strawberry | 6 h | a special meal |
+   | 💜 Lavender | 8 h | 20🪙, and love for every cat |
+   | 🌻 Sunflower | 12 h | 40🪙, rarely a ⭐ |
+   | 🌹 Rose | 18 h | 65🪙, sometimes a ⭐ |
+   | 🎃 Pumpkin | 24 h | three pumpkin purées |
+
 3. **Click the pot** to plant, **water** it (with the watering can, 1🪙, unlimited water) and **harvest**.
 
-Plants grow in real hours, even with the app closed, but only while watered (water lasts 6 hours; 12 hours dry and they wilt). You see them grow in the pot, with a 💧 when they're thirsty and a ✨ when they're ready. Harvests give catnip, coins, special meals and, rarely, a star.
+Plants grow in real hours, even with the app closed, but only while watered (water lasts 6 hours; 12 hours dry and they wilt). You see them grow in the pot, with a 💧 when they're thirsty and a ✨ when they're ready. <img src="docs/crops.png" width="420" alt="Carrot, blueberry, lavender, rose and pumpkin ready to harvest">
 
 ## ☁️ The sky and visitors
 

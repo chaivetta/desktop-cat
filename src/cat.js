@@ -725,6 +725,18 @@
     royal: { tr: "kraliyet pelerini", en: "royal robe", fixed: ["#6a2c9a", "#fbfbfd", "#ffd34d"] },
     pawhero: { tr: "Pati Kahraman kostümü", en: "Paw Hero suit", fixed: ["#1fa3a0", "#e2414e", "#ffd34d"] },
     moonclaw: { tr: "Ay Pençesi kostümü", en: "Moon Claw suit", fixed: ["#4a2f7a", "#1c1530", "#dfe6f2"] },
+    // seasonal costumes: only sold in their season (once bought, yours all year)
+    santasuit: { tr: "Noel Baba kostümü", en: "Santa suit", fixed: ["#d8323c", "#fbfbfd", "#2a2420"], season: "winter" },
+    elf: { tr: "elf kostümü", en: "elf costume", fixed: ["#3f9a4a", "#d8323c", "#ffd34d"], season: "winter" },
+    snowflake: { tr: "kar taneli kazak", en: "snowflake jumper", fixed: ["#2b3b78", "#fbfbfd", "#7fb2e6"], season: "winter" },
+    bunny: { tr: "tavşan kostümü", en: "bunny suit", fixed: ["#fbfbfd", "#ffc2d4", "#ff8fab"], season: "spring" },
+    ladybug: { tr: "uğur böceği kostümü", en: "ladybird costume", fixed: ["#e2414e", "#1c1c22", "#fbfbfd"], season: "spring" },
+    blossom: { tr: "çiçek açmış elbise", en: "blossom dress", fixed: ["#ffd6e4", "#ff8fb5", "#fff0a0"], season: "spring" },
+    hawaiian: { tr: "Hawaii gömleği", en: "Hawaiian shirt", fixed: ["#ff9a3c", "#fff1d6", "#3faa6a"], season: "summer" },
+    lifeguard: { tr: "cankurtaran mayosu", en: "lifeguard suit", fixed: ["#e2414e", "#fbfbfd", "#ffd34d"], season: "summer" },
+    pumpkinsuit: { tr: "bal kabağı kostümü", en: "pumpkin costume", fixed: ["#f28a2e", "#c8641e", "#3f8a3a"], season: "autumn" },
+    vampire: { tr: "vampir pelerini", en: "vampire cape", fixed: ["#1c1820", "#c8323c", "#fbfbfd"], season: "autumn" },
+    leafy: { tr: "sonbahar yaprağı kazak", en: "autumn leaf jumper", fixed: ["#b5652a", "#f0a83a", "#7a3e1e"], season: "autumn" },
   };
   const WARDROBE = { schemes: SCHEMES, hat: HATS, collar: COLLARS, outfit: OUTFITS };
   const toneCache = {};
@@ -787,6 +799,17 @@
       case "royal": if (!t(x, y + 1)) return 2; if (!t(x, y + 2) || !t(x, y - 1)) return 3; return 1;
       case "pawhero": if (!t(x, y + 1) || !t(x, y + 2)) return 2; if (nearChest(R, x, y, 2.4)) { const dx = x + 0.5 - R.cc.x, dy = y + 0.5 - R.cc.y; return (dy > -0.4 && Math.hypot(dx, dy) < 1.6) || (dy < -0.6 && Math.abs(dx) > 0.6 && Math.abs(dx) < 2.2) ? 3 : 1; } return 1;
       case "moonclaw": if (y % 5 === 0) return 2; if (nearChest(R, x, y, 2.3)) { const dx = x + 0.5 - R.cc.x, dy = y + 0.5 - R.cc.y; return Math.hypot(dx, dy) < 2.1 && Math.hypot(dx - 1, dy - 0.6) > 1.5 ? 3 : 1; } return 1;
+      case "santasuit": if (!t(x, y + 1) || !t(x, y - 1)) return 2; if (y % 9 === 4) return nearChest(R, x, y, 99) && Math.abs(x + 0.5 - R.cc.x) < 1.2 ? 2 : 3; return 1;
+      case "elf": if (!t(x, y + 1)) return (x % 3 === 0) ? 3 : 2; if (R.partAt(x, y) === PART.CHEST && x % 4 === 2 && y % 3 === 0) return 3; return 1;
+      case "snowflake": { if (!t(x, y + 1) || !t(x, y - 1)) return 3; const u = x % 7, v = y % 7; return (u === 3 && v >= 2 && v <= 4) || (v === 3 && u >= 2 && u <= 4) || (u === v && u >= 2 && u <= 4) ? 2 : 1; }
+      case "bunny": if (nearChest(R, x, y, 3)) return 2; if (!t(x, y + 1)) return 3; return 1;
+      case "ladybug": if (!t(x, y - 1)) return 2; { const u = x % 6, v = y % 6; return (u === 2 && v === 2) || (u === 5 && v === 5) ? 2 : (u === 0 && v === 3 ? 3 : 1); }
+      case "blossom": { const u = x % 6, v = (y + (x / 6 | 0) * 3) % 6; if (u === 2 && v === 2) return 3; return (Math.abs(u - 2) + Math.abs(v - 2) === 1) ? 2 : 1; }
+      case "hawaiian": { if (!t(x, y - 1)) return 2; const u = x % 7, v = (y + (x / 7 | 0) * 3) % 7; if (u === 3 && v === 3) return 2; if (Math.abs(u - 3) + Math.abs(v - 3) === 1) return 2; return (x + 2 * y) % 9 === 0 ? 3 : 1; }
+      case "lifeguard": if (!t(x, y + 1) || !t(x, y - 1)) return 3; if (nearChest(R, x, y, 2.2) && (Math.abs(x + 0.5 - R.cc.x) < 0.8 || Math.abs(y + 0.5 - R.cc.y) < 0.8)) return 2; return 1;
+      case "pumpkinsuit": if (!t(x, y - 1)) return 3; return x % 4 === 0 ? 2 : 1;
+      case "vampire": if (!t(x, y - 1) || !t(x, y - 2)) return 2; if (nearChest(R, x, y, 1.6)) return 3; return 1;
+      case "leafy": { const k = (x * 3 + y * 5) % 11; return k < 2 ? 2 : (x * 5 + y * 3) % 13 === 0 ? 3 : 1; }
       case "pocket": return !t(x, y + 1) || ((x % 12 >= 4 && x % 12 <= 7) && (y >= 25 && y <= 28) && (x % 12 === 4 || x % 12 === 7 || y === 28)) ? 2 : 1;
     }
     return 1;
@@ -1082,6 +1105,8 @@
       return a && (a.hat || a.collar || a.outfit) ? a : null;
     }
     get pid() { return this.profile && this.profile.id; }
+    // how far behind a sleeping cat to snuggle in: close on the floor, tighter on a bed or cushion so both fit
+    cuddleOff(m) { const f = m.cushion || m.bed; return (f ? Math.min(14, (f.f ? f.f.w : 30) * 0.32) * this.world.toyScale : 15 * Math.min(this.s, m.s)); }
     care(kind, arg) { if (window.CatLife && this.profile) window.CatLife.care(this, kind, arg); }
     set(state, dur = 3, extra = {}) {
       if (this.stray && ["chase", "hunt", "stand", "bat", "prep", "dangle"].includes(state) && !(state === "chase" && extra.goal === "bowl")) return;
@@ -1186,6 +1211,11 @@
       }
       const F = (k) => { const l = w.furniture.filter((f) => f.kind === k && f.usable); return l.length ? l[Math.floor(Math.random() * l.length)] : null; };
       if (w.landedBird()) wt.bird = 7;
+      // 🫂 someone's asleep: go and snuggle up (friends especially; family always welcome)
+      const mate = this.profile && !this.perch && w.cats.find((o) => o !== this && o.profile && o.state === "sleep" && !o.cuddleLead && !o.cuddler && !o.perch && !o.hidden && !o.jobOff && !o.parkAway
+        && (!o.cushion || (!o.cushion.f.hide && o.cushion.f.w >= 26)) && (!o.bed || true));
+      if (mate) { const bond = (this.profile.bond && this.profile.bond[mate.pid]) || 0, pa = this.profile.parents || [], pb = mate.profile.parents || [], fam = pa.includes(mate.pid) || pb.includes(this.pid) || (pa.length && pa.join() === pb.join());
+        wt.cuddle = (w.isNight() ? 3 : 1.2) * (fam ? 2 : 1) * (1 + Math.min(2, bond / 10)); this.cuddleMate = mate; }
       const rug = F("rug"), plant = F("plant"), aq = F("aquarium");
       const naps = w.furniture.filter((f) => f.f.nap != null && f.usable && !f.occupant && (!f.claimed || f.claimed === this)), nap = naps.length ? naps[Math.floor(Math.random() * naps.length)] : null;
       if (rug) wt.rug = 1.1;
@@ -1218,6 +1248,7 @@
         w.burst((this.x + foe.x) / 2, this.y - 30 * this.s, "spark", "#f7e48c", 1);
       }
       else if (n === "roll") this.set("roll", rnd(3, 5));
+      else if (n === "cuddle") { const m = this.cuddleMate; m.cuddler = this; this.set("chase", 16, { goal: "cuddle", fRef: m }); }
       else if (n in IDLE_DUR) { if (n === "chirp" && pt) { this.facing = Math.sign(pt.x - this.x) || this.facing; if (Math.random() < 0.6) w.meow(this); } const d = IDLE_DUR[n]; this.set(n === "curlNap" ? "curl" : n, rnd(d[0], d[1])); }
       else if (n === "loaf") this.set("loaf", rnd(6, 16));
       else if (n === "sploot") this.set("sploot", rnd(5, 11));
@@ -1265,6 +1296,7 @@
         case "drink": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * (10 * w.toyScale + 12 * this.s) : null; }
         case "litter": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x : null; }
         case "cushion": { const f = this.fRef; return f && w.furniture.includes(f) && (!f.occupant || f.occupant === this) ? f.x : null; }
+        case "cuddle": { const m = this.fRef; return m && w.cats.includes(m) && m.state === "sleep" && m.cuddler === this ? m.x - m.facing * this.cuddleOff(m) : null; }
         case "fish": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * (16 * w.toyScale + 12 * this.s) : null; }
         case "you": return w.pointer.x > 0 ? clamp(w.pointer.x + (this.napOff || 0), 20, w.W - 20) : null;
         case "butterfly": return w.butterfly ? w.butterfly.x : null;
@@ -1578,7 +1610,14 @@
       if (this.perch && !w.shelves.includes(this.perch)) { this.perch = null; this.set("fall", 5); this.vx = 0; this.vy = 0; }
       this.partyT = (this.partyT || 0) - dt;
       if (this.cushion && !w.furniture.includes(this.cushion)) this.cushion = null;
-      if (this.bed) { this.x = this.bed.x; this.y = floor - 4 * w.toyScale; }
+      if (this.cuddleLead) {
+        const m = this.cuddleLead;
+        if (this.state !== "sleep" || !w.cats.includes(m) || m.state !== "sleep") { this.cuddleLead = null; if (m.cuddler === this) m.cuddler = null; if (this.state === "sleep") this.set("stretch", rnd(1.2, 1.8)); }
+        else { this.x = m.x - m.facing * this.cuddleOff(m); this.y = m.y; this.facing = m.facing; if (Math.random() < dt * 0.25) w.burst((this.x + m.x) / 2, m.y - 20 * s, "heart", "#f28aa5", 1, { rise: true }); }
+      }
+      if (this.cuddler && (this.cuddler.cuddleLead !== this && !(this.cuddler.state === "chase" && this.cuddler.goal === "cuddle"))) this.cuddler = null;
+      if (this.cuddleLead) { /* placed above */ }
+      else if (this.bed) { this.x = this.bed.x; this.y = floor - 4 * w.toyScale; }
       else if (this.cushion) { this.x = this.cushion.x; this.y = floor - (this.cushion.f.nap || 0) * w.toyScale; }
       else if (this.perch && !["held", "fall", "leap"].includes(this.state)) { this.x = this.perch.x + this.perchDx; this.y = this.perch.top; }
       else if (!["held", "fall", "leap", "inbox", "pronk"].includes(this.state) && !(this.state === "spar" && this.vy)) this.y = floor;
@@ -1594,7 +1633,7 @@
         you: 6, rug: 5, plant: 4, cushion: 3, fish: 4, bird: 44, tunnel: 5, drink: 4, litter: 3, spot: 4 }[g] * s;
       if (Math.abs(dx) > reach) {
         this.facing = Math.sign(dx);
-        const sp = ["bowl", "box", "bed", "post", "shelf", "you", "rug", "plant", "cushion", "fish"].includes(g) ? 60 : g === "bird" ? 70 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
+        const sp = ["cuddle", "bowl", "box", "bed", "post", "shelf", "you", "rug", "plant", "cushion", "fish"].includes(g) ? 60 : g === "bird" ? 70 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
         this.x += this.facing * Math.min(sp * s * dt, Math.abs(dx)); this.phase = (this.phase + dt * (sp > 120 ? 3.4 : sp > 70 ? 2.6 : 1.8)) % 1;
       } else {
         if (g === "yarn") {
@@ -1637,6 +1676,17 @@
           } else this.think();
         }
         else if (g === "you") { this.set("knead", rnd(1.5, 2.5)); this.care("napNear"); }
+        else if (g === "cuddle") {
+          const m = this.fRef;
+          if (m && w.cats.includes(m) && m.state === "sleep" && m.cuddler === this) {
+            // spoon in behind them, same way round, and both settle into the same snug pose
+            const pose = m.sleepPose === "sleepSide" || m.sleepPose === "sleepStretch" ? "sleepSide" : "curl";
+            this.set("sleep", rnd(30, 70)); this.cuddleLead = m; this.facing = m.facing; this.sleepPose = pose; m.sleepPose = pose;
+            m.dur = Math.max(m.dur, m.stateT + rnd(30, 60));
+            w.burst((this.x + m.x) / 2, this.y - 22 * s, "heart", "#e2557a", 2);
+            this.care("cuddle", { o: m.name, oid: m.pid }); m.care("cuddle", { o: this.name, oid: this.pid });
+          } else { if (m && m.cuddler === this) m.cuddler = null; this.think(); }
+        }
         else if (g === "bowl") { this.facing = Math.sign(w.bowl.x - this.x) || this.facing; this.set("eat", rnd(4, 7) * ((this.mods && this.mods._eat) || 1)); this.care("fed", { food: w.bowl.foodKind }); }
         else if (g === "box") {
           const b = this.boxRef; b.claimed = null;
@@ -1796,7 +1846,7 @@
     pose() {
       switch (this.state) {
         case "walk": return "walk";
-        case "chase": return ["bowl", "box", "bed", "post", "shelf", "rug", "plant", "cushion", "fish", "you", "drink", "litter", "spot"].includes(this.goal) ? "walk" : "run";
+        case "chase": return ["cuddle", "bowl", "box", "bed", "post", "shelf", "rug", "plant", "cushion", "fish", "you", "drink", "litter", "spot"].includes(this.goal) ? "walk" : "run";
         case "prep": return "crouch";
         case "stalk": return "crouch";
         case "spar": return (this.vy || this.y < this.world.floor) ? "leap" : this.act === "swipe" ? "swipe" : "spar";
