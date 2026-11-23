@@ -36,7 +36,7 @@
       plant: (n, p) => `${n} ek · ${p}🪙`, water: "💧 Sula", harvest: "🧺 Topla", dry: "Kurudu! Sula", dead: "Soldu 🥀 · Temizle", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " sa " : ""}${m % 60} dk`,
       empty: "Boş saksı", shopGarden: (can) => can ? "🪴 Marketten yeni saksı al" : "💧 Önce marketten suluk al (1🪙), 🪴 saksılar da orada", gardenHint: "Tohum ek, suluk ile sula; bitki gerçek saatlerle büyür (uygulama kapalıyken de). Su 6 saat yeter; 12 saat susuz kalırsa solar. Yeni saksıları ve suluğu marketin Oyuncak bölümünden alırsın.",
       harvested: (e, w) => `${e} Hasat: ${w}`,
-      feedHint: "Bir kedine dokun, fotoğrafı paylaşılsın (kartındaki 📸 de aynı işi yapar). Fotoğraf bir gün boyunca beğeni toplar, sonra beğenileri altına çevirirsin. Kıyafetli, bakımlı, mutlu ve genleri iyi kediler daha çok beğenilir. Günde en çok 3 paylaşım.", share: "📸 Kimi paylaşalım?", posts: "🖼️ Paylaşımların",
+      feedHint: "Bir kedine dokun, fotoğrafı paylaşılsın (kartındaki 📸 de aynı işi yapar). Fotoğraf bir gün boyunca beğeni toplar, sonra beğenileri altına çevirirsin. Kıyafetli, bakımlı, mutlu ve genleri iyi kediler daha çok beğenilir. 2 saatte bir paylaşabilirsin.", canPost: "📸 Şimdi paylaşabilirsin!", nextPost: (m) => `Sonraki paylaşım: ${m >= 60 ? Math.floor(m / 60) + " sa " : ""}${m % 60} dk sonra`, share: "📸 Kimi paylaşalım?", posts: "🖼️ Paylaşımların",
       likes: (n) => `♥ ${n}`, collect: (c) => `Beğenileri topla · ${c}🪙`, collected: "✓ toplandı", noPosts: "Henüz fotoğraf yok. Kedinin kartından 📸 Fotoğraf çek!", today: (n) => `Bugün ${n}/3 paylaşım`,
       contests: { beauty: "💅 Güzellik yarışması", tricks: "🎓 Numara yarışması", love: "💗 Sevgi yarışması" },
       cHint: { beauty: "Kıyafetler, genler, temizlik ve sevgi puan getirir.", tricks: "Bildiği numaralar puan getirir.", love: "Sevgi ve yerine getirilen istekler puan getirir." },
@@ -57,7 +57,7 @@
       plant: (n, p) => `Plant ${n} · ${p}🪙`, water: "💧 Water", harvest: "🧺 Harvest", dry: "Dry! Water it", dead: "Wilted 🥀 · Clear", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " h " : ""}${m % 60} min`,
       empty: "Empty pot", shopGarden: (can) => can ? "🪴 Buy another pot in the market" : "💧 Get a watering can in the market first (1🪙); the 🪴 pots are there too", gardenHint: "Plant a seed and water it with the watering can; it grows in real hours (even with the app closed). Water lasts 6 hours; 12 hours dry and it wilts. New pots and the watering can are in the market's Toys section.",
       harvested: (e, w) => `${e} Harvest: ${w}`,
-      feedHint: "Tap one of your cats to post its photo (📸 on its card does the same). A photo gathers likes for a day, then you turn the likes into coins. Dressed-up, clean, happy cats with good genes get more. At most 3 posts a day.", share: "📸 Who shall we post?", posts: "🖼️ Your posts",
+      feedHint: "Tap one of your cats to post its photo (📸 on its card does the same). A photo gathers likes for a day, then you turn the likes into coins. Dressed-up, clean, happy cats with good genes get more. One post every 2 hours.", canPost: "📸 You can post now!", nextPost: (m) => `Next post in ${m >= 60 ? Math.floor(m / 60) + " h " : ""}${m % 60} min`, share: "📸 Who shall we post?", posts: "🖼️ Your posts",
       likes: (n) => `♥ ${n}`, collect: (c) => `Collect likes · ${c}🪙`, collected: "✓ collected", noPosts: "No photos yet. Take one with 📸 on a cat's card!", today: (n) => `Today ${n}/3 posts`,
       contests: { beauty: "💅 Beauty contest", tricks: "🎓 Trick contest", love: "💗 Love contest" },
       cHint: { beauty: "Outfits, genes, cleanliness and love score points.", tricks: "Tricks it knows score points.", love: "Love and granted wishes score points." },
@@ -110,9 +110,8 @@
     // ---------------- photo feed: hooked onto the card's 📸 button
     const care0 = L.care; L.care = (cat, kind, arg = {}) => { care0(cat, kind, arg); if (kind === "photo" && cat && cat.profile) post(cat); };
     function post(cat) {
-      const p = cat.profile, today = new Date().toDateString(), E = X();
-      if (E.postDay !== today) { E.postDay = today; E.postN = 0; }
-      if (E.postN >= 3) return; E.postN++;
+      // no daily limit: one post every 2 hours
+      const p = cat.profile, E = X(); if (Date.now() < (E.postNext || 0)) return; E.postNext = Date.now() + 2 * H;
       const acc = p.acc || {}, dressed = ["hat", "collar", "outfit"].filter((k) => acc[k]).length, C = DC.COATS[p.coat] || {};
       const target = Math.round((20 + dressed * 18 + (C.wild ? 80 : 0) + p.love / 2 + (L.clean(p) > 70 ? 20 : 0) + (L.geneScore(p) - 40) * 1.6) * (0.7 + Math.random() * 0.6));     // good genes, more likes
       const poses = ["sit", "loaf", "sleep", "stretch", "groom", "bellyUp"];
@@ -193,10 +192,9 @@
           return `<div class="gd-pot ${st}"><div class="gd-pic${st === "ready" ? " bob" : ""}">${pic}</div><b>${esc(s.crops[p.k])}</b><span class="gd-bar"><i style="width:${pct}%"></i></span><small>${st === "ready" ? "✓" : st === "dead" ? "" : `⏳ ${esc(s.grow(left))} · 💧 ${esc(s.grow(wet))}`}</small>${btn}</div>`;
         }).join("")}</div><button type="button" class="mk-wide" data-shop="1">${esc(s.shopGarden(L.hasToy("can")))}</button>`;
       } else if (tab === "feed") {
-        const today = new Date().toDateString(), n = E.postDay === today ? E.postN : 0;
-        const own = world.cats.filter((c) => c.profile && !c.profile.guest && !c.profile.job);
-        body = `<p class="mk-note">${esc(s.feedHint)}</p><p class="pg-pts">${esc(s.today(n))}</p>`
-          + (n < 3 ? `<h4 class="mk-h">${esc(s.share)}</h4><div class="ct-pick">${own.map((c) => `<button type="button" data-share="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}" data-g="${c.profile.id}"></canvas>${esc(c.profile.name)}</button>`).join("")}</div>` : "")
+        const own = world.cats.filter((c) => c.profile && !c.profile.guest && !c.profile.job), wait = Math.max(0, Math.ceil(((E.postNext || 0) - now) / 60e3));
+        body = `<p class="mk-note">${esc(s.feedHint)}</p><p class="pg-pts">${esc(wait ? s.nextPost(wait) : s.canPost)}</p>`
+          + (!wait ? `<h4 class="mk-h">${esc(s.share)}</h4><div class="ct-pick">${own.map((c) => `<button type="button" data-share="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}" data-g="${c.profile.id}"></canvas>${esc(c.profile.name)}</button>`).join("")}</div>` : "")
           + `<h4 class="mk-h">${esc(s.posts)}</h4>` + (E.posts.length ? `<div class="fd-grid">${E.posts.map((ps) => {
           const done = now - ps.at >= DAY;
           return `<div class="fd-post"><canvas width="120" height="110" data-post="${ps.id}"></canvas><b>${esc(ps.name)}</b><span class="fd-like">${esc(s.likes(likesOf(ps, now)))}</span>${ps.got ? `<small>${esc(s.collected)}</small>` : done ? `<button type="button" class="gold" data-collect="${ps.id}">${esc(s.collect(payOf(ps)))}</button>` : `<small>⏳ ${esc(s.grow(Math.ceil((ps.at + DAY - now) / 60e3)))}</small>`}</div>`;

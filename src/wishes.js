@@ -2,7 +2,7 @@
 // A thought bubble shows it over the cat and on its card. Grant it in time for love, coins and XP; let it lapse and the cat sulks a little.
 (() => {
   const L = window.CatLife;
-  const LIFE = 45 * 60e3, GAP = [25, 70];                // a wish lasts 45 minutes; the next comes 25–70 minutes later
+  const LIFE = 45 * 60e3, GAP = [20, 45];                // one wish at a time across all your cats: it lasts 45 minutes, the next comes 20–45 minutes later
   const rnd = (a, b) => a + Math.random() * (b - a);
   const STR = {
     tr: {
@@ -35,15 +35,15 @@
 
   function create(o) {
     const { world, save, toast } = o;
+    const X = () => (L.extra.wish = L.extra.wish || { next: 0 });
+    const nextWish = () => { X().next = Date.now() + rnd(GAP[0], GAP[1]) * 60e3; };
     function grant(cat) {
       const p = cat.profile, w = p.wish; if (!w) return;
-      p.wish = null; p.wishNext = Date.now() + rnd(GAP[0], GAP[1]) * 60e3; p.wishes = (p.wishes || 0) + 1;
+      p.wish = null; nextWish(); p.wishes = (p.wishes || 0) + 1;
       // a combo: wishes granted one after another (without letting one lapse) pay more, and every 5th brings a star
       const combo = L.stats.combo = (L.stats.combo || 0) + 1; L.stats.wishes = (L.stats.wishes || 0) + 1; L.stats.bestCombo = Math.max(L.stats.bestCombo || 0, combo);
-      const k = 1 + 0.25 * Math.min(4, combo - 1), star = combo % 5 === 0 && (L.econToday().wishStars || 0) < 2;
-      if (star) L.econToday().wishStars = (L.econToday().wishStars || 0) + 1;
-      const E = L.econToday(), want = Math.round(3 * k * (L.hasBuff(p, "lucky") ? 1.5 : 1)), room = Math.max(0, 30 - (E.wish || 0)), give = Math.min(want, room); E.wish = (E.wish || 0) + give;
-      const coins = give ? L.earn(give, cat) : 0; L.addLove(cat, 8); if (L.gainPXP) L.gainPXP(Math.round(12 * k)); if (star) L.wallet.stars++;
+      const k = 1 + 0.25 * Math.min(4, combo - 1), star = combo % 5 === 0;
+      const coins = L.earn(Math.round(3 * k * (L.hasBuff(p, "lucky") ? 1.5 : 1)), cat); L.addLove(cat, 8); if (L.gainPXP) L.gainPXP(Math.round(12 * k)); if (star) L.wallet.stars++;
       world.confetti(cat.x, cat.y - 40 * cat.s, 14 + combo * 2); world.purr && world.purr();
       toast(t().done(p.name, coins) + (combo > 1 ? ` · 🔥 ${t().combo(combo)}` : "") + (star ? " +⭐" : "")); L.changed(); save();
     }
@@ -64,14 +64,19 @@
         const p = c.profile; if (!p || p.guest || p.job || c.leaving || c.stray) continue;
         if (p.wish) {
           if (p.wish.k === "brush" && (p.brushedAt || 0) > p.wish.at) { grant(c); continue; }
-          if (now > p.wish.until) { L.stats.combo = 0; p.wish = null; p.wishNext = now + rnd(GAP[0], GAP[1]) * 60e3; L.addLove(c, -6); world.burst(c.x, c.y - 40 * c.s, "sad", "#8a6b9a", 1); toast(t().miss(p.name)); L.changed(); save(); }
+          if (now > p.wish.until) { L.stats.combo = 0; p.wish = null; nextWish(); L.addLove(c, -6); world.burst(c.x, c.y - 40 * c.s, "sad", "#8a6b9a", 1); toast(t().miss(p.name)); L.changed(); save(); }
           continue;
         }
-        if (!p.wishNext) { p.wishNext = now + rnd(5, 30) * 60e3; continue; }
-        if (now >= p.wishNext && L.growth(p) > 0.15) {
-          const w = pick(options(world)); p.wish = { ...w, at: now, until: now + LIFE, got: 0 }; delete p.wish.w;
-          world.meow && world.meow(c); L.changed(); save();
-        }
+      }
+      // nobody wishing right now: when it's time, one cat (picked at random) gets a wish
+      if (world.cats.some((c) => c.profile && c.profile.wish)) return;
+      if (!X().next) { X().next = now + rnd(5, 20) * 60e3; return; }
+      if (now < X().next) return;
+      const free = world.cats.filter((c) => c.profile && !c.profile.guest && !c.profile.job && !c.leaving && !c.stray && !c.parkAway && L.growth(c.profile) > 0.15);
+      if (!free.length) return;
+      { const c = free[Math.floor(Math.random() * free.length)], p = c.profile, w = pick(options(world));
+        p.wish = { ...w, at: now, until: now + LIFE, got: 0 }; delete p.wish.w; X().next = 0;
+        world.meow && world.meow(c); L.changed(); save();
       }
     }
     setInterval(tick, 15e3); setTimeout(tick, 5000);

@@ -6,11 +6,11 @@
       ticket: (n) => `Bilet al 🪙 ${n}`, free: "🎁 Günün bedava bileti", scratchHint: "Bilet 25🪙. Gümüş kısmı farenle kazı, üç aynı sembol = ödül! Çoğu bilet boş çıkar.",
       scratchMe: "KAZI!", again: "Yeni bilet",
       lose: "Bu sefer olmadı 🙈", win: { coins: (n) => `Tebrikler! ${n}🪙 kazandın`, food: (e, nm) => `${e} ${nm} kazandın, dolapta`, star: "İnanılmaz! Bir ⭐ kazandın" },
-      memHint: "Aynı iki kartı bul, 60 saniye. Giriş 8🪙; az hamlede bitirirsen 16🪙'ye kadar kazanırsın, çok hamle zarar ettirir.", start: "Başla", fee: (n) => `Başla 🪙 ${n}`, moves: (n) => `${n} hamle`, time: (n) => `⏱ ${n}`,
+      memHint: "Aynı iki kartı bul, 60 saniye. Giriş 8🪙; az hamlede bitirirsen 16🪙'ye kadar kazanırsın, çok hamle zarar ettirir. Sonra 15 dk mola.", start: "Başla", fee: (n) => `Başla 🪙 ${n}`, moves: (n) => `${n} hamle`, time: (n) => `⏱ ${n}`,
       memWin: (m, c) => `Hepsini ${m} hamlede buldun! ${c ? `+${c}🪙` : "(bugünlük ödül doldu)"}`, timeUp: "Süre doldu ⏰",
-      whackHint: "Delikten çıkan farelere tıkla! 25 saniye, giriş 6🪙. Her iki fareye 1🪙.", score: (n) => `🐭 ${n}`, whackEnd: (n, c) => `${n} fare yakaladın! ${c ? `+${c}🪙` : "(bugünlük ödül doldu)"}`,
-      laserHint: "30 saniye: lazerle kedileri parlayan yıldızlara götür. Lazer gerekir, giriş 10🪙.", play: "Oyna", needLaser: "Önce marketten lazer al 🔴",
-      today: (a, b) => `Bugün: hafızadan ${a}/15🪙 · fareden ${b}/15🪙`,
+      whackHint: "Delikten çıkan farelere tıkla! 25 saniye, giriş 6🪙. Her iki fareye 1🪙. Sonra 15 dk mola.", score: (n) => `🐭 ${n}`, whackEnd: (n, c) => `${n} fare yakaladın! ${c ? `+${c}🪙` : "(bugünlük ödül doldu)"}`,
+      laserHint: "30 saniye: lazerle kedileri parlayan yıldızlara götür. Lazer gerekir, giriş 10🪙. Sonra 15 dk mola.", play: "Oyna", needLaser: "Önce marketten lazer al 🔴",
+      today: () => "Her oyunun ardından 15 dakika mola; günlük sınır yok.", wait: (m) => `⏳ ${m} dk sonra`,
     },
     en: {
       title: "Games", scratch: "Scratch card", memory: "Memory", whack: "Whack-a-mouse", laser: "Laser hunt",
@@ -21,11 +21,13 @@
       memWin: (m, c) => `All found in ${m} moves! ${c ? `+${c}🪙` : "(today's prizes are used up)"}`, timeUp: "Time's up ⏰",
       whackHint: "Click the mice popping out of the holes! 25 seconds, entry 6🪙. 1🪙 for every two.", score: (n) => `🐭 ${n}`, whackEnd: (n, c) => `You caught ${n} mice! ${c ? `+${c}🪙` : "(today's prizes are used up)"}`,
       laserHint: "30 seconds: lead the cats onto the twinkling stars with the laser. Needs the laser, entry 10🪙.", play: "Play", needLaser: "Buy the laser in the market first 🔴",
-      today: (a, b) => `Today: ${a}/15🪙 from memory · ${b}/15🪙 from mice`,
+      today: () => "Each game needs a 15-minute break before the next go; no daily limits.", wait: (m) => `⏳ in ${m} min`,
     },
   };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const TICKET = 25, CAP = 15, FEE = { mem: 8, whack: 6, laser: 10 };     // nothing is free: every game costs coins to play
+  const TICKET = 25, FEE = { mem: 8, whack: 6, laser: 10 };     // nothing is free: every game costs coins to play
+  // no daily limits: instead each game needs a 15-minute break before you can play it again
+  const COOL = 15 * 60e3;
   // scratch card odds (the prize is decided when you buy the ticket)
   const PRIZES = [["none", 58], ["c10", 17], ["c20", 12], ["c40", 6], ["c100", 2.4], ["dry", 3.5], ["special", 0.6], ["c250", 0.4], ["star", 0.1]];
   const SYM = { c10: "🪙", c20: "💰", c40: "💎", c100: "👑", dry: "🥣", special: "🍣", c250: "🏆", star: "⭐" };
@@ -80,7 +82,9 @@
     }
 
     // ---------------- memory
-    const pay = (n) => { if (L.wallet.coins < n) return false; L.wallet.coins -= n; L.changed(); return true; };
+    const CD = () => (L.extra.cool = L.extra.cool || {}), left = (k) => Math.max(0, (CD()[k] || 0) - Date.now()), mins = (k) => Math.ceil(left(k) / 60e3);
+    const pay = (n, k) => { if (L.wallet.coins < n || (k && left(k) > 0)) return false; L.wallet.coins -= n; if (k) CD()[k] = Date.now() + COOL; L.changed(); return true; };
+    const btn = (k, label, extraOff) => left(k) > 0 ? `<button type="button" class="mk-buy big" disabled>${esc(t().wait(mins(k)))}</button>` : `<button type="button" class="mk-buy big" data-g="${k}"${extraOff ? " disabled" : ""}>${esc(label)}</button>`;
     function startMemory() {
       const faces = ["🐱", "🐟", "🧶", "🐭", "🦋", "🍗"], cards = [...faces, ...faces].sort(() => Math.random() - 0.5);
       mem = { cards, open: [], found: [], moves: 0, end: Date.now() + 60e3, over: false }; msg = ""; render();
@@ -99,7 +103,7 @@
     function finishMemory(won) {
       mem.over = true; const e = E(), s = t();
       if (L.gainPXP) L.gainPXP(won ? 6 : 2);
-      if (won) { const c = Math.max(0, Math.min(Math.max(3, 16 - (mem.moves - 6)), CAP - e.mem)); e.mem += c; if (c) L.earn(c); msg = s.memWin(mem.moves, c); world.confetti(innerWidth / 2, 160, 16); }
+      if (won) { const c = Math.max(3, 16 - (mem.moves - 6)); e.mem += c; L.earn(c); msg = s.memWin(mem.moves, c); world.confetti(innerWidth / 2, 160, 16); }
       else msg = s.timeUp;
       L.changed(); render();
     }
@@ -111,7 +115,7 @@
     function tickWhack() {
       if (!whack || whack.over) return; const now = Date.now();
       if (now >= whack.end) {
-        whack.over = true; if (L.gainPXP) L.gainPXP(2 + Math.floor(whack.score / 4)); const e = E(), c = Math.max(0, Math.min(Math.floor(whack.score / 2), CAP - e.whack)); e.whack += c; if (c) L.earn(c);
+        whack.over = true; if (L.gainPXP) L.gainPXP(2 + Math.floor(whack.score / 4)); const e = E(), c = Math.floor(whack.score / 2); e.whack += c; if (c) L.earn(c);
         msg = t().whackEnd(whack.score, c); L.changed(); render(); return;
       }
       whack.holes = whack.holes.map((h) => (h && h < now ? 0 : h));
@@ -140,17 +144,17 @@
       } else if (tab === "memory") {
         body = `<p class="mk-note">${esc(s.memHint)}</p>${mem ? `<div class="gm-score">${esc(s.moves(mem.moves))} · <span class="gm-time"></span></div>
           <div class="gm-cards">${mem.cards.map((c, i) => `<button type="button" data-card="${i}" class="${mem.found.includes(i) ? "found" : mem.open.includes(i) ? "open" : ""}">${mem.found.includes(i) || mem.open.includes(i) ? c : "🐾"}</button>`).join("")}</div>` : ""}
-          <div class="gm-row"><button type="button" class="mk-buy big" data-g="mem"${(mem && !mem.over) || L.wallet.coins < FEE.mem ? " disabled" : ""}>${esc(s.fee(FEE.mem))}</button></div>`;
+          <div class="gm-row">${btn("mem", s.fee(FEE.mem), (mem && !mem.over) || L.wallet.coins < FEE.mem)}</div>`;
       } else if (tab === "whack") {
         body = `<p class="mk-note">${esc(s.whackHint)}</p>${whack ? `<div class="gm-score"></div><div class="gm-holes">${Array(9).fill(0).map((_, i) => `<button type="button" data-hole="${i}"><i>🐭</i></button>`).join("")}</div>` : ""}
-          <div class="gm-row"><button type="button" class="mk-buy big" data-g="whack"${(whack && !whack.over) || L.wallet.coins < FEE.whack ? " disabled" : ""}>${esc(s.fee(FEE.whack))}</button></div>`;
+          <div class="gm-row">${btn("whack", s.fee(FEE.whack), (whack && !whack.over) || L.wallet.coins < FEE.whack)}</div>`;
       } else {
-        body = `<p class="mk-note">${esc(s.laserHint)}</p><div class="gm-row"><button type="button" class="mk-buy big" data-g="laser"${L.hasToy("laser") && L.wallet.coins < FEE.laser ? " disabled" : ""}>${esc(L.hasToy("laser") ? s.fee(FEE.laser) : "🔒 " + s.play)}</button></div>`;
+        body = `<p class="mk-note">${esc(s.laserHint)}</p><div class="gm-row">${L.hasToy("laser") ? btn("laser", s.fee(FEE.laser), L.wallet.coins < FEE.laser) : `<button type="button" class="mk-buy big" data-g="laser">${esc("🔒 " + s.play)}</button>`}</div>`;
       }
       const _body = root.querySelector(".mk-body"), _sc = _body && root.dataset.tab === String(tab) ? _body.scrollTop : 0; root.dataset.tab = String(tab);
       root.innerHTML = `<div class="mk-head gm-head"><b>🎮 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">🪙 ${L.wallet.coins}</span><span class="star">⭐ ${L.wallet.stars}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
         <div class="mk-tabs">${tabs.map(([id, em, l]) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}">${em} ${esc(l)}</button>`).join("")}</div>
-        ${msg ? `<div class="mk-result">${esc(msg)}</div>` : ""}<div class="mk-body">${body}<p class="mk-today">${esc(s.today(e.mem, e.whack))}</p></div>`;
+        ${msg ? `<div class="mk-result">${esc(msg)}</div>` : ""}<div class="mk-body">${body}<p class="mk-today">${esc(s.today())}</p></div>`;
       if (_sc) { const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = _sc; }
       const cv = root.querySelector(".gm-ticket canvas"); if (cv) setupScratch(cv);
       renderWhack(); tickTime();
@@ -162,9 +166,9 @@
       if (b.dataset.a === "close") return close();
       if (b.dataset.tab) { tab = b.dataset.tab; msg = ""; return render(); }
       if (b.dataset.g === "ticket") { msg = ""; return buyTicket(); }
-      if (b.dataset.g === "mem") { if (!pay(FEE.mem)) return; return startMemory(); }
-      if (b.dataset.g === "whack") { if (!pay(FEE.whack)) return; return startWhack(); }
-      if (b.dataset.g === "laser") { if (!L.hasToy("laser")) { msg = t().needLaser; return render(); } if (!pay(FEE.laser)) return; close(); o.playLaser(); return; }
+      if (b.dataset.g === "mem") { if (!pay(FEE.mem, "mem")) return; return startMemory(); }
+      if (b.dataset.g === "whack") { if (!pay(FEE.whack, "whack")) return; return startWhack(); }
+      if (b.dataset.g === "laser") { if (!L.hasToy("laser")) { msg = t().needLaser; return render(); } if (!pay(FEE.laser, "laser")) return; close(); o.playLaser(); return; }
       if (b.dataset.card != null) return flip(+b.dataset.card);
       if (b.dataset.hole != null && whack && !whack.over) { const i = +b.dataset.hole; if (whack.holes[i]) { whack.holes[i] = 0; whack.score++; b.classList.add("hit"); setTimeout(() => b.classList.remove("hit"), 200); renderWhack(); } }
     });
@@ -175,7 +179,7 @@
       root.style.left = `${Math.max(8, innerWidth - w - 14)}px`; root.style.top = `${Math.max(8, innerHeight - h - 90)}px`;
       root.style.right = "auto"; root.style.bottom = "auto"; root.style.setProperty("--maxh", `${innerHeight - 16}px`);
     }
-    function open(which) { if (which) tab = which; msg = ""; root.hidden = false; render(); place(); clearInterval(loop); loop = setInterval(() => { tickWhack(); tickTime(); }, 60); clearInterval(placeT); placeT = setInterval(place, 500); o.onOpen && o.onOpen(); }
+    function open(which) { if (which) tab = which; msg = ""; root.hidden = false; render(); place(); clearInterval(loop); loop = setInterval(() => { tickWhack(); tickTime(); if (Date.now() % 20000 < 60 && !(mem && !mem.over) && !(whack && !whack.over) && !(ticket && !ticket.done)) render(); }, 60); clearInterval(placeT); placeT = setInterval(place, 500); o.onOpen && o.onOpen(); }
     function close() { root.hidden = true; clearInterval(loop); clearInterval(placeT); if (ticket && !ticket.done) payTicket(); o.onClose && o.onClose(); }
     addEventListener("keydown", (e) => { if (e.key === "Escape" && !root.hidden) close(); });
     return { open, close, get isOpen() { return !root.hidden; } };

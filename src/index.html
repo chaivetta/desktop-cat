@@ -203,7 +203,7 @@
   setInterval(() => {
     if (world.idleFor() > 120 || document.hidden) return;
     const E = L.econToday(); E.min = (E.min || 0) + 1;
-    if (E.min % 15 === 0 && E.pc < 20 + 5 * L.sk("k4")) { E.pc++; L.earn(1); }
+    if (E.min % Math.max(10, 20 - 2 * L.sk("k4")) === 0) { E.pc++; L.earn(1); }       // no daily cap: a coin every 20 minutes (the Golden touch skill shortens it)
   }, 60000);
   // a lonely cat that walked out: the others remember
   world.onCatLeft = (c) => {
@@ -224,10 +224,10 @@
     L.gainPXP(2 + Math.floor(score / 5));
     const t = L.STR[L.lang], E = L.econToday();
     const best = score > (L.game.best || 0); if (best) L.game.best = score;
-    // 1 coin for every two stars caught (25 a day at most), and a star for a score of 20+ (once a day)
-    const coins = Math.max(0, Math.min(Math.floor(score / 2), 25 - E.game)); E.game += coins; if (coins) L.earn(coins);
-    const st = score >= 20 && !E.gameStars ? 1 : 0; if (st) { E.gameStars = 1; L.wallet.stars += st; }
-    const capped = (score > 0 && !coins) || (score >= 20 && !st);
+    // 1 coin for every two stars caught, and a score of 20+ has a 30% chance of a star (no daily limits; the game has a 15-minute break instead)
+    const coins = Math.floor(score / 2); E.game += coins; if (coins) L.earn(coins);
+    const st = score >= 20 && Math.random() < 0.3 ? 1 : 0; if (st) L.wallet.stars += st;
+    const capped = false;
     gameBox.innerHTML = `<b>🔴 ${t.game}</b><p>${t.gameOver(score, st, best)}${coins ? ` +${coins}🪙` : ""}</p>${capped ? `<small>${t.gameCap}</small>` : ""}<small>${t.bestL(L.game.best)}</small><div><button data-g="again">${t.again}</button><button data-g="close">${t.closeB}</button></div>`;
     gameBox.hidden = false; if (st) world.confetti(innerWidth / 2, 120, 40); L.changed(); save();
   };

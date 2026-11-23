@@ -639,8 +639,7 @@
         }
       }
       if (hit && !ts.all && ts.list.every((k) => k.n >= TASKS[k.id].n)) {
-        // a star for finishing a cat's tasks, but at most 3 a day across all your cats (so adopting more cats isn't a star farm)
-        const E = L.econToday(), st = (E.taskStars || 0) < 3 ? ALL_REWARD.stars : 0; E.taskStars = (E.taskStars || 0) + st;
+        const st = ALL_REWARD.stars;                       // a star for finishing all of a cat's tasks (room for cats grows with your level)
         ts.all = true; if (L.gainPXP) L.gainPXP(ALL_REWARD.xp); p.stars = (p.stars || 0) + st; L.wallet.stars += st; L.earn(ALL_REWARD.coins * (L.hasBuff(p, "lucky") ? 2 : 1), cat); p.streak = (p.streak || 0) + 1;
         L.addXP(cat, ALL_REWARD.xp); L.addLove(cat, ALL_REWARD.love); L.write(p, "tasksDone");
         if (cat.world) cat.world.confetti(cat.x, cat.y - 30 * cat.s, 30);

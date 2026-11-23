@@ -144,13 +144,13 @@ Every so often a cat wants something in particular: a fish dinner, its wind-up m
 
 A new 🌱 panel on the card:
 - **Garden:** buy a watering can (1🪙, unlimited water) and more pots in the market, then plant catnip (1 h), mint (3 h), strawberries (6 h) or sunflowers (12 h). They grow in real hours, even with the app closed, as long as they're watered (water lasts 6 hours; 12 hours dry and they wilt). Harvests give catnip, coins, special meals and, rarely, a star. One pot to start; more from the market.
-- **Feed:** tap one of your cats to post its photo (or use 📸 on its card); it collects likes for a day (more for dressed-up, clean, happy cats and big cats); then you collect coins for them (15🪙 at most each). Three posts a day.
+- **Feed:** tap one of your cats to post its photo (or use 📸 on its card); it collects likes for a day (more for dressed-up, clean, happy cats and big cats); then you collect coins for them (15🪙 at most each). One post every 2 hours.
 - **Weekly contest:** beauty, tricks or love, a different one each week. Enter a cat (20🪙); it's judged when the week ends against six rivals. The top three win trophies, coins and stars.
 - **Festivals:** a Winter Fair, Spring Fair, Summer Festival and Halloween, each with things you can only buy while it's on (a snowman, a gift box, tulips, a beach parasol, a ghost, a cauldron and more) and a daily gift.
 
 ### 💼 Jobs
 
-Send a grown cat out for an hour's mouse hunt, a three-hour visit to the neighbours or an eight-hour trip to the tip. It walks off the screen and comes back (even if the app was closed) with coins, food, sometimes a piece of furniture or a star. A cat does three jobs a day at most and comes back hungry and tired, so feed it and let it rest before the next one.
+Send a grown cat out for an hour's mouse hunt, a three-hour visit to the neighbours or an eight-hour trip to the tip. It walks off the screen and comes back (even if the app was closed) with coins, food, sometimes a piece of furniture or a star. A cat comes back hungry and tired, so feed it and let it rest (as long as the job took) before the next one.
 
 ### 👋 Coming back
 
@@ -158,7 +158,7 @@ Every day you open the app adds to a login streak, with bigger gifts each day an
 
 ### More life
 
-- **Wish combos:** wishes granted one after another pay more (up to double); every fifth brings a star (two a day at most). Wish coins top out at 30🪙 a day. Let one lapse and the combo breaks.
+- **Wish combos:** one of your cats wishes for something every 20–45 minutes. Wishes granted one after another pay more (up to double), and every fifth brings a star. Let one lapse and the combo breaks.
 - **Big cats show off:** the lion roars (the other cats flinch and the birds flee), the cheetah sprints the length of the screen faster than anything, the others stretch and yawn hugely.
 - **Visitors:** a squirrel dashes past now and then, butterflies flutter by, and at night a hedgehog trundles along. They have their own page in the album.
 - **Achievements:** nineteen goals (look after 100 guests, a 10-wish combo, see the owl, adopt a big cat…), each with a reward.
@@ -220,11 +220,11 @@ Hungry, lonely or dirty cats can get **sick**: they grumble, play less and love 
 
 <img src="docs/games.png" width="300" alt="The games panel with the scratch card">
 
-Nothing is free: every game costs coins to play, and most of the time you win back less than you put in.
+Nothing is free: every game costs coins to play, and most of the time you win back less than you put in. There are no daily limits; instead each game needs a 15-minute break before you play it again.
 
 - **Scratch card:** 25🪙 a ticket. Scratch the silver with your mouse; three matching symbols win coins (up to 250), food, a special meal or (very rarely) a star. Most tickets lose
-- **Memory:** 8🪙 to play. Match the pairs in 60 seconds; finish in few moves for up to 16🪙 (15🪙 a day at most)
-- **Whack-a-mouse:** 6🪙 to play. 25 seconds of mice popping out of holes, 1🪙 for every two (15🪙 a day at most)
+- **Memory:** 8🪙 to play. Match the pairs in 60 seconds; finish in few moves for up to 16🪙
+- **Whack-a-mouse:** 6🪙 to play. 25 seconds of mice popping out of holes, 1🪙 for every two
 - **Laser hunt:** 10🪙 to play (needs the laser). Lead the cats onto the twinkling stars
 
 <img src="docs/game.png" width="640" alt="The laser hunt: lead the cats onto twinkling stars">

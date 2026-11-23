@@ -121,7 +121,7 @@
       if (G.offer && now > G.offer.until) { G.offer = null; box.hidden = true; save(); }
       // the next neighbour: at a random time 4–6 hours after the last one (several guests can stay at once, if there's room)
       const today = new Date().toDateString(); if (G.day !== today) { G.day = today; G.dayN = 0; }
-      if (!G.offer && now >= G.next && G.dayN < PER_DAY && world.cats.some((c) => c.profile && !c.profile.guest)) {
+      if (!G.offer && now >= G.next && world.cats.some((c) => c.profile && !c.profile.guest)) {
         if (guestCats().filter((c) => !c.profile.guest.done).length < rooms()) makeOffer(); else G.next = now + rnd(GAP[0], GAP[1]) * 3.6e6;
       }
     }

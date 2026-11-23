@@ -19,7 +19,7 @@
     tr: {
       title: "💼 İşe gönder", jobs: { hunt: "Fare avı", visit: "Komşu ziyareti", explore: "Çöplük keşfi" }, hrs: (h) => `${h} sa`,
       away: (j, m) => `💼 ${j}: ${m >= 60 ? `${Math.floor(m / 60)} sa ${m % 60} dk` : `${m} dk`} sonra döner`,
-      cant: { kitten: "Yavrular işe gidemez", sick: "Hasta kedi işe gidemez", hungry: "Aç kedi işe gidemez, önce mama ver", tired: "Yorgun, biraz dinlensin", limit: "Bugün yeterince çalıştı (günde en çok 3 iş)" },
+      cant: { kitten: "Yavrular işe gidemez", sick: "Hasta kedi işe gidemez", hungry: "Aç kedi işe gidemez, önce mama ver", tired: "Yorgun; işi kadar dinlenmesi lazım" },
       back: (n, j, what) => `🎒 ${n} ${j} dönüşü: ${what}`, gone: (n) => `👋 ${n} işe gitti`,
       found: (x) => `buldu: ${x}`, star: "⭐ bir yıldız!",
       hint: "Kedin ekrandan çıkar, süre dolunca (uygulama kapalı olsa bile) ödülle döner. Uzun işler daha iyi ödül getirir. Ara sıra daha iyi ödeyen iş teklifleri de gelir.",
@@ -29,7 +29,7 @@
     en: {
       title: "💼 Send to work", jobs: { hunt: "Mouse hunt", visit: "Visit the neighbours", explore: "Explore the tip" }, hrs: (h) => `${h} h`,
       away: (j, m) => `💼 ${j}: back in ${m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`}`,
-      cant: { kitten: "Kittens can't go to work", sick: "A sick cat can't go", hungry: "A hungry cat can't go; feed it first", tired: "Tired; let it rest a while", limit: "It's worked enough today (3 jobs a day at most)" },
+      cant: { kitten: "Kittens can't go to work", sick: "A sick cat can't go", hungry: "A hungry cat can't go; feed it first", tired: "Tired; it needs to rest as long as the job took" },
       back: (n, j, what) => `🎒 ${n} is back from the ${j.toLowerCase()}: ${what}`, gone: (n) => `👋 ${n} went to work`,
       found: (x) => `found ${x}`, star: "⭐ a star!",
       hint: "Your cat walks off the screen and comes back with a reward when the time's up (even if the app is closed). Longer jobs bring better rewards. Better-paid job offers come in now and then too.",
@@ -43,13 +43,11 @@
 
   function create(o) {
     const { world, save, toast } = o, DC = window.DesktopCat;
-    // a cat can do at most 3 jobs a day, and needs a rest after one (half as long as the job)
-    const jobsToday = (p) => (p.jobDay === new Date().toDateString() ? p.jobN || 0 : 0);
-    const why = (p) => (L.growth(p) < 0.6 ? "kitten" : p.sick ? "sick" : L.isHungry(p) ? "hungry" : Date.now() < (p.restUntil || 0) ? "tired" : jobsToday(p) >= 3 ? "limit" : "");
+    // no daily limit: after a job a cat needs a rest as long as the job itself (and a meal)
+    const why = (p) => (L.growth(p) < 0.6 ? "kitten" : p.sick ? "sick" : L.isHungry(p) ? "hungry" : Date.now() < (p.restUntil || 0) ? "tired" : "");
     function send(cat, id, def) {
       const p = cat.profile, j = def || JOBS.find((x) => x.id === id); if (!p || !j || p.job || p.guest || why(p)) return;
       p.job = { id: j.id, def: def || null, at: Date.now(), until: Date.now() + j.h * 3.6e6 };
-      p.jobN = jobsToday(p) + 1; p.jobDay = new Date().toDateString();
       cat.jobOff = false; cat.set("walk", 60, { target: cat.x < world.W / 2 ? -120 : world.W + 120 });
       toast(t().gone(p.name)); L.changed(); save();
     }
@@ -66,7 +64,7 @@
       }
       if (j.star && Math.random() < j.star) { L.wallet.stars++; got.push(s.star); }
       // back hungry and tired: feed it, and let it rest before the next job
-      p.fedAt = Math.min(p.fedAt || 0, Date.now() - 8 * 3.6e6); p.restUntil = Date.now() + j.h * 0.5 * 3.6e6; L.addLove(cat, 3); if (L.gainPXP) L.gainPXP(j.xp);
+      p.fedAt = Math.min(p.fedAt || 0, Date.now() - 8 * 3.6e6); p.restUntil = Date.now() + j.h * 3.6e6; L.addLove(cat, 3); if (L.gainPXP) L.gainPXP(j.xp);
       // walk back in from the edge
       cat.x = Math.random() < 0.5 ? -60 : world.W + 60; cat.y = world.floor; cat.set("walk", 6, { target: rnd(world.W * 0.2, world.W * 0.8) });
       world.confetti(Math.max(40, Math.min(world.W - 40, cat.x)), world.floor - 60, 20);
@@ -107,7 +105,7 @@
       const S = J(), now = Date.now(), today = new Date().toDateString();
       if (S.day !== today) { S.day = today; S.n = 0; }
       if (S.offer && now > S.offer.until) { S.offer = null; box.hidden = true; }
-      if (S.offer || now < S.next || S.n >= 6) return;
+      if (S.offer || now < S.next) return;
       const free = world.cats.filter((c) => c.profile && !c.profile.guest && !c.profile.job && !c.leaving && !why(c.profile));
       S.next = now + rnd(60, 180) * 60e3; if (!free.length) return;
       const cat = free[Math.floor(Math.random() * free.length)], d = OFFERS[Math.floor(Math.random() * OFFERS.length)];

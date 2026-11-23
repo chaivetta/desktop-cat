@@ -28,7 +28,7 @@
       sk: {
         h1: ["Güler yüz", "Misafir ücretleri +%8 / kademe"], h2: ["Ek oda", "Aynı anda +1 misafir / kademe"], h3: ["İyi nam", "Ün daha hızlı artar, daha yavaş düşer"], h4: ["VIP müşteri", "Uzun kalan, iyi ödeyen misafirler daha sık gelir (+%40 ücret)"],
         c1: ["Doyurucu tarif", "Kediler +%10 / kademe daha uzun tok kalır"], c2: ["Sağlıklı yaşam", "Hastalanma şansı -%15 / kademe"], c3: ["Sevgi dolu", "Kazanılan sevgi +%10 / kademe"], c4: ["Usta eğitmen", "Numara öğretme şansı +%5 / kademe"],
-        k1: ["Tamirci", "Tamir -%15 / kademe ucuz"], k2: ["Sağlam yapı", "Eşya ve oyuncaklar -%12 / kademe yavaş eskir"], k3: ["Hurdacı", "Satış fiyatı +%20 / kademe"], k4: ["Altın parmak", "Bilgisayar başında kazanılan altın sınırı +5 / kademe"],
+        k1: ["Tamirci", "Tamir -%15 / kademe ucuz"], k2: ["Sağlam yapı", "Eşya ve oyuncaklar -%12 / kademe yavaş eskir"], k3: ["Hurdacı", "Satış fiyatı +%20 / kademe"], k4: ["Altın parmak", "Bilgisayar başında altın 2 dk / kademe daha sık gelir"],
       },
       you: "Sen", tapNode: "Bir dala dokun: ne işe yaradığını ve öğrenip öğrenemeyeceğini gör. Bir dalda puan harcadıkça alttakiler açılır.", learn: "Öğren", locked: (n) => `🔒 Bu dalda ${n} puan harca`, full: "Tamam", noPts: "Puan yok",
       pages: { birds: "🐦 Kuşlar", critters: "🐿️ Ziyaretçiler", coats: "🐱 Kedi cinsleri", furn: "🛋️ Eşyalar" }, critN: { squirrel: "Sincap", hedgehog: "Kirpi", butterflies: "Kelebekler" },
@@ -51,7 +51,7 @@
       sk: {
         h1: ["Warm welcome", "Guest pay +8% per rank"], h2: ["Spare room", "+1 guest at a time per rank"], h3: ["Good name", "Rating rises faster, falls slower"], h4: ["VIP guests", "Long, well-paying stays come more often (+40% pay)"],
         c1: ["Hearty recipes", "Cats stay full 10% longer per rank"], c2: ["Healthy living", "15% less chance of falling ill per rank"], c3: ["Full of love", "+10% love gained per rank"], c4: ["Master trainer", "+5% trick success per rank"],
-        k1: ["Handy", "Repairs 15% cheaper per rank"], k2: ["Built to last", "Things and toys wear 12% slower per rank"], k3: ["Haggler", "Sell for 20% more per rank"], k4: ["Golden touch", "+5 to the daily coins from computer time per rank"],
+        k1: ["Handy", "Repairs 15% cheaper per rank"], k2: ["Built to last", "Things and toys wear 12% slower per rank"], k3: ["Haggler", "Sell for 20% more per rank"], k4: ["Golden touch", "Computer-time coins come 2 minutes sooner per rank"],
       },
       you: "You", tapNode: "Tap a node to see what it does and whether you can learn it. Spending points in a branch opens the ones below.", learn: "Learn", locked: (n) => `🔒 Spend ${n} points in this branch`, full: "Maxed", noPts: "No points",
       pages: { birds: "🐦 Birds", critters: "🐿️ Visitors", coats: "🐱 Cat coats", furn: "🛋️ Furniture" }, critN: { squirrel: "Squirrel", hedgehog: "Hedgehog", butterflies: "Butterflies" },
