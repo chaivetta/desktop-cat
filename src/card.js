@@ -61,8 +61,9 @@
           </section>
           <section class="cc-sec cc-care"><div class="cc-label"><span class="cc-careT"></span><small class="cc-cleanL"></small></div>
             <div class="cc-buffs"></div>
-            <div class="cc-carebtns"><button class="cc-pill" type="button" data-c="brush"></button><button class="cc-pill" type="button" data-c="bath"></button><button class="cc-pill red" type="button" data-c="med" hidden></button></div>
+            <div class="cc-carebtns"><button class="cc-pill" type="button" data-c="brush"></button><button class="cc-pill" type="button" data-c="bath"></button><button class="cc-pill red" type="button" data-c="med" hidden></button><button class="cc-pill" type="button" data-c="vet"></button></div>
           </section>
+          <section class="cc-sec cc-genes"></section>
           <section class="cc-sec cc-job"></section>
           <section class="cc-sec cc-danger">
             <button class="cc-link" type="button" data-r="ask"></button>
@@ -124,7 +125,7 @@
       if (cat) {
         const pose = POSE_OF[cat.state] || "sit";
         pg.clearRect(0, 0, cv.width, cv.height);
-        DC.portrait(pg, cat.coat, { pose, t: pt, blink, eyes: cat.state === "happy" ? "happy" : null, scale: 2, dx: DX[pose] ?? 4, dy: 3, acc: cat.wearing(), grey: L.isElder(cat.profile) });
+        DC.portrait(pg, cat.coat, { genes: cat.profile && cat.profile.genes, pose, t: pt, blink, eyes: cat.state === "happy" ? "happy" : null, scale: 2, dx: DX[pose] ?? 4, dy: 3, acc: cat.wearing(), grey: L.isElder(cat.profile) });
         tickT += dt; if (tickT > 1) { tickT = 0; update(); }
       }
       raf = requestAnimationFrame(drawPortrait);
@@ -136,7 +137,7 @@
       world.cats.filter((c) => c.profile).forEach((c) => {
         const b = document.createElement("button"); b.type = "button"; b.className = "cc-tab" + (c === cat ? " on" : ""); b.title = c.profile.name;
         const k = document.createElement("canvas"); k.width = 46; k.height = 46; b.appendChild(k);
-        DC.portrait(k.getContext("2d"), c.coat, { scale: 1, dx: 4, dy: 2, acc: c.wearing() });
+        DC.portrait(k.getContext("2d"), c.coat, { scale: 1, dx: 4, dy: 2, acc: c.wearing(), genes: c.profile && c.profile.genes });
         b.onclick = () => api.open(c);
         box.appendChild(b);
       });
@@ -171,7 +172,7 @@
         const k = document.createElement("canvas"); k.width = 44; k.height = 44; b.appendChild(k);
         const acc = { ...(cat.profile.acc || {}) }; acc[kind] = `${d}:${d === curD && curS ? curS : "cherry"}`;
         if (kind !== "outfit") delete acc.outfit;
-        DC.portrait(k.getContext("2d"), cat.coat, { ...THUMB[kind], acc });
+        DC.portrait(k.getContext("2d"), cat.coat, { ...THUMB[kind], acc, genes: cat.profile && cat.profile.genes });
         if (cost) { const lk = document.createElement("span"); lk.className = "cc-lk"; lk.textContent = `🔒${cost}`; b.appendChild(lk); }
         b.onclick = () => { design = d; if (L.price(kind, d)) { wardKey = ""; renderWardrobe(); return; } wear(`${d}:${d === curD && curS ? curS : (curS || "cherry")}`); };
         box.appendChild(b);
@@ -304,7 +305,13 @@
       const bh = L.activeBuffs(p).map((b) => `<span class="cc-chip buff" title="${esc(t.buffN[b.k])}">${b.e} ${esc(t.buffN[b.k])} · ${b.left >= 1 ? Math.floor(b.left) + (L.lang === "tr" ? "sa" : "h") : Math.ceil(b.left * 60) + (L.lang === "tr" ? "dk" : "m")}</span>`).join("");
       if (q(".cc-buffs").dataset.v !== bh) { q(".cc-buffs").innerHTML = bh; q(".cc-buffs").dataset.v = bh; }
       if (window.CatJobs && window.CatJobs.now) window.CatJobs.now.fill(q(".cc-job"), cat);
-      q('[data-c="brush"]').textContent = t.brushB; q('[data-c="bath"]').textContent = `${t.bathB} · ${L.pantry.shampoo || 0}`;
+      // 🧬 genes: a grade and four little bars
+      const G = p.genes, gsec = q(".cc-genes"); gsec.hidden = !G;
+      if (G) { const sc = L.geneScore(p), gr = L.geneGrade(sc), gk = [lang, sc, ...L.GENE_KEYS.map((k) => G[k])].join(",");
+        if (gsec.dataset.k !== gk) { gsec.dataset.k = gk;
+          gsec.innerHTML = `<div class="cc-label"><span>🧬 ${esc(t.genesT)}</span><small><b class="cc-grade g${gr}">${gr}</b> ${sc}/100</small></div><div class="cc-gbars">${L.GENE_KEYS.map((k) => `<span><i>${esc(t.geneN[k])}</i><b><u style="width:${G[k]}%"></u></b><em>${G[k]}</em></span>`).join("")}</div><small class="cc-ghint">${esc(t.geneHint)}</small>`; } }
+      q('[data-c="brush"]').textContent = t.brushB; q('[data-c="bath"]').textContent = world.furniture.some((f) => f.kind === "bathtub" && f.usable) ? t.tubB : `${t.bathB} · ${L.pantry.shampoo || 0}`;
+      q('[data-c="vet"]').textContent = t.vetB(p.sick ? 45 : 25);
       const mb = q('[data-c="med"]'); mb.hidden = !p.sick; mb.textContent = `${t.medB} · ${L.pantry.medicine || 0}`;
 
       const st = L.stage(p); q(".cc-stage").textContent = `${st.e} ${st[lang]}`;
@@ -526,7 +533,7 @@
       g.fillStyle = "rgba(0,0,0,.18)"; g.beginPath(); g.ellipse(300, 478, 170, 18, 0, 0, Math.PI * 2); g.fill();
       const k = document.createElement("canvas"); k.width = 540; k.height = 540; const kg = k.getContext("2d");
       const pose = POSE_OF[cat.state] || "sit";
-      DC.portrait(kg, cat.coat, { pose, t: pt, eyes: cat.state === "sleep" ? null : "happy", scale: 10, dx: DX[pose] ?? 4, dy: 3, acc: cat.wearing(), grey: L.isElder(p) });
+      DC.portrait(kg, cat.coat, { genes: p.genes, pose, t: pt, eyes: cat.state === "sleep" ? null : "happy", scale: 10, dx: DX[pose] ?? 4, dy: 3, acc: cat.wearing(), grey: L.isElder(p) });
       g.drawImage(k, 30, 20);
       g.strokeStyle = "#5b3a29"; g.lineWidth = 4; g.strokeRect(30, 30, 540, 540);
       g.fillStyle = "#5b3a29"; g.textAlign = "center";
@@ -562,9 +569,18 @@
         p.brushedAt = Date.now(); L.wearToy("brush"); p.clean = Math.min(100, L.clean(p) + 30); L.addLove(cat, 3); L.write(p, "brush"); world.purr();
         world.burst(cat.x, cat.y - 20 * cat.s, "spark", "#fff3a0", 4); floatUp("🪮", b);
       } else if (k === "bath") {
-        if (!(L.pantry.shampoo > 0)) { if (opts.onNeed) opts.onNeed("shampoo"); return; }
-        L.pantry.shampoo--; p.clean = 100; L.addLove(cat, -6); L.write(p, "bath");
+        // a bathtub at home: no shampoo needed (it has to dry for 3 hours between baths), and cats mind it less
+        const tub = world.furniture.find((f) => f.kind === "bathtub" && f.usable);
+        if (tub) { if (Date.now() - (tub.item.bathAt || 0) < 3 * 3.6e6) { floatUp("⏳", b); b.title = t.tubWait; return; } tub.item.bathAt = Date.now(); p.clean = 100; L.addLove(cat, -2); L.write(p, "bath"); world.burst(tub.x, world.floor - 30 * world.toyScale, "spark", "#bfe6ff", 10); }
+        else { if (!(L.pantry.shampoo > 0)) { if (opts.onNeed) opts.onNeed("shampoo"); return; }
+        L.pantry.shampoo--; p.clean = 100; L.addLove(cat, -6); L.write(p, "bath"); }
         world.burst(cat.x, cat.y - 24 * cat.s, "spark", "#bfe6ff", 8); if (!["held", "fall"].includes(cat.state)) cat.set("arch", 1.4); floatUp("🫧", b);
+      } else if (k === "vet") {
+        // 🩺 call the vet: cures an illness, a quick clean-up and a "healthy" buff for 6 hours; once every 6 hours per cat
+        const cost = p.sick ? 45 : 25; if (Date.now() - (p.vetAt || 0) < 6 * 3.6e6) { floatUp("⏳", b); b.title = t.vetWait; return; }
+        if (L.wallet.coins < cost) { if (opts.onNeed) opts.onNeed("coins"); floatUp("🪙", b); return; }
+        L.wallet.coins -= cost; p.vetAt = Date.now(); if (p.sick) L.cure(cat); L.addBuff(p, "healthy", 6); p.clean = Math.min(100, L.clean(p) + 15); L.addLove(cat, 2);
+        world.burst(cat.x, cat.y - 30 * cat.s, "heart", "#6fd3a8", 4); floatUp("🩺", b);
       } else if (k === "med") {
         if (!(L.pantry.medicine > 0)) { if (opts.onNeed) opts.onNeed("medicine"); return; }
         L.pantry.medicine--; L.cure(cat); floatUp("💊", b);

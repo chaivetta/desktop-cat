@@ -213,9 +213,10 @@
         tunnel: ["Kedi tüneli", "İçinden koşa koşa geçer, saklanır"], fountain: ["Su çeşmesi", "Taze su; kediler gelip içer"], litter: ["Kum kabı", "Temiz tutarsan kediler daha mutlu; kirlenince tıkla, temizle"], bed: ["Kedi yatağı", "Yumuşacık, içinde kıvrılıp uyur"], house: ["Kedi kulübesi", "İçine girip saklanarak uyur"], rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
         tree: ["Kedi ağacı", "İki katlı, tepesine tırmanır"], aquarium: ["Akvaryum", "Balıkları izler, cama pati atar"] },
       game: "Lazer avı", gameHelp: "30 saniye: lazerle kedileri parlayan yıldızlara götür!", again: "Tekrar oyna", closeB: "Kapat",
-      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", settings: "Ayarlar", games: "Oyunlar", inventory: "Envanter", progress: "Gelişim", extras: "Bahçe & Etkinlik", bestL: (n) => `Rekor: ${n}`,
+      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", genesT: "Genler", geneN: { shine: "Parlaklık", tone: "Renk", pattern: "Desen", eyes: "Gözler" }, geneHint: "İyi genler tüyü parlak ve canlı, kötüler soluk yapar. Güzellik yarışmasında ve beğenilerde işe yarar; yavrular anne babasına çeker.",
+      settings: "Ayarlar", games: "Oyunlar", inventory: "Envanter", progress: "Gelişim", extras: "Bahçe & Etkinlik", bestL: (n) => `Rekor: ${n}`,
       sexF: "♀ Dişi", sexM: "♂ Erkek", sickL: "🤒 Hasta: ilaç ver ya da iyileştiren bir mama", grubby: "🫧 Çok kirli: tara ya da yıka",
-      care: "Bakım", brushB: "🪮 Tara", bathB: "🛁 Yıka", medB: "💊 İlaç ver", cleanL: (n) => `🫧 Temizlik %${n}`, needBrush: "Önce marketten bir fırça al 🪮",
+      care: "Bakım", vetB: (n) => `🩺 Veteriner · ${n}🪙`, vetWait: "Veteriner yakın zamanda baktı", tubB: "🛁 Küvette yıka", tubWait: "Küvet daha kurumadı (3 saatte bir)", brushB: "🪮 Tara", bathB: "🛁 Yıka", medB: "💊 İlaç ver", cleanL: (n) => `🫧 Temizlik %${n}`, needBrush: "Önce marketten bir fırça al 🪮",
       buffN: { full: "Tok", glow: "Sevgi kalkanı", grow: "Hızlı büyüme", healthy: "Sağlıklı", energy: "Enerjik", calm: "Huzurlu", shiny: "Parlak", smart: "Zeki", lucky: "Şanslı", sleepy: "Uykucu", royal: "Kraliyet" }, lonely: "Kendini yalnız hissediyor 💔 Biraz ilgi lazım", leftHome: (n) => `${n} evden ayrıldı 💔`,
       strayTag: (n) => `Sokak kedisi ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Lazer avı · ⏱ ${t} · ⭐ ${n}`,
       voices: "Kedi sesleri", back: "Geri", addFiles: "Ses ekle", voiceN: (n) => n ? `${n} kayıt` : "henüz yok",
@@ -281,9 +282,10 @@
         tunnel: ["Cat tunnel", "Dashes through it and hides inside"], fountain: ["Water fountain", "Fresh water; the cats come for a drink"], litter: ["Litter box", "Keep it clean and the cats are happier; click it to clean"], bed: ["Cat bed", "Soft and round, curls up in it"], house: ["Cat house", "Crawls inside to sleep, hidden away"], rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
         tree: ["Cat tree", "Two levels to climb up to"], aquarium: ["Aquarium", "Watches the fish and paws at the glass"] },
       game: "Laser hunt", gameHelp: "30 seconds: use the laser to lead the cats onto the twinkling stars!", again: "Play again", closeB: "Close",
-      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", settings: "Settings", games: "Games", inventory: "Inventory", progress: "Progress", extras: "Garden & Events", bestL: (n) => `Best: ${n}`,
+      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", genesT: "Genes", geneN: { shine: "Shine", tone: "Colour", pattern: "Pattern", eyes: "Eyes" }, geneHint: "Good genes make a glossy, vivid coat; poor ones a pale, washed-out one. They count in beauty contests and likes; kittens take after their parents.",
+      settings: "Settings", games: "Games", inventory: "Inventory", progress: "Progress", extras: "Garden & Events", bestL: (n) => `Best: ${n}`,
       sexF: "♀ Female", sexM: "♂ Male", sickL: "🤒 Sick: give medicine or a healing meal", grubby: "🫧 Very grubby: brush or bath",
-      care: "Care", brushB: "🪮 Brush", bathB: "🛁 Bath", medB: "💊 Medicine", cleanL: (n) => `🫧 Clean ${n}%`, needBrush: "Buy a brush in the market first 🪮",
+      care: "Care", vetB: (n) => `🩺 Vet · ${n}🪙`, vetWait: "The vet saw this cat recently", tubB: "🛁 Bath in the tub", tubWait: "The tub needs to dry (every 3 hours)", brushB: "🪮 Brush", bathB: "🛁 Bath", medB: "💊 Medicine", cleanL: (n) => `🫧 Clean ${n}%`, needBrush: "Buy a brush in the market first 🪮",
       buffN: { full: "Full", glow: "Love shield", grow: "Growth boost", healthy: "Healthy", energy: "Energetic", calm: "Calm", shiny: "Shiny", smart: "Clever", lucky: "Lucky", sleepy: "Sleepy", royal: "Royal" }, lonely: "Feeling lonely 💔 needs some attention", leftHome: (n) => `${n} left home 💔`,
       strayTag: (n) => `Stray ${"🐾".repeat(n)}${"·".repeat(3 - n)}`, gameHud: (t, n) => `🔴 Laser hunt · ⏱ ${t} · ⭐ ${n}`,
       voices: "Cat sounds", back: "Back", addFiles: "Add sounds", voiceN: (n) => n ? `${n} recording${n > 1 ? "s" : ""}` : "none yet",
@@ -426,11 +428,23 @@
         fav: pickOne(Object.keys(TOYS)), born: now, xp: o.xp ?? 0, love: o.love ?? 40, showName: true, log: [], lastR: {}, lastL: {}, seen: now,
         g: o.g0 ?? 0.1, g0: o.g0 ?? 0.1, gT: now, fedAt: now, mem: [], tricks: {}, sex: o.sex || (Math.random() < 0.5 ? "f" : "m"),
       };
+      p.genes = o.genes || L.rollGenes(o.geneRange);
       p.stageId = L.stage(p).id;
       L.write(p, o.migrated ? "hello" : "born", { n: p.name });
       if (!o.quiet) L.remember(p, o.migrated ? "hello" : "born", { n: p.name });
       return p;
     },
+    // 🧬 genes: shine (gloss), tone (how vivid the colours are), pattern (how crisp the markings are) and eyes (how bright).
+    // 0–100 each. Good genes make a glowing, vivid cat; poor ones a pale, washed-out one. Kittens take after their parents.
+    GENE_KEYS: ["shine", "tone", "pattern", "eyes"],
+    rollGenes(range = [20, 80]) { const g = {}; for (const k of L.GENE_KEYS) g[k] = Math.round(range[0] + Math.random() * (range[1] - range[0])); return g; },
+    inheritGenes(a, b) {
+      const g = {};
+      for (const k of L.GENE_KEYS) { const pa = (a && a[k]) ?? 50, pb = (b && b[k]) ?? 50, base = Math.random() < 0.5 ? (pa + pb) / 2 : Math.random() < 0.5 ? pa : pb; g[k] = Math.round(clamp(base + (Math.random() - 0.5) * 24 + (Math.random() < 0.08 ? 20 : 0), 1, 100)); }
+      return g;
+    },
+    geneScore(p) { const g = p && p.genes; if (!g) return 50; return Math.round(L.GENE_KEYS.reduce((a, k) => a + (g[k] ?? 50), 0) / L.GENE_KEYS.length); },
+    geneGrade(n) { return n >= 90 ? "S" : n >= 75 ? "A" : n >= 55 ? "B" : n >= 35 ? "C" : "D"; },
     // bring an old save (just a list of coats) into the new world, as grown-up cats who already live here
     migrate(coats) { const taken = []; return coats.map((c) => { const p = L.make(c, { xp: ADULT, g0: 1, love: 60, migrated: true, taken }); taken.push(p.name); return p; }); },
     // time passes while the app is closed: love fades a little, never all the way
@@ -651,7 +665,7 @@
       const r0 = Math.random(), size = Math.min(L.MAX_CATS - cats.length, r0 < 0.6 ? 1 : r0 < 0.9 ? 2 : 3), kits = [];
       for (let i = 0; i < size; i++) {
         const r = Math.random(), coat = r < 0.45 ? a.profile.coat : r < 0.9 ? b.profile.coat : pickOne(Object.keys(COAT_NAMES).filter((c) => !WILD.includes(c)));
-        const k = L.make(coat, { taken, love: 60, quiet: true }); taken.push(k.name);
+        const k = L.make(coat, { taken, love: 60, quiet: true, genes: L.inheritGenes(a.profile.genes, b.profile.genes) }); taken.push(k.name);
         k.log = []; k.parents = [a.profile.id, b.profile.id];
         k.parentInfo = [a, b].map((c) => ({ id: c.profile.id, name: c.profile.name, coat: c.profile.coat }));
         L.write(k, "bornOf", { a: a.profile.name, b: b.profile.name }); L.remember(k, "bornOf", { a: a.profile.name, b: b.profile.name });

@@ -144,7 +144,7 @@ Every so often a cat wants something in particular: a fish dinner, its wind-up m
 
 A new 🌱 panel on the card:
 - **Garden:** plant catnip (1 h), mint (3 h), strawberries (6 h) or sunflowers (12 h). They grow in real hours, even with the app closed, as long as they're watered (water lasts 6 hours; 12 hours dry and they wilt). Harvests give catnip, coins, special meals and, rarely, a star. Two pots to start, more for coins.
-- **Feed:** photos you take with 📸 on a cat's card collect likes for a day (more for dressed-up, clean, happy cats and big cats); then you collect coins for them. Three posts a day.
+- **Feed:** tap one of your cats to post its photo (or use 📸 on its card); it collects likes for a day (more for dressed-up, clean, happy cats and big cats); then you collect coins for them. Three posts a day.
 - **Weekly contest:** beauty, tricks or love, a different one each week. Enter a cat (20🪙); it's judged when the week ends against six rivals. The top three win trophies, coins and stars.
 - **Festivals:** a Winter Fair, Spring Fair, Summer Festival and Halloween, each with things you can only buy while it's on (a snowman, a gift box, tulips, a beach parasol, a ghost, a cauldron and more) and a daily gift.
 
@@ -164,6 +164,24 @@ Every day you open the app adds to a login streak, with bigger gifts each day an
 - **Achievements:** nineteen goals (look after 100 guests, a 10-wish combo, see the owl, adopt a big cat…), each with a reward.
 
 ![The lion roars](docs/roar.png)
+
+### 🧬 Genes
+
+![The same coats with poor, average and great genes](docs/genes.png)
+
+Every cat has four genes: shine, colour, pattern and eyes (0–100), and a grade from D to S shown on its card. Great genes give a vivid, glossy coat that glints now and then; poor ones a pale, washed-out cat with faded markings. Kittens take after their parents (with a little luck), strays usually have rough genes, and big cats come with good ones. Genes count in beauty contests and in photo likes, and a cat with good genes earns more modelling.
+
+### Care: the vet and the bathtub
+
+Call the 🩺 vet from a cat's card (25🪙 for a check-up, 45🪙 if it's ill): it cures illness, tidies the cat up and keeps it healthy for 6 hours. With a bathtub at home, baths need no shampoo (the tub has to dry for 3 hours between baths) and cats mind them less.
+
+### More jobs, offered
+
+Besides the jobs you pick on the card, job offers come in every 1–3 hours for one of your free cats: clear the mice out of the grocer's storeroom for 8 hours, scout the street for an hour, scare the birds off the allotment, greet customers at the cat café, guard the library, pose for a cat food advert (better genes, better pay), cheer up children at the hospital, help the fisherman, or keep the factory's night watch. They pay better than the jobs you choose yourself.
+
+### New moves
+
+Cats now chatter at birds with their jaws going, nod off sitting up, wave a paw at you, drop into a play bow before tearing off on a zoomie, and stalk low across the floor before pouncing.
 
 ### 🏅 Your progress
 

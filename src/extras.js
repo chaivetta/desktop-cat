@@ -33,10 +33,10 @@
       plant: (n, p) => `${n} ek · ${p}🪙`, water: "💧 Sula", harvest: "🧺 Topla", dry: "Kurudu! Sula", dead: "Soldu 🥀 · Temizle", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " sa " : ""}${m % 60} dk`,
       empty: "Boş saksı", buyPlot: (p) => `🪴 Yeni saksı · ${p}🪙`, gardenHint: "Tohum ek, sula; bitki gerçek saatlerle büyür (uygulama kapalıyken de). Su 6 saat yeter; 12 saat susuz kalırsa solar.",
       harvested: (e, w) => `${e} Hasat: ${w}`,
-      feedHint: "Karttaki 📸 ile çektiğin fotoğraflar buraya düşer, bir gün boyunca beğeni toplar. Kıyafetli, bakımlı ve mutlu kediler daha çok beğenilir. Günde en çok 3 paylaşım.",
+      feedHint: "Bir kedine dokun, fotoğrafı paylaşılsın (kartındaki 📸 de aynı işi yapar). Fotoğraf bir gün boyunca beğeni toplar, sonra beğenileri altına çevirirsin. Kıyafetli, bakımlı, mutlu ve genleri iyi kediler daha çok beğenilir. Günde en çok 3 paylaşım.", share: "📸 Kimi paylaşalım?", posts: "🖼️ Paylaşımların",
       likes: (n) => `♥ ${n}`, collect: (c) => `Beğenileri topla · ${c}🪙`, collected: "✓ toplandı", noPosts: "Henüz fotoğraf yok. Kedinin kartından 📸 Fotoğraf çek!", today: (n) => `Bugün ${n}/3 paylaşım`,
       contests: { beauty: "💅 Güzellik yarışması", tricks: "🎓 Numara yarışması", love: "💗 Sevgi yarışması" },
-      cHint: { beauty: "Kıyafetler, temizlik ve sevgi puan getirir.", tricks: "Bildiği numaralar puan getirir.", love: "Sevgi ve yerine getirilen istekler puan getirir." },
+      cHint: { beauty: "Kıyafetler, genler, temizlik ve sevgi puan getirir.", tricks: "Bildiği numaralar puan getirir.", love: "Sevgi ve yerine getirilen istekler puan getirir." },
       enter: (n) => `Kat · 20🪙`, entered: (n) => `✓ ${n} yarışıyor`, ends: (d) => `Hafta sonunda sonuç: ${d} gün kaldı`, rank: (r) => `Şu anki tahmini sıra: ${r}.`, rivals: "Rakipler",
       trophies: "🏆 Kupaların", noTrophy: "Henüz kupa yok", pick: "Yarışacak kedini seç:", result: (n, r, w) => `🏆 Yarışma sonucu: ${n} ${r}. oldu! ${w}`,
       place: ["🥇", "🥈", "🥉"],
@@ -51,10 +51,10 @@
       plant: (n, p) => `Plant ${n} · ${p}🪙`, water: "💧 Water", harvest: "🧺 Harvest", dry: "Dry! Water it", dead: "Wilted 🥀 · Clear", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " h " : ""}${m % 60} min`,
       empty: "Empty pot", buyPlot: (p) => `🪴 New pot · ${p}🪙`, gardenHint: "Plant a seed and water it; it grows in real hours (even with the app closed). Water lasts 6 hours; 12 hours dry and it wilts.",
       harvested: (e, w) => `${e} Harvest: ${w}`,
-      feedHint: "Photos you take with 📸 on a cat's card land here and gather likes for a day. Dressed-up, clean, happy cats get more. At most 3 posts a day.",
+      feedHint: "Tap one of your cats to post its photo (📸 on its card does the same). A photo gathers likes for a day, then you turn the likes into coins. Dressed-up, clean, happy cats with good genes get more. At most 3 posts a day.", share: "📸 Who shall we post?", posts: "🖼️ Your posts",
       likes: (n) => `♥ ${n}`, collect: (c) => `Collect likes · ${c}🪙`, collected: "✓ collected", noPosts: "No photos yet. Take one with 📸 on a cat's card!", today: (n) => `Today ${n}/3 posts`,
       contests: { beauty: "💅 Beauty contest", tricks: "🎓 Trick contest", love: "💗 Love contest" },
-      cHint: { beauty: "Outfits, cleanliness and love score points.", tricks: "Tricks it knows score points.", love: "Love and granted wishes score points." },
+      cHint: { beauty: "Outfits, genes, cleanliness and love score points.", tricks: "Tricks it knows score points.", love: "Love and granted wishes score points." },
       enter: () => "Enter · 20🪙", entered: (n) => `✓ ${n} is entered`, ends: (d) => `Judged at the end of the week: ${d} days left`, rank: (r) => `Standing right now: ${r}.`, rivals: "Rivals",
       trophies: "🏆 Your trophies", noTrophy: "No trophies yet", pick: "Pick a cat to enter:", result: (n, r, w) => `🏆 Contest result: ${n} came ${r}! ${w}`,
       place: ["🥇", "🥈", "🥉"],
@@ -108,9 +108,9 @@
       if (E.postDay !== today) { E.postDay = today; E.postN = 0; }
       if (E.postN >= 3) return; E.postN++;
       const acc = p.acc || {}, dressed = ["hat", "collar", "outfit"].filter((k) => acc[k]).length, C = DC.COATS[p.coat] || {};
-      const target = Math.round((20 + dressed * 18 + (C.wild ? 80 : 0) + p.love / 2 + (L.clean(p) > 70 ? 20 : 0)) * (0.7 + Math.random() * 0.6));
+      const target = Math.round((20 + dressed * 18 + (C.wild ? 80 : 0) + p.love / 2 + (L.clean(p) > 70 ? 20 : 0) + (L.geneScore(p) - 40) * 1.6) * (0.7 + Math.random() * 0.6));     // good genes, more likes
       const poses = ["sit", "loaf", "sleep", "stretch", "groom", "bellyUp"];
-      E.posts.unshift({ id: Date.now().toString(36), name: p.name, coat: p.coat, acc: { ...acc }, pose: poses[Math.floor(Math.random() * poses.length)], at: Date.now(), target, got: false });
+      E.posts.unshift({ id: Date.now().toString(36), name: p.name, coat: p.coat, acc: { ...acc }, pose: poses[Math.floor(Math.random() * poses.length)], genes: p.genes, at: Date.now(), target: Math.max(5, target), got: false });
       E.posts = E.posts.slice(0, 12); L.stats.photos = (L.stats.photos || 0) + 1; L.changed();
     }
     const likesOf = (ps, now = Date.now()) => Math.round(ps.target * Math.pow(Math.min(1, (now - ps.at) / DAY), 0.7));
@@ -121,7 +121,7 @@
     const contestKind = (wk) => CONTESTS[hash(wk) % CONTESTS.length];
     function scoreOf(p, kind, wk) {
       const acc = p.acc || {}, dressed = ["hat", "collar", "outfit"].filter((k) => acc[k]).length, C = DC.COATS[p.coat] || {}, luck = hash(wk + p.id) % 30;
-      if (kind === "beauty") return Math.round(dressed * 30 + L.clean(p) / 2 + p.love / 4 + (C.wild ? 40 : 0) + luck);
+      if (kind === "beauty") return Math.round(dressed * 30 + L.clean(p) / 2 + p.love / 4 + (C.wild ? 40 : 0) + L.geneScore(p) * 0.9 + luck);
       if (kind === "tricks") return Math.round(Object.values(p.tricks || {}).reduce((a, n) => a + n, 0) * 6 + p.love / 5 + luck);
       return Math.round(p.love + (p.wishes || 0) * 2 + luck);
     }
@@ -167,7 +167,10 @@
         }).join("")}</div>${E.plots.length < PLOT_PRICE.length ? `<button type="button" class="mk-wide" data-plot="1"${L.wallet.coins < PLOT_PRICE[E.plots.length] ? " disabled" : ""}>${esc(s.buyPlot(PLOT_PRICE[E.plots.length]))}</button>` : ""}`;
       } else if (tab === "feed") {
         const today = new Date().toDateString(), n = E.postDay === today ? E.postN : 0;
-        body = `<p class="mk-note">${esc(s.feedHint)}</p><p class="pg-pts">${esc(s.today(n))}</p>` + (E.posts.length ? `<div class="fd-grid">${E.posts.map((ps) => {
+        const own = world.cats.filter((c) => c.profile && !c.profile.guest && !c.profile.job);
+        body = `<p class="mk-note">${esc(s.feedHint)}</p><p class="pg-pts">${esc(s.today(n))}</p>`
+          + (n < 3 ? `<h4 class="mk-h">${esc(s.share)}</h4><div class="ct-pick">${own.map((c) => `<button type="button" data-share="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}" data-g="${c.profile.id}"></canvas>${esc(c.profile.name)}</button>`).join("")}</div>` : "")
+          + `<h4 class="mk-h">${esc(s.posts)}</h4>` + (E.posts.length ? `<div class="fd-grid">${E.posts.map((ps) => {
           const done = now - ps.at >= DAY;
           return `<div class="fd-post"><canvas width="120" height="110" data-post="${ps.id}"></canvas><b>${esc(ps.name)}</b><span class="fd-like">${esc(s.likes(likesOf(ps, now)))}</span>${ps.got ? `<small>${esc(s.collected)}</small>` : done ? `<button type="button" class="gold" data-collect="${ps.id}">${esc(s.collect(payOf(ps)))}</button>` : `<small>⏳ ${esc(s.grow(Math.ceil((ps.at + DAY - now) / 60e3)))}</small>`}</div>`;
         }).join("")}</div>` : `<p class="iv-empty">${esc(s.noPosts)}</p>`);
@@ -177,7 +180,7 @@
         const own = world.cats.filter((c) => c.profile && !c.profile.guest && !c.profile.job);
         body = `<div class="ct-head"><b>${esc(s.contests[kind])}</b><small>${esc(s.cHint[kind])}</small><small>${esc(s.ends(daysLeft))}</small></div>`;
         if (mine) body += `<p class="pg-pts">${esc(s.entered(mine.profile.name))} · ${esc(s.rank(standing(mine.profile, wk)))}</p>`;
-        else if (picking) body += `<p class="mk-note">${esc(s.pick)}</p><div class="ct-pick">${own.map((c) => `<button type="button" data-enter="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}"></canvas>${esc(c.profile.name)}<small>${scoreOf(c.profile, kind, wk)}</small></button>`).join("")}</div>`;
+        else if (picking) body += `<p class="mk-note">${esc(s.pick)}</p><div class="ct-pick">${own.map((c) => `<button type="button" data-enter="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}" data-g="${c.profile.id}"></canvas>${esc(c.profile.name)}<small>${scoreOf(c.profile, kind, wk)}</small></button>`).join("")}</div>`;
         else body += `<button type="button" class="mk-wide" data-pick="1"${L.wallet.coins < 20 ? " disabled" : ""}>${esc(s.enter())}</button>`;
         body += `<h4 class="mk-h">${esc(s.rivals)}</h4><ol class="ct-riv">${rivals(wk, kind).map((r) => `<li><span>${esc(r.n)}</span><b>${r.sc}</b></li>`).join("")}</ol>
           <h4 class="mk-h">${esc(s.trophies)}</h4>${E.trophies.length ? `<div class="ct-tro">${E.trophies.slice(0, 24).map((tr) => `<span title="${esc(tr.cat)} · ${esc(s.contests[tr.kind])}">${s.place[tr.place - 1]}</span>`).join("")}</div>` : `<p class="iv-empty">${esc(s.noTrophy)}</p>`}`;
@@ -195,8 +198,8 @@
         <div class="mk-tabs">${["garden", "feed", "contest", "event"].map((id) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${{ garden: "🌱", feed: "📸", contest: "🏆", event: eventNow() ? eventNow().e : "📅" }[id]}</span>${esc(s.tabs[id])}</button>`).join("")}</div>
         <div class="mk-body">${body}</div>`;
       if (_sc) { const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = _sc; }
-      root.querySelectorAll("canvas[data-post]").forEach((cv) => { const ps = E.posts.find((x) => x.id === cv.dataset.post); if (!ps) return; const g = cv.getContext("2d"); g.fillStyle = ["#ffe1ea", "#dff3ff", "#fff1b8", "#e4f8ee", "#f1e4ff"][hash(ps.id) % 5]; g.fillRect(0, 0, 120, 110); DC.portrait(g, ps.coat, { scale: 2, dx: 0, dy: 6, pose: ps.pose, acc: ps.acc, t: 0.4 }); });
-      root.querySelectorAll("canvas[data-av]").forEach((cv) => DC.portrait(cv.getContext("2d"), cv.dataset.av, { scale: 1, dx: 2, dy: 2 }));
+      root.querySelectorAll("canvas[data-post]").forEach((cv) => { const ps = E.posts.find((x) => x.id === cv.dataset.post); if (!ps) return; const g = cv.getContext("2d"); g.fillStyle = ["#ffe1ea", "#dff3ff", "#fff1b8", "#e4f8ee", "#f1e4ff"][hash(ps.id) % 5]; g.fillRect(0, 0, 120, 110); DC.portrait(g, ps.coat, { scale: 2, dx: 0, dy: 6, pose: ps.pose, acc: ps.acc, genes: ps.genes, t: 0.4 }); });
+      root.querySelectorAll("canvas[data-av]").forEach((cv) => { const c = cv.dataset.g && world.cats.find((x) => x.profile && x.profile.id === cv.dataset.g); DC.portrait(cv.getContext("2d"), cv.dataset.av, { scale: 1, dx: 2, dy: 2, genes: c && c.profile.genes, acc: c && c.wearing() }); });
       root.querySelectorAll("canvas[data-f]").forEach((cv) => DC.furnitureThumb(cv.dataset.f, cv.getContext("2d")));
     }
     root.addEventListener("click", (e) => {
@@ -213,6 +216,7 @@
       else if (d.pick) picking = true;
       else if (d.enter) enter(d.enter);
       else if (d.gift) gift();
+      else if (d.share) { const c = world.cats.find((x) => x.profile && x.profile.id === d.share); if (c) { L.care(c, "photo"); L.remember(c.profile, "photo"); world.burst(c.x, c.y - 40 * c.s, "spark", "#fff", 6); } }
       key = ""; render(); save();
     });
     function place() {
@@ -226,7 +230,7 @@
     // background: the garden keeps growing, contests get judged
     setInterval(() => { growGarden(); judge(); }, 60e3); setTimeout(() => { growGarden(); judge(); }, 7000);
     const readyCount = () => { growGarden(); return X().plots.filter((p) => plotState(p) === "ready").length; };
-    return { open, close, get isOpen() { return !root.hidden; }, t, readyCount, eventNow, EVENTS };
+    return { open, close, get isOpen() { return !root.hidden; }, t, readyCount, eventNow, EVENTS, judge, contestKind, scoreOf, standing };
   }
   window.CatExtras = { create, eventNow, EVENTS };
 })();

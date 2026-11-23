@@ -41,14 +41,25 @@
   const lighten = (c, t) => mix(c, [255, 255, 255], t);
   const darken = (c, t) => mix(c, [0, 0, 0], t);
 
-  function buildPalette(key) {
-    const c = COATS[key] || COATS.ginger;
-    const body = hex(c.body), belly = hex(c.belly), acc = hex(c.accent), acc2 = hex(c.accent2 || c.accent);
+  // 🧬 genes change the colours: "tone" makes them vivid or washed-out, "pattern" makes the markings crisp or faded,
+  // "shine" brightens the highlights, "eyes" makes them glow or go dull
+  const L_GENES = (g) => [g.shine, g.tone, g.pattern, g.eyes].join(",");
+  const lum = (c) => 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2];
+  const vivid = (c, v) => { const l = lum(c); return v >= 0 ? c.map((x) => Math.round(Math.max(0, Math.min(255, x + (x - l) * v * 0.45)))) : mix(c, mix([l, l, l].map(Math.round), [236, 232, 228], 0.35), -v * 0.6); };
+  function buildPalette(key, genes) {
+    const c = COATS[key] || COATS.ginger, G = genes || null;
+    let body = hex(c.body), belly = hex(c.belly), acc = hex(c.accent), acc2 = hex(c.accent2 || c.accent);
+    if (G) {
+      const v = ((G.tone ?? 50) - 50) / 50, pt = (G.pattern ?? 50) / 100;
+      body = vivid(body, v); belly = vivid(belly, v * 0.5); acc = vivid(acc, v); acc2 = vivid(acc2, v);
+      if (pt < 0.5) { acc = mix(acc, body, (0.5 - pt) * 1.1); acc2 = mix(acc2, body, (0.5 - pt) * 1.1); }      // faded markings
+    }
+    const shine = G ? ((G.shine ?? 50) - 50) / 50 : 0;
     const P = {};
-    const set = (m, base) => { P[m] = { base, light: lighten(base, 0.22), shade: darken(base, 0.24), deep: darken(base, 0.42) }; };
+    const set = (m, base) => { P[m] = { base, light: lighten(base, 0.22 + shine * 0.14), shade: darken(base, 0.24 - shine * 0.05), deep: darken(base, 0.42) }; };
     set(M.BODY, body); set(M.BELLY, belly); set(M.ACCENT, acc); set(M.ACCENT2, acc2);
     P.outline = c.outline ? hex(c.outline) : darken(mix(body, acc, 0.5), 0.62);
-    P.eye = hex(c.eye); P.pupil = [20, 18, 22]; P.nose = [222, 120, 140]; P.ear = [232, 150, 160]; P.closed = darken(mix(body, acc, 0.5), 0.6);
+    P.eye = G ? vivid(hex(c.eye), ((G.eyes ?? 50) - 50) / 40) : hex(c.eye); P.shine = shine; P.pupil = [20, 18, 22]; P.nose = [222, 120, 140]; P.ear = [232, 150, 160]; P.closed = darken(mix(body, acc, 0.5), 0.6);
     P.tongue = [236, 98, 120];
     P.pattern = c.pattern; P.key = key; P.mane = !!c.mane; P.morph = c.morph || null;
     // drawn a touch longer (big cats) or long and leggy (the cheetah)
@@ -236,6 +247,41 @@
       R.put(41.5, 31.5, M.NOSE);
       R.put(37, 33, M.CLOSED); R.put(38, 34, M.CLOSED); R.put(39, 33, M.CLOSED);
       R.head = { x: 36, y: 32.5, d: 1, flip: true };
+    },
+    // ---- newer moves
+    chatter(R, a) {                                   // staring up at a bird, jaw chattering
+      const tail = Math.sin(a.t * 7) * 1.6;
+      R.curve(15, 35, 6, 38, 4 + tail, 30, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31, 8.2, 7, M.BODY, PART.BODY); R.ellipse(26.5, 25, 6, 9, M.BODY, PART.CHEST);
+      R.ellipse(20, GROUND - 1, 4.5, 1.6, M.BODY, PART.LEG); leg(R, 28, 28, GROUND, M.BODY, 0);
+      headSide(R, 29, 13, { look: { x: 1, y: -1 }, yawn: Math.sin(a.t * 26) > 0.2 });
+    },
+    nod(R, a) {                                       // dozing off sitting up: the head sinks, jerks back, sinks again
+      const k = (a.st % 3.2) / 3.2, drop = Math.round(Math.min(1, k * 1.4) * 4);
+      R.curve(15, 35, 6, 38, 4, 32, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31, 8.2, 7, M.BODY, PART.BODY); R.ellipse(26.5, 25.5, 6, 8.6, M.BODY, PART.CHEST);
+      R.ellipse(20, GROUND - 1, 4.5, 1.6, M.BODY, PART.LEG); leg(R, 28, 28, GROUND, M.BODY, 0);
+      headSide(R, 29 + drop * 0.4, 14 + drop, { eyes: drop > 1 ? "closed" : "blink" });
+    },
+    wave(R, a) {                                      // sitting up, one paw raised and waving at you
+      const wv = Math.sin(a.t * 9) * 2.2;
+      R.curve(15, 35, 6, 38, 4, 31, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31, 8.2, 7, M.BODY, PART.BODY); R.ellipse(26.5, 25, 6, 9, M.BODY, PART.CHEST);
+      R.ellipse(20, GROUND - 1, 4.5, 1.6, M.BODY, PART.LEG);
+      headSide(R, 28, 14, { eyes: "happy" });
+      R.limb(29, 28, 36, 22 + wv * 0.6, 2.6, M.BODY, PART.LEG); R.circle(36.4, 21.6 + wv * 0.6, 1.7, M.BELLY, PART.LEG);     // the waving paw, in front
+    },
+    playBow(R, a) {                                   // front down, bottom up, tail wagging: "play with me!"
+      const wag = Math.sin(a.t * 12) * 2.4, bob = Math.sin(a.t * 6) > 0.6 ? 1 : 0;
+      R.curve(12, 22, 8 + wag * 0.5, 13, 6 + wag, 7, 3, 2.2, M.BODY, PART.TAIL);
+      leg(R, 17, 25, GROUND, M.FAR, -1); leg(R, 32, 33, GROUND, M.FAR, 3);
+      R.ellipse(17, 24 - bob, 6.4, 6.2, M.BODY, PART.BODY); R.ellipse(23, 28 - bob, 7, 5, M.BODY, PART.BODY);
+      R.ellipse(29, 32, 5.6, 4.2, M.BODY, PART.CHEST);
+      leg(R, 14, 25, GROUND, M.BODY, -1); R.limb(29, 34, 37, GROUND - 1, 2.6, M.BODY, PART.LEG);
+      headSide(R, 36, 29, { eyes: "happy" });
     },
     crouch(R, a) {
       const wig = Math.sin(a.t * 18) * 0.9;
@@ -849,7 +895,7 @@
     const g = c.getContext("2d"), img = portraitCache.img || (portraitCache.img = g.createImageData(SW, SH));
     R.grey = !!o.grey;
     (POSES[o.pose] || POSES.sit)(R, { t: o.t || 0, st: 1, phase: o.phase || 0, blink: !!o.blink, eyes: o.eyes || null, look: o.look || null });
-    const pal = portraitCache.pal[coat] || (portraitCache.pal[coat] = buildPalette(coat));
+    const pk = coat + (o.genes ? "|" + L_GENES(o.genes) : ""), pal = portraitCache.pal[pk] || (portraitCache.pal[pk] = buildPalette(coat, o.genes));
     morph(R, pal); mane(R, pal); dress(R, o.acc); shade(R, pal, img, accTones(o.acc)); g.putImageData(img, 0, 0);
     const k = o.scale || 2, W = ctx.canvas.width, H = ctx.canvas.height;
     ctx.imageSmoothingEnabled = false;
@@ -972,7 +1018,8 @@
       }
       if (Math.random() < 0.015 && !w.isNight()) w.meow(this);
       const wt = { walk: 3, sit: 2, groom: 1.8, sleep: 1.1, roll: 1, zoom: this.zoomCool > 0 ? 0 : 0.12,
-        loaf: 1.2, sploot: 0.6, meerkat: 0.5, tailChase: this.size < 0.85 ? 0.45 : 0.2 };     // kittens chase their tails more
+        loaf: 1.2, sploot: 0.6, meerkat: 0.5, tailChase: this.size < 0.85 ? 0.45 : 0.2,      // kittens chase their tails more
+        nod: w.isNight() ? 0.8 : 0.25, wave: 0.25, playBow: this.size < 0.85 ? 0.5 : 0.25, stalk: 0.35, chatter: w.birds.length ? 3 : 0 };
       const love = this.profile ? this.profile.love : 50, pt = w.pointer;
       if (love >= 70) wt.pronk = 0.3;
       if (love >= 45 && pt && pt.seen && Math.abs(pt.x - this.x) < 450) wt.blink = 0.6;
@@ -1041,6 +1088,11 @@
       else if (n === "loaf") this.set("loaf", rnd(6, 16));
       else if (n === "sploot") this.set("sploot", rnd(5, 11));
       else if (n === "meerkat") this.set("meerkat", rnd(2.2, 3.6));
+      else if (n === "chatter") { const b = w.birds.find((b) => Math.abs(b.x - this.x) < 400); if (b) this.facing = Math.sign(b.x - this.x) || this.facing; this.set("chatter", rnd(2, 3.5)); if (Math.random() < 0.5) w.meow(this); }
+      else if (n === "nod") this.set("nod", rnd(5, 9));
+      else if (n === "wave") { if (pt && pt.seen) this.facing = Math.sign(pt.x - this.x) || this.facing; this.set("wave", rnd(1.6, 2.4)); }
+      else if (n === "playBow") this.set("playBow", rnd(1.4, 2.2), { then: "zoom" });
+      else if (n === "stalk") { const m = SW * this.s; this.set("stalk", rnd(3, 5), { target: clamp(this.x + this.facing * rnd(120, 260), m, w.W - m) }); }
       else if (n === "tailChase") this.set("tailChase", rnd(2.2, 3.8), { spinT: 0 });
       else if (n === "pronk") this.pronk(rnd(2, 4) | 0);
       else if (n === "rug") { this.rugOff = rnd(-18, 18) * w.toyScale; this.set("chase", 14, { goal: "rug", fRef: rug }); }
@@ -1132,6 +1184,7 @@
         if (this.state !== "walk") this.set("walk", 60, { target: this.x < w.W / 2 ? -120 : w.W + 120 });
       }
       if (this.profile && window.CatLife && !this.profile.job) window.CatLife.tick(this, dt);
+      if (this.P.shine > 0.55 && Math.random() < dt * (this.P.shine - 0.4) * 0.8) w.burst(this.x + rnd(-14, 14) * s, this.y - rnd(10, 34) * s, "spark", "#fff6c0", 1);     // great genes: a glossy coat that glints
       if (!this.stray && this.profile) {
         const st = w.stray();
         if (st && st !== this.hissedAt && Math.abs(st.x - this.x) < 110 * s && ["sit", "walk", "groom", "loaf", "sploot"].includes(this.state)) {
@@ -1353,6 +1406,12 @@
           if (this.stateT > this.dur) { const bw = this.state === "birdWatch"; this.set("sit", rnd(1.5, 3)); if (bw && Math.random() < 0.3) this.set("meerkat", 1.5); }
           break;
         }
+        case "stalk": {                                   // creeping low towards something, bottom wiggling, then a pounce
+          const dx = this.target - this.x; this.facing = Math.sign(dx) || this.facing; this.x += this.facing * 22 * s * dt;
+          if (Math.abs(dx) < 8 * s || this.stateT > this.dur) this.set("leap", 3, { vx: this.facing * 160 * s, vy: -230 * s, goal: null });
+          break;
+        }
+        case "playBow": if (this.stateT > this.dur) { if (Math.random() < 0.6) this.startZoom(false); else this.set("pronk", 1.2); } break;
         case "tailChase": {
           this.spinT -= dt;
           if (this.spinT <= 0) { this.facing = -this.facing; this.spinT = rnd(0.16, 0.28); this.x += this.facing * 3 * s; }
@@ -1603,6 +1662,7 @@
         case "walk": return "walk";
         case "chase": return ["bowl", "box", "bed", "post", "shelf", "rug", "plant", "cushion", "fish", "you", "drink", "litter", "spot"].includes(this.goal) ? "walk" : "run";
         case "prep": return "crouch";
+        case "stalk": return "crouch";
         case "spar": return (this.vy || this.y < this.world.floor) ? "leap" : this.act === "swipe" ? "swipe" : "spar";
         case "flee": case "pursue": return "run";
         case "sniff": return "eat";
@@ -2776,7 +2836,11 @@
     addCat(coat, profile) {
       coat = profile ? profile.coat : coat && COATS[coat] ? coat : COAT_KEYS[Math.floor(Math.random() * COAT_KEYS.length)];
       const c = new Cat(this, coat, this.spot());
-      if (profile) { c.profile = profile; if (window.CatLife) { c.mods = window.CatLife.mods(profile); c.size = window.CatLife.size(profile); } }
+      if (profile) {
+        c.profile = profile;
+        if (window.CatLife) { if (!profile.genes) profile.genes = window.CatLife.rollGenes([30, 70]); c.mods = window.CatLife.mods(profile); c.size = window.CatLife.size(profile); }
+        if (profile.genes) c.P = buildPalette(c.coat, profile.genes);
+      }
       c.y = -60; c.set("fall", 5); c.vx = 0; this.cats.push(c); return c;
     }
     removeCat(cat) {

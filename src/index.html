@@ -213,7 +213,7 @@
   };
   // a stray who's been fed three times moves in
   world.onAdoptStray = (c) => {
-    const p = L.make(c.coat, { taken: world.cats.filter((x) => x.profile).map((x) => x.profile.name), g0: 0.6, love: 55, quiet: true });
+    const p = L.make(c.coat, { taken: world.cats.filter((x) => x.profile).map((x) => x.profile.name), g0: 0.6, love: 55, quiet: true, geneRange: [5, 65] });      // strays: rough genes, usually
     p.log = []; L.write(p, "strayIn"); L.remember(p, "strayIn");
     c.profile = p; c.mods = L.mods(p); c.size = L.size(p); save();
     setTimeout(() => card.open(c, { naming: true }), 900);
@@ -243,7 +243,7 @@
     onSound: () => act.mute(),
     sound: () => world.purrOn || world.meowOn,
     voices: Voices,
-    onNeed: (k, msg) => market.open(k === "brush" ? "toys" : "food", msg || (L.lang === "tr" ? "Bu marketten alınır 🛒" : "Get this in the market 🛒")),
+    onNeed: (k, msg) => k === "coins" ? toast(L.lang === "tr" ? "Yeterli altının yok 🪙" : "Not enough coins 🪙") : market.open(k === "brush" ? "toys" : "food", msg || (L.lang === "tr" ? "Bu marketten alınır 🛒" : "Get this in the market 🛒")),
     onMarket: () => only(market),
     onInventory: () => only(inventory),
     onProgress: () => only(progress),
@@ -300,7 +300,7 @@
       // your very first cat is free; after that every adoption costs a star
       if (own > 0) { if (L.wallet.stars < L.ADOPT_STARS) return market.open("cats"); L.wallet.stars -= L.ADOPT_STARS; }
       if (L.gainPXP) L.gainPXP(10);
-      const p = L.make(coat, { taken: world.cats.map((c) => c.profile && c.profile.name) });
+      const p = L.make(coat, { taken: world.cats.map((c) => c.profile && c.profile.name), geneRange: L.WILD.includes(coat) ? [45, 95] : [15, 80] });
       const c = world.addCat(null, p); save();
       setTimeout(() => card.open(c, { naming: true }), 700);
     },
@@ -376,7 +376,7 @@
   // 💼 jobs
   var jobs = window.CatJobs.create({ world, save: () => save(), toast: (m) => toast(m) }); window.CatJobs.now = jobs;
   // 🌱 garden, photo feed, weekly contest, festivals
-  var extras = window.CatExtras.create({ world, save: () => save(), toast: (m) => toast(m), onClose: () => { overUI = false; syncIgnore(); } });
+  var extras = window.CatExtras.now = window.CatExtras.create({ world, save: () => save(), toast: (m) => toast(m), onClose: () => { overUI = false; syncIgnore(); } });
   // 👋 login streak + "while you were away" card (created before the others report what happened)
   window.CatWelcome.create({ world, awayMin: saved.seen ? Math.max(0, Math.round((Date.now() - saved.seen) / 60e3)) : 0, readyCount: () => extras.readyCount(), toast: (m) => toast(m),
     onOpen: () => { overUI = true; syncIgnore(); }, onClose: () => { overUI = false; syncIgnore(); } });
