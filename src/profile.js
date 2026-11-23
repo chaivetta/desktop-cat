@@ -178,6 +178,7 @@
     morning: { xp: 2, love: 3, every: 6 * 3.6e6, log: 6 * 3.6e6 },
     napNear: { xp: 1, love: 2, every: 20 * 60e3, log: 30 * 60e3 },
     cuddle:  { xp: 4, love: 5, every: 5 * 60e3, log: 30 * 60e3 },
+    pal:     { xp: 3, love: 4, every: 2 * 60e3, log: 20 * 60e3 },
     shelf:   { xp: 2, love: 1, every: 30e3, log: 10 * 60e3 },
   };
 
@@ -240,7 +241,7 @@
         born: (a) => `${a.n} aramıza katıldı`, named: (a) => `Adı artık ${a.n}`, fed: () => "Mamasını afiyetle yedi",
         pet: () => "Sevildi, mır mır mırladı", play: (a) => `${a.toy} ile oynadı`, bed: () => "Yatağında kıvrılıp uyudu",
         scratch: () => "Direkte tırnaklarını biledi", catnip: () => "Kedi otuyla kendinden geçti", zoom: () => "Zoomies! Odayı baştan başa koştu",
-        race: (a) => `${a.o} ile yarıştı`, fight: (a) => `${a.o} ile şakadan dövüştü`, boop: (a) => `${a.o} ile burun buruna geldi`, cuddle: (a) => `${a.o} ile sarılıp uyudu`,
+        race: (a) => `${a.o} ile yarıştı`, fight: (a) => `${a.o} ile şakadan dövüştü`, boop: (a) => `${a.o} ile burun buruna geldi`, cuddle: (a) => `${a.o} ile sarılıp uyudu`, pal: (a) => ({ groom: `${a.o} ile birbirlerini yaladılar`, sit: `${a.o} ile yan yana oturdu`, bonk: `${a.o} ile kafa kafaya sürtündü`, loaf: `${a.o} ile yan yana somun oldu`, race: `${a.o} ile kovalamaca oynadı` })[a.act] || `${a.o} ile vakit geçirdi`, friendUp: (a) => `${a.o} ile artık ${a.lv}!`,
         box: () => "Kutuya saklandı", held: () => "Kucağa alındı", grew: (a) => `Büyüdü, artık ${a.stage}!`, lovemax: () => "Sevgi barı doldu! Sana bayılıyor",
         hello: () => "Seninle masaüstünde yaşamaya başladı",
         dress: (a) => `${a.itemName} ${a.kind === "outfit" ? "giydi" : "taktı"}`, photo: () => "Fotoğrafı çekildi", blink: () => "Sana yavaşça göz kırptı, kedi dilinde \"seni seviyorum\" demek", shelf: () => "Rafa zıplayıp oturdu",
@@ -310,7 +311,7 @@
         born: (a) => `${a.n} joined the family`, named: (a) => `Now called ${a.n}`, fed: () => "Had a lovely dinner",
         pet: () => "Got pets and purred", play: (a) => `Played with the ${a.toy.toLowerCase()}`, bed: () => "Curled up in the bed for a nap",
         scratch: () => "Sharpened claws on the post", catnip: () => "Went wild for catnip", zoom: () => "Zoomies! Sprinted across the room",
-        race: (a) => `Raced ${a.o}`, fight: (a) => `Play-fought with ${a.o}`, boop: (a) => `Booped noses with ${a.o}`, cuddle: (a) => `Snuggled up and slept with ${a.o}`,
+        race: (a) => `Raced ${a.o}`, fight: (a) => `Play-fought with ${a.o}`, boop: (a) => `Booped noses with ${a.o}`, cuddle: (a) => `Snuggled up and slept with ${a.o}`, pal: (a) => ({ groom: `Groomed each other with ${a.o}`, sit: `Sat side by side with ${a.o}`, bonk: `Bumped heads with ${a.o}`, loaf: `Loafed side by side with ${a.o}`, race: `Played tag with ${a.o}` })[a.act] || `Spent time with ${a.o}`, friendUp: (a) => `Now ${a.lv} with ${a.o}!`,
         box: () => "Hid in a box", held: () => "Got picked up", grew: (a) => `Grew up — now a ${a.stage.toLowerCase()}!`, lovemax: () => "Love bar full! Adores you",
         hello: () => "Moved in on your desktop",
         dress: (a) => `Put on the ${a.itemName}`, photo: () => "Had a photo taken", blink: () => "Gave you a slow blink. That's cat for \"I love you\"", shelf: () => "Jumped up onto the shelf",
@@ -327,7 +328,7 @@
     },
   };
   const LOG_ICON = { born: "🐣", named: "🏷️", fed: "🍗", pet: "💗", play: "🧶", bed: "🛏️", scratch: "🪵", catnip: "🌿", zoom: "💨",
-    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", strayIn: "🏡", drink: "💧", sick: "🤒", cured: "💊", bath: "🛁", brush: "🪮", lonely: "💔", left: "🚪", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", cuddle: "🫂", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
+    race: "🏁", fight: "🥊", boop: "👃", box: "📦", held: "🤲", grew: "🌟", lovemax: "💖", hello: "🏠", dress: "👗", photo: "📸", blink: "😌", shelf: "🪜", birthday: "🎂", task: "✅", tasksDone: "⭐", strayIn: "🏡", drink: "💧", sick: "🤒", cured: "💊", bath: "🛁", brush: "🪮", lonely: "💔", left: "🚪", trick: "🎓", elder: "🦉", together: "💞", greet: "👋", morning: "🌅", napNear: "😴", cuddle: "🫂", pal: "🤝", friendUp: "💖", memPhoto: "📸", bornOf: "🐣", kitten: "🍼" };
 
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -560,7 +561,11 @@
         if (f && f.buff) { L.addBuff(p, f.buff[0], f.buff[1]); if (cat.world) cat.world.burst(cat.x, cat.y - 40 * cat.s, "spark", "#ffd34d", 3); }
       }
       if (kind === "litter" || kind === "play" || kind === "fight") L.dirty(p, kind === "litter" ? 6 : kind === "fight" ? 3 : 0.4);
-      if (arg.oid && ["boop", "race", "fight", "cuddle"].includes(kind)) { p.bond = p.bond || {}; p.bond[arg.oid] = Math.min(50, (p.bond[arg.oid] || 0) + (kind === "fight" ? 0.5 : kind === "cuddle" ? 2 : 1)); }
+      if (arg.oid && ["boop", "race", "fight", "cuddle", "pal"].includes(kind)) {
+        p.bond = p.bond || {}; const b0 = p.bond[arg.oid] || 0; p.bond[arg.oid] = Math.min(50, b0 + (kind === "fight" ? 0.5 : kind === "cuddle" ? 2 : kind === "pal" ? 1.5 : 1));
+        const l0 = L.friendLevel(b0), l1 = L.friendLevel(p.bond[arg.oid]);
+        if (l1 > l0) { L.write(p, "friendUp", { o: arg.o, lv: L.friendName(l1) }); if (L.onFriendUp) L.onFriendUp(cat, arg, l1); }
+      }
       if (L.tasksOn) L.taskEvent(cat, kind + (arg.toyKey ? ":" + arg.toyKey : ""));
       // playing wears the toy out
       const worn = kind === "play" ? { feather: "wand" }[arg.toyKey] || arg.toyKey : { box: "box", scratch: "post", shelf: "shelf" }[kind];
@@ -656,6 +661,12 @@
 
     // ------------------------------------------------ kittens
     // the closest friend: the cat it has booped, raced and play-fought the most
+    // friendship grows with every boop, game, groom and snuggle: acquaintance → friend → close friend → soulmate
+    FRIEND_AT: [0, 5, 15, 30],
+    friendLevel(b) { b = b || 0; return b >= 30 ? 3 : b >= 15 ? 2 : b >= 5 ? 1 : 0; },
+    friendName(l) { return (L.lang === "tr" ? ["tanışık", "arkadaş", "yakın arkadaş", "can dostu"] : ["acquaintances", "friends", "close friends", "soulmates"])[l]; },
+    FRIEND_E: ["👋", "🤝", "💞", "💖"],
+    friends(p, cats) { return cats.filter((c) => c.profile && c.profile !== p && !c.profile.guest && (p.bond || {})[c.profile.id] >= 1).map((c) => ({ c, b: p.bond[c.profile.id], l: L.friendLevel(p.bond[c.profile.id]) })).sort((a, b) => b.b - a.b); },
     bestFriend(p, cats) {
       let best = null, v = 1.5;
       for (const c of cats) if (c.profile && c.profile !== p && (p.bond || {})[c.profile.id] >= v) { v = p.bond[c.profile.id]; best = c; }

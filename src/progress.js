@@ -31,7 +31,7 @@
         k1: ["Tamirci", "Tamir -%15 / kademe ucuz"], k2: ["Sağlam yapı", "Eşya ve oyuncaklar -%12 / kademe yavaş eskir"], k3: ["Hurdacı", "Satış fiyatı +%20 / kademe"], k4: ["Altın parmak", "Bilgisayar başında altın 2 dk / kademe daha sık gelir"],
       },
       you: "Sen", tapNode: "Bir dala dokun: ne işe yaradığını ve öğrenip öğrenemeyeceğini gör. Bir dalda puan harcadıkça alttakiler açılır.", learn: "Öğren", locked: (n) => `🔒 Bu dalda ${n} puan harca`, full: "Tamam", noPts: "Puan yok",
-      pages: { birds: "🐦 Kuşlar", critters: "🐿️ Ziyaretçiler", coats: "🐱 Kedi cinsleri", furn: "🛋️ Eşyalar" }, critN: { squirrel: "Sincap", hedgehog: "Kirpi", butterflies: "Kelebekler" },
+      pages: { birds: "🐦 Kuşlar", critters: "🐿️ Ziyaretçiler", coats: "🐱 Kedi cinsleri", furn: "🛋️ Eşyalar" }, critN: { squirrel: "Sincap", hedgehog: "Kirpi", butterflies: "Kelebekler", fox: "Tilki", bats: "Yarasalar", fireflies: "Ateş böcekleri", mooncat: "Ay Kedisi" },
       birdN: { sparrow: "Serçe", pigeon: "Güvercin", bluebird: "Mavi kuş", robin: "Kızılgerdan", canary: "Kanarya", cardinal: "Kardinal", crow: "Karga", magpie: "Saksağan", parrot: "Papağan", owl: "Baykuş", swallow: "Kırlangıç", stork: "Leylek", duck: "Yaban ördeği", goose: "Yaban kazı" },
       claim: (r) => `🎁 Ödülü al: ${r}`, claimed: "✓ Ödül alındı", reward: (st, c) => `⭐${st} + ${c}🪙`, albumHint: "Bir sayfayı tamamlayınca ödülünü alırsın. Nadir kuşlar: papağan, gece de baykuş.",
       newEntry: (n) => `📖 Albüme eklendi: ${n}`,
@@ -54,7 +54,7 @@
         k1: ["Handy", "Repairs 15% cheaper per rank"], k2: ["Built to last", "Things and toys wear 12% slower per rank"], k3: ["Haggler", "Sell for 20% more per rank"], k4: ["Golden touch", "Computer-time coins come 2 minutes sooner per rank"],
       },
       you: "You", tapNode: "Tap a node to see what it does and whether you can learn it. Spending points in a branch opens the ones below.", learn: "Learn", locked: (n) => `🔒 Spend ${n} points in this branch`, full: "Maxed", noPts: "No points",
-      pages: { birds: "🐦 Birds", critters: "🐿️ Visitors", coats: "🐱 Cat coats", furn: "🛋️ Furniture" }, critN: { squirrel: "Squirrel", hedgehog: "Hedgehog", butterflies: "Butterflies" },
+      pages: { birds: "🐦 Birds", critters: "🐿️ Visitors", coats: "🐱 Cat coats", furn: "🛋️ Furniture" }, critN: { squirrel: "Squirrel", hedgehog: "Hedgehog", butterflies: "Butterflies", fox: "Fox", bats: "Bats", fireflies: "Fireflies", mooncat: "Moon Cat" },
       birdN: { sparrow: "Sparrow", pigeon: "Pigeon", bluebird: "Bluebird", robin: "Robin", canary: "Canary", cardinal: "Cardinal", crow: "Crow", magpie: "Magpie", parrot: "Parrot", owl: "Owl", swallow: "Swallow", stork: "Stork", duck: "Mallard", goose: "Wild goose" },
       claim: (r) => `🎁 Claim: ${r}`, claimed: "✓ Claimed", reward: (st, c) => `⭐${st} + ${c}🪙`, albumHint: "Finish a page to claim its reward. Rare birds: the parrot, and the owl at night.",
       newEntry: (n) => `📖 New in the album: ${n}`,
@@ -79,7 +79,7 @@
     ["furn20", "🛋️", () => L.home.items.length, 20, [120, 1]], ["rich", "💰", () => L.wallet.coins, 1000, [0, 3]],
   ];
   const BIRD_IDS = ["sparrow", "pigeon", "bluebird", "robin", "canary", "cardinal", "crow", "magpie", "parrot", "owl"];
-  const CRITTERS = ["squirrel", "hedgehog", "butterflies"];
+  const CRITTERS = ["squirrel", "hedgehog", "butterflies", "fox", "bats", "fireflies", "mooncat"];
   // how many cats you can have, and which furniture you may buy, grow with your level
   const CAT_SLOTS = [[1, 4], [4, 5], [7, 6], [10, 7], [13, 8]];
   const FURN_LVL = [[100, 1], [150, 2], [200, 3], [250, 5], [300, 7], [Infinity, 9]];

@@ -35,11 +35,11 @@
       return { name: r.name + (r.country_code ? `, ${r.country_code}` : ""), lat: r.latitude, lon: r.longitude, auto: false };
     }
     async function refresh(force) {
-      clearTimeout(timer); timer = setTimeout(refresh, 20 * 60e3);           // ask again every 20 minutes, so a sudden snowfall shows up
+      clearTimeout(timer); timer = setTimeout(refresh, 60 * 60e3);           // look at the clock once an hour, ask the service once a day (light on the computer)
       if (!o.isOn()) { world.weather = null; o.onUpdate && o.onUpdate(null); return; }
       // one reading a day is plenty (kept in the save, so restarting the app doesn't ask again)
       const cached = o.getCache && o.getCache();
-      if (!force && cached && Date.now() - (cached.at || 0) < 19 * 60e3 && (!o.getLoc() || cached.place === o.getLoc().name)) { last = cached; if (!world.weather || !world.weather.preview) world.weather = last; o.onUpdate && o.onUpdate(last); return; }
+      if (!force && cached && cached.day === new Date().toDateString() && (!o.getLoc() || cached.place === o.getLoc().name)) { last = cached; if (!world.weather || !world.weather.preview) world.weather = last; o.onUpdate && o.onUpdate(last); return; }
       try {
         let loc = o.getLoc();
         if (!loc) { loc = await locate(); o.setLoc(loc); }

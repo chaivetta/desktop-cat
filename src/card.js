@@ -330,7 +330,8 @@
       q(".cc-chips").innerHTML = p.traits.map((k, i) => `<span class="cc-chip" style="--c:${CHIP[(i * 2 + p.id.charCodeAt(0)) % CHIP.length]}">${L.TRAITS[k].e} ${esc(L.TRAITS[k][lang])}</span>`).join("")
         + `<span class="cc-chip fav">${L.TOYS[p.fav].e} ${esc(t.fav)}: ${esc(L.TOYS[p.fav][lang])}</span>`;
       const bf = L.bestFriend(p, world.cats), par = (p.parents || []).map((id) => world.cats.find((c) => c.profile && c.profile.id === id));
-      if (bf) q(".cc-chips").innerHTML += `<span class="cc-chip" style="--c:#ffd9e4">💞 ${esc(t.friend)}: ${esc(bf.profile.name)}</span>`;
+      // friendships: level and how close to the next one
+      for (const f of L.friends(p, world.cats).slice(0, 3)) { const nx = L.FRIEND_AT[f.l + 1]; q(".cc-chips").innerHTML += `<span class="cc-chip friend" style="--c:${["#f1ece6", "#e4f1ff", "#ffd9e4", "#ffe3a8"][f.l]}" title="${esc(L.friendName(f.l))}${nx ? ` · ${Math.floor(f.b)}/${nx}` : ""}">${L.FRIEND_E[f.l]} ${esc(f.c.profile.name)} · ${esc(L.friendName(f.l))}${nx ? `<i style="--p:${Math.min(100, ((f.b - L.FRIEND_AT[f.l]) / (nx - L.FRIEND_AT[f.l])) * 100)}%"></i>` : ""}</span>`; }
       if (par.length === 2 && par[0] && par[1]) q(".cc-chips").innerHTML += `<span class="cc-chip" style="--c:#fff1b8">🐣 ${esc(t.parents(par[0].profile.name, par[1].profile.name))}</span>`;
       q(".cc-toggle input").checked = !!p.showName;
       if (L.tasksOn) renderTasks(p, t);

@@ -1215,6 +1215,11 @@
       // 🫂 someone's asleep: go and snuggle up (friends especially; family always welcome)
       const mate = this.profile && !this.perch && w.cats.find((o) => o !== this && o.profile && o.state === "sleep" && !o.cuddleLead && !o.cuddler && !o.perch && !o.hidden && !o.jobOff && !o.parkAway
         && (!o.cushion || (!o.cushion.f.hide && o.cushion.f.w >= 26)) && (!o.bed || true));
+      // 🤝 friends do things together: the closer they are, the more they can do
+      const L2 = window.CatLife, FREE = ["sit", "walk", "groom", "loaf", "sploot", "sphinx", "content", "lookBack"];
+      const pal = L2 && this.profile && !this.perch && !this.profile.guest && w.cats.filter((o) => o !== this && o.profile && !o.profile.guest && !o.perch && !o.hidden && !o.jobOff && !o.parkAway && FREE.includes(o.state) && L2.friendLevel((this.profile.bond || {})[o.pid]) >= 1)
+        .sort((a, b) => ((this.profile.bond || {})[b.pid] || 0) - ((this.profile.bond || {})[a.pid] || 0))[0];
+      if (pal) { const lv = L2.friendLevel(this.profile.bond[pal.pid]); wt.pal = 0.5 + lv * 0.45; this.palMate = pal; this.palLv = lv; }
       if (mate) { const bond = (this.profile.bond && this.profile.bond[mate.pid]) || 0, pa = this.profile.parents || [], pb = mate.profile.parents || [], fam = pa.includes(mate.pid) || pb.includes(this.pid) || (pa.length && pa.join() === pb.join());
         wt.cuddle = (w.isNight() ? 3 : 1.2) * (fam ? 2 : 1) * (1 + Math.min(2, bond / 10)); this.cuddleMate = mate; }
       const rug = F("rug"), plant = F("plant"), aq = F("aquarium");
@@ -1250,6 +1255,11 @@
       }
       else if (n === "roll") this.set("roll", rnd(3, 5));
       else if (n === "snowSwat") { this.facing = Math.random() < 0.5 ? -1 : 1; this.set("snowSwat", rnd(1.6, 2.8)); if (Math.random() < 0.3) w.meow(this); }
+      else if (n === "pal") {
+        const m = this.palMate, lv = this.palLv, acts = { groom: 1.4, sit: 1.2, ...(lv >= 2 ? { bonk: 1.2, race: 0.8 } : {}), ...(lv >= 3 ? { loaf: 1 } : {}) }, act = pick(acts);
+        if (act === "race") { this.startZoom(true); m.startZoom(true); this.care("pal", { o: m.name, oid: m.pid, act }); m.care("pal", { o: this.name, oid: this.pid, act }); }
+        else { m.set("sit", 14); m.palWait = this; this.palAct = act; this.set("chase", 14, { goal: "pal", fRef: m }); }
+      }
       else if (n === "cuddle") { const m = this.cuddleMate; m.cuddler = this; this.set("chase", 16, { goal: "cuddle", fRef: m }); }
       else if (n in IDLE_DUR) { if (n === "chirp" && pt) { this.facing = Math.sign(pt.x - this.x) || this.facing; if (Math.random() < 0.6) w.meow(this); } const d = IDLE_DUR[n]; this.set(n === "curlNap" ? "curl" : n, rnd(d[0], d[1])); }
       else if (n === "loaf") this.set("loaf", rnd(6, 16));
@@ -1298,6 +1308,7 @@
         case "drink": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * (10 * w.toyScale + 12 * this.s) : null; }
         case "litter": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x : null; }
         case "cushion": { const f = this.fRef; return f && w.furniture.includes(f) && (!f.occupant || f.occupant === this) ? f.x : null; }
+        case "pal": { const m = this.fRef; if (!m || !w.cats.includes(m) || m.palWait !== this) return null; const side = Math.sign(this.x - m.x) || 1; return m.x + side * 17 * Math.min(this.s, m.s); }
         case "cuddle": { const m = this.fRef; return m && w.cats.includes(m) && m.state === "sleep" && m.cuddler === this ? m.x - m.facing * this.cuddleOff(m) : null; }
         case "fish": { const f = this.fRef; return f && w.furniture.includes(f) ? f.x - (this.x < f.x ? 1 : -1) * (16 * w.toyScale + 12 * this.s) : null; }
         case "you": return w.pointer.x > 0 ? clamp(w.pointer.x + (this.napOff || 0), 20, w.W - 20) : null;
@@ -1636,7 +1647,7 @@
         you: 6, rug: 5, plant: 4, cushion: 3, fish: 4, bird: 44, tunnel: 5, drink: 4, litter: 3, spot: 4 }[g] * s;
       if (Math.abs(dx) > reach) {
         this.facing = Math.sign(dx);
-        const sp = ["cuddle", "bowl", "box", "bed", "post", "shelf", "you", "rug", "plant", "cushion", "fish"].includes(g) ? 60 : g === "bird" ? 70 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
+        const sp = ["pal", "cuddle", "bowl", "box", "bed", "post", "shelf", "you", "rug", "plant", "cushion", "fish"].includes(g) ? 60 : g === "bird" ? 70 : g === "laser" ? 135 : g === "feather" ? 125 : g === "catnip" ? 80 : 105;
         this.x += this.facing * Math.min(sp * s * dt, Math.abs(dx)); this.phase = (this.phase + dt * (sp > 120 ? 3.4 : sp > 70 ? 2.6 : 1.8)) % 1;
       } else {
         if (g === "yarn") {
@@ -1679,6 +1690,18 @@
           } else this.think();
         }
         else if (g === "you") { this.set("knead", rnd(1.5, 2.5)); this.care("napNear"); }
+        else if (g === "pal") {
+          const m = this.fRef, act = this.palAct;
+          if (m && w.cats.includes(m) && m.palWait === this) {
+            m.palWait = null; const toward = Math.sign(m.x - this.x) || 1, d = rnd(4, 7);
+            if (act === "groom") { this.facing = toward; m.facing = -toward; this.set("groom", d, { eyes: "closed" }); m.set("content", d + 0.5); }
+            else if (act === "sit") { m.facing = this.facing = Math.random() < 0.5 ? 1 : -1; this.set("content", d + 2); m.set("content", d + 2); }
+            else if (act === "bonk") { this.facing = toward; m.facing = -toward; this.set("boop", 1.8); m.set("boop", 1.8); w.burst((this.x + m.x) / 2, this.y - 26 * s, "heart", "#e2557a", 3); }
+            else { m.facing = this.facing; this.set("loaf", d + 6); m.set("loaf", d + 6); }
+            w.burst((this.x + m.x) / 2, this.y - 30 * s, "heart", "#f28aa5", 2);
+            this.care("pal", { o: m.name, oid: m.pid, act }); m.care("pal", { o: this.name, oid: this.pid, act });
+          } else this.think();
+        }
         else if (g === "cuddle") {
           const m = this.fRef;
           if (m && w.cats.includes(m) && m.state === "sleep" && m.cuddler === this) {
@@ -1849,7 +1872,7 @@
     pose() {
       switch (this.state) {
         case "walk": return "walk";
-        case "chase": return ["cuddle", "bowl", "box", "bed", "post", "shelf", "rug", "plant", "cushion", "fish", "you", "drink", "litter", "spot"].includes(this.goal) ? "walk" : "run";
+        case "chase": return ["pal", "cuddle", "bowl", "box", "bed", "post", "shelf", "rug", "plant", "cushion", "fish", "you", "drink", "litter", "spot"].includes(this.goal) ? "walk" : "run";
         case "prep": return "crouch";
         case "stalk": return "crouch";
         case "spar": return (this.vy || this.y < this.world.floor) ? "leap" : this.act === "swipe" ? "swipe" : "spar";
@@ -3079,7 +3102,8 @@
     }
     shout(x, y, txt) { this.shouts.push({ x: clamp(x, 60, this.W - 60), y, txt, t: 0 }); }
     addCritter(kind) {
-      const night = this.isNight(), k = kind || (night ? "hedgehog" : Math.random() < 0.55 ? "squirrel" : "butterflies");
+      const night = this.isNight(), pickN = () => { const r = Math.random(); return r < 0.03 ? "mooncat" : r < 0.33 ? "hedgehog" : r < 0.55 ? "fox" : r < 0.78 ? "bats" : "fireflies"; };
+      const k = kind || (night ? pickN() : Math.random() < 0.55 ? "squirrel" : "butterflies");
       const c = new Critter(this, k, Math.random() < 0.5 ? 1 : -1); this.critters.push(c); if (this.onCritterSeen) this.onCritterSeen(k); return c;
     }
     addDream(cat, gold) { const d = new Dream(this, cat); if (gold != null) { d.gold = gold; d.e = gold ? "⭐" : d.e; d.r = (gold ? 15 : 12) * this.toyScale / 3 * 1.4; } this.dreams.push(d); return d; }
@@ -3276,6 +3300,7 @@
     }
     hitTest(x, y) {
       for (const d of this.dreams) if (d.hit(x, y)) return { toy: d };
+      for (const c of this.critters) if (c.hit && c.hit(x, y)) return { toy: c };
       if (this.yarn && this.yarn.hit(x, y)) return { toy: this.yarn };
       if (this.mouse && this.mouse.hit(x, y)) return { toy: this.mouse };
       if (this.butterfly && this.butterfly.hit(x, y)) return { toy: this.butterfly };
@@ -3680,8 +3705,11 @@
     constructor(world, kind, dir) {
       this.world = world; this.kind = kind; this.dir = dir; this.t = rnd(0, 5); this.seen = new Set();
       const s = world.toyScale; this.x = dir > 0 ? -30 : world.W + 30; this.y = world.floor; this.pause = 0;
-      this.v = (kind === "squirrel" ? rnd(90, 130) : kind === "hedgehog" ? rnd(18, 26) : rnd(40, 60)) * s / 3;
+      this.v = ({ squirrel: rnd(90, 130), hedgehog: rnd(18, 26), fox: rnd(55, 75), bats: rnd(110, 150), fireflies: rnd(16, 24), mooncat: rnd(28, 36) }[kind] ?? rnd(40, 60)) * s / 3;
       this.sp = new Sprite(18, 14);
+      if (kind === "bats") { this.flock = [0, 1, 2].slice(0, 2 + (Math.random() < 0.5 ? 1 : 0)).map((i) => ({ dx: i * 26 - 20, dy: rnd(-30, 30), ph: rnd(0, 6) })); this.base = rnd(world.floor * 0.25, world.floor * 0.55); }
+      if (kind === "fireflies") this.flock = Array.from({ length: 9 }, () => ({ dx: rnd(-60, 60), dy: rnd(-50, 30), ph: rnd(0, 6) }));
+      if (kind === "mooncat") { this.v *= 1; this.glowC = document.createElement("canvas"); this.glowC.width = 120; this.glowC.height = 100; }
       if (kind === "butterflies") this.flock = [0, 1, 2].map((i) => ({ dx: i * 14 - 14, dy: rnd(-20, 20), ph: rnd(0, 6), c: ["#ff8fab", "#ffd34d", "#8fd0ff"][i] }));
     }
     update(dt) {
@@ -3690,14 +3718,44 @@
         if (this.pause > 0) this.pause -= dt; else { this.x += this.dir * this.v * dt; if (Math.random() < dt * 0.6) this.pause = rnd(0.6, 1.6); }
       } else this.x += this.dir * this.v * dt;
       if (this.kind === "butterflies") this.y = w.floor - 90 * w.toyScale / 3 + Math.sin(this.t * 1.3) * 30;
+      if (this.kind === "bats") this.y = this.base + Math.sin(this.t * 2.1) * 40;
+      if (this.kind === "fireflies") this.y = w.floor - 70 * w.toyScale / 3 + Math.sin(this.t * 0.7) * 20;
+      if (this.kind === "mooncat" && Math.random() < dt * 6) w.burst(this.x - this.dir * 10 * w.toyScale, this.y - rnd(4, 30) * w.toyScale / 1.5, "spark", Math.random() < 0.5 ? "#dfe9ff" : "#fff3b0", 1);
       for (const c of w.cats) {                          // cats turn to stare (and kittens give chase)
         if (this.seen.has(c) || !c.profile || Math.abs(c.x - this.x) > 220) continue; this.seen.add(c);
         if (["sit", "walk", "groom", "loaf", "sploot"].includes(c.state) && Math.random() < 0.8) { c.facing = Math.sign(this.x - c.x) || c.facing; c.set(c.size < 0.7 && this.kind !== "hedgehog" ? "hunt" : "birdWatch", rnd(1.5, 3), c.size < 0.7 ? { goal: "bird" } : {}); }
       }
     }
-    gone() { return this.x < -60 || this.x > this.world.W + 60; }
+    gone() { return this.caught || (this.dir > 0 ? this.x > this.world.W + 80 : this.x < -80); }
+    // only the moon cat can be clicked (it leaves a gift)
+    hit(px, py) { const s = this.world.toyScale; return this.kind === "mooncat" && !this.caught && Math.abs(px - this.x) < 16 * s && py < this.y + 2 && py > this.y - 30 * s; }
+    grab() {} release() {}
+    click() { if (this.caught) return; this.caught = true; const w = this.world; w.confetti(this.x, this.y - 20 * w.toyScale, 40); w.burst(this.x, this.y - 20 * w.toyScale, "heart", "#cfe0ff", 6); if (w.onMoonCat) w.onMoonCat(this); }
     render(ctx) {
       const w = this.world, s = w.toyScale;
+      if (this.kind === "fireflies") {
+        ctx.save();
+        for (const b of this.flock) { const x = this.x + b.dx * s / 2 + Math.sin(this.t * 1.7 + b.ph) * 14, y = this.y + b.dy * s / 2 + Math.cos(this.t * 1.3 + b.ph) * 10, on = (Math.sin(this.t * 2.5 + b.ph * 3) + 1) / 2;
+          ctx.globalAlpha = 0.25 + on * 0.75; ctx.fillStyle = "rgba(220,255,120,.35)"; ctx.fillRect(Math.round(x - s), Math.round(y - s), Math.round(3 * s), Math.round(3 * s)); ctx.fillStyle = "#eaff8a"; ctx.fillRect(Math.round(x), Math.round(y), Math.round(s), Math.round(s)); }
+        ctx.restore(); return;
+      }
+      if (this.kind === "bats") {
+        ctx.save();
+        for (const b of this.flock) { const f = Math.sin(this.t * 16 + b.ph), x = Math.round(this.x + b.dx * s), y = Math.round(this.y + b.dy + Math.sin(this.t * 4 + b.ph) * 10), u = Math.round(s);
+          ctx.fillStyle = "#3a2f4a"; ctx.fillRect(x - u, y - u, 3 * u, 3 * u); ctx.fillRect(x - u, y - 2 * u, u, u); ctx.fillRect(x + u, y - 2 * u, u, u);       // body and ears
+          const wy = f > 0 ? -2 : 1; for (const d of [-1, 1]) { ctx.fillRect(x + (d < 0 ? -4 * u : 2 * u), y + wy * u, 3 * u, u); ctx.fillRect(x + (d < 0 ? -6 * u : 5 * u), y + (wy + (f > 0 ? -1 : 1)) * u, 2 * u, u); }
+          ctx.fillStyle = "#ffd34d"; ctx.fillRect(x - u + (this.dir > 0 ? 2 * u : 0), y, Math.max(1, u / 2), Math.max(1, u / 2)); }
+        ctx.restore(); return;
+      }
+      if (this.kind === "mooncat") {                    // a soft, glowing silver cat, padding along in the moonlight
+        const g = this.glowC.getContext("2d"); g.clearRect(0, 0, 120, 100);
+        portrait(g, "white", { scale: 2, dx: 0, dy: 4, pose: "walk", phase: (this.t * 0.9) % 1, t: this.t, eyes: "happy" });
+        const k = s / 2;
+        ctx.save(); ctx.globalAlpha = 0.72 + Math.sin(this.t * 2) * 0.12; ctx.shadowColor = "#bcd4ff"; ctx.shadowBlur = 18; ctx.imageSmoothingEnabled = false;
+        ctx.translate(Math.round(this.x), Math.round(this.y - 100 * k + 6 * k)); if (this.dir < 0) ctx.scale(-1, 1);
+        ctx.filter = "hue-rotate(190deg) saturate(1.6) brightness(1.15)"; ctx.drawImage(this.glowC, -60 * k, 0, 120 * k, 100 * k); ctx.restore();
+        return;
+      }
       if (this.kind === "butterflies") {
         for (const b of this.flock) { const f = Math.abs(Math.sin(this.t * 14 + b.ph)), x = this.x + b.dx * s, y = this.y + b.dy + Math.sin(this.t * 3 + b.ph) * 8;
           ctx.fillStyle = b.c; ctx.fillRect(Math.round(x - (1 + 2 * f) * s), Math.round(y - 2 * s), Math.round((1 + 2 * f) * s), Math.round(3 * s)); ctx.fillRect(Math.round(x + s), Math.round(y - 2 * s), Math.round((1 + 2 * f) * s), Math.round(3 * s));
@@ -3705,7 +3763,14 @@
         return;
       }
       const R = this.sp.R; R.clear(); const run = this.kind === "squirrel" && this.pause <= 0, hop = run ? Math.abs(Math.sin(this.t * 14)) * 2 : 0;
-      if (this.kind === "squirrel") {
+      const trot = this.kind === "fox" ? Math.sin(this.t * 12) : 0;
+      if (this.kind === "fox") {
+        R.curve(6, 9, 2, 8, 0, 4, 3.6, 2.6, 3); R.circle(0.6, 3.6, 1.5, 2);                                    // the big brush, white-tipped
+        R.ellipse(9.5, 8.5, 5, 2.8, 1); R.ellipse(10, 9.6, 3, 1.2, 2);
+        R.rect(6 + Math.round(trot), 11, 1, 3, 5); R.rect(12 - Math.round(trot), 11, 1, 3, 5); R.rect(8 - Math.round(trot), 11, 1, 3, 5); R.rect(13 + Math.round(trot), 11, 1, 3, 5);
+        R.circle(14.4, 6.2, 2.5, 1); R.tri(12.6, 4.6, 13.4, 1.2, 14.6, 4.2, 1); R.tri(14.6, 4.2, 15.8, 1.2, 16.4, 4.8, 1);
+        R.rect(16, 6.4, 2, 1.6, 1); R.put(16, 7.6, 2); R.put(15, 7.4, 2); R.put(14.8, 5.6, 4); R.put(17.6, 6.4, 5);
+      } else if (this.kind === "squirrel") {
         R.curve(5, 11 - hop, 0, 4 - hop, 3, 0, 3.2, 2.2, 3);                         // the big bushy tail
         R.ellipse(9, 10 - hop, 4, 3, 1); R.circle(13, 7 - hop, 2.6, 1); R.put(14, 6 - hop, 4); R.put(12, 4 - hop, 1); R.put(15.5, 7.5 - hop, 5);
         R.rect(7, 12 - hop, 2, 2, 1); R.rect(11, 12 - hop, 2, 2, 1); R.ellipse(10, 10.5 - hop, 2, 1.2, 2);
@@ -3713,7 +3778,7 @@
         for (let i = 0; i < 9; i++) R.limb(4 + i, 6, 3 + i + (i % 2), 2 + (i % 3), 0.8, 3);   // spines
         R.ellipse(8, 9, 6, 3.6, 3); R.ellipse(13, 10, 2.6, 2, 2); R.put(15.5, 10, 5); R.put(13, 9, 4); R.rect(6, 12, 1, 1, 2); R.rect(10, 12, 1, 1, 2);
       }
-      const pal = this.kind === "squirrel" ? { 1: { c: [176, 96, 52], lit: true }, 2: { c: [236, 200, 160] }, 3: { c: [196, 110, 60], lit: true }, 4: { c: [20, 18, 22] }, 5: { c: [60, 40, 30] } }
+      const pal = this.kind === "fox" ? { 1: { c: [226, 116, 44], lit: true }, 2: { c: [248, 240, 228] }, 3: { c: [214, 102, 38], lit: true }, 4: { c: [20, 18, 22] }, 5: { c: [50, 34, 30] } } : this.kind === "squirrel" ? { 1: { c: [176, 96, 52], lit: true }, 2: { c: [236, 200, 160] }, 3: { c: [196, 110, 60], lit: true }, 4: { c: [20, 18, 22] }, 5: { c: [60, 40, 30] } }
         : { 1: { c: [160, 140, 120] }, 2: { c: [220, 190, 160], lit: true }, 3: { c: [110, 90, 74], lit: true }, 4: { c: [20, 18, 22] }, 5: { c: [40, 30, 30] } };
       const img = this.sp.paint(pal, [70, 46, 30]);
       ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(Math.round(this.x), Math.round(this.y - 14 * s)); if (this.dir < 0) ctx.scale(-1, 1);
@@ -3723,7 +3788,11 @@
   function critterThumb(ctx, kind) {
     const W = ctx.canvas.width, H = ctx.canvas.height, fake = { world: { toyScale: 2, W: 999, floor: H - 2 }, kind, dir: 1, t: 1, pause: 1, x: W / 2, y: H - 2, sp: new Sprite(18, 14),
       flock: [0, 1, 2].map((i) => ({ dx: i * 7 - 7, dy: i * 4 - 4, ph: i, c: ["#ff8fab", "#ffd34d", "#8fd0ff"][i] })) };
-    if (kind === "butterflies") fake.y = H / 2 + 4;
+
+    if (kind === "butterflies" || kind === "bats" || kind === "fireflies") fake.y = H / 2 + 4;
+    if (kind === "bats") { fake.flock = [{ dx: -5, dy: 0, ph: 0 }, { dx: 6, dy: -6, ph: 2 }]; fake.world.toyScale = 1.5; }
+    if (kind === "fireflies") fake.flock = Array.from({ length: 7 }, (_, i) => ({ dx: (i - 3) * 10, dy: ((i * 37) % 20) - 10, ph: i }));
+    if (kind === "mooncat") { fake.glowC = document.createElement("canvas"); fake.glowC.width = 120; fake.glowC.height = 100; fake.world.toyScale = 0.75; }
     Critter.prototype.render.call(fake, ctx);
   }
   // a bird for the album

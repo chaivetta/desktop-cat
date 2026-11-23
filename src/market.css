@@ -288,7 +288,7 @@
 .sk-detail { margin-top: 4px; } .sk-tip { text-align: center; }
 
 /* ☰ the one menu: a strip of tabs sitting on top of the open panel */
-.hub { position: fixed; z-index: 43; height: 48px; display: flex; gap: 4px; padding: 4px; box-sizing: border-box; border-radius: 18px; background: #fff7ec;
+.hub { position: fixed; z-index: 43; height: 44px; display: flex; gap: 4px; padding: 4px; box-sizing: border-box; border-radius: 18px; background: #fff7ec;
   box-shadow: 0 0 0 3px #5b3a29, 0 5px 0 3px #5b3a29; font: 700 10px/1 "Nunito", sans-serif; color: #5b3a29; animation: st-in .18s ease-out; }
 .hub[hidden] { display: none; }
 .hub button { flex: 1; min-width: 0; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 0; border-radius: 13px;
@@ -373,3 +373,37 @@
 .pp-step.got { background: #e4f8ee; opacity: .9; } .pp-step.got span { color: #2f9e6a; font-weight: 800; }
 .pp-step.can { opacity: 1; background: #ffd34d; cursor: pointer; box-shadow: 0 0 0 2px #5b3a29, 0 3px 0 2px #5b3a29; animation: pp-pulse 1s ease-in-out infinite; }
 .pp-step.next { opacity: 1; box-shadow: 0 0 0 2px #ff9fb5; }
+.hub { gap: 2px; padding: 4px 3px; } .hub button small { font-size: 9px; }
+
+/* 🃏 cat cards */
+.cd-top { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 2px 8px; } .cd-top b { font: 700 15px "Pixelify Sans", monospace; }
+.cd-pack { animation: pp-pulse 1.2s ease-in-out infinite; margin-bottom: 6px; } .cd-pack small { font-size: 11px; opacity: .8; }
+.cd-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.cd-card { position: relative; border: 0; padding: 4px 4px 5px; border-radius: 12px; background: #fff; color: #5b3a29; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; font: inherit;
+  box-shadow: 0 0 0 2px var(--rc, #cdbba8), 0 3px 0 2px var(--rc, #cdbba8); }
+.cd-card canvas { width: 100%; aspect-ratio: 96 / 124; border-radius: 8px; image-rendering: pixelated; }
+.cd-card b { font-size: 10.5px; line-height: 1.1; text-align: center; min-height: 2.2em; display: grid; place-items: center; }
+.cd-card i { position: absolute; top: 6px; right: 7px; font: 800 10px "Nunito", sans-serif; font-style: normal; background: #fff; padding: 0 4px; border-radius: 8px; box-shadow: 0 0 0 1.5px var(--rc); }
+.cd-card.r1, .cd-flip.r1 { --rc: #5a8fd8; } .cd-card.r2, .cd-flip.r2 { --rc: #9a6bd8; } .cd-card.r3, .cd-flip.r3 { --rc: #e0a020; }
+.cd-card.r3:not(.no) canvas { animation: cd-holo 3s linear infinite; }
+@keyframes cd-holo { 0%, 100% { filter: none; } 50% { filter: brightness(1.15) saturate(1.3) drop-shadow(0 0 4px #ffe08a); } }
+.cd-card.no { background: #f3ece4; } .cd-card.sel { transform: translateY(-3px); }
+.cd-craft { position: absolute; inset: auto 4px 26px 4px; padding: 4px 2px; border-radius: 8px; background: #ffd34d; font: 800 10px "Nunito", sans-serif; box-shadow: 0 0 0 1.5px #5b3a29; }
+.cd-craft.off { background: #eee3d8; opacity: .7; pointer-events: none; }
+.cd-open { position: fixed; inset: 0; z-index: 61; display: grid; place-content: center; justify-items: center; gap: 14px; background: rgba(30, 14, 40, .6); animation: cer-fade .3s ease-out; }
+.cd-open p { color: #fff7ec; font: 700 14px "Nunito", sans-serif; margin: 0; }
+.cd-row { display: flex; gap: 16px; }
+.cd-flip { position: relative; width: 150px; height: 220px; border: 0; padding: 0; background: none; cursor: pointer; perspective: 800px; animation: cd-deal .45s var(--d) cubic-bezier(.3,1.5,.5,1) backwards; }
+@keyframes cd-deal { from { transform: translateY(80px) scale(.6); opacity: 0; } }
+.cd-back, .cd-front { position: absolute; inset: 0; border-radius: 16px; backface-visibility: hidden; transition: transform .55s cubic-bezier(.3,1.3,.5,1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+.cd-back { background: repeating-linear-gradient(45deg, #ff9fb5 0 12px, #ffb8c8 12px 24px); box-shadow: 0 0 0 4px #5b3a29, 0 6px 0 4px #5b3a29; font-size: 46px; }
+.cd-front { background: #fff7ec; transform: rotateY(180deg); box-shadow: 0 0 0 4px var(--rc, #5b3a29), 0 6px 0 4px var(--rc, #5b3a29); padding: 8px; color: #5b3a29; font: 700 13px "Nunito", sans-serif; }
+.cd-front canvas { width: 118px; height: 152px; border-radius: 10px; image-rendering: pixelated; }
+.cd-front small { font-size: 11px; color: var(--rc, #8a6b55); }
+.cd-front em { position: absolute; top: -10px; right: -10px; font-style: normal; background: #e2414e; color: #fff; padding: 3px 8px; border-radius: 99px; font: 800 12px "Nunito", sans-serif; transform: rotate(10deg); }
+.cd-front em.dup { background: #9a6bd8; }
+.cd-flip.on .cd-back { transform: rotateY(180deg); } .cd-flip.on .cd-front { transform: rotateY(360deg); }
+.cd-flip.r3.on .cd-front { animation: cd-legend 1.5s ease-in-out infinite alternate; }
+@keyframes cd-legend { to { box-shadow: 0 0 0 4px #e0a020, 0 6px 0 4px #e0a020, 0 0 30px 8px rgba(255, 210, 80, .7); } }
+.cd-ok { border: 0; border-radius: 14px; padding: 9px 30px; background: #ffd34d; color: #5b3a29; font: 700 15px "Pixelify Sans", monospace; cursor: pointer; box-shadow: 0 0 0 3px #5b3a29, 0 4px 0 3px #5b3a29; }
+.hub button span { font-size: 21px; }

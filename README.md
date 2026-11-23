@@ -37,6 +37,12 @@ They flop over on their side, curl up like a doughnut with the tail over their n
 
 <img src="docs/cuddle.png" width="420" alt="Two cats curled up asleep together">
 
+### 🤝 Friendships
+
+<img src="docs/friends.png" width="260" alt="Two friends grooming each other">
+
+Every boop, game, snuggle and groom brings two cats closer: 👋 acquaintances → 🤝 friends → 💞 close friends → 💖 soulmates. The card shows each cat's friends and how close they are to the next level. Friends groom each other and sit side by side; close friends also bump heads and play tag; soulmates loaf together. A new level gets a toast and a line in the diary.
+
 When one cat is asleep, another may come and snuggle in behind it, and they sleep curled up together, with little hearts floating up. It happens on the floor and on a bed, cushion, sofa or beanbag wide enough for two. Friends and family snuggle up most, especially at night, and every snuggle makes them closer friends.
 
 Older moves: loaf, sploot, meerkat, tail chase, happy bounce, slow blink ("I love you"), chattering at birds, nodding off, waving a paw, a play bow, and stalking low across the floor. Belly-up with waving paws is now a rarer treat.
@@ -92,6 +98,7 @@ The card has a single **☰ Menu** button. It opens one panel with a strip of ta
 | **🛒 Market** | Cats (unlock coats with ⭐; the first cat is free), food, toys, seeds, furniture and luck (a daily gift chest and a wheel) |
 | **🎒 Inventory** | Your cupboard, toys and furniture as icons: take out, put away, repair, sell |
 | **🐾 Paw Path** | The monthly reward track and today's paw quests (see below) |
+| **🃏 Cards** | Your cat card collection and card packs |
 | **🎮 Games** | Scratch card, memory, whack-a-mouse and the laser hunt. Each costs coins and needs a 15-minute break before you play it again |
 | **🌳 Park** | Take cats out for 30 minutes (see below) |
 | **🎪 Events** | Photo feed, weekly contest, festivals |
@@ -105,6 +112,12 @@ The card has a single **☰ Menu** button. It opens one panel with a strip of ta
 <img src="docs/paw-path.png" width="320" alt="The Paw Path: today's paw quests and the monthly track of rewards">
 
 A reward track that starts again every month. Almost everything you do earns **🐾 paw points**: a share of all your XP, three **daily paw quests** (pet your cats 25 times, harvest twice, pop three dream bubbles, have two cats snuggle up, take them to the park…; finish all three for a bonus), and dream bubbles. Every 150 🐾 is a step, and each of the 30 steps has a reward to claim: coins, treats, special meals, a star every five steps, and three big prizes, the royal robe at step 10, the halo at step 20 and the Moon Claw suit at step 30, which also makes you a **🐾 Paw Legend**. The ☰ button shows how many rewards are waiting.
+
+### 🃏 Cat cards
+
+<img src="docs/card-pack.png" width="460" alt="Opening a card pack: the Moon Cat (legendary) and two black cats">
+
+Thirty-two cards to collect: one for every coat (big cats are epic) and eight "moments" (Miss Cat, the Moon Cat, the Roar, Sweet Dreams, Snow Catcher, Zoomies, the Gardener, Snuggle Time). They come in packs of three: a free pack every week, one on some steps of the Paw Path, or 80🪙 in the Cards tab. Tap the face-down cards to flip them. A card you already have turns into ✨ sparkle, and sparkle makes any card you're missing. Finishing a rarity row (common, rare, epic, legendary) pays coins or stars, and the whole set pays 10⭐.
 
 ### 🫧 Dream bubbles
 
@@ -174,9 +187,13 @@ Plants grow in real hours, even with the app closed, but only while watered (wat
   <img src="docs/storks.png" width="320" alt="A V of storks migrating">
 
 - **Clouds:** little kawaii clouds drift along the top of the screen, more on cloudy days. Some trail a rainbow; on rainy days they turn grey and grumpy and drip. On clear nights, a shooting star now and then.
-- **Real weather:** rain, drizzle, snow, fog and thunderstorms follow the weather where you are (from [Open-Meteo](https://open-meteo.com), free, no account). Rainy days make the cats sleepy and keep the birds away.
+- **Real weather:** rain, drizzle, snow, fog and thunderstorms follow the weather where you are (from [Open-Meteo](https://open-meteo.com), free, no account; checked once a day). Rainy days make the cats sleepy and keep the birds away. In the snow, flakes drift, a white layer builds up on the floor and the furniture, the cats leave paw prints and swat at the flakes. Try any weather for a minute from ⚙️ Settings.
 - **Seasons:** snow in winter, blossom in spring, fireflies on summer nights, falling leaves in autumn.
-- **Critters:** squirrels, butterflies and, at night, a hedgehog. A shy **stray** may turn up too: feed it three times and it moves in.
+- **Critters:** squirrels and butterflies by day.
+- **Night visitors:** after dark a hedgehog snuffles past, a fox trots along the floor, bats flit overhead and fireflies blink. Very rarely the glowing **🌙 Moon Cat** pads by: click it before it goes for a star, coins and its own legendary card.
+
+  <img src="docs/night-visitors.png" width="640" alt="A fox, fireflies and the Moon Cat at night">
+ A shy **stray** may turn up too: feed it three times and it moves in.
 
 ![Rain, snow, a storm and fog over the cats](docs/weather.png)
 
@@ -210,7 +227,8 @@ You level up too, slowly. Each level gives a skill point and coins, and opens ro
 | **Right-click** a pot | Plant, water, harvest |
 | **Click** a dream bubble | Pop it for coins and paw points |
 | **Right-click** a cat | Open its card |
-| **☰ Menu** on the card | Every panel, as tabs |
+| **☰ Menu** on the card | Every panel, as icon tabs (hover for the name) |
+| **Click** the Moon Cat | Catch it for a star and its card |
 | **Tray / menu-bar icon** | Settings, hide or show the cats, quit |
 
 The window is transparent and click-through: your desktop works as normal, and the mouse is only caught over a cat, a toy or a panel. Everything is saved on your computer. The whole app is in Turkish and English.

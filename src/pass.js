@@ -25,6 +25,7 @@
     if (i % 5 === 0) return { stars: 1 };
     if (i % 5 === 2) return { meal: 1 };
     if (i % 5 === 4) return { food: ["treat", 2 + (i / 10 | 0)] };
+    if (i % 5 === 3) return { pack: 1 };
     return { coins: 15 + i * 3 };
   }
   const STR = {
@@ -102,6 +103,7 @@
       if (r.coins) out.push(`+${L.earn(r.coins)}🪙`);
       if (r.stars) { L.wallet.stars += r.stars; out.push(`+${r.stars}⭐`); }
       if (r.meal) { const sp = Object.keys(L.FOOD).filter((f) => L.FOOD[f].buff); const f = sp[Math.floor(Math.random() * sp.length)]; L.pantry[f] = (L.pantry[f] || 0) + 1; out.push(L.FOOD[f].e); }
+      if (r.pack && L.giveCardPack) { L.giveCardPack(1); out.push("🃏📦"); }
       if (r.food) { const [f, n] = r.food; if (L.FOOD[f]) { L.pantry[f] = (L.pantry[f] || 0) + n; out.push(`${L.FOOD[f].e}×${n}`); } }
       if (r.big) {
         const [kind, d] = r.big.outfit ? ["outfit", r.big.outfit] : ["hat", r.big.hat];
@@ -131,7 +133,7 @@
       const k = [L.lang, x.pp, x.claimed.join(), x.quests.map((q) => progOf(q) + (q.done ? "d" : "")).join(), L.wallet.coins, L.wallet.stars].join("|"); if (k === key) return; key = k;
       const d = new Date(), left = new Date(d.getFullYear(), d.getMonth() + 1, 1) - d, days = Math.max(1, Math.ceil(left / 864e5));
       const into = st >= STEPS ? STEP : x.pp - st * STEP;
-      const ico = (i) => { const r = rewardOf(i); return r.big ? (r.big.outfit === "moonclaw" ? "👑" : r.big.hat ? "😇" : "🎩") : r.stars ? "⭐" : r.meal ? "🍱" : r.food ? "🍬" : "🪙"; };
+      const ico = (i) => { const r = rewardOf(i); return r.big ? (r.big.outfit === "moonclaw" ? "👑" : r.big.hat ? "😇" : "🎩") : r.stars ? "⭐" : r.pack ? "🃏" : r.meal ? "🍱" : r.food ? "🍬" : "🪙"; };
       const sc = root.querySelector(".mk-body"), keep = sc ? sc.scrollTop : 0;
       root.innerHTML = `<div class="mk-head"><b>🐾 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">🪙 ${L.wallet.coins}</span><span class="star">⭐ ${L.wallet.stars}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
         <div class="mk-body">

@@ -2,9 +2,9 @@
 // progress, settings). The cat card has a single menu button; the tabs switch between the panels.
 (() => {
   const L = window.CatLife;
-  const NAV_H = 54;
+  const NAV_H = 50;
   const TABS = [
-    ["market", "🛒", "Market", "Market"], ["inventory", "🎒", "Envanter", "Inventory"], ["pass", "🐾", "Pati Yolu", "Paw Path"], ["games", "🎮", "Oyunlar", "Games"],
+    ["market", "🛒", "Market", "Market"], ["inventory", "🎒", "Envanter", "Inventory"], ["pass", "🐾", "Pati Yolu", "Paw Path"], ["cards", "🃏", "Kartlar", "Cards"], ["games", "🎮", "Oyunlar", "Games"],
     ["park", "🌳", "Park", "Park"], ["events", "🎪", "Etkinlik", "Events"], ["progress", "🏅", "Gelişim", "Progress"], ["settings", "⚙️", "Ayarlar", "Settings"],
   ];
   function create(o) {
@@ -17,8 +17,8 @@
     function render() {
       const k = [L.lang, cur, o.badge ? JSON.stringify(o.badge()) : ""].join("|"); if (k === key) return; key = k;
       const b = o.badge ? o.badge() : {};
-      nav.innerHTML = TABS.filter(([n]) => P[n]).map(([n, e, tr, en]) => `<button type="button" data-hub="${n}" class="${cur === n ? "on" : ""}"${b[n] ? ` data-dot="${b[n]}"` : ""}><span>${e}</span><small>${L.lang === "tr" ? tr : en}</small></button>`).join("")
-        + `<button type="button" class="hub-x" data-hub="x">✕</button>`;
+      nav.innerHTML = TABS.filter(([n]) => P[n]).map(([n, e, tr, en]) => `<button type="button" data-hub="${n}" title="${L.lang === "tr" ? tr : en}" class="${cur === n ? "on" : ""}"${b[n] ? ` data-dot="${b[n]}"` : ""}><span>${e}</span></button>`).join("")
+        ;
     }
     function open(n) {
       if (!ready()) return; n = n || last;
