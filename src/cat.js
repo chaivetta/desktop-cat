@@ -26,13 +26,13 @@
     silver:  { name: "Silver tabby", body: "#c9ced6", belly: "#eef0f3", accent: "#3c4048", eye: "#7cc94a", pattern: "stripes" },
     ragdoll: { name: "Ragdoll",      body: "#f2ebe0", belly: "#ffffff", accent: "#7a6a62", eye: "#4f8fe0", pattern: "points" },
     // 👑 the big cats: rare, pricey, and a good deal bigger than a house cat
-    cheetah: { name: "Cheetah",      body: "#e2b25e", belly: "#f8ecd2", accent: "#2a2018", accent2: "#2a2018", eye: "#d9a23a", pattern: "spots", big: 1.3, wild: true },
-    puma:    { name: "Puma",         body: "#c49564", belly: "#f1e3cc", accent: "#3a2a20", eye: "#c9b04a", pattern: "puma", big: 1.35, wild: true },
-    leopard: { name: "Leopard",      body: "#e0a94e", belly: "#f8ead0", accent: "#2a1e16", accent2: "#a8682c", eye: "#b8d04a", pattern: "rosette", big: 1.35, wild: true },
-    snowleo: { name: "Snow leopard", body: "#dcdcd8", belly: "#f6f6f2", accent: "#3e4248", accent2: "#a9aeb4", eye: "#8fc8d8", pattern: "rosette", big: 1.35, wild: true },
-    panther: { name: "Black panther",body: "#24232b", belly: "#24232b", accent: "#18171d", eye: "#9bd84a", pattern: "solid", outline: "#08080b", big: 1.4, wild: true },
-    tiger:   { name: "Tiger",        body: "#ea8a2e", belly: "#fbf3e6", accent: "#1d1714", eye: "#e8c547", pattern: "tiger", big: 1.45, wild: true },
-    lion:    { name: "Lion",         body: "#d9a75e", belly: "#f3dfbd", accent: "#5a3a20", accent2: "#9a5a26", eye: "#d9a23a", pattern: "lion", big: 1.5, wild: true, mane: true },
+    cheetah: { name: "Cheetah",      body: "#e2b25e", belly: "#f8ecd2", accent: "#2a2018", accent2: "#2a2018", eye: "#d9a23a", pattern: "spots", big: 1.3, wild: true, morph: "lean" },
+    puma:    { name: "Puma",         body: "#c49564", belly: "#f1e3cc", accent: "#3a2a20", eye: "#c9b04a", pattern: "puma", big: 1.35, wild: true, morph: "big" },
+    leopard: { name: "Leopard",      body: "#e0a94e", belly: "#f8ead0", accent: "#2a1e16", accent2: "#a8682c", eye: "#b8d04a", pattern: "rosette", big: 1.35, wild: true, morph: "big" },
+    snowleo: { name: "Snow leopard", body: "#dcdcd8", belly: "#f6f6f2", accent: "#3e4248", accent2: "#a9aeb4", eye: "#8fc8d8", pattern: "rosette", big: 1.35, wild: true, morph: "big" },
+    panther: { name: "Black panther",body: "#24232b", belly: "#24232b", accent: "#18171d", eye: "#9bd84a", pattern: "solid", outline: "#08080b", big: 1.4, wild: true, morph: "big" },
+    tiger:   { name: "Tiger",        body: "#ea8a2e", belly: "#fbf3e6", accent: "#1d1714", eye: "#e8c547", pattern: "tiger", big: 1.45, wild: true, morph: "big" },
+    lion:    { name: "Lion",         body: "#d9a75e", belly: "#f3dfbd", accent: "#5a3a20", accent2: "#9a5a26", eye: "#d9a23a", pattern: "lion", big: 1.5, wild: true, mane: true, morph: "big" },
   };
   const COAT_KEYS = Object.keys(COATS);
 
@@ -50,7 +50,9 @@
     P.outline = c.outline ? hex(c.outline) : darken(mix(body, acc, 0.5), 0.62);
     P.eye = hex(c.eye); P.pupil = [20, 18, 22]; P.nose = [222, 120, 140]; P.ear = [232, 150, 160]; P.closed = darken(mix(body, acc, 0.5), 0.6);
     P.tongue = [236, 98, 120];
-    P.pattern = c.pattern; P.key = key; P.mane = !!c.mane;
+    P.pattern = c.pattern; P.key = key; P.mane = !!c.mane; P.morph = c.morph || null;
+    // drawn a touch longer (big cats) or long and leggy (the cheetah)
+    P.kx = c.morph === "lean" ? 1.14 : c.morph === "big" ? 1.07 : 1; P.ky = c.morph === "lean" ? 1.08 : 1;
     return P;
   }
 
@@ -703,6 +705,29 @@
     }
   }
 
+  // body shape for the big cats, worked on the drawn pose: heavy legs, a deep chest and small round ears for the
+  // tiger, lion, leopards, puma and panther; thin legs, a tucked-in belly and dark "tear lines" for the cheetah
+  function morph(R, P) {
+    const mk = P.morph; if (!mk) return;
+    const W = R.w, H = R.h, m0 = R.m.slice(), p0 = R.part.slice(), at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? -1 : y * W + x);
+    const torso = (p) => p === PART.BODY || p === PART.CHEST;
+    if (mk === "big") {
+      for (let y = 0; y < GROUND; y++) for (let x = 0; x < W; x++) {
+        const i = at(x, y); if (m0[i]) continue;
+        for (const dx of [-1, 1]) { const j = at(x + dx, y); if (j >= 0 && m0[j] && p0[j] === PART.LEG) { R.m[i] = m0[j]; R.part[i] = PART.LEG; break; } }
+        if (!R.m[i]) { const j = at(x, y - 1); if (j >= 0 && m0[j] && torso(p0[j])) { R.m[i] = m0[j]; R.part[i] = p0[j]; } }
+      }
+      if (R.head) for (let i = 0; i < W * H; i++) if (R.part[i] === PART.EAR && Math.floor(i / W) < R.head.y - 6) { R.m[i] = 0; R.part[i] = 0; }
+    } else if (mk === "lean") {
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = at(x, y); if (!m0[i]) continue;
+        if (p0[i] === PART.LEG) { const j = at(x + 1, y); if (j < 0 || !m0[j]) { R.m[i] = 0; R.part[i] = 0; } }
+        else if (torso(p0[i]) && y < GROUND - 1) { const j = at(x, y + 1); if (j < 0 || !m0[j]) { R.m[i] = 0; R.part[i] = 0; } }
+      }
+      const h = R.head;
+      if (h && !h.front && !h.flip) { const ex = Math.round(h.x + h.d * 2.2), ey = Math.round(h.y - 1); for (let k = 2; k <= 4; k++) { const x = ex + (k > 3 ? h.d : 0), i = at(x, ey + k); if (i >= 0 && R.part[i] === PART.HEAD && (R.m[i] === M.BODY || R.m[i] === M.BELLY)) R.m[i] = M.ACCENT; } }
+    }
+  }
   // a lion's mane: a thick ruff round the head, only where nothing else is drawn
   function mane(R, P) {
     if (!P.mane || !R.head || R.head.flip) return;
@@ -821,10 +846,11 @@
     R.grey = !!o.grey;
     (POSES[o.pose] || POSES.sit)(R, { t: o.t || 0, st: 1, phase: o.phase || 0, blink: !!o.blink, eyes: o.eyes || null, look: o.look || null });
     const pal = portraitCache.pal[coat] || (portraitCache.pal[coat] = buildPalette(coat));
-    mane(R, pal); dress(R, o.acc); shade(R, pal, img, accTones(o.acc)); g.putImageData(img, 0, 0);
+    morph(R, pal); mane(R, pal); dress(R, o.acc); shade(R, pal, img, accTones(o.acc)); g.putImageData(img, 0, 0);
     const k = o.scale || 2, W = ctx.canvas.width, H = ctx.canvas.height;
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(c, Math.round((W - SW * k) / 2 + (o.dx ?? 4) * k), Math.round((H - SH * k) / 2 + (o.dy || 0) * k), SW * k, SH * k);
+    const kx = pal.kx || 1, ky = pal.ky || 1;
+    ctx.drawImage(c, Math.round((W - SW * k * kx) / 2 + (o.dx ?? 4) * k), Math.round((H - SH * k * ky) / 2 + (o.dy || 0) * k), SW * k * kx, SH * k * ky);
   }
 
   // ---------------------------------------------------------------- toy sprites (same lit + outlined look)
@@ -1578,7 +1604,7 @@
       const a = { t: this.t, st: this.stateT, phase: this.phase, blink: this.blink, eyes: this.state === "happy" ? "happy" : this.eyes, peekEyes: null, look: this.look };
       POSES[this.pose()](R, a);
       const acc = this.wearing();
-      mane(R, this.P); dress(R, acc);
+      morph(R, this.P); mane(R, this.P); dress(R, acc);
       shade(R, this.P, this.img, accTones(acc));
       this.ctx.putImageData(this.img, 0, 0);
       const s = this.s, w = this.world, inbox = this.state === "inbox";
@@ -1591,9 +1617,10 @@
       ctx.imageSmoothingEnabled = false;
       const dy = inbox ? Math.round((4 + this.peek * 14) * s) : 0;
       if (inbox) { const rim = this.box ? this.box.y - 15 * w.toyScale : this.y - 6 * s; ctx.beginPath(); ctx.rect(0, 0, w.W, rim); ctx.clip(); }
-      ctx.translate(Math.round(this.x), Math.round(this.y - GROUND * s + dy));
+      const kx = this.P.kx || 1, ky = this.P.ky || 1;
+      ctx.translate(Math.round(this.x), Math.round(this.y - GROUND * s * ky + dy));
       if (this.facing < 0) ctx.scale(-1, 1);
-      ctx.drawImage(this.canvas, Math.round(-SW * s / 2), 0, SW * s, SH * s);
+      ctx.drawImage(this.canvas, Math.round(-SW * s * kx / 2), 0, SW * s * kx, SH * s * ky);
       ctx.restore();
       if ((this.profile && this.profile.showName || this.stray) && w.showNames !== false) this.drawTag(ctx, R, dy);
       this.drawDream(ctx);

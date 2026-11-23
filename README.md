@@ -128,7 +128,7 @@ Eight more: a **pumpkin house** to hide in, a **bathtub** full of bubbles and a 
 
 ![All the coats and the costumes](docs/coats-costumes.png)
 
-Seventeen coats now: the first seven plus cream, chocolate, Russian blue, tortoiseshell, Bengal, Sphynx, Maine coon, orange & white, silver tabby and Ragdoll. And seven 👑 big cats: cheetah, puma, leopard, snow leopard, black panther, tiger and a maned lion. They cost a lot more stars and grow a good deal bigger than a house cat.
+Seventeen coats now: the first seven plus cream, chocolate, Russian blue, tortoiseshell, Bengal, Sphynx, Maine coon, orange & white, silver tabby and Ragdoll. And seven 👑 big cats: cheetah, puma, leopard, snow leopard, black panther, tiger and a maned lion. They cost a lot more stars and grow a good deal bigger than a house cat. They are built differently too: the tiger, lion, leopards, puma and panther have heavy legs, a deep chest and small round ears; the cheetah is long, lean and leggy, with dark tear lines down its face.
 
 ![A tiger, a lion and a black panther next to a ginger tabby](docs/big-cats.png)
 
