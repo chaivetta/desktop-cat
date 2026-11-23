@@ -120,11 +120,15 @@ And twelve more: they run in the **cat wheel**, hide in the **cardboard castle**
 
 Every few minutes a little kawaii cloud drifts along the very top of the screen, like the birds: rarely on clear days, often when the real weather is cloudy, and grey and grumpy (dripping a few drops) when it rains. Some trail a rainbow or sit in front of one. On clear nights, once in a while, a shooting star streaks across.
 
+Eight more: a **pumpkin house** to hide in, a **bathtub** full of bubbles and a **floor pillow** to nap on, a three-level **giant cat tower**, a **toy drum** to bat, an **arcade machine** with a game playing on its screen, a **globe** to stare at and a big **monstera**.
+
+**Birds** now come in ten kinds: sparrows and pigeons most often, then bluebirds, robins, canaries, crows, magpies and cardinals, a rare parrot, and at night, very rarely, an owl.
+
 ### 🧳 Guest cats
 
 <img src="docs/guest.png" width="520" alt="A neighbour asks you to look after their cat for a day">
 
-4 to 6 times a day, at random times 4–6 hours apart, a neighbour asks you to look after their cat, for anything from a day to a week (several guests can stay at once if there is room). The pay is per day. When the owner comes back they pay you: more for a happy, fed, clean cat, more for a home full of things it can use, and more as your sitter rating grows. If the guest gets ill, goes hungry for too long or is left alone and unloved, they take it back and pay nothing, and your rating drops.
+Like a little cat hotel: every 1–2 hours (at most 7 a day) a neighbour asks you to look after their cat, for anything from a day to a week (several guests can stay at once if there is room). The pay is per day. When the owner comes back they pay you: more for a happy, fed, clean cat, more for a home full of things it can use, and more as your sitter rating grows. If the guest gets ill, goes hungry for too long or is left alone and unloved, they take it back and pay nothing, and your rating drops.
 
 ### Visitors
 

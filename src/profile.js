@@ -191,6 +191,9 @@
         dispenser: ["Mama topu", "Pati atınca mama döker"], ballpit: ["Top havuzu", "İçinde yuvarlanır"], piano: ["Oyuncak piyano", "Tuşlarına basıp müzik yapar"],
         mirror: ["Ayna", "Kendine bakıp şaşırır"], fan: ["Vantilatör", "Dönen pervaneyi izler"], clock: ["Duvar saati", "Sallanan sarkacı izler"], tv: ["Televizyon", "Ekranın karşısına oturup izler"],
         lamp: ["Lambader", "Geceleri odayı aydınlatır"], radio: ["Radyo", "Hafif müzik çalar; kediler daha huzurlu (sevgi daha yavaş azalır)"], statue: ["Altın kedi heykeli", "Sadece çok havalı 👑"],
+        pumpkin: ["Balkabağı evi", "İçine saklanıp uyurlar 🎃"], bathtub: ["Küvet", "Su yok, sadece köpük; içinde uyumaya bayılırlar"], tower: ["Dev kedi kulesi", "Üç katlı; en tepeye çıkıp ortalığı izlerler"],
+        pillow: ["Yer yastığı", "Küçük, yumuşak bir uyku köşesi"], drum: ["Oyuncak davul", "Pati pati vururlar"], arcade: ["Atari makinesi", "Ekranda oyun döner, kediler büyülenmiş izler"],
+        globe: ["Dünya küresi", "Oturup uzun uzun bakarlar"], monstera: ["Deve tabanı", "Kocaman yapraklı süs bitkisi"],
         wheel: ["Koşu tekerleği", "İçinde koşturup enerji atarlar"], castle: ["Karton şato", "İçinde gizlice uyurlar, tepesine çıkarlar"], teepee: ["Çadır", "Saklanıp uyuyacak gizli bir köşe"],
         beanbag: ["Armut koltuk", "Yumuşacık, içine gömülüp uyurlar"], scratcher: ["Karton tırmalama yatağı", "Hem tırmalar hem üstünde uyurlar"], rocker: ["Sallanan sandalye", "Minderinde uyumaya bayılırlar"],
         fireplace: ["Şömine", "Önünde mışıl mışıl uyurlar; sıcacık ev sevgiyi korur (kışın daha çok)"], window: ["Pencere", "Dışarıyı izlerler; gece ay ve yıldızlar"], lavalamp: ["Lav lambası", "Ağır ağır süzülen baloncuklar, gece mor ışık"],
@@ -253,6 +256,9 @@
         dispenser: ["Treat ball", "Spills kibble when batted"], ballpit: ["Ball pit", "Rolls around in it"], piano: ["Toy piano", "Walks on the keys and makes music"],
         mirror: ["Mirror", "Is very surprised by the other cat"], fan: ["Fan", "Watches the blades go round"], clock: ["Grandfather clock", "Watches the pendulum swing"], tv: ["Television", "Sits in front of the screen and watches"],
         lamp: ["Floor lamp", "Lights the room at night"], radio: ["Radio", "Plays soft music; the cats feel calmer (love fades slower)"], statue: ["Golden cat statue", "Just very fancy 👑"],
+        pumpkin: ["Pumpkin house", "They hide and nap inside 🎃"], bathtub: ["Bathtub", "No water, just bubbles; they love napping in it"], tower: ["Giant cat tower", "Three levels; they climb to the top and keep watch"],
+        pillow: ["Floor pillow", "A small, soft napping spot"], drum: ["Toy drum", "They bat at it, pat pat"], arcade: ["Arcade machine", "A game plays on the screen; the cats watch, spellbound"],
+        globe: ["Globe", "They sit and stare at it for ages"], monstera: ["Monstera", "A big-leafed house plant"],
         wheel: ["Cat wheel", "They run and run inside it"], castle: ["Cardboard castle", "They nap hidden inside and climb on top"], teepee: ["Teepee", "A secret corner to hide and nap"],
         beanbag: ["Beanbag", "Squishy; they sink in and sleep"], scratcher: ["Cardboard lounger", "For scratching and napping on"], rocker: ["Rocking chair", "They love napping on its cushion"],
         fireplace: ["Fireplace", "They doze in front of it; a warm home keeps love (more in winter)"], window: ["Window", "They watch the outside; the moon and stars at night"], lavalamp: ["Lava lamp", "Slow floating blobs, a purple glow at night"],
@@ -343,7 +349,7 @@
     takeMeal(k) { const order = k ? [k] : ["dry", "wet", "premium", "fish", ...Object.keys(FOOD).filter((x) => FOOD[x].meal && x !== "premium")]; const f = order.find((x) => (L.pantry[x] || 0) > 0); if (!f) return null; L.pantry[f]--; L.changed(); return f; },
     home: { items: [] },
     toys: ["yarn"],                       // toys you've bought (the yarn is free); see TOY_PRICES
-    TOY_PRICES: { yarn: 12, mouse: 30, box: 20, butterfly: 40, wand: 50, post: 60, shelf: 45, laser: 80, brush: 40 },
+    TOY_PRICES: { yarn: 25, mouse: 30, box: 20, butterfly: 40, wand: 50, post: 60, shelf: 45, laser: 80, brush: 40 },
     // toys wear out too: a little every time they're played with, a little each day they're left out; at 0 they're gone
     toyCond: {},
     TOY_WEAR: { yarn: 1.5, mouse: 2, butterfly: 2, wand: 1, laser: 0.4, box: 2, post: 1.2, shelf: 0.6, brush: 4 },

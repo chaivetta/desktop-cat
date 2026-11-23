@@ -1955,13 +1955,30 @@
 
   // A little wall shelf you can put anywhere on screen. Cats leap up onto it and lounge about.
   // ---------------------------------------------------------------- birds: now and then one flies past; some land for a peck
+  // bird species: sparrows mostly, now and then something brighter; a parrot is rare, owls only come at night
+  const BIRDS = [
+    { id: "sparrow", w: 30, body: [124, 104, 88], belly: [222, 204, 176], wing: [96, 78, 62] },
+    { id: "pigeon", w: 14, body: [150, 154, 166], belly: [196, 198, 206], wing: [120, 124, 138], neck: [110, 160, 140], big: 1.2 },
+    { id: "bluebird", w: 10, body: [86, 140, 214], belly: [240, 150, 90], wing: [60, 104, 180] },
+    { id: "robin", w: 10, body: [128, 110, 96], belly: [226, 98, 64], wing: [100, 84, 72] },
+    { id: "canary", w: 8, body: [250, 214, 70], belly: [255, 236, 140], wing: [222, 180, 40] },
+    { id: "cardinal", w: 6, body: [212, 50, 56], belly: [232, 80, 80], wing: [170, 36, 44], crest: true, mask: true },
+    { id: "crow", w: 8, body: [44, 44, 54], belly: [64, 64, 76], wing: [30, 30, 38], big: 1.25, beak: [50, 50, 56] },
+    { id: "magpie", w: 6, body: [36, 38, 50], belly: [244, 244, 248], wing: [60, 90, 150], tail: 2 },
+    { id: "parrot", w: 2, body: [70, 190, 90], belly: [120, 220, 110], wing: [40, 120, 220], head: [230, 60, 60], tail: 3, beak: [240, 220, 120] },
+    { id: "owl", w: 0, night: true, body: [150, 110, 76], belly: [226, 204, 170], wing: [120, 86, 58], big: 1.3, owl: true, beak: [200, 160, 60] },
+  ];
+  function pickBird(world) {
+    const night = world.isNight && world.isNight(), list = night ? BIRDS.filter((b) => b.night) : BIRDS.filter((b) => !b.night && b.w > 0);
+    let x = Math.random() * list.reduce((a, b) => a + (b.w || 1), 0); for (const b of list) { x -= b.w || 1; if (x <= 0) return b; } return list[0];
+  }
   class Bird {
     constructor(world, dir, y, land) {
       this.world = world; this.dir = dir; const ts = world.toyScale;
       this.x = dir > 0 ? -20 : world.W + 20; this.base = y; this.y = y; this.vx = dir * rnd(110, 160) * ts / 3; this.vy = 0;
       this.t = rnd(0, 6); this.state = "fly"; this.landX = land ? rnd(world.W * 0.15, world.W * 0.85) : null; this.peckT = 0; this.seen = new Set();
-      this.col = [[124, 104, 88], [96, 112, 140], [150, 96, 72], [88, 88, 96]][Math.floor(Math.random() * 4)];
-      this.sp = new Sprite(14, 11);
+      this.sp_ = pickBird(world); this.col = this.sp_.body; this.kind = this.sp_.id;
+      this.sp = new Sprite(16, 13);
     }
     scare() {
       if (this.state === "away") return;
@@ -1995,14 +2012,23 @@
     render(ctx) {
       const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
       const flap = this.state === "peck" ? 0 : Math.sin(this.t * 22) > 0 ? 1 : 2, peck = this.state === "peck" && Math.sin(this.t * 7) > 0.6;
-      R.tri(1, 5, 4, 5, 0, 8, 1);                                         // tail
-      R.ellipse(6.5, 6.5, 4, 2.6, 1); R.ellipse(6.8, 7.6, 2.8, 1.2, 2);   // body, belly
-      const hy = peck ? 7 : 4.2; R.circle(10.2, hy, 2, 1); R.put(12.4, hy, 3); R.put(10.6, hy - 0.6, 4);   // head, beak, eye
-      if (flap === 1) R.tri(4, 5, 8, 5, 5, 0, 5); else if (flap === 2) R.tri(4, 6, 8, 6, 6, 10.5, 5); else R.ellipse(6, 5.6, 2.6, 1.2, 5);
-      if (this.state === "peck") { R.put(6, 10, 3); R.put(8, 10, 3); }
-      const c = this.col, img = this.sp.paint({ 1: { c, lit: true }, 2: { c: [222, 204, 176] }, 3: { c: [232, 170, 64] }, 4: { c: [20, 18, 22] }, 5: { c: darken(c, 0.25) } }, darken(c, 0.6));
-      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(Math.round(this.x), Math.round(this.y - 10 * s)); if (this.dir < 0) ctx.scale(-1, 1);
-      ctx.drawImage(img, -7 * s, 0, 14 * s, 11 * s); ctx.restore();
+      const B = this.sp_, oy = 2, tl = B.tail || 0;
+      R.tri(1 - tl, 5 + oy, 4, 5 + oy, 0 - tl, 8 + oy + tl * 0.4, 1);                       // tail (long on magpies and parrots)
+      if (B.owl) { R.ellipse(7, 6.5 + oy, 4.4, 3.6, 1); R.ellipse(7.4, 7.4 + oy, 2.8, 2.4, 2); }
+      else { R.ellipse(6.5, 6.5 + oy, 4, 2.6, 1); R.ellipse(6.8, 7.6 + oy, 2.8, 1.2, 2); }   // body, belly
+      const hy = (peck ? 7 : B.owl ? 3 : 4.2) + oy;
+      R.circle(10.2, hy, B.owl ? 2.6 : 2, B.head ? 6 : 1); R.put(12.4, hy + (B.owl ? 0.6 : 0), 3);                // head, beak
+      if (B.neck) { R.put(9, hy + 1.5, 7); R.put(10, hy + 1.8, 7); }
+      if (B.mask) R.put(11.4, hy + 0.3, 4);
+      if (B.crest) { R.put(9.6, hy - 2.4, 1); R.put(9, hy - 3.2, 1); }
+      if (B.owl) { R.put(9.6, hy - 0.4, 8); R.put(11.2, hy - 0.4, 8); R.put(9.6, hy - 0.4, 8); R.put(8.4, hy - 2.6, 1); R.put(11.6, hy - 2.6, 1); }
+      else R.put(10.6, hy - 0.6, 4);                                                                               // eye
+      if (flap === 1) R.tri(4, 5 + oy, 8, 5 + oy, 5, 0 + oy, 5); else if (flap === 2) R.tri(4, 6 + oy, 8, 6 + oy, 6, 10.5 + oy, 5); else R.ellipse(6, 5.6 + oy, 2.6, 1.2, 5);
+      if (this.state === "peck") { R.put(6, 10 + oy, 3); R.put(8, 10 + oy, 3); }
+      const c = B.body, img = this.sp.paint({ 1: { c, lit: true }, 2: { c: B.belly }, 3: { c: B.beak || [232, 170, 64] }, 4: { c: [20, 18, 22] }, 5: { c: B.wing }, 6: { c: B.head || c, lit: true }, 7: { c: B.neck || c }, 8: { c: [255, 214, 60] } }, darken(c, 0.6));
+      const k = (B.big || 1) * s;
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(Math.round(this.x), Math.round(this.y - 12 * k)); if (this.dir < 0) ctx.scale(-1, 1);
+      ctx.drawImage(img, -8 * k, 0, 16 * k, 13 * k); ctx.restore();
     }
   }
 
@@ -2051,6 +2077,15 @@
     xmastree:{ w: 34, h: 58, price: 180, role: "play", act: "bat", durable: true },
     cactus:  { w: 16, h: 30, price: 55, role: "play", act: "swipe" },
     feeder:  { w: 22, h: 30, price: 400, role: "decor", durable: true },
+    // round 4
+    pumpkin: { w: 32, h: 28, price: 120, nap: 0, hide: true },
+    bathtub: { w: 44, h: 22, price: 170, nap: 9 },
+    tower:   { w: 46, h: 92, price: 340, perch: [[-9, 32, 11], [8, 60, 11], [-2, 90, 13]] },
+    pillow:  { w: 26, h: 7, price: 30, nap: 4 },
+    drum:    { w: 20, h: 16, price: 60, role: "play", act: "bat" },
+    arcade:  { w: 24, h: 46, price: 360, role: "watch", durable: true },
+    globe:   { w: 18, h: 30, price: 95, role: "watch", durable: true },
+    monstera:{ w: 26, h: 40, price: 70, durable: true },
     tunnel:  { w: 52, h: 16, price: 45 },
     fountain:{ w: 20, h: 24, price: 90, durable: true },
     litter:  { w: 30, h: 12, price: 35, durable: true },
@@ -2105,6 +2140,31 @@
     else if (kind === "statue") {
       R.rect(2, 26, 16, 10, 1); R.rect(1, 25, 18, 2, 1);
       R.ellipse(10, 19, 6, 6.5, 2); R.circle(10, 9, 4.6, 2); R.tri(6, 7, 8, 6, 6.5, 2, 2); R.tri(12, 6, 14, 7, 13.5, 2, 2); R.limb(15, 22, 18, 12, 1.4, 2); R.put(9, 9, 3); R.put(11, 9, 3);
+    }
+    else if (kind === "pumpkin") {
+      R.ellipse(16, 17, 15.5, 11, 1); for (const x of [8, 16, 24]) R.rect(x, 7, 1, 20, 2); R.rect(14, 1, 4, 6, 3); R.ellipse(21, 3, 4, 1.6, 4);
+      R.ellipse(16, 22, 5, 6, 5); R.rect(11, 22, 10, 6, 5); R.tri(8, 13, 11, 13, 9.5, 10, 5); R.tri(21, 13, 24, 13, 22.5, 10, 5);
+    }
+    else if (kind === "bathtub") {
+      R.rect(2, 4, 40, 12, 1); R.ellipse(22, 4, 20, 2.4, 1); R.ellipse(22, 4, 18, 1.6, 2); R.rect(4, 6, 36, 2, 3);
+      R.rect(4, 16, 3, 5, 4); R.rect(37, 16, 3, 5, 4); R.rect(38, -6, 2, 10, 4); R.rect(34, -6, 5, 2, 4);
+      for (const [x, y] of [[10, 1], [16, 0], [27, 1], [31, 0]]) R.circle(x, y, 1.6, 5);
+    }
+    else if (kind === "tower") {
+      R.rect(4, 86, 38, 6, 1); R.rect(20, 8, 6, 78, 2); for (let y = 12; y < 86; y += 4) R.rect(20, y, 6, 1, 3);
+      R.rect(4, 58, 20, 5, 4); R.rect(22, 30, 20, 5, 4); R.rect(10, 0, 26, 5, 4); R.rect(8, 63, 3, 23, 2); R.rect(38, 35, 3, 51, 2);
+      R.limb(36, 5, 38, 16, 0.6, 5); R.circle(38, 17, 2, 6);
+    }
+    else if (kind === "pillow") { R.ellipse(13, 4, 12.5, 3.4, 1); R.ellipse(13, 3, 9, 1.8, 2); R.put(1, 4, 3); R.put(25, 4, 3); R.put(13, 3, 3); }
+    else if (kind === "drum") { R.rect(1, 4, 18, 11, 1); R.ellipse(10, 4, 9, 2.4, 2); for (let x = 2; x < 19; x += 3) R.limb(x, 5, x + 2, 13, 0.4, 3); R.rect(1, 14, 18, 2, 4); R.limb(13, -4, 9, 2, 0.5, 4); }
+    else if (kind === "arcade") {
+      R.rect(1, 0, 22, 46, 1); R.rect(3, 2, 18, 5, 2); R.rect(3, 9, 18, 14, 3); R.rect(1, 25, 22, 6, 4);
+      R.circle(7, 27, 1.6, 5); R.put(14, 27, 6); R.put(17, 27, 2); R.rect(4, 33, 16, 11, 4);
+    }
+    else if (kind === "globe") { R.rect(5, 26, 8, 4, 1); R.rect(8, 20, 2, 6, 1); R.circle(9, 11, 8, 2); R.limb(2, 4, 3, 19, 0.6, 1); R.limb(2, 4, 9, 2, 0.6, 1); for (const [x, y] of [[6, 8], [7, 9], [11, 13], [12, 12], [10, 6], [5, 13]]) R.rect(x, y, 2, 2, 3); }
+    else if (kind === "monstera") {
+      R.rect(7, 30, 12, 10, 1); R.rect(6, 29, 14, 3, 1); R.limb(13, 30, 6, 14, 0.5, 2); R.limb(13, 30, 20, 10, 0.5, 2); R.limb(13, 30, 13, 4, 0.5, 2);
+      for (const [x, y, r] of [[5, 12, 5], [21, 9, 5.5], [13, 4, 5], [8, 22, 4], [19, 21, 4]]) { R.ellipse(x, y, r, r * 0.8, 3); R.put(x, y, 4); R.put(x - 1, y - 1, 4); }
     }
     else if (kind === "wheel") {
       R.rect(4, 40, 34, 4, 1); R.rect(19, 22, 4, 18, 1);                                   // stand
@@ -2189,6 +2249,14 @@
     bed: { 1: { c: [92, 156, 214], lit: true }, 2: { c: [244, 226, 200] }, 3: { c: [255, 240, 222] } },
     house: { 1: { c: [214, 86, 86], lit: true }, 2: { c: [184, 64, 70] }, 3: { c: [222, 176, 120], lit: true }, 4: { c: [196, 148, 96] }, 5: { c: [58, 40, 34] }, 6: { c: [255, 210, 120] } },
     tree: { 1: { c: [218, 200, 176], lit: true }, 2: { c: [196, 166, 116] }, 3: { c: [166, 136, 92] }, 4: { c: [90, 70, 60] }, 5: { c: [255, 120, 160], lit: true } },
+    pumpkin: { 1: { c: [245, 150, 50], lit: true }, 2: { c: [210, 110, 30] }, 3: { c: [110, 90, 50] }, 4: { c: [90, 170, 70] }, 5: { c: [60, 36, 24] } },
+    bathtub: { 1: { c: [250, 250, 252], lit: true }, 2: { c: [140, 200, 240] }, 3: { c: [180, 220, 245] }, 4: { c: [220, 180, 80], lit: true }, 5: { c: [255, 255, 255] } },
+    tower: { 1: { c: [170, 120, 80] }, 2: { c: [210, 180, 130], lit: true }, 3: { c: [180, 150, 100] }, 4: { c: [150, 120, 200], lit: true }, 5: { c: [90, 70, 60] }, 6: { c: [255, 120, 150] } },
+    pillow: { 1: { c: [255, 180, 200], lit: true }, 2: { c: [255, 210, 222] }, 3: { c: [220, 120, 150] } },
+    drum: { 1: { c: [220, 70, 80], lit: true }, 2: { c: [250, 244, 230] }, 3: { c: [255, 210, 80] }, 4: { c: [150, 100, 60] } },
+    arcade: { 1: { c: [90, 70, 170], lit: true }, 2: { c: [255, 210, 80] }, 3: { c: [30, 30, 50] }, 4: { c: [60, 46, 120] }, 5: { c: [230, 60, 70] }, 6: { c: [80, 200, 255] } },
+    globe: { 1: { c: [190, 150, 80], lit: true }, 2: { c: [90, 160, 230], lit: true }, 3: { c: [100, 190, 110] } },
+    monstera: { 1: { c: [220, 120, 90], lit: true }, 2: { c: [80, 130, 60] }, 3: { c: [70, 170, 90], lit: true }, 4: { c: [40, 110, 60] } },
     wheel: { 1: { c: [140, 110, 90], lit: true }, 2: { c: [120, 200, 230], lit: true }, 3: { c: [250, 230, 160] } },
     castle: { 1: { c: [210, 180, 140], lit: true }, 2: { c: [180, 150, 110] }, 3: { c: [196, 166, 126], lit: true }, 4: { c: [220, 80, 100], lit: true }, 5: { c: [70, 50, 40] } },
     teepee: { 1: { c: [250, 236, 210], lit: true }, 2: { c: [240, 120, 120] }, 3: { c: [80, 60, 50] }, 4: { c: [150, 110, 70] } },
@@ -2207,7 +2275,8 @@
     bookshelf: [80, 50, 30], catgrass: [80, 60, 40], track: [140, 90, 30], dispenser: [50, 90, 120], ballpit: [40, 80, 130], piano: [30, 26, 30], mirror: [120, 90, 40], fan: [90, 100, 110],
     clock: [70, 44, 26], tv: [30, 30, 36], lamp: [100, 80, 60], radio: [110, 50, 40], statue: [120, 90, 30], tunnel: [110, 60, 30], fountain: [60, 90, 120], litter: [50, 90, 70], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70],
     wheel: [70, 56, 46], castle: [110, 84, 60], teepee: [110, 80, 60], beanbag: [150, 90, 30], scratcher: [110, 80, 50], rocker: [90, 56, 34], fireplace: [80, 50, 36], window: [110, 86, 60],
-    lavalamp: [80, 80, 90], xmastree: [30, 80, 40], cactus: [50, 90, 50], feeder: [90, 100, 110] };
+    lavalamp: [80, 80, 90], xmastree: [30, 80, 40], cactus: [50, 90, 50], feeder: [90, 100, 110],
+    pumpkin: [120, 60, 20], bathtub: [110, 120, 140], tower: [90, 64, 44], pillow: [150, 80, 100], drum: [100, 40, 40], arcade: [40, 30, 80], globe: [80, 60, 40], monstera: [40, 70, 40] };
   function furnitureThumb(kind, ctx) {
     const f = FURN[kind], sp = new Sprite(f.w, f.h); paintFurniture(kind, sp.R);
     const img = sp.paint(FURN_PAL[kind], FURN_OUTLINE[kind]), W = ctx.canvas.width, H = ctx.canvas.height, k = Math.min((W - 4) / f.w, (H - 4) / f.h);
@@ -2304,6 +2373,12 @@
       if (this.kind === "xmastree") {                   // twinkling lights
         const cols = ["#ff5a6a", "#ffd34d", "#6ad0ff", "#9be59b"], ph = Math.floor(this.t * 2.5);
         [[12, 14], [21, 18], [9, 28], [25, 31], [14, 38], [6, 45], [20, 44], [28, 47], [17, 24]].forEach(([a, b], i) => { ctx.fillStyle = cols[(i + ph) % 4]; ctx.fillRect(x0 + a * s, y0 + b * s, 2 * s, 2 * s); });
+      }
+      if (this.kind === "arcade") {                    // a little game playing on the screen
+        const ph = Math.floor(this.t * 6); ctx.fillStyle = "#1e1e34"; ctx.fillRect(x0 + 3 * s, y0 + 9 * s, 18 * s, 14 * s);
+        ctx.fillStyle = "#ffd34d"; ctx.fillRect(x0 + (4 + (ph % 14)) * s, y0 + 18 * s, 2 * s, 2 * s);
+        ctx.fillStyle = "#ff6b81"; for (let i = 0; i < 4; i++) ctx.fillRect(x0 + (5 + i * 4) * s, y0 + (11 + ((ph + i) % 2)) * s, 2 * s, s);
+        ctx.fillStyle = "#6ad0ff"; ctx.fillRect(x0 + (4 + ((ph * 3) % 15)) * s, y0 + 14 * s, s, s);
       }
       if (this.kind === "feeder" && c > 0) { ctx.fillStyle = Math.sin(this.t * 3) > 0 ? "#4be07a" : "#1f7a3c"; ctx.fillRect(x0 + 16 * s, y0 + 21 * s, s, s); }
       if (this.kind === "radio" && Math.random() < 0.012) w.burst(this.x + 4 * s, this.y - 16 * s, "note", "#b08d57", 1, { rise: true });
@@ -2720,7 +2795,7 @@
       if (this.bowl) this.bowl.update(dt);
       this.boxes.forEach((b) => b.update(dt));
       for (const t of [this.wand, this.butterfly, this.catnip, this.bed, this.post, ...this.shelves, ...this.cakes, ...this.furniture]) if (t) t.update(dt);
-      if (this.birdsOn && !this.isNight() && !(this.weather && ["rain", "storm", "snow"].includes(this.weather.kind))) { this.birdT -= dt; if (this.birdT <= 0) { this.addBird(); this.birdT = rnd(150, 420); } }
+      if (this.birdsOn && !(this.weather && ["rain", "storm", "snow"].includes(this.weather.kind))) { this.birdT -= dt; if (this.birdT <= 0) { this.addBird(); this.birdT = this.isNight() ? rnd(500, 1200) : rnd(150, 420); } }
       this.birds.forEach((b) => b.update(dt)); this.birds = this.birds.filter((b) => !b.gone());
       this.updateGame(dt);
       if (this.strayOn && !this.isNight() && !this.stray()) { this.strayT -= dt; if (this.strayT <= 0) { this.strayT = rnd(1200, 2700); if (this.cats.filter((c) => c.profile).length < 8) this.addStray(); } }
@@ -2955,5 +3030,5 @@
     }
   }
 
-  window.DesktopCat = { World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE, FURN, furnitureThumb };
+  window.DesktopCat = { BIRDS, World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE, FURN, furnitureThumb };
 })();

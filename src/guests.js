@@ -1,9 +1,9 @@
-// 🧳 Guest cats: 4 to 6 times a day (at random, 4–6 hours apart) a neighbour asks you to look after their cat, for a day up to a week.
+// 🧳 Guest cats: like a little cat hotel, a request every 1–2 hours (at most 7 a day) a neighbour asks you to look after their cat, for a day up to a week.
 // Look after it well (fed, loved, clean, healthy) and they pay you; a nicer home pays more, and a good name brings better offers.
 // If the guest gets ill, or is left alone and unloved, they take it back and pay nothing.
 (() => {
   const DAY = 24 * 3.6e6, OFFER_LIFE = 15 * 60e3;
-  const GAP = [4, 6];                                    // hours between offers, at random: 4 to 6 offers a day
+  const GAP = [1, 2], PER_DAY = 7;                      // like a little hotel: a new request every 1–2 hours, at most 7 a day
   // how long a guest stays: mostly a day or two, sometimes up to a week
   const DAYS = [[1, 30], [2, 22], [3, 18], [4, 10], [5, 8], [6, 6], [7, 6]];
   const rollDays = () => { let x = Math.random() * 100; for (const [d, w] of DAYS) { x -= w; if (x <= 0) return d; } return 1; };
@@ -42,7 +42,7 @@
     const { world, save } = o, L = window.CatLife, DC = window.DesktopCat;
     const t = () => STR[L.lang] || STR.en;
     L.guests = Object.assign({ rep: 0, at: 0, done: 0, offer: null }, L.guests || {});
-    if (!L.guests.next) L.guests.next = Date.now() + rnd(0.3, 2) * 3.6e6;      // the first offer comes within a couple of hours
+    if (!L.guests.next || L.guests.next - Date.now() > 2 * 3.6e6) L.guests.next = Date.now() + rnd(0.2, 1) * 3.6e6;      // the first offer comes within a couple of hours
     const box = document.createElement("div"); box.className = "ui gs-box"; box.hidden = true; document.body.appendChild(box);
     let msgT = 0;
 
@@ -64,7 +64,7 @@
       const lang = L.lang, coat = pick(DC.COAT_KEYS), name = L.randomName(world.cats.map((c) => c.profile && c.profile.name));
       const base = 22 + Math.floor(Math.random() * 13), days = rollDays();      // the pay is per day
       L.guests.offer = { days, coat, name, owner: Math.floor(Math.random() * 12), why: Math.floor(Math.random() * 6), base, until: Date.now() + OFFER_LIFE, sex: Math.random() < 0.5 ? "f" : "m" };
-      L.guests.at = Date.now(); L.guests.next = Date.now() + rnd(GAP[0], GAP[1]) * 3.6e6; save(); showOffer(); world.meow && world.meow(world.cats.find((c) => c.profile));
+      L.guests.dayN = (L.guests.dayN || 0) + 1; L.guests.at = Date.now(); L.guests.next = Date.now() + rnd(GAP[0], GAP[1]) * 3.6e6; save(); showOffer(); world.meow && world.meow(world.cats.find((c) => c.profile));
       void lang;
     }
     function showOffer() {
@@ -113,7 +113,8 @@
       }
       if (G.offer && now > G.offer.until) { G.offer = null; box.hidden = true; save(); }
       // the next neighbour: at a random time 4–6 hours after the last one (several guests can stay at once, if there's room)
-      if (!G.offer && now >= G.next && world.cats.some((c) => c.profile && !c.profile.guest)) {
+      const today = new Date().toDateString(); if (G.day !== today) { G.day = today; G.dayN = 0; }
+      if (!G.offer && now >= G.next && G.dayN < PER_DAY && world.cats.some((c) => c.profile && !c.profile.guest)) {
         if (world.cats.filter((c) => c.profile).length < (L.MAX_CATS || 8)) makeOffer(); else G.next = now + rnd(GAP[0], GAP[1]) * 3.6e6;
       }
     }
