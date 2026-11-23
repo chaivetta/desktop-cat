@@ -165,6 +165,8 @@
 
   // ---------------------------------------------------------------- poses (sprite faces right)
   const lerp = (a, b, t) => a + (b - a) * t;
+  // how long each everyday move lasts (seconds)
+  const IDLE_DUR = { sideLie: [8, 20], sphinx: [6, 16], curlNap: [12, 30], tailThump: [3, 6], yawnLie: [3, 4.5], scratchEar: [2, 3.2], lookBack: [2.5, 4.5], shake: [1.6, 2], sniffFloor: [2.5, 4.5], pawReach: [2, 3], backStretch: [1.8, 2.6], content: [4, 9], chirp: [2.2, 3.4], wiggle: [1.4, 2.2] };
   const POSES = {
     walk(R, a) {
       const p = a.phase * Math.PI * 2, bob = Math.sin(p * 2) > 0.3 ? 1 : 0;
@@ -531,6 +533,133 @@
       R.limb(27, 29, 28, GROUND - 1, 2.8, M.BODY, PART.LEG);
       headSide(R, 35, 19, { eyes: "happy" });
     },
+    // ---- round 5: lots more lying about, and little everyday cat things
+    // flopped over on one side, legs out, slow breathing (sleepy: eyes shut; stretch: legs pushed right out)
+    sideLie(R, a) {
+      const br = Math.sin(a.t * 1.5) * 0.45, tail = Math.sin(a.t * (a.sleepy ? 0.6 : 1.2)) * 2, ext = a.stretch ? 3 + Math.sin(a.st * 0.8) * 1.2 : 0;
+      R.curve(11, 34, 5, 36 + tail * 0.3, 2, 33 + tail, 3, 2.4, M.BODY, PART.TAIL);
+      R.limb(15, 35, 7 - ext, GROUND - 1.5, 2.6, M.FAR, PART.LEG); R.limb(29, 35, 37 + ext, GROUND - 2, 2.6, M.FAR, PART.LEG);
+      R.ellipse(21, 32.5 - br / 2, 11.5, 5.2 + br, M.BODY, PART.BODY);
+      R.ellipse(21, 35.4, 8, 1.8, M.FORCE_BELLY, PART.BODY);                 // a bit of soft belly showing
+      R.ellipse(28.5, 32.5, 5, 4.4, M.BODY, PART.CHEST);
+      R.limb(17, 35.5, 9 - ext, GROUND - 0.5, 2.8, M.BODY, PART.LEG); R.limb(30, 35.5, 39 + ext, GROUND - 0.5, 2.8, M.BODY, PART.LEG);
+      headSide(R, 36, 30.5, { eyes: a.sleepy ? "closed" : a.eyes || (Math.sin(a.st * 0.9) > 0.3 ? "blink" : a.blink ? "blink" : null), look: a.look });
+    },
+    sleepSide(R, a) { POSES.sideLie(R, { ...a, sleepy: true }); },
+    sleepStretch(R, a) { POSES.sideLie(R, { ...a, sleepy: true, stretch: true }); },
+    // curled up like a doughnut, tail over the nose
+    curl(R, a) {
+      const br = Math.sin(a.t * 1.6) * 0.45;
+      R.ellipse(22, 32.3 - br / 2, 10.5, 6.2 + br, M.BODY, PART.BODY);
+      R.tri(26.5, 28.5, 27.5, 24, 30, 28, M.BODY, PART.EAR); R.tri(30, 27.5, 32.5, 23.8, 33.5, 28.5, M.BODY, PART.EAR);
+      R.put(28, 26.5, M.EAR); R.put(32, 26.2, M.EAR);
+      R.ellipse(30, 31.5, 5.2, 4.6, M.BODY, PART.HEAD);
+      R.put(29.5, 31, M.CLOSED); R.put(30.5, 31, M.CLOSED); R.put(31.5, 31, M.CLOSED);
+      R.head = { x: 30, y: 31.5, d: 1, low: true };
+      R.curve(12, 35.5, 22, 41.5, 35.5, 34, 3.2, 2.6, M.BODY, PART.TAIL);     // the tail wraps right round over the nose
+    },
+    // lying on the chest, head up, front paws out in front (now and then a big yawn, or the tail thumping)
+    sphinx(R, a) {
+      const thump = a.thump ? Math.abs(Math.sin(a.t * 5)) * 4 : Math.sin(a.t * 0.9) * 1, yawn = a.yawnAt != null && a.st > a.yawnAt && a.st < a.yawnAt + 1.3;
+      R.curve(12, 35, 6, 37 - thump * 0.3, 2, 36 - thump, 3, 2.4, M.BODY, PART.TAIL);
+      R.limb(30, 35.5, 38, GROUND - 1, 2.6, M.FAR, PART.LEG);
+      R.ellipse(21, 32.5, 11, 5.6, M.BODY, PART.BODY);
+      R.ellipse(15.5, 34.5, 5, 3.2, M.BODY, PART.LEG);                       // tucked hind leg
+      R.ellipse(28.5, 31, 5.4, 5.8, M.BODY, PART.CHEST);
+      R.limb(31, 36.2, 40, GROUND - 0.5, 2.8, M.BODY, PART.LEG);
+      headSide(R, 33, 22 + (yawn ? -1 : 0), { eyes: yawn ? "closed" : a.eyes || (a.blink ? "blink" : null), yawn, look: a.look });
+    },
+    tailThump(R, a) { POSES.sphinx(R, { ...a, thump: true }); },
+    yawnLie(R, a) { POSES.sphinx(R, { ...a, yawnAt: 0.8 }); },
+    // sitting, a hind foot going like the clappers at one ear
+    scratchEar(R, a) {
+      const j = Math.sin(a.t * 32) * 1.3, on = a.st > 0.4 && a.st < (a.dur || 3) - 0.4;
+      R.curve(15, 35, 7, 38, 5, 33, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31.5, 8.2, 6.6, M.BODY, PART.BODY); R.ellipse(26.5, 25.5, 6, 8.6, M.BODY, PART.CHEST);
+      leg(R, 28, 28, GROUND, M.BODY, 0);
+      headSide(R, 30, 15 + (on ? 1 : 0), { eyes: on ? "closed" : "blink" });
+      if (on) { R.limb(17, 33, 22 + j * 0.4, 16 + j, 2.8, M.FAR, PART.LEG); R.ellipse(23 + j * 0.4, 15 + j, 2.2, 1.7, M.FAR, PART.LEG); }
+      else R.ellipse(20, GROUND - 1, 4.5, 1.6, M.BODY, PART.LEG);
+    },
+    // sitting, glancing back over the shoulder, then forward again
+    lookBack(R, a) {
+      const back = Math.sin(a.st * 1.4) > -0.2;
+      R.curve(15, 35, 6, 38, 4 + Math.sin(a.t * 3) * 1.5, 31, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31, 8.2, 7, M.BODY, PART.BODY); R.ellipse(26.5, 25, 6, 9, M.BODY, PART.CHEST);
+      R.ellipse(20, GROUND - 1, 4.5, 1.6, M.BODY, PART.LEG); leg(R, 28, 28, GROUND, M.BODY, 0);
+      headSide(R, back ? 25 : 29, 14, { dir: back ? -1 : 1, look: { x: 0.6, y: back ? -0.3 : 0 }, eyes: a.blink ? "blink" : null });
+    },
+    // a whole-body shake, from the ears to the tip of the tail
+    shake(R, a) {
+      const k = Math.max(0, 1 - Math.abs(a.st - 0.9) / 0.9), j = Math.round(Math.sin(a.t * 45) * 1.2 * k);
+      leg(R, 17, 29, GROUND, M.FAR, 0); leg(R, 30, 29, GROUND, M.FAR, 0);
+      R.curve(12, 25, 6 - j, 21, 6 + j * 2, 12, 3, 2.4, M.BODY, PART.TAIL);
+      R.ellipse(22 + j * 0.5, 27, 10.5 + k, 5.4 + k * 0.6, M.BODY, PART.BODY);
+      R.ellipse(29.5 + j, 26.5, 5.6 + k * 0.4, 5.6, M.BODY, PART.CHEST);
+      leg(R, 14, 29, GROUND, M.BODY, 0); leg(R, 28, 29, GROUND, M.BODY, 0);
+      headSide(R, 35 + j, 20, { eyes: k > 0.3 ? "closed" : null });
+    },
+    // nose to the floor, sniffing along
+    sniffFloor(R, a) {
+      const bob = Math.sin(a.t * 14) > 0.4 ? 1 : 0, p = a.st * 2, sw = (o) => Math.sin(p + o) * 1.2;
+      leg(R, 16, 28, GROUND, M.FAR, sw(Math.PI)); leg(R, 30, 30, GROUND, M.FAR, sw(0));
+      R.curve(12, 24, 7, 18, 9 + Math.sin(a.t * 2) * 1.5, 11, 3, 2.4, M.BODY, PART.TAIL);
+      R.limb(14, 25, 28, 29, 9.5, M.BODY, PART.BODY);
+      R.ellipse(30, 30, 4.8, 4.6, M.BODY, PART.CHEST);
+      leg(R, 14, 28, GROUND, M.BODY, sw(0)); leg(R, 28, 31, GROUND, M.BODY, sw(Math.PI));
+      headSide(R, 36, 30 + bob, { look: { x: 1, y: 1 } });
+    },
+    // sitting, one front paw stretched out with the toes spread
+    pawReach(R, a) {
+      const k = Math.min(1, a.st / 0.5) * (0.85 + Math.sin(a.st * 3) * 0.15);
+      R.curve(15, 35, 6, 38, 4, 32, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31, 8.2, 7, M.BODY, PART.BODY); R.ellipse(26.5, 25, 6, 9, M.BODY, PART.CHEST);
+      R.ellipse(20, GROUND - 1, 4.5, 1.6, M.BODY, PART.LEG);
+      headSide(R, 29, 14, { eyes: k > 0.7 ? "closed" : null });
+      const x = 29 + k * 10, y = 29 - k * 2; R.limb(28, 28, x, y, 2.6, M.BODY, PART.LEG);
+      R.circle(x + 0.6, y, 1.6, M.BELLY, PART.LEG); if (k > 0.7) { R.put(x + 2.2, y - 1.5, M.BELLY, PART.LEG); R.put(x + 2.4, y + 0.5, M.BELLY, PART.LEG); }
+    },
+    // standing, one back leg stretched way out behind
+    backStretch(R, a) {
+      const k = Math.min(1, a.st / 0.5);
+      leg(R, 17, 29, GROUND, M.FAR, 0); leg(R, 30, 29, GROUND, M.FAR, 0);
+      R.curve(12, 25, 7, 19, 6, 13, 3, 2.4, M.BODY, PART.TAIL);
+      R.ellipse(22, 27, 10.5, 5.2, M.BODY, PART.BODY); R.ellipse(29.5, 26.5, 5.6, 5.6, M.BODY, PART.CHEST);
+      R.limb(15, 29, 15 - k * 11, 31 + k * 4, 2.8, M.BODY, PART.LEG); R.rect(Math.round(2 - (1 - k) * -11), Math.round(34 + k * 2), 3, 1, M.BODY, PART.LEG);
+      leg(R, 28, 29, GROUND, M.BODY, 0);
+      headSide(R, 35, 20, { eyes: k > 0.6 ? "closed" : null });
+    },
+    // sitting very upright, tail neatly round the paws, eyes squeezed happy
+    content(R, a) {
+      R.curve(14, 36, 22, 40, 31, 37.5, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31, 8.2, 7, M.BODY, PART.BODY); R.ellipse(26.5, 24.5, 6, 9.4, M.BODY, PART.CHEST);
+      leg(R, 28, 28, GROUND, M.BODY, 0);
+      R.curve(14, 36.5, 22, 40, 31, 37.5, 3, 2.4, M.BODY, PART.TAIL);
+      headSide(R, 29, 13, { eyes: Math.sin(a.st * 1.2) > -0.5 ? "happy" : null });
+    },
+    // a little chirp / meow at you: the mouth pops open now and then
+    chirp(R, a) {
+      const open = (a.st % 1.3) < 0.35;
+      R.curve(15, 35, 6, 38, 4 + Math.sin(a.t * 4) * 1.4, 30, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 30, 28, GROUND, M.FAR, 0);
+      R.ellipse(20, 31, 8.2, 7, M.BODY, PART.BODY); R.ellipse(26.5, 25, 6, 9, M.BODY, PART.CHEST);
+      R.ellipse(20, GROUND - 1, 4.5, 1.6, M.BODY, PART.LEG); leg(R, 28, 28, GROUND, M.BODY, 0);
+      headSide(R, 29, 13 - (open ? 1 : 0), { yawn: open, look: a.look, eyes: open ? "happy" : null });
+    },
+    // the "ready, set...": bottom wiggling before a pounce on nothing at all
+    wiggle(R, a) {
+      const w = Math.sin(a.t * 20) * 1.2;
+      R.curve(12, 30, 6, 33 + w, 2, 34 - w, 3, 2.4, M.BODY, PART.TAIL);
+      leg(R, 17, 31, GROUND, M.FAR, -1); leg(R, 31, 32, GROUND, M.FAR, 2);
+      R.ellipse(21 + w * 0.5, 29.5 - Math.abs(w) * 0.4, 10, 5, M.BODY, PART.BODY);
+      R.ellipse(30, 32, 5.2, 4.2, M.BODY, PART.CHEST);
+      leg(R, 14 + w, 30, GROUND, M.BODY, -1); leg(R, 29, 32, GROUND, M.BODY, 2);
+      headSide(R, 35, 28.5, { look: { x: 1, y: 0 } });
+    },
     // a slow blink at you: cat for "I love you"
     slowBlink(R, a) {
       const k = a.st, shut = (k > 0.7 && k < 1.6) || (k > 2.2 && k < 3.1);
@@ -894,7 +1023,7 @@
     const c = portraitCache.c || (portraitCache.c = Object.assign(document.createElement("canvas"), { width: SW, height: SH }));
     const g = c.getContext("2d"), img = portraitCache.img || (portraitCache.img = g.createImageData(SW, SH));
     R.grey = !!o.grey;
-    (POSES[o.pose] || POSES.sit)(R, { t: o.t || 0, st: 1, phase: o.phase || 0, blink: !!o.blink, eyes: o.eyes || null, look: o.look || null });
+    (POSES[o.pose] || POSES.sit)(R, { t: o.t || 0, st: o.st ?? 1, dur: 3, phase: o.phase || 0, blink: !!o.blink, eyes: o.eyes || null, look: o.look || null });
     const pk = coat + (o.genes ? "|" + L_GENES(o.genes) : ""), pal = portraitCache.pal[pk] || (portraitCache.pal[pk] = buildPalette(coat, o.genes));
     morph(R, pal); mane(R, pal); dress(R, o.acc); shade(R, pal, img, accTones(o.acc)); g.putImageData(img, 0, 0);
     const k = o.scale || 2, W = ctx.canvas.width, H = ctx.canvas.height;
@@ -931,7 +1060,7 @@
   const pick = (weights) => { let s = 0; for (const k in weights) s += weights[k]; let r = Math.random() * s; for (const k in weights) { r -= weights[k]; if (r <= 0) return k; } return Object.keys(weights)[0]; };
   const G = 1500;                                   // gravity, px/s²
 
-  const PERCH_OK = ["arch", "loaf", "slowBlink", "birdWatch", "meerkat", "sit", "groom", "lickFlank", "washFace", "legUp", "sleep", "knead", "stretch", "yawn", "happy", "boop", "roll", "prep"];
+  const PERCH_OK = ["sideLie", "sphinx", "curl", "tailThump", "yawnLie", "scratchEar", "lookBack", "content", "pawReach", "chirp", "arch", "loaf", "slowBlink", "birdWatch", "meerkat", "sit", "groom", "lickFlank", "washFace", "legUp", "sleep", "knead", "stretch", "yawn", "happy", "boop", "roll", "prep"];
   class Cat {
     constructor(world, coat, x) {
       this.world = world; this.coat = coat; this.P = buildPalette(coat);
@@ -957,6 +1086,7 @@
     set(state, dur = 3, extra = {}) {
       if (this.stray && ["chase", "hunt", "stand", "bat", "prep", "dangle"].includes(state) && !(state === "chase" && extra.goal === "bowl")) return;
       if (state !== "sleep") this.belly = false;
+      else if (this.state !== "sleep") this.sleepPose = pick({ sleep: 3, curl: 2.5, sleepSide: 2, sleepStretch: 1 });
       if (this.state === "inbox" && state !== "inbox" && this.box) { this.box.occupant = null; this.box = null; }
       if (this.bed && !["knead", "sleep", "stretch", "yawn"].includes(state)) { this.bed.occupant = null; this.bed = null; }
       if (this.cushion && !(this.cushion.f.hide ? ["sleep", "knead"] : ["knead", "sleep", "stretch", "yawn", "loaf", "sit", "groom", "slowBlink", "happy"]).includes(state)) {
@@ -1012,15 +1142,18 @@
         const n = pick(pw);
         if (n === "down") return this.hopDown();
         if (n === "sleep") return this.set("knead", rnd(2, 3));
-        if (n === "loaf") return this.set("loaf", rnd(6, 14));
+        if (n === "loaf") return this.set(pick({ loaf: 2, sphinx: 2, sideLie: 1.5, curl: 1 }), rnd(6, 14));
         if (n === "groom") return this.set(pick({ groom: 3, lickFlank: 2, washFace: 2, legUp: 1.4 }), rnd(3, 6));
         return this.set("sit", rnd(4, 9));
       }
       if (Math.random() < 0.015 && !w.isNight()) w.meow(this);
-      const wt = { walk: 3, sit: 2, groom: 1.8, sleep: 1.1, roll: 1, zoom: this.zoomCool > 0 ? 0 : 0.12,
+      const wt = { walk: 3, sit: 2, groom: 1.8, sleep: 1.1, roll: 0.3, zoom: this.zoomCool > 0 ? 0 : 0.12,
         loaf: 1.2, sploot: 0.6, meerkat: 0.5, tailChase: this.size < 0.85 ? 0.45 : 0.2,      // kittens chase their tails more
-        nod: w.isNight() ? 0.8 : 0.25, wave: 0.25, playBow: this.size < 0.85 ? 0.5 : 0.25, stalk: 0.35, chatter: w.birds.length ? 3 : 0 };
+        nod: w.isNight() ? 0.8 : 0.25, wave: 0.1, playBow: this.size < 0.85 ? 0.5 : 0.25, stalk: 0.35, chatter: w.birds.length ? 3 : 0 };
+      // everyday cat things: lying about, scratching, shaking, sniffing, stretching
+      Object.assign(wt, { sideLie: 1.1, sphinx: 1.1, curlNap: 0.45, tailThump: 0.35, yawnLie: 0.35, scratchEar: 0.45, lookBack: 0.4, shake: 0.3, sniffFloor: 0.5, pawReach: 0.35, backStretch: 0.35, content: 0.5, wiggle: 0.3 });
       const love = this.profile ? this.profile.love : 50, pt = w.pointer;
+      if (pt && pt.seen && Math.abs(pt.x - this.x) < 500) wt.chirp = 0.35;
       if (love >= 70) wt.pronk = 0.3;
       if (love >= 45 && pt && pt.seen && Math.abs(pt.x - this.x) < 450) wt.blink = 0.6;
       const y = w.yarn;
@@ -1043,10 +1176,10 @@
         if (P_.sick) { wt.sleep *= 2; wt.loaf = (wt.loaf || 0) * 2; wt.walk *= 0.5; wt.zoom = 0; wt.pronk = 0; wt.tailChase = 0; }
       }
       if (w.weather && ["rain", "storm", "snow", "drizzle"].includes(w.weather.kind)) { wt.sleep *= 1.6; wt.loaf = (wt.loaf || 0) * 1.6; wt.zoom = 0; }
-      if (w.isNight()) { wt.sleep *= 3; wt.walk *= 0.4; wt.zoom = 0; wt.loaf *= 2; wt.tailChase = 0; wt.meerkat = 0; wt.pronk = 0; if (wt.fight) wt.fight *= 0.2; if (wt.shelf) wt.shelf *= 0.5; }
+      if (w.isNight()) { wt.sideLie *= 1.6; wt.curlNap *= 2; wt.shake *= 0.3; wt.sniffFloor *= 0.4; wt.wiggle = 0; wt.sleep *= 3; wt.walk *= 0.4; wt.zoom = 0; wt.loaf *= 2; wt.tailChase = 0; wt.meerkat = 0; wt.pronk = 0; if (wt.fight) wt.fight *= 0.2; if (wt.shelf) wt.shelf *= 0.5; }
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
       if (foe) wt.fight = 0.6;
-      if (wt.yarn || wt.mouse || wt.dangle || wt.butterfly) { wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; wt.loaf = wt.sploot = 0.2; }
+      if (wt.yarn || wt.mouse || wt.dangle || wt.butterfly) { for (const k in IDLE_DUR) if (wt[k]) wt[k] *= 0.2; wt.sleep = 0.2; wt.walk = 1.5; wt.fight = 0; wt.loaf = wt.sploot = 0.2; }
       if (this.mods) for (const k in wt) if (this.mods[k]) wt[k] *= this.mods[k];      // personality
       if (this.profile && window.CatLife && window.CatLife.isElder(this.profile)) {                              // wise old cats take it easy
         wt.sleep *= 1.6; wt.walk *= 0.7; wt.zoom = 0; wt.tailChase *= 0.3; wt.loaf *= 1.6; if (wt.pronk) wt.pronk *= 0.4; if (wt.fight) wt.fight *= 0.4;
@@ -1084,7 +1217,8 @@
         this.care("fight", { o: foe.name, oid: foe.pid }); foe.care("fight", { o: this.name, oid: this.pid });
         w.burst((this.x + foe.x) / 2, this.y - 30 * this.s, "spark", "#f7e48c", 1);
       }
-      else if (n === "roll") this.set("roll", rnd(3, 5.5));
+      else if (n === "roll") this.set("roll", rnd(3, 5));
+      else if (n in IDLE_DUR) { if (n === "chirp" && pt) { this.facing = Math.sign(pt.x - this.x) || this.facing; if (Math.random() < 0.6) w.meow(this); } const d = IDLE_DUR[n]; this.set(n === "curlNap" ? "curl" : n, rnd(d[0], d[1])); }
       else if (n === "loaf") this.set("loaf", rnd(6, 16));
       else if (n === "sploot") this.set("sploot", rnd(5, 11));
       else if (n === "meerkat") this.set("meerkat", rnd(2.2, 3.6));
@@ -1412,6 +1546,7 @@
           if (Math.abs(dx) < 8 * s || this.stateT > this.dur) this.set("leap", 3, { vx: this.facing * 160 * s, vy: -230 * s, goal: null });
           break;
         }
+        case "wiggle": if (this.stateT > this.dur) this.set("leap", 3, { vx: this.facing * 130 * s, vy: -200 * s, goal: null }); break;
         case "playBow": if (this.stateT > this.dur) { if (Math.random() < 0.6) this.startZoom(false); else this.set("pronk", 1.2); } break;
         case "tailChase": {
           this.spinT -= dt;
@@ -1670,7 +1805,7 @@
         case "drink": return "eat";
         case "litter": return "crouch";
         case "arch": return "arch";
-        case "sleep": return this.belly ? "bellyUp" : "sleep";
+        case "sleep": return this.belly ? "bellyUp" : this.sleepPose || "sleep";
         case "nibble": return "eat";
         case "fishWatch": return Math.sin(this.stateT * 2.3) > 0.72 ? "bat" : "sit";
         case "birdWatch": return "meerkat";
@@ -1685,7 +1820,7 @@
       const R = this.R; R.clear();
       if (this.hidden || this.jobOff || this.parkAway) return;   // asleep in the cat house, away at work, or not at the park
       R.grey = !!(this.profile && window.CatLife && window.CatLife.isElder(this.profile));
-      const a = { t: this.t, st: this.stateT, phase: this.phase, blink: this.blink, eyes: this.state === "happy" ? "happy" : this.eyes, peekEyes: null, look: this.look };
+      const a = { t: this.t, st: this.stateT, dur: this.dur, phase: this.phase, blink: this.blink, eyes: this.state === "happy" ? "happy" : this.eyes, peekEyes: null, look: this.look };
       POSES[this.pose()](R, a);
       const acc = this.wearing();
       morph(R, this.P); mane(R, this.P); dress(R, acc);
@@ -2179,18 +2314,29 @@
     { id: "magpie", w: 6, body: [36, 38, 50], belly: [244, 244, 248], wing: [60, 90, 150], tail: 2 },
     { id: "parrot", w: 2, body: [70, 190, 90], belly: [120, 220, 110], wing: [40, 120, 220], head: [230, 60, 60], tail: 3, beak: [240, 220, 120] },
     { id: "owl", w: 0, night: true, body: [150, 110, 76], belly: [226, 204, 170], wing: [120, 86, 58], big: 1.3, owl: true, beak: [200, 160, 60] },
+    // seasonal ones: they come in flocks with the migrations (storks and geese fly over in a V, ducks in a line)
+    { id: "swallow", w: 0, seasons: { spring: 14, summer: 16 }, body: [40, 50, 96], belly: [246, 240, 230], wing: [30, 36, 76], head: [190, 70, 50], tail: 2, flock: [4, 9] },
+    { id: "stork", w: 0, seasons: { spring: 10, autumn: 9 }, body: [246, 246, 250], belly: [255, 255, 255], wing: [30, 30, 36], big: 1.6, beak: [226, 70, 50], long: true, migr: "v", flock: [5, 11] },
+    { id: "duck", w: 0, seasons: { autumn: 10, winter: 8, spring: 5 }, body: [150, 120, 96], belly: [200, 180, 150], wing: [110, 90, 120], head: [40, 120, 70], big: 1.3, beak: [250, 180, 50], migr: "line", flock: [4, 8], duck: true },
+    { id: "goose", w: 0, seasons: { autumn: 8, winter: 5 }, body: [140, 136, 126], belly: [220, 214, 200], wing: [100, 96, 90], head: [40, 40, 44], big: 1.5, beak: [50, 50, 56], migr: "v", flock: [6, 12], duck: true },
   ];
+  // the season right now (northern hemisphere): it decides who flies over and how busy the sky is
+  const season = () => { const m = new Date().getMonth(); return m < 2 || m === 11 ? "winter" : m < 5 ? "spring" : m < 8 ? "summer" : "autumn"; };
+  const SKY_BUSY = { spring: 1.5, summer: 1.2, autumn: 1.5, winter: 0.6 };
+  const birdW = (b, se) => (b.seasons ? b.seasons[se] || 0 : b.w);
   function pickBird(world) {
-    const night = world.isNight && world.isNight(), list = night ? BIRDS.filter((b) => b.night) : BIRDS.filter((b) => !b.night && b.w > 0);
-    let x = Math.random() * list.reduce((a, b) => a + (b.w || 1), 0); for (const b of list) { x -= b.w || 1; if (x <= 0) return b; } return list[0];
+    const night = world.isNight && world.isNight(), se = season(), list = night ? BIRDS.filter((b) => b.night) : BIRDS.filter((b) => !b.night && birdW(b, se) > 0);
+    let x = Math.random() * list.reduce((a, b) => a + (birdW(b, se) || 1), 0); for (const b of list) { x -= birdW(b, se) || 1; if (x <= 0) return b; } return list[0];
   }
   class Bird {
-    constructor(world, dir, y, land) {
+    constructor(world, dir, y, land, sp) {
       this.world = world; this.dir = dir; const ts = world.toyScale;
       this.x = dir > 0 ? -20 : world.W + 20; this.base = y; this.y = y; this.vx = dir * rnd(110, 160) * ts / 3; this.vy = 0;
       this.t = rnd(0, 6); this.state = "fly"; this.landX = land ? rnd(world.W * 0.15, world.W * 0.85) : null; this.peckT = 0; this.seen = new Set();
-      this.sp_ = pickBird(world); this.col = this.sp_.body; this.kind = this.sp_.id; if (world.onBirdSeen) world.onBirdSeen(this.kind);
+      this.sp_ = sp || pickBird(world); this.col = this.sp_.body; this.kind = this.sp_.id; if (world.onBirdSeen) world.onBirdSeen(this.kind);
       this.sp = new Sprite(16, 13);
+      this.far = this.sp_.migr ? 0.55 : 1;                 // migrating flocks fly high up: further away, so smaller
+      if (this.sp_.migr) this.vx *= 0.7;                    // and they glide along slower
     }
     scare() {
       if (this.state === "away") return;
@@ -2200,7 +2346,7 @@
     update(dt) {
       const w = this.world, ts = w.toyScale; this.t += dt;
       if (this.state === "fly") {
-        this.x += this.vx * dt; this.y = this.base + Math.sin(this.t * 2.6) * 7 * ts / 3;
+        this.x += this.vx * dt; this.y = this.base + Math.sin(this.t * (this.far < 1 ? 1.2 : 2.6)) * (this.far < 1 ? 2 : 7) * ts / 3;
         if (this.landX != null && Math.abs(this.x - this.landX) < 30) this.state = "land";
       } else if (this.state === "land") {
         this.x += this.vx * 0.4 * dt; this.y += Math.max(90, (w.floor - this.y) * 1.6) * dt;
@@ -2220,25 +2366,30 @@
         }
       }
     }
-    gone() { return this.x < -60 || this.x > this.world.W + 60 || this.y < -60; }
+    // off-screen on the side it's flying towards (birds at the back of a flock start further out, so the side behind doesn't count)
+    gone() { const W = this.world.W, far = 60 + 400 * this.world.toyScale; return (this.vx > 0 ? this.x > W + 60 || this.x < -far : this.x < -60 || this.x > W + far) || this.y < -60; }
     render(ctx) {
       const w = this.world, s = w.toyScale, R = this.sp.R; R.clear();
-      const flap = this.state === "peck" ? 0 : Math.sin(this.t * 22) > 0 ? 1 : 2, peck = this.state === "peck" && Math.sin(this.t * 7) > 0.6;
+      const flap = this.state === "peck" ? 0 : Math.sin(this.t * ((this.far || 1) < 1 ? 7 : 22)) > 0 ? 1 : 2, peck = this.state === "peck" && Math.sin(this.t * 7) > 0.6;
       const B = this.sp_, oy = 2, tl = B.tail || 0;
       R.tri(1 - tl, 5 + oy, 4, 5 + oy, 0 - tl, 8 + oy + tl * 0.4, 1);                       // tail (long on magpies and parrots)
       if (B.owl) { R.ellipse(7, 6.5 + oy, 4.4, 3.6, 1); R.ellipse(7.4, 7.4 + oy, 2.8, 2.4, 2); }
       else { R.ellipse(6.5, 6.5 + oy, 4, 2.6, 1); R.ellipse(6.8, 7.6 + oy, 2.8, 1.2, 2); }   // body, belly
       const hy = (peck ? 7 : B.owl ? 3 : 4.2) + oy;
       R.circle(10.2, hy, B.owl ? 2.6 : 2, B.head ? 6 : 1); R.put(12.4, hy + (B.owl ? 0.6 : 0), 3);                // head, beak
+      if (B.long) { R.put(13.4, hy + 0.4, 3); R.put(14.4, hy + 0.8, 3); R.put(15.2, hy + 1.2, 3); }                 // a stork's long red beak
+      if (B.duck) { R.put(13.3, hy + 0.5, 3); R.put(12.4, hy + 1, 3); R.put(13.3, hy + 1, 3); }                     // a flat bill
+      if (B.id === "duck") { R.put(9, hy + 1.8, 2); R.put(10, hy + 2, 2); }                                         // the white neck ring
       if (B.neck) { R.put(9, hy + 1.5, 7); R.put(10, hy + 1.8, 7); }
       if (B.mask) R.put(11.4, hy + 0.3, 4);
       if (B.crest) { R.put(9.6, hy - 2.4, 1); R.put(9, hy - 3.2, 1); }
       if (B.owl) { R.put(9.6, hy - 0.4, 8); R.put(11.2, hy - 0.4, 8); R.put(9.6, hy - 0.4, 8); R.put(8.4, hy - 2.6, 1); R.put(11.6, hy - 2.6, 1); }
       else R.put(10.6, hy - 0.6, 4);                                                                               // eye
       if (flap === 1) R.tri(4, 5 + oy, 8, 5 + oy, 5, 0 + oy, 5); else if (flap === 2) R.tri(4, 6 + oy, 8, 6 + oy, 6, 10.5 + oy, 5); else R.ellipse(6, 5.6 + oy, 2.6, 1.2, 5);
-      if (this.state === "peck") { R.put(6, 10 + oy, 3); R.put(8, 10 + oy, 3); }
+      if (this.state === "peck") { if (B.long) { for (let y = 9; y < 13; y++) { R.put(6, y + oy - 2, 3); R.put(8, y + oy - 2, 3); } } else { R.put(6, 10 + oy, 3); R.put(8, 10 + oy, 3); } }
+      else if (B.long) { R.put(0, 8 + oy, 3); R.put(-1, 8 + oy, 3); }                                               // legs trail behind in flight
       const c = B.body, img = this.sp.paint({ 1: { c, lit: true }, 2: { c: B.belly }, 3: { c: B.beak || [232, 170, 64] }, 4: { c: [20, 18, 22] }, 5: { c: B.wing }, 6: { c: B.head || c, lit: true }, 7: { c: B.neck || c }, 8: { c: [255, 214, 60] } }, darken(c, 0.6));
-      const k = (B.big || 1) * s;
+      const k = (B.big || 1) * s * (this.far || 1);
       ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(Math.round(this.x), Math.round(this.y - 12 * k)); if (this.dir < 0) ctx.scale(-1, 1);
       ctx.drawImage(img, -8 * k, 0, 16 * k, 13 * k); ctx.restore();
     }
@@ -2289,6 +2440,8 @@
     xmastree:{ w: 34, h: 58, price: 180, role: "play", act: "bat", durable: true },
     cactus:  { w: 16, h: 30, price: 55, role: "play", act: "swipe" },
     feeder:  { w: 22, h: 30, price: 400, role: "decor", durable: true },
+    // a garden pot: put it anywhere, plant a seed in it, water it, harvest (garden.js)
+    pot:     { w: 16, h: 11, price: 40, durable: true, garden: true },
     // festival things: only sold while their festival is on (see extras.js)
     snowman: { w: 26, h: 38, price: 90, durable: true, event: "winter" },
     giftbox: { w: 24, h: 22, price: 70, nap: 0, hide: true, event: "winter" },
@@ -2363,6 +2516,7 @@
       R.rect(2, 26, 16, 10, 1); R.rect(1, 25, 18, 2, 1);
       R.ellipse(10, 19, 6, 6.5, 2); R.circle(10, 9, 4.6, 2); R.tri(6, 7, 8, 6, 6.5, 2, 2); R.tri(12, 6, 14, 7, 13.5, 2, 2); R.limb(15, 22, 18, 12, 1.4, 2); R.put(9, 9, 3); R.put(11, 9, 3);
     }
+    else if (kind === "pot") { R.rect(1, 0, 14, 3, 1); R.rect(2, 3, 12, 8, 2); R.rect(2, 6, 12, 1, 1); R.rect(3, 0, 10, 2, 3); }
     else if (kind === "snowman") {
       R.circle(13, 29, 9, 1); R.circle(13, 15, 7, 1); R.circle(13, 15, 7, 1); R.rect(6, 4, 14, 2, 2); R.rect(9, -2, 8, 6, 2);
       R.put(11, 13, 3); R.put(15, 13, 3); R.rect(13, 15, 4, 1, 4); R.rect(8, 20, 10, 2, 5); R.rect(15, 21, 2, 5, 5); for (const y of [26, 30, 34]) R.put(13, y, 3);
@@ -2483,6 +2637,7 @@
     bed: { 1: { c: [92, 156, 214], lit: true }, 2: { c: [244, 226, 200] }, 3: { c: [255, 240, 222] } },
     house: { 1: { c: [214, 86, 86], lit: true }, 2: { c: [184, 64, 70] }, 3: { c: [222, 176, 120], lit: true }, 4: { c: [196, 148, 96] }, 5: { c: [58, 40, 34] }, 6: { c: [255, 210, 120] } },
     tree: { 1: { c: [218, 200, 176], lit: true }, 2: { c: [196, 166, 116] }, 3: { c: [166, 136, 92] }, 4: { c: [90, 70, 60] }, 5: { c: [255, 120, 160], lit: true } },
+    pot: { 1: { c: [214, 120, 80], lit: true }, 2: { c: [190, 100, 66], lit: true }, 3: { c: [96, 66, 46] } },
     snowman: { 1: { c: [250, 252, 255], lit: true }, 2: { c: [50, 50, 60] }, 3: { c: [30, 30, 40] }, 4: { c: [240, 140, 60] }, 5: { c: [220, 60, 70] } },
     giftbox: { 1: { c: [220, 60, 80], lit: true }, 2: { c: [240, 90, 110], lit: true }, 3: { c: [255, 214, 80], lit: true }, 4: { c: [255, 214, 80] } },
     candycane: { 1: { c: [250, 250, 250], lit: true }, 2: { c: [220, 50, 60], lit: true } },
@@ -2519,7 +2674,7 @@
     clock: [70, 44, 26], tv: [30, 30, 36], lamp: [100, 80, 60], radio: [110, 50, 40], statue: [120, 90, 30], tunnel: [110, 60, 30], fountain: [60, 90, 120], litter: [50, 90, 70], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70],
     wheel: [70, 56, 46], castle: [110, 84, 60], teepee: [110, 80, 60], beanbag: [150, 90, 30], scratcher: [110, 80, 50], rocker: [90, 56, 34], fireplace: [80, 50, 36], window: [110, 86, 60],
     lavalamp: [80, 80, 90], xmastree: [30, 80, 40], cactus: [50, 90, 50], feeder: [90, 100, 110],
-    snowman: [120, 140, 170], giftbox: [110, 30, 40], candycane: [140, 40, 50], tulips: [90, 70, 50], birdhouse: [80, 56, 40], parasol: [120, 70, 70], beachball: [110, 70, 70], ghost: [120, 120, 150], cauldron: [20, 20, 26],
+    pot: [110, 54, 32], snowman: [120, 140, 170], giftbox: [110, 30, 40], candycane: [140, 40, 50], tulips: [90, 70, 50], birdhouse: [80, 56, 40], parasol: [120, 70, 70], beachball: [110, 70, 70], ghost: [120, 120, 150], cauldron: [20, 20, 26],
     pumpkin: [120, 60, 20], bathtub: [110, 120, 140], tower: [90, 64, 44], pillow: [150, 80, 100], drum: [100, 40, 40], arcade: [40, 30, 80], globe: [80, 60, 40], monstera: [40, 70, 40] };
   function furnitureThumb(kind, ctx) {
     const f = FURN[kind], sp = new Sprite(f.w, f.h); paintFurniture(kind, sp.R);
@@ -2555,6 +2710,7 @@
     use() { if (!this.f.durable) this.item.cond = Math.max(0, this.item.cond - 1.5 * wearK()); }
     grab() { this.held = true; } release() { this.held = false; }
     click() {
+      if (this.f.garden && this.world.onPotClick) { this.world.onPotClick(this); return; }
       if (this.kind === "litter" && this.item.dirty) { if (this.world.onCleanLitter) this.world.onCleanLitter(this); return; }
       const o = this.occupant; if (o && this.world.cats.includes(o)) { o.set("stretch", 1.4); return; }      // knock knock: whoever's napping wakes up
       this.world.burst(this.x, this.y - this.f.h * this.world.toyScale, "note", "#b08d57", 1);
@@ -2581,6 +2737,7 @@
         const seed = this.kind.length * 7 + Math.round(this.x) % 5;
         for (let i = 0; i < (c <= 0 ? 7 : 4); i++) ctx.fillRect(x0 + ((seed * (i + 3) * 13) % Math.max(1, f.w - 3)) * s, y0 + ((seed * (i + 5) * 7) % Math.max(1, f.h - 2)) * s, s * (c <= 0 ? 2 : 1), s);
       }
+      if (this.f.garden && this.world.drawPlant) this.world.drawPlant(ctx, this, x0, y0, s);
       if (this.kind === "tv" && c > 0) {                // the telly flickers
         const ph = Math.floor(this.t * 3); const cols = ["#7fc8f8", "#ffd34d", "#ff8fab", "#9be59b"];
         for (let i = 0; i < 4; i++) { ctx.fillStyle = cols[(ph + i) % 4]; ctx.fillRect(x0 + (3 + (i % 2) * 15) * s, y0 + (3 + (i >> 1) * 9) * s, 15 * s, 9 * s); }
@@ -2724,7 +2881,7 @@
       this.scale = opts.scale || 3; this.toyScale = opts.toyScale || this.scale; this.cats = []; this.yarn = null; this.mouse = null; this.boxes = []; this.bowl = null; this.laser = false; this.parts = [];
       this.wand = null; this.butterfly = null; this.catnip = null; this.catnipId = 0; this.bed = null; this.post = null;
       this.shelves = []; this.cakes = []; this.purrOn = opts.purrOn ?? true; this.meowOn = opts.meowOn ?? true; this.nightMode = opts.nightMode || "auto"; this.seasonsOn = opts.seasonsOn ?? true;
-      this.birds = []; this.birdT = rnd(40, 120); this.critters = []; this.critterT = rnd(120, 400); this.shouts = []; this.sky = []; this.cloudT = rnd(25, 70); this.starT = rnd(20, 60); this.cloudImgs = new Map(); this.birdsOn = opts.birdsOn ?? true; this.furniture = [];
+      this.birds = []; this.birdT = rnd(60, 240); this.critters = []; this.critterT = rnd(120, 400); this.shouts = []; this.sky = []; this.cloudT = rnd(25, 70); this.starT = rnd(20, 60); this.cloudImgs = new Map(); this.birdsOn = opts.birdsOn ?? true; this.furniture = [];
       this.strayOn = opts.strayOn ?? true; this.strayT = rnd(600, 1500); this.game = null;
       this.pointer = { x: -1e4, y: -1e4, seen: false }; this.drag = null; this.onHover = opts.onHover || (() => {});
       this.floorInset = opts.floorInset ?? 6; this.audio = null; this.last = performance.now();
@@ -2847,8 +3004,19 @@
       const c = new Critter(this, k, Math.random() < 0.5 ? 1 : -1); this.critters.push(c); if (this.onCritterSeen) this.onCritterSeen(k); return c;
     }
     addBird(o = {}) {
-      const dir = Math.random() < 0.5 ? 1 : -1, n = o.n || (Math.random() < 0.35 ? rnd(2, 4) | 0 : 1), y = this.floor - rnd(200, Math.min(520, this.floor - 60));
-      for (let i = 0; i < n; i++) { const b = new Bird(this, dir, y + rnd(-30, 30), i === 0 && (o.land ?? Math.random() < 0.3)); b.x -= dir * i * rnd(30, 60); this.birds.push(b); }
+      const dir = Math.random() < 0.5 ? 1 : -1, sp = o.sp ? BIRDS.find((b) => b.id === o.sp) : pickBird(this), se = season(), busy = SKY_BUSY[se];
+      const top = Math.max(80, this.floor - Math.min(620, this.floor - 60)), y = sp.migr ? rnd(top, top + 140) : this.floor - rnd(200, Math.min(520, this.floor - 60));
+      let n = o.n || (sp.flock ? rnd(sp.flock[0], sp.flock[1] * Math.min(1.2, busy)) | 0 : sp.night ? 1 : Math.random() < 0.3 * busy ? rnd(2, 3 + busy * 2) | 0 : 1);
+      let v0 = 0; const land = o.land ?? false, ts = this.toyScale * (sp.big || 1) * (sp.migr ? 0.55 : 1);
+      for (let i = 0; i < n; i++) {
+        let dx = i * rnd(30, 60), dy = rnd(-30, 30);
+        if (sp.migr === "v") { const k = Math.ceil(i / 2); dx = k * 15 * ts; dy = (i % 2 ? -1 : 1) * k * 7 * ts; }    // the V: a leader, then two wings behind
+        else if (sp.migr === "line") { dx = i * 17 * ts; dy = i * 3 * ts; }
+        const b = new Bird(this, dir, y + dy, i === 0 && land, sp); b.x -= dir * dx;
+        if (sp.migr || sp.flock) { if (i === 0) v0 = b.vx; else b.vx = v0 * rnd(0.98, 1.02); b.t = i * 0.35; }       // a flock keeps together
+        this.birds.push(b);
+      }
+      return n;
     }
     placeFurniture(kind, x, item) {
       const f = new Furniture(this, kind, x ?? this.spot(), item); this.furniture.push(f);
@@ -3095,7 +3263,13 @@
       if (this.bowl) this.bowl.update(dt);
       this.boxes.forEach((b) => b.update(dt));
       for (const t of [this.wand, this.butterfly, this.catnip, this.bed, this.post, ...this.shelves, ...this.cakes, ...this.furniture]) if (t) t.update(dt);
-      if (this.birdsOn && !(this.weather && ["rain", "storm", "snow"].includes(this.weather.kind))) { this.birdT -= dt; if (this.birdT <= 0) { this.addBird(); this.birdT = this.isNight() ? rnd(500, 1200) : rnd(150, 420); } }
+      // birds: a flock or a single bird passes every 20–30 minutes (owls only now and then at night), and about once an hour one lands for a peck.
+      // Rain and snow keep them away; the timers just wait.
+      if (this.birdsOn && !(this.weather && ["rain", "storm", "snow"].includes(this.weather.kind))) {
+        this.birdT -= dt; if (this.birdT <= 0) { this.addBird(); this.birdT = this.isNight() ? rnd(2400, 4800) : rnd(1200, 1800) / SKY_BUSY[season()] * 1.2; }
+        this.landT = (this.landT ?? rnd(900, 2400)) - dt;
+        if (this.landT <= 0 && !this.isNight()) { const sp = pickBird(this); this.addBird({ sp: sp.migr ? "sparrow" : sp.id, n: Math.random() < 0.4 ? 2 : 1, land: true }); this.landT = rnd(2700, 4500); }
+      }
       this.birds.forEach((b) => b.update(dt)); this.birds = this.birds.filter((b) => !b.gone());
       // 🐿️ visitors: a squirrel, a hedgehog (at night) or a few butterflies wander past now and then
       if (this.birdsOn) { this.critterT -= dt; if (this.critterT <= 0) { this.critterT = rnd(360, 900); this.addCritter(); } }
@@ -3210,7 +3384,13 @@
         ctx.save(); ctx.imageSmoothingEnabled = false; if (night) ctx.filter = "brightness(.8)";
         ctx.drawImage(img, Math.round(c.x / k) * k, Math.round(y / k) * k, img.width * k, img.height * k); ctx.restore();
         // a grey cloud lets a few drops fall right under it
-        if (c.grey && Math.random() < dt * 6) this.burst(c.x + rnd(0.3, 0.7) * img.width * k, y + img.height * k, "dust", "rgba(110,140,200,.8)", 1);
+        if (c.grey && Math.random() < dt * 6) (this.cloudDrops = this.cloudDrops || []).push({ x: c.x + rnd(0.25, 0.75) * img.width * k, y: y + img.height * k - k, v: rnd(260, 340), life: rnd(0.5, 0.9) });
+      }
+      // ...and those drops fall DOWN (they used to be dust puffs, which float up)
+      if (this.cloudDrops && this.cloudDrops.length) {
+        ctx.save(); ctx.fillStyle = "rgba(110,150,215,.85)";
+        for (const d of this.cloudDrops) { d.y += d.v * dt; d.life -= dt; ctx.globalAlpha = Math.min(1, d.life * 3); ctx.fillRect(Math.round(d.x / k) * k, Math.round(d.y / k) * k, k, k * 3); }
+        ctx.restore(); this.cloudDrops = this.cloudDrops.filter((d) => d.life > 0);
       }
       this.sky = this.sky.filter((c) => (c.v > 0 ? c.x < this.W + 20 : c.x > -(c.w + 60) * k));
       // shooting stars: only at night and when the sky isn't overcast
@@ -3435,5 +3615,5 @@
     const fake = { sp_: B, sp: new Sprite(16, 13), state: "peck", t: 0, x: W / 2, y: H - 3, dir: 1, world: { toyScale: k } };
     Bird.prototype.render.call(fake, ctx);
   }
-  window.DesktopCat = { buildPalette, BIRDS, birdThumb, critterThumb, World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE, FURN, furnitureThumb };
+  window.DesktopCat = { season, buildPalette, BIRDS, birdThumb, critterThumb, World, COATS, COAT_KEYS, SCALE_MIN: 1, SCALE_MAX: 6, portrait, WARDROBE, FURN, furnitureThumb };
 })();

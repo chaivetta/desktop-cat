@@ -145,10 +145,9 @@
       add.onclick = () => { if (opts.onAdopt) opts.onAdopt(); };
       box.appendChild(add);
       const tools = document.createElement("span"); tools.className = "cc-top";
-      for (const [e, fn, tt] of [["🎮", opts.onGames, T().games], ["🛒", opts.onMarket, T().market], ["🎒", opts.onInventory, T().inventory], ["🌱", opts.onExtras, T().extras], ["🏅", opts.onProgress, T().progress], ["⚙️", opts.onSettings, T().settings]]) {
-        if (!fn) continue;
-        const b = document.createElement("button"); b.type = "button"; b.className = "cc-tab tool"; b.textContent = e; b.title = tt || "";
-        b.onclick = () => fn(); tools.appendChild(b);
+      if (opts.onMenu) {
+        const b = document.createElement("button"); b.type = "button"; b.className = "cc-tab tool menu"; b.innerHTML = `<span>☰</span><small>${L.lang === "tr" ? "Menü" : "Menu"}</small>`; b.title = L.lang === "tr" ? "Menü" : "Menu";
+        b.onclick = () => opts.onMenu(); tools.appendChild(b);
       }
       box.appendChild(tools);
     }
@@ -647,7 +646,9 @@
   function beside(root) {
     const cc = document.querySelector(".cc"), body = cc && !cc.hidden ? cc.querySelector(".cc-card") : null;
     if (!body || root.hidden) { root.style.transform = ""; return false; }
-    const z = parseFloat(getComputedStyle(cc).getPropertyValue("--z")) || 1, r = body.getBoundingClientRect();
+    const z = parseFloat(getComputedStyle(cc).getPropertyValue("--z")) || 1, r0 = body.getBoundingClientRect();
+    // leave room on top for the menu's tab strip
+    const nh = window.CatHub && window.CatHub.now ? (window.CatHub.NAV_H + 6) * z : 0, r = { top: r0.top + nh, height: r0.height - nh, left: r0.left, right: r0.right };
     root.style.transformOrigin = "0 0"; root.style.transform = `scale(${z})`;
     root.style.setProperty("--maxh", `${r.height / z}px`); root.style.height = `${r.height / z}px`;
     const w = root.offsetWidth * z, gap = 10;

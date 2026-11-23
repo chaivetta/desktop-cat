@@ -3,7 +3,7 @@
   const STR = {
     tr: {
       bowlN: "Mama kabı", bowlD: "Önce ortaya çıkar, sonra dolaptan mamayı koy. İşin bitince envantere geri koyabilirsin.", fillBowl: (n) => `Mamayı koy (${n} öğün)`, noMeal: "Dolapta mama yok",
-      forever: "✨ Bir kere al, sonsuza kadar", inGarden: "Bahçede kullanılır 🌱", potN: "Saksı", potD: "Bahçene yeni bir saksı (🌱 Bahçe & Etkinlik). En çok 6.", potHave: (n) => `${n} saksın var`,
+      forever: "✨ Bir kere al, sonsuza kadar", inGarden: "Bahçede kullanılır 🌱", potNote: "Saksılar Mobilya bölümünde: masaüstüne koy, tıkla ve ek 🪴", potN: "Saksı", potD: "Bahçene yeni bir saksı (🌱 Bahçe & Etkinlik). En çok 6.", potHave: (n) => `${n} saksın var`,
       pickOne: "Bir şeye dokun: ne yapabileceğin burada çıkar 👆", stow: "🎒 Envantere koy", noFood: "Dolap boş. Marketten mama alabilirsin.", noToys: "Oyuncağın yok. Marketten alabilirsin.",
       toyNote: "Oyuncaklar envantere gelir; oradan çıkarır ya da geri koyarsın. Oynadıkça (ve dışarıda kaldıkça) eskir, bitince yenisini alman gerekir.", inInv: (c) => `🎒 Envanterde · %${c}`, again: "Bir daha",
       catsT: "Kediler", toysT: "Oyuncak", posts: "gönderi", atHome: "evde", price: "fiyat", free: "Ücretsiz", unlocked: "Açık",
@@ -56,9 +56,9 @@
         ["🎯", "Görevler", "Her görev 1🪙. Bir kedinin üç görevi bitince +3🪙 ve 1⭐."],
         ["💻", "Bilgisayar başında", "Bilgisayarı kullandıkça her 20 dakikada 1🪙, sınırsız (Altın parmak yeteneği hızlandırır)."],
         ["🧳", "Misafir kediler", "1-2 saatte bir teklif. Çoğu 1-2 saat, nadiren bir güne kadar kalır; ücret saate göre. İyi bakım, güzel ev ve ün daha çok kazandırır; hasta ya da ilgisiz kalırsa para yok."],
-        ["💼", "İşler", "Kartta kendin seçtiğin işler ve 1-3 saatte bir gelen teklifler. Dönünce kedi aç ve yorgundur: mama ver, iş süresi kadar dinlensin."],
+        ["💼", "İşler", "Rastgele gelen iş teklifleri: kabul et ya da reddet. Dönünce kedi aç ve yorgundur: mama ver, iş süresi kadar dinlensin."],
         ["💭", "İstekler", "Kedilerinden biri 20-45 dakikada bir bir şey ister; 45 dakikada yap: altın, sevgi, XP. Art arda yapınca kombo (en çok 2 kat), her 5'te ⭐."],
-        ["🌱", "Bahçe ve akış", "Tohum ek, sula, hasat et. Fotoğraf paylaş; bir günde beğeni toplar, en çok 15🪙'ye çevrilir (2 saatte bir paylaşım)."],
+        ["🌱", "Bahçe ve akış", "Masaüstündeki saksılara tohum ek, sula, hasat et. Fotoğraf paylaş; bir günde beğeni toplar, en çok 15🪙'ye çevrilir (2 saatte bir paylaşım)."],
         ["🎮", "Mini oyunlar", "Hepsi giriş ücretli; iyi oynarsan biraz kazanırsın. Her oyundan sonra 15 dakika mola. Kazı kazan çoğunlukla kaybettirir."],
         ["🏆", "Yarışma, seri, başarım", "Haftalık yarışmada ilk üç ödül alır; her gün girince seri ödülü; seviye atlayınca ve başarımlarda altın ve yıldız."],
         ["⭐", "Yıldızlar ne işe yarar", "Yeni kedi cinslerinin kilidi, sahiplenme (ilk kediden sonra ⭐1) ve kartın dolabındaki şapka, aksesuar, kıyafetler."],
@@ -68,7 +68,7 @@
     },
     en: {
       bowlN: "Food bowl", bowlD: "Take it out first, then put food in it from the cupboard. Put it away when you're done.", fillBowl: (n) => `Fill it (${n} meals)`, noMeal: "No food in the cupboard",
-      forever: "✨ Buy once, keep forever", inGarden: "Used in the garden 🌱", potN: "Plant pot", potD: "One more pot for your garden (🌱 Garden & Events). Six at most.", potHave: (n) => `you have ${n}`,
+      forever: "✨ Buy once, keep forever", inGarden: "Used in the garden 🌱", potNote: "Pots are in the Furniture section: put one on your desktop and click it to plant 🪴", potN: "Plant pot", potD: "One more pot for your garden (🌱 Garden & Events). Six at most.", potHave: (n) => `you have ${n}`,
       pickOne: "Tap something to see what you can do with it 👆", stow: "🎒 Put away", noFood: "The cupboard is empty. Buy food in the market.", noToys: "No toys yet. Buy some in the market.",
       toyNote: "Toys go to your inventory, where you take them out or put them away. They wear out with play (and while left out); when one's gone you'll need a new one.", inInv: (c) => `🎒 In inventory · ${c}%`, again: "Again",
       catsT: "Cats", toysT: "Toys", posts: "posts", atHome: "at home", price: "price", free: "Free", unlocked: "Unlocked",
@@ -121,9 +121,9 @@
         ["🎯", "Tasks", "1🪙 per task. When all three of a cat's tasks are done: +3🪙 and 1⭐."],
         ["💻", "At your computer", "1🪙 every 20 minutes while you use your computer, no limit (the Golden touch skill speeds it up)."],
         ["🧳", "Guest cats", "A request every 1–2 hours. Most stay an hour or two, rarely up to a day; paid by the hour. Good care, a nice home and a good name pay more; ill or neglected, no pay."],
-        ["💼", "Jobs", "Jobs you pick on the card, and offers every 1–3 hours. A cat comes back hungry and tired: feed it and let it rest as long as the job took."],
+        ["💼", "Jobs", "Job offers come in at random: accept or decline. A cat comes back hungry and tired: feed it and let it rest as long as the job took."],
         ["💭", "Wishes", "Every 20–45 minutes one of your cats wants something; grant it within 45 minutes: coins, love, XP. One after another builds a combo (up to double), a star every 5th."],
-        ["🌱", "Garden and feed", "Plant, water, harvest. Post photos; they gather likes for a day and turn into up to 15🪙 each (a post every 2 hours)."],
+        ["🌱", "Garden and feed", "Plant, water and harvest in the pots on your desktop. Post photos; they gather likes for a day and turn into up to 15🪙 each (a post every 2 hours)."],
         ["🎮", "Mini games", "All cost coins to play; play well and you come out a little ahead. Each game needs a 15-minute break afterwards. Scratch cards mostly lose."],
         ["🏆", "Contests, streak, goals", "The weekly contest's top three win; a reward for every day you log in; coins and stars for levels and achievements."],
         ["⭐", "What stars are for", "Unlocking cat coats, adopting (⭐1 after your first cat) and the hats, accessories and outfits in the card's wardrobe."],
@@ -168,7 +168,7 @@
         body = `<p class="mk-note">${esc(s.toyNote)}</p><div class="mk-grid">${Object.keys(L.TOY_PRICES).map((k) => { const price = L.TOY_PRICES[k], own = L.toys.includes(k), [nm, ds] = s.toys[k];
             const btn = own ? `<span class="mk-have">✓</span>` : `<button type="button" class="mk-buy" data-toy="${k}"${L.wallet.coins < price ? " disabled" : ""}>${s.buy(price)}</button>`;
             return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? (L.TOOLS.includes(k) ? s.forever : s.inInv(L.toyCondOf(k))) : L.TOOLS.includes(k) ? s.forever : "", btn); }).join("")}
-            ${(() => { const n = (L.extra && L.extra.plots ? L.extra.plots.length : 1), p = L.POT_PRICES[n - 1]; return card(`<div class="mk-emo">🪴</div>`, s.potN, s.potD, s.potHave(n), p ? `<button type="button" class="mk-buy" data-pot="1"${L.wallet.coins < p ? " disabled" : ""}>${s.buy(p)}</button>` : `<span class="mk-have">✓</span>`); })()}</div>`;
+            </div>${window.CatGarden && window.CatGarden.now ? `<h4 class="mk-h">${esc(L.gardenStr().seedsH)}</h4><p class="mk-note">${esc(s.potNote)}</p><div class="mk-grid">${window.CatGarden.now.seedCards(card, s.buy)}</div>` : ""}`;
       } else if (tab === "furniture") {
         body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${(() => { const ev = window.CatExtras && window.CatExtras.eventNow(); return Object.entries(DC.FURN).filter(([, d]) => !d.event || (ev && ev.id === d.event)).sort((a, b) => (b[1].event ? 1 : 0) - (a[1].event ? 1 : 0)); })().map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
           return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", (L.furnLevel && L.prog.lvl < L.furnLevel(d.price) ? `<button type="button" class="mk-buy" disabled>🔒 ${L.lang === "tr" ? "Sv." : "Lv."} ${L.furnLevel(d.price)}</button>` : `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`)); }).join("")}</div>`;
@@ -207,6 +207,8 @@
       root.querySelectorAll("canvas[data-f]").forEach((c) => DC.furnitureThumb(c.dataset.f, c.getContext("2d")));
       const wc = root.querySelector(".mk-wheel canvas"); if (wc) drawWheel(wc, s);
       if (tab === "cats") drawCats();
+      // a price you can't pay yet says how much is missing (on hover and under the button)
+      root.querySelectorAll(".mk-buy:disabled").forEach((bt) => { const m = /🪙\s*(\d+)/.exec(bt.textContent); if (!m) return; const need = +m[1] - L.wallet.coins; if (need > 0) { bt.title = L.lang === "tr" ? `${need}🪙 daha lazım` : `${need}🪙 more needed`; bt.dataset.need = `-${need}🪙`; } });
     }
     // 🐱 the cats, like a little photo profile each: a round picture, a bio, and a grid of "posts"
     // nine different poses for the profile grid, each with its own little extra (a hat, a toy) so no two look alike
@@ -348,6 +350,7 @@
       if (b.dataset.sel) { sel = sel === b.dataset.sel ? "" : b.dataset.sel; key = ""; return render(); }
       if (b.dataset.bowl) { const B = o.bowl(); B[b.dataset.bowl](); pop(b, "🥣"); key = ""; return render(); }
       if (b.dataset.stow) { o.storeToy && o.storeToy(b.dataset.stow); pop(b, "🎒"); key = ""; return render(); }
+      if (b.dataset.seed) { if (L.buySeed(b.dataset.seed)) pop(b, window.CatGarden.CROPS[b.dataset.seed].e); key = ""; return render(); }
       if (b.dataset.pot) { const n = L.extra.plots.length, p = L.POT_PRICES[n - 1]; if (p && L.wallet.coins >= p) { L.wallet.coins -= p; L.extra.plots.push(null); pop(b, "🪴"); L.changed(); } key = ""; return render(); }
       if (b.dataset.coat) { coatSel = b.dataset.coat; key = ""; return render(); }
       if (b.dataset.unlock) { if (L.buyCoat(b.dataset.unlock)) { note = t().unlockedMsg(L.COAT_NAMES[b.dataset.unlock][L.lang]); world.confetti(innerWidth / 2, 140, 40); } key = ""; return render(); }

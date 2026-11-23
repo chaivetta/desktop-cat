@@ -36,6 +36,8 @@
 <script src="wishes.js"></script>
 <script src="jobs.js"></script>
 <script src="extras.js"></script>
+<script src="garden.js"></script>
+<script src="hub.js"></script>
 <script src="welcome.js"></script>
 <script>
 (() => {
@@ -85,6 +87,7 @@
   // toys: what you own and how worn it is (an older save gets its free yarn back once)
   if (Array.isArray(saved.toys)) L.toys = saved.toyCond ? saved.toys.slice() : saved.toys.includes("yarn") ? saved.toys : ["yarn", ...saved.toys];
   if (saved.toyCond) L.toyCond = { ...saved.toyCond };
+  if (Array.isArray(saved.seeds)) L.seeds = saved.seeds.slice();
   L.loadWallet(saved.wallet, saved.cats);
   // furniture: every piece you own, with its condition and where it stands (older saves kept counts per kind)
   const newId = () => Math.random().toString(36).slice(2, 9);
@@ -111,7 +114,7 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
-        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, toyCond: L.toyCond, guests: L.guests, prog: L.prog, extra: L.extra, seen: Date.now(),
+        tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, toyCond: L.toyCond, seeds: L.seeds, guests: L.guests, prog: L.prog, extra: L.extra, seen: Date.now(),
         bowl: (() => { const B = world.park ? world.park.stash.bowl : world.bowl; return B ? { out: true, x: +(B.x / world.W).toFixed(4), food: +B.food.toFixed(3), kind: B.foodKind } : { out: false, food: bowlFood }; })(),
         home: { items: L.home.items.map((it) => { const f = (world.park ? world.park.stash.furniture : world.furniture).find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
     } catch {}
@@ -249,6 +252,7 @@
     onProgress: () => only(progress),
     onExtras: () => only(extras),
     onSettings: () => only(settings),
+    onMenu: () => window.CatHub.now && window.CatHub.now.toggle(),
     onGames: () => only(games),
     onRemove: (c) => { world.removeCat(c); save(); card.refresh(); },
     onClose: () => { overUI = false; syncIgnore(); },
@@ -378,6 +382,10 @@
   // 🌱 garden, photo feed, weekly contest, festivals
   var extras = window.CatExtras.now = window.CatExtras.create({ world, save: () => save(), toast: (m) => toast(m), openShop: () => market.open("toys"),
     needCan: () => { extras.close(); market.open("toys", L.lang === "tr" ? "Sulamak için önce bir suluk al 💧 (1🪙, su sınırsız)" : "Get a watering can first 💧 (1🪙, unlimited water)"); }, onClose: () => { overUI = false; syncIgnore(); } });
+  // 🪴 the garden on the desktop: pots you put down, seeds you plant in them
+  window.CatGarden.now = window.CatGarden.create({ world, save: () => save(), toast: (m) => toast(m), placeItem: (it) => market.opts.placeItem(it),
+    openShop: () => window.CatHub.now ? (window.CatHub.now.open("market"), market.open("toys")) : market.open("toys"),
+    onOpen: () => { overUI = true; syncIgnore(); }, onClose: () => { overUI = false; syncIgnore(); } });
   // 👋 login streak + "while you were away" card (created before the others report what happened)
   window.CatWelcome.create({ world, awayMin: saved.seen ? Math.max(0, Math.round((Date.now() - saved.seen) / 60e3)) : 0, readyCount: () => extras.readyCount(), toast: (m) => toast(m),
     onOpen: () => { overUI = true; syncIgnore(); }, onClose: () => { overUI = false; syncIgnore(); } });
@@ -392,10 +400,12 @@
   setTimeout(() => { albumScan(); albumQuiet = false; setInterval(albumScan, 5000); }, 4000);
   function only(p) { const open = p.isOpen; [market, inventory, settings, games, progress, extras].forEach((x) => x.close()); if (!open) p.open(); }
   // the open panel's button stays lit on the card
-  setInterval(() => { const P = [games, market, inventory, extras, progress, settings]; document.querySelectorAll(".cc-top .cc-tab.tool").forEach((b, i) => { b.classList.toggle("on", !!P[i] && P[i].isOpen); if (i === 4) b.dataset.lv = L.prog.lvl; else delete b.dataset.lv; if (i === 3) { const n = extras.readyCount(); if (n) b.dataset.dot = n; else delete b.dataset.dot; } }); }, 1000);
+  setInterval(() => { const b = document.querySelector(".cc-top .cc-tab.menu"); if (!b) return; b.classList.toggle("on", !!(window.CatHub.now && window.CatHub.now.shown)); b.dataset.lv = L.prog.lvl; }, 1000);
   // 🧳 guest cats from the neighbours
   var guests = window.CatGuests.create({ world, save: () => save() }); window.CatGuests.now = guests;
   var games = window.CatGames.create({ world, playLaser: () => act.playGame(), onClose: () => { overUI = false; syncIgnore(); } });
+  // ☰ one menu with tabs for every panel
+  window.CatHub.now = window.CatHub.create({ panels: () => ({ market, inventory, games, park: extras, events: extras, progress, settings }) });
   // the real weather outside: rain, snow, storms, fog, clouds (refreshed every 20 minutes)
   const weather = window.CatWeather.create({
     world, isOn: () => weatherOn, getLoc: () => weatherLoc, setLoc: (l) => { weatherLoc = l; save(); },

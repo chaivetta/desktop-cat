@@ -17,22 +17,22 @@
   ];
   const STR = {
     tr: {
-      title: "💼 İşe gönder", jobs: { hunt: "Fare avı", visit: "Komşu ziyareti", explore: "Çöplük keşfi" }, hrs: (h) => `${h} sa`,
+      title: "💼 İş", jobs: { hunt: "Fare avı", visit: "Komşu ziyareti", explore: "Çöplük keşfi" }, hrs: (h) => `${h} sa`,
       away: (j, m) => `💼 ${j}: ${m >= 60 ? `${Math.floor(m / 60)} sa ${m % 60} dk` : `${m} dk`} sonra döner`,
       cant: { kitten: "Yavrular işe gidemez", sick: "Hasta kedi işe gidemez", hungry: "Aç kedi işe gidemez, önce mama ver", tired: "Yorgun; işi kadar dinlenmesi lazım" },
       back: (n, j, what) => `🎒 ${n} ${j} dönüşü: ${what}`, gone: (n) => `👋 ${n} işe gitti`,
       found: (x) => `buldu: ${x}`, star: "⭐ bir yıldız!",
-      hint: "Kedin ekrandan çıkar, süre dolunca (uygulama kapalı olsa bile) ödülle döner. Uzun işler daha iyi ödül getirir. Ara sıra daha iyi ödeyen iş teklifleri de gelir.",
+      offerHint: "📨 İş teklifleri kendiliğinden gelir: ara sıra biri boştaki bir kedine iş önerir, sen kabul ya da ret edersin. İşten dönen kedi biraz dinlenir.", hint: "Kedin ekrandan çıkar, süre dolunca (uygulama kapalı olsa bile) ödülle döner. Uzun işler daha iyi ödül getirir. Ara sıra daha iyi ödeyen iş teklifleri de gelir.",
       offers: { mice: "bakkalın deposunda fare temizleyecek", scout: "mahallede kısa bir keşfe çıkacak", birds: "bostanda kuşları korkutacak", cafe: "kedi kafede müşterileri ağırlayacak", library: "kütüphanede bekçilik yapacak", model: "mama reklamı için poz verecek (genleri iyiyse daha çok kazanır)", therapy: "hastanede çocukları neşelendirecek", fisher: "balıkçıya yardım edecek", night: "fabrikada gece bekçiliği yapacak" },
       offerT: (n, h, d, pay) => `💼 İş teklifi: ${n} ${h} saat ${d}. Yaklaşık ${pay}🪙`, yes: "Gönder", no: "Hayır",
     },
     en: {
-      title: "💼 Send to work", jobs: { hunt: "Mouse hunt", visit: "Visit the neighbours", explore: "Explore the tip" }, hrs: (h) => `${h} h`,
+      title: "💼 Work", jobs: { hunt: "Mouse hunt", visit: "Visit the neighbours", explore: "Explore the tip" }, hrs: (h) => `${h} h`,
       away: (j, m) => `💼 ${j}: back in ${m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`}`,
       cant: { kitten: "Kittens can't go to work", sick: "A sick cat can't go", hungry: "A hungry cat can't go; feed it first", tired: "Tired; it needs to rest as long as the job took" },
       back: (n, j, what) => `🎒 ${n} is back from the ${j.toLowerCase()}: ${what}`, gone: (n) => `👋 ${n} went to work`,
       found: (x) => `found ${x}`, star: "⭐ a star!",
-      hint: "Your cat walks off the screen and comes back with a reward when the time's up (even if the app is closed). Longer jobs bring better rewards. Better-paid job offers come in now and then too.",
+      offerHint: "📨 Job offers come in on their own: now and then someone offers one of your free cats a job, and you accept or decline. A cat back from work rests a while.", hint: "Your cat walks off the screen and comes back with a reward when the time's up (even if the app is closed). Longer jobs bring better rewards. Better-paid job offers come in now and then too.",
       offers: { mice: "clear the mice out of the grocer's storeroom", scout: "go on a quick scouting trip", birds: "scare the birds off the allotment", cafe: "greet customers at the cat café", library: "guard the library", model: "pose for a cat food advert (better genes, better pay)", therapy: "cheer up children at the hospital", fisher: "help the fisherman", night: "be the factory's night watch" },
       offerT: (n, h, d, pay) => `💼 Job offer: ${n} could ${d} for ${h} hours. About ${pay}🪙`, yes: "Send", no: "No",
     },
@@ -81,9 +81,8 @@
       const key = [L.lang, p.id, j ? j.id : "", j ? Math.ceil((p.job.until - Date.now()) / 60e3) : "", w].join("|"); if (key === lastKey && el.dataset.k === key) return; lastKey = key; el.dataset.k = key;
       el.innerHTML = `<div class="cc-label"><span>${esc(s.title)}</span></div>` + (j
         ? `<p class="cc-jobaway">${esc(s.away(s.jobs[j.id] || `${j.e} ${s.offers[j.id]}`, Math.max(1, Math.ceil((p.job.until - Date.now()) / 60e3))))}</p>`
-        : `<div class="cc-jobs">${JOBS.map((x) => `<button type="button" class="cc-pill" data-job="${x.id}"${w ? " disabled" : ""}>${x.e} ${esc(s.jobs[x.id])}<small> · ${esc(s.hrs(x.h))}</small></button>`).join("")}</div>
-           <small class="cc-jobhint">${esc(w ? s.cant[w] : s.hint)}</small>`);
-      el.onclick = (e) => { const b = e.target.closest("[data-job]"); if (b && !b.disabled) { send(cat, b.dataset.job); lastKey = ""; } };
+        : `<small class="cc-jobhint">${esc(w ? s.cant[w] : s.offerHint)}</small>`);
+      el.onclick = null;
     }
     // ---- offers: every 1–3 hours (while the app is open, at most 6 a day) a job comes in for one of your free cats
     const box = document.createElement("div"); box.className = "ui gs-box"; box.hidden = true; document.body.appendChild(box);
