@@ -159,7 +159,7 @@
             const btn = own ? `<span class="mk-have">✓</span>` : `<button type="button" class="mk-buy" data-toy="${k}"${L.wallet.coins < price ? " disabled" : ""}>${s.buy(price)}</button>`;
             return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? s.inInv(L.toyCondOf(k)) : "", btn); }).join("")}</div>`;
       } else if (tab === "furniture") {
-        body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${Object.entries(DC.FURN).map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
+        body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${(() => { const ev = window.CatExtras && window.CatExtras.eventNow(); return Object.entries(DC.FURN).filter(([, d]) => !d.event || (ev && ev.id === d.event)).sort((a, b) => (b[1].event ? 1 : 0) - (a[1].event ? 1 : 0)); })().map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
           return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", (L.furnLevel && L.prog.lvl < L.furnLevel(d.price) ? `<button type="button" class="mk-buy" disabled>🔒 ${L.lang === "tr" ? "Sv." : "Lv."} ${L.furnLevel(d.price)}</button>` : `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`)); }).join("")}</div>`;
       } else if (tab === "mine") {
         // icons in a grid: food, toys and things; tap one to see what you can do with it

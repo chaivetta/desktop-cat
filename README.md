@@ -138,6 +138,33 @@ Your very first cat (the ginger tabby) is free; every adoption after that costs 
 
 Every so often a cat wants something in particular: a fish dinner, its wind-up mouse, a few cuddles, a brush, a nap in a bed. A thought bubble shows it over the cat (and on its card). Grant it within 45 minutes for love, coins and XP; let it lapse and the cat sulks a little.
 
+### 🌱 Garden, photos, contests and festivals
+
+<img src="docs/garden.png" width="300" alt="The garden: pots with catnip and a sunflower">
+
+A new 🌱 panel on the card:
+- **Garden:** plant catnip (1 h), mint (3 h), strawberries (6 h) or sunflowers (12 h). They grow in real hours, even with the app closed, as long as they're watered (water lasts 6 hours; 12 hours dry and they wilt). Harvests give catnip, coins, special meals and, rarely, a star. Two pots to start, more for coins.
+- **Feed:** photos you take with 📸 on a cat's card collect likes for a day (more for dressed-up, clean, happy cats and big cats); then you collect coins for them. Three posts a day.
+- **Weekly contest:** beauty, tricks or love, a different one each week. Enter a cat (20🪙); it's judged when the week ends against six rivals. The top three win trophies, coins and stars.
+- **Festivals:** a Winter Fair, Spring Fair, Summer Festival and Halloween, each with things you can only buy while it's on (a snowman, a gift box, tulips, a beach parasol, a ghost, a cauldron and more) and a daily gift.
+
+### 💼 Jobs
+
+Send a grown cat out for an hour's mouse hunt, a three-hour visit to the neighbours or an eight-hour trip to the tip. It walks off the screen and comes back (even if the app was closed) with coins, food, sometimes a piece of furniture or a star.
+
+### 👋 Coming back
+
+Every day you open the app adds to a login streak, with bigger gifts each day and a chest on day 7. If you've been away a while, a welcome card sums up what happened: guests who paid, cats back from work, a ripe garden, contest results.
+
+### More life
+
+- **Wish combos:** wishes granted one after another pay more and more; every fifth brings a star. Let one lapse and the combo breaks.
+- **Big cats show off:** the lion roars (the other cats flinch and the birds flee), the cheetah sprints the length of the screen faster than anything, the others stretch and yawn hugely.
+- **Visitors:** a squirrel dashes past now and then, butterflies flutter by, and at night a hedgehog trundles along. They have their own page in the album.
+- **Achievements:** nineteen goals (look after 100 guests, a 10-wish combo, see the owl, adopt a big cat…), each with a reward.
+
+![The lion roars](docs/roar.png)
+
 ### 🏅 Your progress
 
 <img src="docs/skills.png" width="300" alt="The skill tree"> <img src="docs/album.png" width="300" alt="The album of birds, cat coats and furniture">

@@ -9,13 +9,13 @@
       pet: (n) => `biraz sevilmek istiyor (${n} kez)`, fed: { fish: "balık istiyor", wet: "yaş mama istiyor", any: "karnı acıktı, mama istiyor" },
       play: { yarn: "yumakla oynamak istiyor", mouse: "kurmalı fareyle oynamak istiyor", butterfly: "kelebek kovalamak istiyor", feather: "olta ile oynamak istiyor", laser: "lazer kovalamak istiyor" },
       bed: "yatakta uyumak istiyor", brush: "taranmak istiyor", box: "kutuya girmek istiyor",
-      line: (n, w, m) => `💭 ${n} ${w} · ${m} dk`, done: (n, c) => `💖 ${n}'ın isteği yerine geldi! +${c}🪙`, miss: (n) => `😿 ${n}'ın isteği gerçekleşmedi, biraz küstü`,
+      combo: (n) => `${n}x kombo`, line: (n, w, m) => `💭 ${n} ${w} · ${m} dk`, done: (n, c) => `💖 ${n}'ın isteği yerine geldi! +${c}🪙`, miss: (n) => `😿 ${n}'ın isteği gerçekleşmedi, biraz küstü`,
     },
     en: {
       pet: (n) => `wants some cuddles (${n} times)`, fed: { fish: "wants fish", wet: "wants wet food", any: "is hungry for dinner" },
       play: { yarn: "wants to play with the yarn", mouse: "wants the wind-up mouse", butterfly: "wants to chase the butterfly", feather: "wants the feather wand", laser: "wants to chase the laser" },
       bed: "wants to nap in a bed", brush: "wants to be brushed", box: "wants to sit in a box",
-      line: (n, w, m) => `💭 ${n} ${w} · ${m} min`, done: (n, c) => `💖 ${n}'s wish came true! +${c}🪙`, miss: (n) => `😿 ${n}'s wish wasn't met; a little sulk`,
+      combo: (n) => `${n}x combo`, line: (n, w, m) => `💭 ${n} ${w} · ${m} min`, done: (n, c) => `💖 ${n}'s wish came true! +${c}🪙`, miss: (n) => `😿 ${n}'s wish wasn't met; a little sulk`,
     },
   };
   const t = () => STR[L.lang] || STR.en;
@@ -38,9 +38,12 @@
     function grant(cat) {
       const p = cat.profile, w = p.wish; if (!w) return;
       p.wish = null; p.wishNext = Date.now() + rnd(GAP[0], GAP[1]) * 60e3; p.wishes = (p.wishes || 0) + 1;
-      const coins = L.earn(3 * (L.hasBuff(p, "lucky") ? 2 : 1), cat); L.addLove(cat, 8); if (L.gainPXP) L.gainPXP(12);
-      world.confetti(cat.x, cat.y - 40 * cat.s, 14); world.purr && world.purr();
-      toast(t().done(p.name, coins)); L.changed(); save();
+      // a combo: wishes granted one after another (without letting one lapse) pay more, and every 5th brings a star
+      const combo = L.stats.combo = (L.stats.combo || 0) + 1; L.stats.wishes = (L.stats.wishes || 0) + 1; L.stats.bestCombo = Math.max(L.stats.bestCombo || 0, combo);
+      const k = 1 + 0.25 * Math.min(8, combo - 1), star = combo % 5 === 0;
+      const coins = L.earn(3 * k * (L.hasBuff(p, "lucky") ? 2 : 1), cat); L.addLove(cat, 8); if (L.gainPXP) L.gainPXP(Math.round(12 * k)); if (star) L.wallet.stars++;
+      world.confetti(cat.x, cat.y - 40 * cat.s, 14 + combo * 2); world.purr && world.purr();
+      toast(t().done(p.name, coins) + (combo > 1 ? ` · 🔥 ${t().combo(combo)}` : "") + (star ? " +⭐" : "")); L.changed(); save();
     }
     // every care event checks the cat's wish
     const care0 = L.care.bind(L);
@@ -56,10 +59,10 @@
     function tick() {
       const now = Date.now();
       for (const c of world.cats) {
-        const p = c.profile; if (!p || p.guest || c.leaving || c.stray) continue;
+        const p = c.profile; if (!p || p.guest || p.job || c.leaving || c.stray) continue;
         if (p.wish) {
           if (p.wish.k === "brush" && (p.brushedAt || 0) > p.wish.at) { grant(c); continue; }
-          if (now > p.wish.until) { p.wish = null; p.wishNext = now + rnd(GAP[0], GAP[1]) * 60e3; L.addLove(c, -6); world.burst(c.x, c.y - 40 * c.s, "sad", "#8a6b9a", 1); toast(t().miss(p.name)); L.changed(); save(); }
+          if (now > p.wish.until) { L.stats.combo = 0; p.wish = null; p.wishNext = now + rnd(GAP[0], GAP[1]) * 60e3; L.addLove(c, -6); world.burst(c.x, c.y - 40 * c.s, "sad", "#8a6b9a", 1); toast(t().miss(p.name)); L.changed(); save(); }
           continue;
         }
         if (!p.wishNext) { p.wishNext = now + rnd(5, 30) * 60e3; continue; }

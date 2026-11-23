@@ -200,6 +200,9 @@
         dispenser: ["Mama topu", "Pati atınca mama döker"], ballpit: ["Top havuzu", "İçinde yuvarlanır"], piano: ["Oyuncak piyano", "Tuşlarına basıp müzik yapar"],
         mirror: ["Ayna", "Kendine bakıp şaşırır"], fan: ["Vantilatör", "Dönen pervaneyi izler"], clock: ["Duvar saati", "Sallanan sarkacı izler"], tv: ["Televizyon", "Ekranın karşısına oturup izler"],
         lamp: ["Lambader", "Geceleri odayı aydınlatır"], radio: ["Radyo", "Hafif müzik çalar; kediler daha huzurlu (sevgi daha yavaş azalır)"], statue: ["Altın kedi heykeli", "Sadece çok havalı 👑"],
+        snowman: ["Kardan adam", "Kış şenliğine özel ⛄"], giftbox: ["Hediye kutusu", "İçine saklanıp uyurlar 🎁"], candycane: ["Baston şeker", "Kocaman, kırmızı beyaz 🍬"],
+        tulips: ["Lale saksısı", "Bahar şenliğine özel; yaprakları kemirirler 🌷"], birdhouse: ["Kuş evi", "Oturup izlerler 🐦"], parasol: ["Plaj şemsiyesi", "Gölgesinde uyurlar ⛱️"],
+        beachball: ["Deniz topu", "Üstünde yuvarlanırlar 🏐"], ghost: ["Hayalet", "Cadılar bayramına özel 👻"], cauldron: ["Cadı kazanı", "Fokur fokur, büyülenmiş izlerler"],
         pumpkin: ["Balkabağı evi", "İçine saklanıp uyurlar 🎃"], bathtub: ["Küvet", "Su yok, sadece köpük; içinde uyumaya bayılırlar"], tower: ["Dev kedi kulesi", "Üç katlı; en tepeye çıkıp ortalığı izlerler"],
         pillow: ["Yer yastığı", "Küçük, yumuşak bir uyku köşesi"], drum: ["Oyuncak davul", "Pati pati vururlar"], arcade: ["Atari makinesi", "Ekranda oyun döner, kediler büyülenmiş izler"],
         globe: ["Dünya küresi", "Oturup uzun uzun bakarlar"], monstera: ["Deve tabanı", "Kocaman yapraklı süs bitkisi"],
@@ -210,7 +213,7 @@
         tunnel: ["Kedi tüneli", "İçinden koşa koşa geçer, saklanır"], fountain: ["Su çeşmesi", "Taze su; kediler gelip içer"], litter: ["Kum kabı", "Temiz tutarsan kediler daha mutlu; kirlenince tıkla, temizle"], bed: ["Kedi yatağı", "Yumuşacık, içinde kıvrılıp uyur"], house: ["Kedi kulübesi", "İçine girip saklanarak uyur"], rug: ["Halı", "Üstünde yuvarlanır, ekmek gibi oturur"], plant: ["Saksı çiçeği", "Ara sıra yapraklarını kemirir"], cushion: ["Minder", "En sevdiği uyku yeri olur"],
         tree: ["Kedi ağacı", "İki katlı, tepesine tırmanır"], aquarium: ["Akvaryum", "Balıkları izler, cama pati atar"] },
       game: "Lazer avı", gameHelp: "30 saniye: lazerle kedileri parlayan yıldızlara götür!", again: "Tekrar oyna", closeB: "Kapat",
-      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", settings: "Ayarlar", games: "Oyunlar", inventory: "Envanter", progress: "Gelişim", bestL: (n) => `Rekor: ${n}`,
+      gameOver: (n, st, best) => `${n} yıldız yakaladınız!${best ? " Yeni rekor! 🏆" : ""}${st ? ` +${st}⭐ kazandın` : ""}`, gameCap: "Bugünlük oyun ödülleri doldu, yarın yine gel 🌙", market: "Market", settings: "Ayarlar", games: "Oyunlar", inventory: "Envanter", progress: "Gelişim", extras: "Bahçe & Etkinlik", bestL: (n) => `Rekor: ${n}`,
       sexF: "♀ Dişi", sexM: "♂ Erkek", sickL: "🤒 Hasta: ilaç ver ya da iyileştiren bir mama", grubby: "🫧 Çok kirli: tara ya da yıka",
       care: "Bakım", brushB: "🪮 Tara", bathB: "🛁 Yıka", medB: "💊 İlaç ver", cleanL: (n) => `🫧 Temizlik %${n}`, needBrush: "Önce marketten bir fırça al 🪮",
       buffN: { full: "Tok", glow: "Sevgi kalkanı", grow: "Hızlı büyüme", healthy: "Sağlıklı", energy: "Enerjik", calm: "Huzurlu", shiny: "Parlak", smart: "Zeki", lucky: "Şanslı", sleepy: "Uykucu", royal: "Kraliyet" }, lonely: "Kendini yalnız hissediyor 💔 Biraz ilgi lazım", leftHome: (n) => `${n} evden ayrıldı 💔`,
@@ -265,6 +268,9 @@
         dispenser: ["Treat ball", "Spills kibble when batted"], ballpit: ["Ball pit", "Rolls around in it"], piano: ["Toy piano", "Walks on the keys and makes music"],
         mirror: ["Mirror", "Is very surprised by the other cat"], fan: ["Fan", "Watches the blades go round"], clock: ["Grandfather clock", "Watches the pendulum swing"], tv: ["Television", "Sits in front of the screen and watches"],
         lamp: ["Floor lamp", "Lights the room at night"], radio: ["Radio", "Plays soft music; the cats feel calmer (love fades slower)"], statue: ["Golden cat statue", "Just very fancy 👑"],
+        snowman: ["Snowman", "Winter Fair only ⛄"], giftbox: ["Gift box", "They hide and nap inside 🎁"], candycane: ["Candy cane", "Huge, red and white 🍬"],
+        tulips: ["Tulip pot", "Spring Fair only; they nibble the leaves 🌷"], birdhouse: ["Birdhouse", "They sit and watch it 🐦"], parasol: ["Beach parasol", "They nap in its shade ⛱️"],
+        beachball: ["Beach ball", "They roll about on it 🏐"], ghost: ["Ghost", "Halloween only 👻"], cauldron: ["Witch's cauldron", "Bubbling away; they stare, spellbound"],
         pumpkin: ["Pumpkin house", "They hide and nap inside 🎃"], bathtub: ["Bathtub", "No water, just bubbles; they love napping in it"], tower: ["Giant cat tower", "Three levels; they climb to the top and keep watch"],
         pillow: ["Floor pillow", "A small, soft napping spot"], drum: ["Toy drum", "They bat at it, pat pat"], arcade: ["Arcade machine", "A game plays on the screen; the cats watch, spellbound"],
         globe: ["Globe", "They sit and stare at it for ages"], monstera: ["Monstera", "A big-leafed house plant"],
@@ -275,7 +281,7 @@
         tunnel: ["Cat tunnel", "Dashes through it and hides inside"], fountain: ["Water fountain", "Fresh water; the cats come for a drink"], litter: ["Litter box", "Keep it clean and the cats are happier; click it to clean"], bed: ["Cat bed", "Soft and round, curls up in it"], house: ["Cat house", "Crawls inside to sleep, hidden away"], rug: ["Rug", "Rolls about and loafs on it"], plant: ["Potted plant", "Nibbles the leaves now and then"], cushion: ["Cushion", "Becomes the favourite napping spot"],
         tree: ["Cat tree", "Two levels to climb up to"], aquarium: ["Aquarium", "Watches the fish and paws at the glass"] },
       game: "Laser hunt", gameHelp: "30 seconds: use the laser to lead the cats onto the twinkling stars!", again: "Play again", closeB: "Close",
-      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", settings: "Settings", games: "Games", inventory: "Inventory", progress: "Progress", bestL: (n) => `Best: ${n}`,
+      gameOver: (n, st, best) => `You caught ${n} star${n === 1 ? "" : "s"}!${best ? " New record! 🏆" : ""}${st ? ` +${st}⭐ earned` : ""}`, gameCap: "That's all the game rewards for today, come back tomorrow 🌙", market: "Market", settings: "Settings", games: "Games", inventory: "Inventory", progress: "Progress", extras: "Garden & Events", bestL: (n) => `Best: ${n}`,
       sexF: "♀ Female", sexM: "♂ Male", sickL: "🤒 Sick: give medicine or a healing meal", grubby: "🫧 Very grubby: brush or bath",
       care: "Care", brushB: "🪮 Brush", bathB: "🛁 Bath", medB: "💊 Medicine", cleanL: (n) => `🫧 Clean ${n}%`, needBrush: "Buy a brush in the market first 🪮",
       buffN: { full: "Full", glow: "Love shield", grow: "Growth boost", healthy: "Healthy", energy: "Energetic", calm: "Calm", shiny: "Shiny", smart: "Clever", lucky: "Lucky", sleepy: "Sleepy", royal: "Royal" }, lonely: "Feeling lonely 💔 needs some attention", leftHome: (n) => `${n} left home 💔`,
@@ -630,7 +636,7 @@
       if (!L.breedOn && !force) return null;
       const cats = world.cats.filter((c) => c.profile && !c.profile.guest);
       if (cats.length >= L.MAX_CATS) return null;
-      const now = Date.now(), ready = (c) => !c.leaving && !c.profile.guest && L.growth(c.profile) >= 1 && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
+      const now = Date.now(), ready = (c) => !c.leaving && !c.profile.guest && !c.profile.job && L.growth(c.profile) >= 1 && c.profile.love >= 70 && now - (c.profile.lastKit || 0) > KIT_COOL
         && !["held", "fall", "leap"].includes(c.state);
       const pairs = [];
       for (const a of cats) for (const b of cats) {

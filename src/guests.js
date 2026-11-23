@@ -60,7 +60,9 @@
     const rooms = () => 1 + (L.sk ? L.sk("h2") : 0);       // guests at a time; the Spare room skill adds more
     const repK = () => 1 + Math.max(-0.5, Math.min(10, L.guests.rep)) * 0.06;
     const guestCats = () => world.cats.filter((c) => c.profile && c.profile.guest);
-    const show = (html, ms) => { box.innerHTML = html; box.hidden = false; place(); clearTimeout(msgT); if (ms) msgT = setTimeout(() => { box.hidden = true; }, ms); };
+    const show = (html, ms) => {
+      if (L.welcomeCollect && ms) { const d = document.createElement("div"); d.innerHTML = html; L.welcomeCollect.push(d.textContent.trim()); return; }   // folded into the welcome-back card
+      box.innerHTML = html; box.hidden = false; place(); clearTimeout(msgT); if (ms) msgT = setTimeout(() => { box.hidden = true; }, ms); };
     function place() { box.style.bottom = `${Math.max(12, innerHeight - world.floor + 70)}px`; }
 
     function makeOffer() {

@@ -63,6 +63,7 @@
             <div class="cc-buffs"></div>
             <div class="cc-carebtns"><button class="cc-pill" type="button" data-c="brush"></button><button class="cc-pill" type="button" data-c="bath"></button><button class="cc-pill red" type="button" data-c="med" hidden></button></div>
           </section>
+          <section class="cc-sec cc-job"></section>
           <section class="cc-sec cc-danger">
             <button class="cc-link" type="button" data-r="ask"></button>
             <div class="cc-confirm" hidden><span></span><button class="cc-pill red" type="button" data-r="yes"></button><button class="cc-pill" type="button" data-r="no"></button></div>
@@ -143,7 +144,7 @@
       add.onclick = () => { if (opts.onAdopt) opts.onAdopt(); };
       box.appendChild(add);
       const tools = document.createElement("span"); tools.className = "cc-top";
-      for (const [e, fn, tt] of [["🎮", opts.onGames, T().games], ["🛒", opts.onMarket, T().market], ["🎒", opts.onInventory, T().inventory], ["🏅", opts.onProgress, T().progress], ["⚙️", opts.onSettings, T().settings]]) {
+      for (const [e, fn, tt] of [["🎮", opts.onGames, T().games], ["🛒", opts.onMarket, T().market], ["🎒", opts.onInventory, T().inventory], ["🌱", opts.onExtras, T().extras], ["🏅", opts.onProgress, T().progress], ["⚙️", opts.onSettings, T().settings]]) {
         if (!fn) continue;
         const b = document.createElement("button"); b.type = "button"; b.className = "cc-tab tool"; b.textContent = e; b.title = tt || "";
         b.onclick = () => fn(); tools.appendChild(b);
@@ -302,6 +303,7 @@
       q(".cc-careT").textContent = `🧼 ${t.care}`; q(".cc-cleanL").textContent = t.cleanL(Math.round(L.clean(p)));
       const bh = L.activeBuffs(p).map((b) => `<span class="cc-chip buff" title="${esc(t.buffN[b.k])}">${b.e} ${esc(t.buffN[b.k])} · ${b.left >= 1 ? Math.floor(b.left) + (L.lang === "tr" ? "sa" : "h") : Math.ceil(b.left * 60) + (L.lang === "tr" ? "dk" : "m")}</span>`).join("");
       if (q(".cc-buffs").dataset.v !== bh) { q(".cc-buffs").innerHTML = bh; q(".cc-buffs").dataset.v = bh; }
+      if (window.CatJobs && window.CatJobs.now) window.CatJobs.now.fill(q(".cc-job"), cat);
       q('[data-c="brush"]').textContent = t.brushB; q('[data-c="bath"]').textContent = `${t.bathB} · ${L.pantry.shampoo || 0}`;
       const mb = q('[data-c="med"]'); mb.hidden = !p.sick; mb.textContent = `${t.medB} · ${L.pantry.medicine || 0}`;
 

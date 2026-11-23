@@ -353,3 +353,11 @@
 .cc-tab.tool { width: 46px; height: 46px; font-size: 21px; display: grid; place-items: center; background: var(--paper); border-radius: 50%; box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px var(--ink); }
 .cc-tab.tool:hover { transform: translateY(-2px); }
 .cc-tab.tool.on { background: #fff; box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px var(--pink), 0 3px 0 5px var(--ink); transform: translateY(-3px); }
+
+/* 💼 jobs */
+.cc-jobs { display: grid; gap: 6px; margin-top: 4px; }
+.cc-jobs .cc-pill { text-align: left; }
+.cc-jobs .cc-pill small { opacity: .6; font-weight: 700; }
+.cc-jobs .cc-pill:disabled { opacity: .45; cursor: default; }
+.cc-jobhint { display: block; margin-top: 6px; font-size: 11px; opacity: .65; line-height: 1.35; }
+.cc-jobaway { margin: 4px 0 0; padding: 8px 10px; border-radius: 12px; background: #e8f1fb; font-weight: 800; font-size: 12.5px; }

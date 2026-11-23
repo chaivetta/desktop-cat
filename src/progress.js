@@ -18,7 +18,7 @@
   };
   const STR = {
     tr: {
-      title: "Gelişim", lvl: (n) => `Seviye ${n}`, xp: (a, b) => `${a} / ${b} XP`, tabs: { level: "Seviye", skills: "Yetenekler", album: "Albüm" },
+      title: "Gelişim", lvl: (n) => `Seviye ${n}`, xp: (a, b) => `${a} / ${b} XP`, tabs: { level: "Seviye", skills: "Yetenek", album: "Albüm", ach: "Başarım" },
       pts: (n) => `🌟 ${n} yetenek puanı`, up: (n) => `🎉 Seviye ${n}! +1 yetenek puanı`,
       how: "Sevmek, mama vermek, oynamak, görevler, numaralar, misafir bakmak ve mini oyunlar XP verir. Albüme yeni bir şey girince de XP gelir.",
       perLvl: "Her seviye: +1 yetenek puanı ve 10🪙 × seviye. Her 5 seviyede bir +1⭐.",
@@ -31,13 +31,17 @@
         k1: ["Tamirci", "Tamir -%15 / kademe ucuz"], k2: ["Sağlam yapı", "Eşya ve oyuncaklar -%12 / kademe yavaş eskir"], k3: ["Hurdacı", "Satış fiyatı +%20 / kademe"], k4: ["Altın parmak", "Bilgisayar başında kazanılan altın sınırı +5 / kademe"],
       },
       learn: "Öğren", locked: (n) => `🔒 Bu dalda ${n} puan harca`, full: "Tamam", noPts: "Puan yok",
-      pages: { birds: "🐦 Kuşlar", coats: "🐱 Kedi cinsleri", furn: "🛋️ Eşyalar" },
+      pages: { birds: "🐦 Kuşlar", critters: "🐿️ Ziyaretçiler", coats: "🐱 Kedi cinsleri", furn: "🛋️ Eşyalar" }, critN: { squirrel: "Sincap", hedgehog: "Kirpi", butterflies: "Kelebekler" },
       birdN: { sparrow: "Serçe", pigeon: "Güvercin", bluebird: "Mavi kuş", robin: "Kızılgerdan", canary: "Kanarya", cardinal: "Kardinal", crow: "Karga", magpie: "Saksağan", parrot: "Papağan", owl: "Baykuş" },
       claim: (r) => `🎁 Ödülü al: ${r}`, claimed: "✓ Ödül alındı", reward: (st, c) => `⭐${st} + ${c}🪙`, albumHint: "Bir sayfayı tamamlayınca ödülünü alırsın. Nadir kuşlar: papağan, gece de baykuş.",
       newEntry: (n) => `📖 Albüme eklendi: ${n}`,
+      ach: { lvl5: "Seviye 5", lvl10: "Seviye 10", lvl20: "Seviye 20", guests10: "10 misafire bak", guests100: "100 misafire bak", wishes25: "25 isteği yerine getir", combo10: "10'lu istek kombosu",
+        jobs20: "Kedileri 20 kez işe gönder", harvest30: "30 hasat", photos20: "20 fotoğraf paylaş", win1: "Bir yarışma kazan", streak7: "7 gün üst üste gir", streak30: "30 gün üst üste gir",
+        birds10: "10 kuş türünün hepsini gör", owl: "Baykuşu gör", cats5: "5 kedin olsun", bigcat: "Bir büyük kedi sahiplen", furn20: "20 eşyan olsun", rich: "Cebinde 1000🪙 olsun" },
+      achClaim: (r) => `Al: ${r}`, achDone: "✓", achNew: (n) => `🏆 Başarım tamamlandı: ${n}`,
     },
     en: {
-      title: "Progress", lvl: (n) => `Level ${n}`, xp: (a, b) => `${a} / ${b} XP`, tabs: { level: "Level", skills: "Skills", album: "Album" },
+      title: "Progress", lvl: (n) => `Level ${n}`, xp: (a, b) => `${a} / ${b} XP`, tabs: { level: "Level", skills: "Skills", album: "Album", ach: "Goals" },
       pts: (n) => `🌟 ${n} skill point${n === 1 ? "" : "s"}`, up: (n) => `🎉 Level ${n}! +1 skill point`,
       how: "Petting, feeding, playing, tasks, tricks, looking after guests and mini games all give XP. So does every new album entry.",
       perLvl: "Every level: +1 skill point and 10🪙 × level. Every 5 levels: +1⭐.",
@@ -50,20 +54,40 @@
         k1: ["Handy", "Repairs 15% cheaper per rank"], k2: ["Built to last", "Things and toys wear 12% slower per rank"], k3: ["Haggler", "Sell for 20% more per rank"], k4: ["Golden touch", "+5 to the daily coins from computer time per rank"],
       },
       learn: "Learn", locked: (n) => `🔒 Spend ${n} points in this branch`, full: "Maxed", noPts: "No points",
-      pages: { birds: "🐦 Birds", coats: "🐱 Cat coats", furn: "🛋️ Furniture" },
+      pages: { birds: "🐦 Birds", critters: "🐿️ Visitors", coats: "🐱 Cat coats", furn: "🛋️ Furniture" }, critN: { squirrel: "Squirrel", hedgehog: "Hedgehog", butterflies: "Butterflies" },
       birdN: { sparrow: "Sparrow", pigeon: "Pigeon", bluebird: "Bluebird", robin: "Robin", canary: "Canary", cardinal: "Cardinal", crow: "Crow", magpie: "Magpie", parrot: "Parrot", owl: "Owl" },
       claim: (r) => `🎁 Claim: ${r}`, claimed: "✓ Claimed", reward: (st, c) => `⭐${st} + ${c}🪙`, albumHint: "Finish a page to claim its reward. Rare birds: the parrot, and the owl at night.",
       newEntry: (n) => `📖 New in the album: ${n}`,
+      ach: { lvl5: "Level 5", lvl10: "Level 10", lvl20: "Level 20", guests10: "Look after 10 guests", guests100: "Look after 100 guests", wishes25: "Grant 25 wishes", combo10: "A 10-wish combo",
+        jobs20: "Send cats to work 20 times", harvest30: "30 harvests", photos20: "Post 20 photos", win1: "Win a contest", streak7: "Log in 7 days in a row", streak30: "Log in 30 days in a row",
+        birds10: "See all 10 kinds of bird", owl: "See the owl", cats5: "Have 5 cats", bigcat: "Adopt a big cat", furn20: "Own 20 things", rich: "Have 1000🪙 at once" },
+      achClaim: (r) => `Claim: ${r}`, achDone: "✓", achNew: (n) => `🏆 Achievement done: ${n}`,
     },
   };
-  const PAGE_REWARD = { birds: [3, 150], coats: [2, 100], furn: [5, 500] };
+  const PAGE_REWARD = { birds: [3, 150], critters: [1, 60], coats: [2, 100], furn: [5, 500] };
+  // 🏆 achievements: [id, emoji, how far (from your state), goal, reward [coins, stars]]
+  const own = (w) => w.cats.filter((c) => c.profile && !c.profile.guest);
+  const ACH = [
+    ["lvl5", "⭐", () => L.prog.lvl, 5, [50, 1]], ["lvl10", "🌟", () => L.prog.lvl, 10, [150, 2]], ["lvl20", "💫", () => L.prog.lvl, 20, [500, 5]],
+    ["guests10", "🧳", () => (L.guests && L.guests.done) || 0, 10, [60, 1]], ["guests100", "🏨", () => (L.guests && L.guests.done) || 0, 100, [400, 4]],
+    ["wishes25", "💭", () => L.stats.wishes || 0, 25, [60, 1]], ["combo10", "🔥", () => L.stats.bestCombo || 0, 10, [100, 2]],
+    ["jobs20", "💼", () => L.stats.jobs || 0, 20, [80, 1]], ["harvest30", "🌻", () => L.stats.harvests || 0, 30, [80, 1]],
+    ["photos20", "📸", () => L.stats.photos || 0, 20, [50, 1]], ["win1", "🥇", () => L.stats.wins || 0, 1, [100, 2]],
+    ["streak7", "📅", () => L.stats.bestStreak || 0, 7, [70, 1]], ["streak30", "🗓️", () => L.stats.bestStreak || 0, 30, [300, 3]],
+    ["birds10", "🐦", () => (L.prog.album.birds || []).length, 10, [100, 2]], ["owl", "🦉", () => ((L.prog.album.birds || []).includes("owl") ? 1 : 0), 1, [50, 1]],
+    ["cats5", "🐱", (w) => own(w).length, 5, [60, 1]], ["bigcat", "🦁", (w) => (own(w).some((c) => L.WILD.includes(c.profile.coat)) ? 1 : 0), 1, [100, 2]],
+    ["furn20", "🛋️", () => L.home.items.length, 20, [120, 1]], ["rich", "💰", () => L.wallet.coins, 1000, [0, 3]],
+  ];
   const BIRD_IDS = ["sparrow", "pigeon", "bluebird", "robin", "canary", "cardinal", "crow", "magpie", "parrot", "owl"];
+  const CRITTERS = ["squirrel", "hedgehog", "butterflies"];
   // how many cats you can have, and which furniture you may buy, grow with your level
   const CAT_SLOTS = [[1, 4], [4, 5], [7, 6], [10, 7], [13, 8]];
   const FURN_LVL = [[100, 1], [150, 2], [200, 3], [250, 5], [300, 7], [Infinity, 9]];
 
   L.prog = { xp: 0, lvl: 1, pts: 0, skills: {}, album: { birds: [], coats: [], furn: [] }, claimed: {} };
   L.sk = (id) => (L.prog.skills[id] || 0);
+  // running totals for achievements (kept inside the progress save)
+  Object.defineProperty(L, "stats", { get: () => L.prog.stats || (L.prog.stats = {}), configurable: true });
   L.needXP = need;
   L.furnLevel = (price) => { for (const [p, l] of FURN_LVL) if (price < p) return l; return 9; };
   L.catSlots = () => { let n = 4; for (const [l, k] of CAT_SLOTS) if (L.prog.lvl >= l) n = k; return n; };
@@ -92,11 +116,11 @@
     const t = () => STR[L.lang] || STR.en;
     const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
     const spentIn = (b) => SKILLS[b].reduce((a, k) => a + L.sk(k.id), 0);
-    const pageList = (pg) => (pg === "birds" ? BIRD_IDS : pg === "coats" ? DC.COAT_KEYS : Object.keys(DC.FURN));
-    const pageName = (pg, id) => (pg === "birds" ? t().birdN[id] : pg === "coats" ? L.COAT_NAMES[id][L.lang] : (L.t("furn")[id] || [id])[0]);
+    const pageList = (pg) => (pg === "birds" ? BIRD_IDS : pg === "critters" ? CRITTERS : pg === "coats" ? DC.COAT_KEYS : Object.keys(DC.FURN));
+    const pageName = (pg, id) => (pg === "birds" ? t().birdN[id] : pg === "critters" ? t().critN[id] : pg === "coats" ? L.COAT_NAMES[id][L.lang] : (L.t("furn")[id] || [id])[0]);
 
     function render() {
-      const P = L.prog, s = t(), k = [L.lang, tab, P.xp | 0, P.lvl, P.pts, JSON.stringify(P.skills), JSON.stringify(P.album), JSON.stringify(P.claimed), L.wallet.coins, L.wallet.stars].join("|");
+      const P = L.prog, s = t(), k = [L.lang, tab, tab === "ach" ? ACH.map((a) => Math.min(a[3], a[2](world))).join() : "", P.xp | 0, P.lvl, P.pts, JSON.stringify(P.skills), JSON.stringify(P.album), JSON.stringify(P.claimed), L.wallet.coins, L.wallet.stars].join("|");
       if (k === key) return; key = k;
       const pct = Math.min(100, (P.xp / need(P.lvl)) * 100);
       let body = "";
@@ -119,22 +143,29 @@
             return `<div class="pg-skill${open ? "" : " off"}"><span class="pg-ic">${k.e}</span><div><b>${esc(nm)}</b><small>${esc(ds)}</small><span class="pg-dots">${"●".repeat(r)}${"○".repeat(k.max - r)}</span></div>${btn}</div>`;
           }).join("")}</div>`;
         }).join("");
+      } else if (tab === "ach") {
+        body = `<div class="pg-ach">${ACH.map(([id, e, f, goal, [c, st]]) => {
+          const v = Math.min(goal, f(world)), done = v >= goal, got = P.claimed["a:" + id];
+          const rw = `${c ? c + "🪙" : ""}${c && st ? " + " : ""}${st ? "⭐" + st : ""}`;
+          return `<div class="pg-a${done ? " done" : ""}${got ? " got" : ""}"><span class="pg-ic">${e}</span><div><b>${esc(s.ach[id])}</b><span class="pg-track"><i style="width:${(v / goal) * 100}%"></i></span><small>${v} / ${goal}</small></div>${got ? `<span class="pg-full">${s.achDone}</span>` : `<button type="button" data-ach="${id}"${done ? "" : " disabled"}>${esc(s.achClaim(rw))}</button>`}</div>`;
+        }).join("")}</div>`;
       } else {
-        body = `<p class="mk-note">${esc(s.albumHint)}</p>` + ["birds", "coats", "furn"].map((pg) => {
+        body = `<p class="mk-note">${esc(s.albumHint)}</p>` + ["birds", "critters", "coats", "furn"].map((pg) => {
           const all = pageList(pg), have = P.album[pg] || [], n = all.filter((x) => have.includes(x)).length, done = n >= all.length, [st, c] = PAGE_REWARD[pg];
           const foot = P.claimed[pg] ? `<p class="pg-claimed">${esc(s.claimed)}</p>` : `<button type="button" class="mk-wide" data-claim="${pg}"${done ? "" : " disabled"}>${esc(s.claim(s.reward(st, c)))}</button>`;
           return `<h4 class="mk-h">${esc(s.pages[pg])} <small>${n} / ${all.length}</small></h4><div class="pg-album">${all.map((id) => {
             const got = have.includes(id);
-            return `<div class="pg-ent${got ? "" : " no"}" title="${got ? esc(pageName(pg, id)) : "?"}">${pg === "furn" ? `<canvas width="48" height="36" data-f="${id}"></canvas>` : `<canvas width="40" height="36" data-${pg === "birds" ? "b" : "c"}="${id}"></canvas>`}${got ? "" : "<i>?</i>"}</div>`;
+            return `<div class="pg-ent${got ? "" : " no"}" title="${got ? esc(pageName(pg, id)) : "?"}">${pg === "furn" ? `<canvas width="48" height="36" data-f="${id}"></canvas>` : `<canvas width="40" height="36" data-${pg === "birds" ? "b" : pg === "critters" ? "v" : "c"}="${id}"></canvas>`}${got ? "" : "<i>?</i>"}</div>`;
           }).join("")}</div>${foot}`;
         }).join("");
       }
       root.innerHTML = `<div class="mk-head"><b>🏅 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">🪙 ${L.wallet.coins}</span><span class="star">⭐ ${L.wallet.stars}</span></span><button type="button" class="st-x" data-a="close">×</button></div>
-        <div class="mk-tabs">${["level", "skills", "album"].map((id) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${{ level: "⭐", skills: "🌳", album: "📖" }[id]}</span>${esc(s.tabs[id])}</button>`).join("")}</div>
+        <div class="mk-tabs">${["level", "skills", "album", "ach"].map((id) => `<button type="button" data-tab="${id}" class="${tab === id ? "on" : ""}"><span>${{ level: "⭐", skills: "🌳", album: "📖", ach: "🏆" }[id]}</span>${esc(s.tabs[id])}</button>`).join("")}</div>
         <div class="mk-body">${body}</div>`;
       // pictures in the album (silhouettes for what you haven't found yet)
       root.querySelectorAll("canvas[data-f]").forEach((cv) => { DC.furnitureThumb(cv.dataset.f, cv.getContext("2d")); });
       root.querySelectorAll("canvas[data-c]").forEach((cv) => { DC.portrait(cv.getContext("2d"), cv.dataset.c, { scale: 0.75, dx: 1, dy: 2 }); });
+      root.querySelectorAll("canvas[data-v]").forEach((cv) => { if (DC.critterThumb) DC.critterThumb(cv.getContext("2d"), cv.dataset.v); });
       root.querySelectorAll("canvas[data-b]").forEach((cv) => { if (DC.birdThumb) DC.birdThumb(cv.getContext("2d"), cv.dataset.b, cv.width, cv.height); });
     }
     root.addEventListener("click", (e) => {
@@ -144,6 +175,11 @@
       if (b.dataset.learn) {
         const id = b.dataset.learn, def = Object.values(SKILLS).flat().find((k) => k.id === id);
         if (L.prog.pts > 0 && L.sk(id) < def.max) { L.prog.pts--; L.prog.skills[id] = L.sk(id) + 1; world.confetti(innerWidth / 2, 140, 16); L.changed(); }
+        key = ""; return render();
+      }
+      if (b.dataset.ach) {
+        const a = ACH.find((x) => x[0] === b.dataset.ach); if (!a || L.prog.claimed["a:" + a[0]] || a[2](world) < a[3]) return;
+        L.prog.claimed["a:" + a[0]] = true; L.earn(a[4][0]); L.wallet.stars += a[4][1]; if (L.gainPXP) L.gainPXP(25); world.confetti(innerWidth / 2, 140, 40); L.changed();
         key = ""; return render();
       }
       if (b.dataset.claim) {
@@ -160,6 +196,12 @@
     function open(which) { if (which) tab = which; key = ""; root.hidden = false; render(); place(); clearInterval(placeT); placeT = setInterval(() => { place(); render(); }, 500); o.onOpen && o.onOpen(); }
     function close() { root.hidden = true; clearInterval(placeT); o.onClose && o.onClose(); }
     addEventListener("keydown", (e) => { if (e.key === "Escape" && !root.hidden) close(); });
+    let seen = null;
+    setInterval(() => {
+      const done = ACH.filter((a) => a[2](world) >= a[3] && !L.prog.claimed["a:" + a[0]]).map((a) => a[0]);
+      if (seen) done.filter((id) => !seen.includes(id)).forEach((id) => o.toast && o.toast(t().achNew(t().ach[id])));
+      seen = done; document.querySelectorAll(".cc-top .cc-tab.tool")[4] && (done.length ? document.querySelectorAll(".cc-top .cc-tab.tool")[4].dataset.dot = done.length : delete document.querySelectorAll(".cc-top .cc-tab.tool")[4].dataset.dot);
+    }, 5000);
     return { open, close, render: () => { key = ""; if (!root.hidden) render(); }, get isOpen() { return !root.hidden; }, t };
   }
   window.CatProgress = { create, SKILLS, need };
