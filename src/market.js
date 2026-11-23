@@ -6,10 +6,15 @@
       pickOne: "Bir şeye dokun: ne yapabileceğin burada çıkar 👆", stow: "🎒 Envantere koy", noFood: "Dolap boş. Marketten mama alabilirsin.", noToys: "Oyuncağın yok. Marketten alabilirsin.",
       toyNote: "Oyuncaklar envantere gelir; oradan çıkarır ya da geri koyarsın. Oynadıkça (ve dışarıda kaldıkça) eskir, bitince yenisini alman gerekir.", inInv: (c) => `🎒 Envanterde · %${c}`, again: "Bir daha",
       catsT: "Kediler", toysT: "Oyuncak", posts: "gönderi", atHome: "evde", price: "fiyat", free: "Ücretsiz", unlocked: "Açık",
-      adopt: "🐾 Yavrusunu sahiplen", unlock: (n) => `🔒 Kilidi aç ⭐ ${n}`, needStars: (n) => `⭐ ${n} yıldız daha lazım`, full: "Evin dolu (en çok 8 kedi)",
-      catsNote: "Sarman ücretsiz. Diğer cinsler görevlerden kazandığın yıldızlarla bir kez açılır, sonra istediğin kadar sahiplenirsin.",
+      adopt: "🐾 Yavrusunu sahiplen", adoptFree: "🐾 İlk kedin, ücretsiz sahiplen", adoptStar: (n) => `🐾 Sahiplen · ⭐${n}`, needStar: "Sahiplenmek için ⭐1 lazım", unlock: (n) => `🔒 Kilidi aç ⭐ ${n}`, needStars: (n) => `⭐ ${n} yıldız daha lazım`, full: (n) => `Evin dolu (şu an en çok ${n} kedi; seviye atladıkça artar)`,
+      catsNote: "İlk kedin Sarman, ücretsiz. Diğer cinslerin kilidi yıldızla bir kez açılır; sonraki her sahiplenme ⭐1. 👑 işaretliler büyük kediler: nadir, pahalı ve kocaman.",
       unlockedMsg: (n) => `🎉 ${n} artık seninle! Sahiplenebilirsin`,
-      bios: { ginger: "Turuncu çizgili, mama düşkünü, en tatlı başlangıç 🧡", black: "Gece kadar kara, sarı gözlü, sessiz ama hep yanında 🌙", white: "Bembeyaz pamuk, mavi gözlü, biraz nazlı ☁️", grey: "Gri tekir, meraklı ve oyunbaz 🐾", tuxedo: "Smokinli beyefendi, her an bir davete hazır 🎩", calico: "Üç renkli şans kedisi, karakteri güçlü 🍀", siamese: "Siyam: konuşkan, mavi gözlü, ilgi ister 💙" },
+      bios: { cream: "Krem rengi tekir, yumuşacık ve sakin 🍦", chocolate: "Bitter çikolata rengi, tatlı mı tatlı 🍫", russian: "Gümüşümsü mavi tüyler, yeşil gözler, biraz utangaç 💚",
+        tortie: "Siyah ve turuncu benekli kaplumbağa, kendine has huysuzluğu var 🐢", bengal: "Benekli minik leopar, enerjisi bitmez ⚡", sphynx: "Tüysüz, sıcacık, sarılmayı çok sever 🫶",
+        maine: "Dev cüsseli yumuşak dev, ev kedilerinin en büyüğü 🦁", bicolor: "Turuncu beyaz, neşeli ve oyuncu 🧡🤍", silver: "Gümüş tekir, zarif ve meraklı ✨", ragdoll: "Kucağa alınınca bez bebek gibi gevşer, mavi gözlü 💙",
+        cheetah: "👑 En hızlı koşucu; benekli, ince uzun bir yıldırım", puma: "👑 Dağların sessiz avcısı, düz kahverengi tüylü", leopard: "👑 Gül desenli benekleriyle görkemli", snowleo: "👑 Karlı dağların hayaleti, gri gül benekli",
+        panther: "👑 Gece gibi kara, parlayan yeşil gözler", tiger: "👑 Simsiyah çizgili, kocaman turuncu kaplan", lion: "👑 Yelesiyle evin kralı; herkesten büyük",
+        ginger: "Turuncu çizgili, mama düşkünü, en tatlı başlangıç 🧡", black: "Gece kadar kara, sarı gözlü, sessiz ama hep yanında 🌙", white: "Bembeyaz pamuk, mavi gözlü, biraz nazlı ☁️", grey: "Gri tekir, meraklı ve oyunbaz 🐾", tuxedo: "Smokinli beyefendi, her an bir davete hazır 🎩", calico: "Üç renkli şans kedisi, karakteri güçlü 🍀", siamese: "Siyam: konuşkan, mavi gözlü, ilgi ister 💙" },
       caps: ["merhaba 👋", "uyku vakti 💤", "ekmek modu 🍞", "gerin gerin", "temizlik 🫧", "göbek göster 😹"],
       toyPlay: "Çıkar", toyOn: "Aç", toyOff: "Kapat", onCard: "Kartta kullanılır", clearToys: "🧺 Oyuncakları topla", yarnFree: "Ücretsiz",
       title: "Market", food: "Mama", furniture: "Eşyalar", mine: "Envanter", earn: "Kazan", luck: "Şans",
@@ -61,10 +66,15 @@
       pickOne: "Tap something to see what you can do with it 👆", stow: "🎒 Put away", noFood: "The cupboard is empty. Buy food in the market.", noToys: "No toys yet. Buy some in the market.",
       toyNote: "Toys go to your inventory, where you take them out or put them away. They wear out with play (and while left out); when one's gone you'll need a new one.", inInv: (c) => `🎒 In inventory · ${c}%`, again: "Again",
       catsT: "Cats", toysT: "Toys", posts: "posts", atHome: "at home", price: "price", free: "Free", unlocked: "Unlocked",
-      adopt: "🐾 Adopt a kitten", unlock: (n) => `🔒 Unlock for ⭐ ${n}`, needStars: (n) => `⭐ ${n} more stars needed`, full: "Your home is full (8 cats at most)",
-      catsNote: "The ginger tabby is free. Every other coat is unlocked once with stars from tasks, then you can adopt as many as you like.",
+      adopt: "🐾 Adopt a kitten", adoptFree: "🐾 Your first cat, free", adoptStar: (n) => `🐾 Adopt · ⭐${n}`, needStar: "You need ⭐1 to adopt", unlock: (n) => `🔒 Unlock for ⭐ ${n}`, needStars: (n) => `⭐ ${n} more stars needed`, full: (n) => `Your home is full (${n} cats for now; more as you level up)`,
+      catsNote: "Your first cat, the ginger tabby, is free. Other coats are unlocked once with stars; every adoption after the first costs ⭐1. The 👑 ones are big cats: rare, pricey and huge.",
       unlockedMsg: (n) => `🎉 ${n} is yours! You can adopt one now`,
-      bios: { ginger: "Orange stripes, loves food, the sweetest start 🧡", black: "Black as night, yellow eyes, quiet but always near 🌙", white: "Soft as cotton, blue eyes, a little fussy ☁️", grey: "Grey tabby, curious and playful 🐾", tuxedo: "A gentleman in a tux, always ready for a party 🎩", calico: "Lucky three-colour cat with lots of character 🍀", siamese: "Siamese: chatty, blue-eyed, wants attention 💙" },
+      bios: { cream: "A soft, calm cream tabby 🍦", chocolate: "Dark chocolate brown and very sweet 🍫", russian: "Silvery blue coat, green eyes, a little shy 💚",
+        tortie: "Black and orange tortoiseshell with a mind of her own 🐢", bengal: "A little spotted leopard with endless energy ⚡", sphynx: "Hairless, warm and loves a cuddle 🫶",
+        maine: "A gentle giant, the biggest of the house cats 🦁", bicolor: "Orange and white, cheerful and playful 🧡🤍", silver: "Silver tabby, elegant and curious ✨", ragdoll: "Goes floppy as a rag doll when you hold it, blue eyes 💙",
+        cheetah: "👑 The fastest runner: spotted, long and lean", puma: "👑 The quiet hunter of the mountains, plain tawny coat", leopard: "👑 Grand, with rosette spots", snowleo: "👑 Ghost of the snowy mountains, grey rosettes",
+        panther: "👑 Black as night, glowing green eyes", tiger: "👑 A huge orange tiger with jet black stripes", lion: "👑 King of the house with a great mane; bigger than all",
+        ginger: "Orange stripes, loves food, the sweetest start 🧡", black: "Black as night, yellow eyes, quiet but always near 🌙", white: "Soft as cotton, blue eyes, a little fussy ☁️", grey: "Grey tabby, curious and playful 🐾", tuxedo: "A gentleman in a tux, always ready for a party 🎩", calico: "Lucky three-colour cat with lots of character 🍀", siamese: "Siamese: chatty, blue-eyed, wants attention 💙" },
       caps: ["hello 👋", "nap time 💤", "loaf mode 🍞", "big stretch", "bath time 🫧", "belly up 😹"],
       toyPlay: "Take out", toyOn: "On", toyOff: "Off", onCard: "Used from the card", clearToys: "🧺 Put toys away", yarnFree: "Free",
       title: "Market", food: "Food", furniture: "Furniture", mine: "Inventory", earn: "Earn", luck: "Luck",
@@ -193,8 +203,10 @@
       const home = (o.catCountOf ? o.catCountOf(c) : 0), full = o.catCount && o.catCount() >= (L.MAX_CATS || 8);
       const handle = "@" + L.COAT_NAMES[c].en.toLowerCase().replace(/[^a-z]+/g, ".") + ".cat";
       const btn = !own ? (L.wallet.stars >= price ? `<button type="button" class="ig-btn gold" data-unlock="${c}">${esc(s.unlock(price))}</button>` : `<button type="button" class="ig-btn" disabled>${esc(s.unlock(price))}</button><small class="ig-need">${esc(s.needStars(price - L.wallet.stars))}</small>`)
-        : full ? `<button type="button" class="ig-btn" disabled>${esc(s.full)}</button>` : `<button type="button" class="ig-btn pink" data-adopt="${c}">${esc(s.adopt)}</button>`;
-      return `<div class="ig-stories">${DCk.map((k) => `<button type="button" class="ig-st${k === c ? " sel" : ""}${L.hasCoat(k) ? "" : " locked"}" data-coat="${k}"><span class="ig-ring"><canvas width="52" height="52" data-av="${k}"></canvas></span><small>${esc(L.COAT_NAMES[k][L.lang])}</small></button>`).join("")}</div>
+        : full ? `<button type="button" class="ig-btn" disabled>${esc(s.full(L.MAX_CATS))}</button>`
+        : !o.catCount || o.catCount() === 0 ? `<button type="button" class="ig-btn pink" data-adopt="${c}">${esc(s.adoptFree)}</button>`
+        : L.wallet.stars >= L.ADOPT_STARS ? `<button type="button" class="ig-btn pink" data-adopt="${c}">${esc(s.adoptStar(L.ADOPT_STARS))}</button>` : `<button type="button" class="ig-btn" disabled>${esc(s.needStar)}</button>`;
+      return `<div class="ig-stories">${DCk.map((k) => `<button type="button" class="ig-st${k === c ? " sel" : ""}${L.hasCoat(k) ? "" : " locked"}${L.WILD.includes(k) ? " wild" : ""}" data-coat="${k}"><span class="ig-ring"><canvas width="52" height="52" data-av="${k}"></canvas></span><small>${esc(L.COAT_NAMES[k][L.lang])}</small></button>`).join("")}</div>
         <div class="ig-prof">
           <div class="ig-top"><span class="ig-ring big${own ? "" : " locked"}"><canvas width="84" height="84" data-av="${c}"></canvas></span>
             <div class="ig-stats"><div><b>${POSTS.length}</b><small>${esc(s.posts)}</small></div><div><b>${home}</b><small>${esc(s.atHome)}</small></div><div><b>${!price ? esc(s.free) : own ? "✓" : "⭐" + price}</b><small>${esc(!price || !own ? s.price : s.unlocked)}</small></div></div></div>

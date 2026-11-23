@@ -33,6 +33,7 @@
 <script src="games.js"></script>
 <script src="guests.js"></script>
 <script src="progress.js"></script>
+<script src="wishes.js"></script>
 <script>
 (() => {
   const { World, COATS, COAT_KEYS, SCALE_MIN, SCALE_MAX } = window.DesktopCat;
@@ -289,7 +290,11 @@
       // only the ginger tabby is free; other coats are unlocked with stars in the market's cat tab
       if (coat && COATS[coat] && !L.hasCoat(coat)) return market.open("cats");
       if (!coat || !COATS[coat]) { const ok = COAT_KEYS.filter(L.hasCoat); coat = ok[Math.floor(Math.random() * ok.length)]; }
-      if (world.cats.filter((c) => c.profile && !c.profile.guest).length >= L.MAX_CATS) return;
+      const own = world.cats.filter((c) => c.profile && !c.profile.guest).length;
+      if (own >= L.MAX_CATS) return;
+      // your very first cat is free; after that every adoption costs a star
+      if (own > 0) { if (L.wallet.stars < L.ADOPT_STARS) return market.open("cats"); L.wallet.stars -= L.ADOPT_STARS; }
+      if (L.gainPXP) L.gainPXP(10);
       const p = L.make(coat, { taken: world.cats.map((c) => c.profile && c.profile.name) });
       const c = world.addCat(null, p); save();
       setTimeout(() => card.open(c, { naming: true }), 700);
@@ -361,6 +366,8 @@
   // 🎒 the inventory: the cupboard and your things, in a panel of its own (same wiring as the market)
   var inventory = window.CatMarket.create({ ...market.opts, only: "mine" });
   // one panel beside the card at a time: tapping its button again closes it
+  // 💭 cats' wishes
+  var wishes = window.CatWishes.create({ world, save: () => save(), toast: (m) => toast(m) }); window.CatWishes.now = wishes;
   // 🏅 your level, skill tree and album
   var progress = window.CatProgress.create({ world, onClose: () => { overUI = false; syncIgnore(); } });
   L.onLevelUp = (n) => { toast(progress.t().up(n)); world.confetti(world.W / 2, world.floor - 120, 70); };

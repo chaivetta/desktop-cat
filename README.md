@@ -124,6 +124,20 @@ Eight more: a **pumpkin house** to hide in, a **bathtub** full of bubbles and a 
 
 **Birds** now come in ten kinds: sparrows and pigeons most often, then bluebirds, robins, canaries, crows, magpies and cardinals, a rare parrot, and at night, very rarely, an owl.
 
+### More cats, big cats and costumes
+
+![All the coats and the costumes](docs/coats-costumes.png)
+
+Seventeen coats now: the first seven plus cream, chocolate, Russian blue, tortoiseshell, Bengal, Sphynx, Maine coon, orange & white, silver tabby and Ragdoll. And seven 👑 big cats: cheetah, puma, leopard, snow leopard, black panther, tiger and a maned lion. They cost a lot more stars and grow a good deal bigger than a house cat.
+
+![A tiger, a lion and a black panther next to a ginger tabby](docs/big-cats.png)
+
+Your very first cat (the ginger tabby) is free; every adoption after that costs ⭐1. The wardrobe gains twelve costumes with their own colours: nurse, pirate, chef, police, firefighter, astronaut, doctor, knight, ninja, royal robe, and two superheroes of our own, the Paw Hero and the Moon Claw.
+
+### 💭 Wishes
+
+Every so often a cat wants something in particular: a fish dinner, its wind-up mouse, a few cuddles, a brush, a nap in a bed. A thought bubble shows it over the cat (and on its card). Grant it within 45 minutes for love, coins and XP; let it lapse and the cat sulks a little.
+
 ### 🏅 Your progress
 
 <img src="docs/skills.png" width="300" alt="The skill tree"> <img src="docs/album.png" width="300" alt="The album of birds, cat coats and furniture">

@@ -65,7 +65,14 @@
     ginger: { tr: "Sarman", en: "Ginger tabby" }, black: { tr: "Kara kedi", en: "Black" }, white: { tr: "Bembeyaz", en: "White" },
     grey: { tr: "Gri tekir", en: "Grey tabby" }, calico: { tr: "Üç renkli", en: "Calico" }, siamese: { tr: "Siyam", en: "Siamese" },
     tuxedo: { tr: "Smokin", en: "Tuxedo" },
+    cream: { tr: "Krem tekir", en: "Cream tabby" }, chocolate: { tr: "Çikolata", en: "Chocolate" }, russian: { tr: "Rus mavisi", en: "Russian blue" },
+    tortie: { tr: "Kaplumbağa", en: "Tortoiseshell" }, bengal: { tr: "Bengal", en: "Bengal" }, sphynx: { tr: "Sfenks", en: "Sphynx" },
+    maine: { tr: "Maine coon", en: "Maine coon" }, bicolor: { tr: "Turuncu beyaz", en: "Orange & white" }, silver: { tr: "Gümüş tekir", en: "Silver tabby" },
+    ragdoll: { tr: "Ragdoll", en: "Ragdoll" },
+    cheetah: { tr: "Çita", en: "Cheetah" }, puma: { tr: "Puma", en: "Puma" }, leopard: { tr: "Leopar", en: "Leopard" }, snowleo: { tr: "Kar leoparı", en: "Snow leopard" },
+    panther: { tr: "Kara panter", en: "Black panther" }, tiger: { tr: "Kaplan", en: "Tiger" }, lion: { tr: "Aslan", en: "Lion" },
   };
+  const WILD = ["cheetah", "puma", "leopard", "snowleo", "panther", "tiger", "lion"];
 
   // little daily tasks: three a day per cat, picked from these; each one listens for a care() event
   const TASKS = {
@@ -134,7 +141,8 @@
     collar: { plain: 2, bowtie: 3, bell: 4, bandana: 4, scarf: 5, tag: 6, studs: 6, bigbow: 8, lei: 8, pearls: 14,
       daisy: 5, ribbon: 6, cowl: 7, tie: 8, sailor: 9, medal: 11, star: 12, ruff: 13, chain: 16, gem: 20 },
     outfit: { sweater: 4, stripes: 4, dots: 6, plaid: 6, zigzag: 7, overalls: 8, raincoat: 9, vertical: 9, diagonal: 10, stars: 15,
-      pocket: 6, dash: 7, bold: 8, hearts: 9, checker: 10, waves: 11, hoodie: 12, floral: 13, argyle: 16, camo: 18 },
+      pocket: 6, dash: 7, bold: 8, hearts: 9, checker: 10, waves: 11, hoodie: 12, floral: 13, argyle: 16, camo: 18,
+      nurse: 16, pirate: 16, chef: 16, doctor: 18, police: 20, firefighter: 20, ninja: 22, astronaut: 24, knight: 26, royal: 28, pawhero: 30, moonclaw: 30 },
   };
   const KIT_COOL = 24 * 3.6e6;
   const SK = (id) => (L.sk ? L.sk(id) : 0);              // a rank in your skill tree (progress.js)           // breeding: at most 8 cats, a mother or father rests a day between litters
@@ -363,7 +371,11 @@
       if (L.toyCond[k] <= 0) { L.toys = L.toys.filter((x) => x !== k); delete L.toyCond[k]; if (L.onToyBroke) L.onToyBroke(k); L.changed(); }
     },
     // cat coats: the ginger tabby is free, every other coat is unlocked once with stars, then adopted for free
-    COAT_PRICES: { black: 8, white: 8, grey: 10, tuxedo: 14, calico: 16, siamese: 20 },
+    COAT_PRICES: { black: 8, white: 8, grey: 10, tuxedo: 14, calico: 16, siamese: 20,
+      cream: 10, bicolor: 10, chocolate: 12, russian: 14, tortie: 14, silver: 16, bengal: 18, sphynx: 18, ragdoll: 18, maine: 22,
+      cheetah: 40, puma: 45, leopard: 50, snowleo: 60, panther: 60, tiger: 70, lion: 80 },
+    // the ginger tabby is free the first time; every cat you adopt after that costs a star
+    ADOPT_STARS: 1,
     hasCoat(c) { return !L.COAT_PRICES[c] || (L.wallet.coats || []).includes(c); },
     buyCoat(c) { const p = L.COAT_PRICES[c]; if (!p || L.hasCoat(c) || L.wallet.stars < p) return false; L.wallet.stars -= p; (L.wallet.coats = L.wallet.coats || []).push(c); if (L.gainPXP) L.gainPXP(20); L.changed(); return true; },
     hasToy(k) { return !L.TOY_PRICES[k] || L.toys.includes(k); },      // the yarn is free only the first time
@@ -451,7 +463,9 @@
     hoursToNext(p) { const nx = L.nextStage(p); return nx ? (nx.min - L.growth(p)) / GROW_PER_HOUR : 0; },
     daysToNext(p) { return L.hoursToNext(p) / 24; },
     // how big it looks: a newborn (0.1) is drawn small but still readable, a grown-up (1.0) at today's full size
-    size(p) { return typeof p === "number" ? 1 : 0.3 + 0.7 * L.growth(p); },
+    // the big cats grow a good deal bigger than a house cat
+    size(p) { if (typeof p === "number") return 1; const C = window.DesktopCat && window.DesktopCat.COATS[p.coat]; return (0.3 + 0.7 * L.growth(p)) * ((C && C.big) || 1); },
+    WILD,
     mods(p) {
       const m = {};
       for (const t of p.traits) for (const [k, v] of Object.entries(TRAITS[t].mods)) m[k] = (m[k] || 1) * v;
@@ -630,7 +644,7 @@
       // a litter: usually one, sometimes two or three (never more than there's room for)
       const r0 = Math.random(), size = Math.min(L.MAX_CATS - cats.length, r0 < 0.6 ? 1 : r0 < 0.9 ? 2 : 3), kits = [];
       for (let i = 0; i < size; i++) {
-        const r = Math.random(), coat = r < 0.45 ? a.profile.coat : r < 0.9 ? b.profile.coat : pickOne(Object.keys(COAT_NAMES));
+        const r = Math.random(), coat = r < 0.45 ? a.profile.coat : r < 0.9 ? b.profile.coat : pickOne(Object.keys(COAT_NAMES).filter((c) => !WILD.includes(c)));
         const k = L.make(coat, { taken, love: 60, quiet: true }); taken.push(k.name);
         k.log = []; k.parents = [a.profile.id, b.profile.id];
         k.parentInfo = [a, b].map((c) => ({ id: c.profile.id, name: c.profile.name, coat: c.profile.coat }));

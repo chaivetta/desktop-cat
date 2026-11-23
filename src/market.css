@@ -224,3 +224,7 @@
 .pg-claimed { text-align: center; font-weight: 800; font-size: 12px; color: #2f9e6a; margin: 4px 0 10px; }
 .cc-tab.tool[data-lv]::after { content: attr(data-lv); position: absolute; right: -5px; bottom: -4px; min-width: 18px; height: 18px; border-radius: 99px; background: #ffd34d; font: 700 11px/18px "Pixelify Sans", monospace; text-align: center; box-shadow: 0 0 0 2px var(--ink); }
 .cc-tab.tool { position: relative; }
+.ig-st.wild .ig-ring { background: conic-gradient(from 0deg, #ffd34d, #f0a830, #fff3b0, #ffd34d); }
+.ig-st.wild.locked .ig-ring { background: linear-gradient(#e6cf8a, #cdb46a); }
+.ig-st.wild::before { content: "👑"; position: absolute; margin: -6px 0 0 34px; font-size: 13px; z-index: 1; }
+.ig-st { position: relative; }

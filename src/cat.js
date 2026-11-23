@@ -14,6 +14,25 @@
     calico:  { name: "Calico",       body: "#f4efe6", belly: "#ffffff", accent: "#d9823b", accent2: "#3a3433", eye: "#c9a23a", pattern: "calico" },
     siamese: { name: "Siamese",      body: "#efe2c8", belly: "#f7efdf", accent: "#5b4033", eye: "#5aa7e6", pattern: "points" },
     tuxedo:  { name: "Tuxedo",       body: "#2a2a2e", belly: "#f4f1ea", accent: "#1a1a1e", eye: "#a7d34b", pattern: "tuxedo", outline: "#0b0b0e" },
+    // more house cats
+    cream:   { name: "Cream tabby",  body: "#ecc993", belly: "#fbeedb", accent: "#c8955a", eye: "#d9a54a", pattern: "stripes" },
+    chocolate:{ name: "Chocolate",   body: "#6b4430", belly: "#6b4430", accent: "#4f3022", eye: "#e8b64a", pattern: "solid" },
+    russian: { name: "Russian blue", body: "#7f90a6", belly: "#7f90a6", accent: "#65758a", eye: "#6fd08c", pattern: "solid" },
+    tortie:  { name: "Tortoiseshell",body: "#3a2c28", belly: "#3a2c28", accent: "#d27a35", accent2: "#8a4a22", eye: "#d9a23a", pattern: "calico", outline: "#160f0d" },
+    bengal:  { name: "Bengal",       body: "#dba45e", belly: "#f6e2c0", accent: "#4a2e1c", accent2: "#8a5a30", eye: "#9ccf4a", pattern: "spots" },
+    sphynx:  { name: "Sphynx",       body: "#e9c2b4", belly: "#f3d6cc", accent: "#d6a597", eye: "#7cc3e8", pattern: "solid", outline: "#8a5a50" },
+    maine:   { name: "Maine coon",   body: "#8a6a4c", belly: "#e6d6c0", accent: "#3e2c1e", eye: "#c9a23a", pattern: "stripes", big: 1.15 },
+    bicolor: { name: "Orange & white",body: "#e08a3c", belly: "#fbf6ee", accent: "#b5561f", eye: "#9ccf4a", pattern: "tuxedo" },
+    silver:  { name: "Silver tabby", body: "#c9ced6", belly: "#eef0f3", accent: "#3c4048", eye: "#7cc94a", pattern: "stripes" },
+    ragdoll: { name: "Ragdoll",      body: "#f2ebe0", belly: "#ffffff", accent: "#7a6a62", eye: "#4f8fe0", pattern: "points" },
+    // 👑 the big cats: rare, pricey, and a good deal bigger than a house cat
+    cheetah: { name: "Cheetah",      body: "#e2b25e", belly: "#f8ecd2", accent: "#2a2018", accent2: "#2a2018", eye: "#d9a23a", pattern: "spots", big: 1.3, wild: true },
+    puma:    { name: "Puma",         body: "#c49564", belly: "#f1e3cc", accent: "#3a2a20", eye: "#c9b04a", pattern: "puma", big: 1.35, wild: true },
+    leopard: { name: "Leopard",      body: "#e0a94e", belly: "#f8ead0", accent: "#2a1e16", accent2: "#a8682c", eye: "#b8d04a", pattern: "rosette", big: 1.35, wild: true },
+    snowleo: { name: "Snow leopard", body: "#dcdcd8", belly: "#f6f6f2", accent: "#3e4248", accent2: "#a9aeb4", eye: "#8fc8d8", pattern: "rosette", big: 1.35, wild: true },
+    panther: { name: "Black panther",body: "#24232b", belly: "#24232b", accent: "#18171d", eye: "#9bd84a", pattern: "solid", outline: "#08080b", big: 1.4, wild: true },
+    tiger:   { name: "Tiger",        body: "#ea8a2e", belly: "#fbf3e6", accent: "#1d1714", eye: "#e8c547", pattern: "tiger", big: 1.45, wild: true },
+    lion:    { name: "Lion",         body: "#d9a75e", belly: "#f3dfbd", accent: "#5a3a20", accent2: "#9a5a26", eye: "#d9a23a", pattern: "lion", big: 1.5, wild: true, mane: true },
   };
   const COAT_KEYS = Object.keys(COATS);
 
@@ -31,18 +50,18 @@
     P.outline = c.outline ? hex(c.outline) : darken(mix(body, acc, 0.5), 0.62);
     P.eye = hex(c.eye); P.pupil = [20, 18, 22]; P.nose = [222, 120, 140]; P.ear = [232, 150, 160]; P.closed = darken(mix(body, acc, 0.5), 0.6);
     P.tongue = [236, 98, 120];
-    P.pattern = c.pattern; P.key = key;
+    P.pattern = c.pattern; P.key = key; P.mane = !!c.mane;
     return P;
   }
 
   // ---------------------------------------------------------------- tiny rasteriser
   const SW = 48, SH = 42, GROUND = 38;            // sprite size and the row the feet stand on
   const M = { EMPTY: 0, BODY: 1, FAR: 2, BELLY: 3, ACCENT: 4, ACCENT2: 5, EYE: 6, NOSE: 7, EAR: 8, CLOSED: 9, TONGUE: 10, PUPIL: 11, FORCE_BELLY: 12,
-    H1: 13, H2: 14, H3: 15, C1: 16, C2: 17, C3: 18, O1: 19, O2: 20 };
+    H1: 13, H2: 14, H3: 15, C1: 16, C2: 17, C3: 18, O1: 19, O2: 20, O3: 21 };
 
   class Raster {
     constructor(w = SW, h = SH) { this.w = w; this.h = h; this.m = new Uint8Array(w * h); this.part = new Uint8Array(w * h); }
-    clear() { this.m.fill(0); this.part.fill(0); this.head = null; this.outfit = null; }
+    clear() { this.m.fill(0); this.part.fill(0); this.head = null; this.outfit = null; this.cc = null; }
     partAt(x, y) { x |= 0; y |= 0; return (x < 0 || y < 0 || x >= this.w || y >= this.h) ? 0 : this.part[y * this.w + x]; }
     put(x, y, mat, part = 0) {
       x |= 0; y |= 0;
@@ -516,6 +535,19 @@
     camo: { tr: "kamuflaj ceket", en: "camo jacket" }, argyle: { tr: "baklava desenli yelek", en: "argyle vest" }, hoodie: { tr: "kapüşonlu", en: "hoodie" },
     floral: { tr: "çiçekli elbise", en: "floral dress" }, bold: { tr: "kalın çizgili forma", en: "rugby shirt" }, dash: { tr: "kesik çizgili pijama", en: "dashed pyjamas" },
     pocket: { tr: "cepli tişört", en: "pocket tee" },
+    // costumes: their own fixed colours (the colour you pick doesn't change them)
+    nurse: { tr: "hemşire kıyafeti", en: "nurse uniform", fixed: ["#fbfbfd", "#e2414e", "#e2414e"] },
+    pirate: { tr: "korsan kıyafeti", en: "pirate outfit", fixed: ["#f6f1e6", "#c8323c", "#2a2420"] },
+    chef: { tr: "aşçı ceketi", en: "chef's jacket", fixed: ["#fbfbfd", "#e2414e", "#2a2a30"] },
+    police: { tr: "polis üniforması", en: "police uniform", fixed: ["#2b3b6a", "#1a1a22", "#ffd34d"] },
+    firefighter: { tr: "itfaiyeci kıyafeti", en: "firefighter suit", fixed: ["#b88a3e", "#ffe14d", "#c9ced6"] },
+    astronaut: { tr: "astronot kıyafeti", en: "astronaut suit", fixed: ["#f4f4f6", "#a9aeb8", "#3a6fd8"] },
+    doctor: { tr: "doktor önlüğü", en: "doctor's coat", fixed: ["#fbfbfd", "#5ab6c9", "#8a8f98"] },
+    knight: { tr: "şövalye zırhı", en: "knight's armour", fixed: ["#c3c8d0", "#868c96", "#e8b84a"] },
+    ninja: { tr: "ninja kıyafeti", en: "ninja suit", fixed: ["#26262e", "#3a3a46", "#d8323c"] },
+    royal: { tr: "kraliyet pelerini", en: "royal robe", fixed: ["#6a2c9a", "#fbfbfd", "#ffd34d"] },
+    pawhero: { tr: "Pati Kahraman kostümü", en: "Paw Hero suit", fixed: ["#1fa3a0", "#e2414e", "#ffd34d"] },
+    moonclaw: { tr: "Ay Pençesi kostümü", en: "Moon Claw suit", fixed: ["#4a2f7a", "#1c1530", "#dfe6f2"] },
   };
   const WARDROBE = { schemes: SCHEMES, hat: HATS, collar: COLLARS, outfit: OUTFITS };
   const toneCache = {};
@@ -527,7 +559,9 @@
     const key = `${acc.hat}|${acc.collar}|${acc.outfit}`;
     if (accCache[key]) return accCache[key];
     const A = {}, put = (id, mats) => { if (!id) return; const c = SCHEMES[split(id).s].c; mats.forEach((m, i) => { if (m) A[m] = toneOf(c[i]); }); };
-    put(acc.hat, [M.H1, M.H2, M.H3]); put(acc.collar, [M.C1, M.C2, M.C3]); put(acc.outfit, [M.O1, M.O2]);
+    put(acc.hat, [M.H1, M.H2, M.H3]); put(acc.collar, [M.C1, M.C2, M.C3]); put(acc.outfit, [M.O1, M.O2, M.O3]);
+    const fx = acc.outfit && OUTFITS[split(acc.outfit).d] && OUTFITS[split(acc.outfit).d].fixed;      // a costume keeps its own colours
+    if (fx) fx.forEach((h, i) => { A[[M.O1, M.O2, M.O3][i]] = toneOf(h); });
     return (accCache[key] = A);
   }
 
@@ -535,6 +569,11 @@
     const p = R.partAt(x, y), m = R.get(x, y);
     return (p === PART.BODY || p === PART.CHEST) && (m === M.BODY || m === M.FAR || m === M.BELLY || m === M.FORCE_BELLY || m === M.ACCENT || m === M.ACCENT2);
   };
+  // the middle of the chest, for badges and emblems (worked out once per frame)
+  function nearChest(R, x, y, r) {
+    if (!R.cc) { let sx = 0, sy = 0, n = 0; for (let j = 0; j < R.h; j++) for (let i = 0; i < R.w; i++) if (R.part[j * R.w + i] === PART.CHEST && R.m[j * R.w + i]) { sx += i; sy += j; n++; } R.cc = n ? { x: sx / n + 0.5, y: sy / n + 0.5 - 1 } : { x: -99, y: -99 }; }
+    return Math.hypot(x + 0.5 - R.cc.x, y + 0.5 - R.cc.y) <= r;
+  }
   // 1 = main colour, 2 = second colour, by pattern
   function outfitMat(R, x, y) {
     const t = (xx, yy) => isTorso(R, xx, yy);
@@ -558,6 +597,19 @@
       case "floral": { const u = x % 5, v = (y + (x / 5 | 0) * 2) % 5; return (u === 2 && v !== 2 && (v === 1 || v === 3)) || (v === 2 && (u === 1 || u === 3)) ? 2 : 1; }
       case "bold": return (y >> 2) % 2 ? 2 : 1;
       case "dash": return y % 3 === 0 && x % 4 < 2 ? 2 : 1;
+      // costumes (1, 2 or 3: the costume's own three colours)
+      case "nurse": if (!t(x, y + 1)) return 2; if (nearChest(R, x, y, 2.2) && (Math.abs(x + 0.5 - R.cc.x) < 0.8 || Math.abs(y + 0.5 - R.cc.y) < 0.8)) return 3; return 1;
+      case "pirate": if (!t(x, y + 2) && t(x, y + 1)) return 3; return (y >> 1) % 2 ? 2 : 1;
+      case "chef": if (!t(x, y - 1)) return 2; if (R.partAt(x, y) === PART.CHEST && x % 3 === 1 && y % 3 === 0) return 3; return 1;
+      case "police": if (!t(x, y + 1) || !t(x, y + 2)) return 2; if (nearChest(R, x, y, 1.3)) return 3; return R.partAt(x, y) === PART.CHEST && x % 4 === 2 && y % 3 === 1 ? 3 : 1;
+      case "firefighter": if (y % 6 === 2) return 2; if (y % 6 === 3) return 3; return 1;
+      case "astronaut": if (nearChest(R, x, y, 1.8)) return 3; return x % 6 === 0 && y % 2 === 0 ? 2 : 1;
+      case "doctor": if (R.partAt(x, y) === PART.CHEST && t(x, y - 1)) return (x + y) % 9 === 0 ? 3 : 2; return 1;
+      case "knight": if (!t(x, y - 1)) return 3; return y % 3 === 0 ? 2 : 1;
+      case "ninja": if (!t(x, y + 1) || !t(x, y + 2)) return 3; return (x + y) % 5 === 0 ? 2 : 1;
+      case "royal": if (!t(x, y + 1)) return 2; if (!t(x, y + 2) || !t(x, y - 1)) return 3; return 1;
+      case "pawhero": if (!t(x, y + 1) || !t(x, y + 2)) return 2; if (nearChest(R, x, y, 2.4)) { const dx = x + 0.5 - R.cc.x, dy = y + 0.5 - R.cc.y; return (dy > -0.4 && Math.hypot(dx, dy) < 1.6) || (dy < -0.6 && Math.abs(dx) > 0.6 && Math.abs(dx) < 2.2) ? 3 : 1; } return 1;
+      case "moonclaw": if (y % 5 === 0) return 2; if (nearChest(R, x, y, 2.3)) { const dx = x + 0.5 - R.cc.x, dy = y + 0.5 - R.cc.y; return Math.hypot(dx, dy) < 2.1 && Math.hypot(dx - 1, dy - 0.6) > 1.5 ? 3 : 1; } return 1;
       case "pocket": return !t(x, y + 1) || ((x % 12 >= 4 && x % 12 <= 7) && (y >= 25 && y <= 28) && (x % 12 === 4 || x % 12 === 7 || y === 28)) ? 2 : 1;
     }
     return 1;
@@ -651,6 +703,15 @@
     }
   }
 
+  // a lion's mane: a thick ruff round the head, only where nothing else is drawn
+  function mane(R, P) {
+    if (!P.mane || !R.head || R.head.flip) return;
+    const h = R.head, cx = h.front ? h.x : h.x - h.d * 0.8, cy = h.y + 1.2;
+    for (let y = Math.floor(cy - 9); y <= cy + 9; y++) for (let x = Math.floor(cx - 9); x <= cx + 9; x++) {
+      const dx = (x + 0.5 - cx) / 8.6, dy = (y + 0.5 - cy) / 8.2, k = dx * dx + dy * dy;
+      if (k <= 1 && !R.get(x, y) && (k < 0.8 || (x + y) % 2)) R.put(x, y, M.ACCENT2, PART.BODY);
+    }
+  }
   function dress(R, acc) {
     if (!acc) return;
     R.outfit = acc.outfit ? split(acc.outfit).d : null;
@@ -674,6 +735,29 @@
       const n = Math.sin(x * 0.55 + 1.3) + Math.cos(y * 0.6 - 0.4) + Math.sin((x + y) * 0.3);
       if (part === PART.EAR || part === PART.TAIL) return n > 0 ? M.ACCENT : M.ACCENT2;
       if (n > 1.15) return M.ACCENT; if (n < -1.35) return M.ACCENT2;
+    }
+    if (pat === "spots" && mat !== M.BELLY && part !== PART.EAR) {             // little dark spots (bengal, cheetah)
+      const u = (x + ((y >> 1) % 2) * 2) % 4, v = y % 3;
+      if (u === 0 && v === 1 && y < GROUND - 1) return M.ACCENT;
+      if (part === PART.TAIL && x % 3 === 0) return M.ACCENT;
+    }
+    if (pat === "rosette" && mat !== M.BELLY && part !== PART.EAR) {           // leopard rosettes: a dark ring round a warmer middle
+      const u = (x + ((y / 5 | 0) % 2) * 3) % 6, v = y % 5;
+      if ((u === 1 || u === 3) && (v === 1 || v === 3) || (u === 2 && (v === 0 || v === 4))) return M.ACCENT;
+      if (u === 2 && v >= 1 && v <= 3) return M.ACCENT2;
+      if (part === PART.TAIL && (x + y) % 4 === 0) return M.ACCENT;
+    }
+    if (pat === "tiger" && mat !== M.BELLY) {                                     // bold black stripes
+      if ((part === PART.BODY || part === PART.CHEST) && ((x + (y >> 2)) % 4 === 0) && y < 31) return M.ACCENT;
+      if (part === PART.HEAD && (x % 3 === 0) && y < 19 && y > 8) return M.ACCENT;
+      if (part === PART.TAIL && (x + y) % 3 === 0) return M.ACCENT;
+      if (part === PART.LEG && y % 3 === 0 && y < GROUND - 1) return M.ACCENT;
+    }
+    if (pat === "puma" || pat === "lion") {                                       // plain coat, dark tail tip and ear backs, pale muzzle
+      if (part === PART.EAR) return M.ACCENT;
+      if (part === PART.TAIL && y < 24 && x < 12) return M.ACCENT;
+      if (part === PART.HEAD && mat === M.BELLY) return M.BELLY;
+      if (mat === M.BELLY) return part === PART.CHEST ? M.BELLY : M.BODY;
     }
     if (pat === "points") {
       if (part === PART.EAR || part === PART.TAIL) return M.ACCENT;
@@ -701,7 +785,7 @@
       else {
         const far = m === M.FAR;
         let mm = m === M.FORCE_BELLY ? M.BELLY : patternMaterial(P, far ? M.BODY : m, R.part[i], x, y);
-        if (R.outfit && isTorso(R, x, y)) mm = outfitMat(R, x, y) === 2 ? M.O2 : M.O1;
+        if (R.outfit && isTorso(R, x, y)) { const o = outfitMat(R, x, y); mm = o === 3 ? M.O3 : o === 2 ? M.O2 : M.O1; }
         if (far && mm === M.BODY) mm = M.BODY;
         const t = tone(mm);
         const above = R.get(x, y - 1), below = R.get(x, y + 1), right = R.get(x + 1, y);
@@ -737,7 +821,7 @@
     R.grey = !!o.grey;
     (POSES[o.pose] || POSES.sit)(R, { t: o.t || 0, st: 1, phase: o.phase || 0, blink: !!o.blink, eyes: o.eyes || null, look: o.look || null });
     const pal = portraitCache.pal[coat] || (portraitCache.pal[coat] = buildPalette(coat));
-    dress(R, o.acc); shade(R, pal, img, accTones(o.acc)); g.putImageData(img, 0, 0);
+    mane(R, pal); dress(R, o.acc); shade(R, pal, img, accTones(o.acc)); g.putImageData(img, 0, 0);
     const k = o.scale || 2, W = ctx.canvas.width, H = ctx.canvas.height;
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(c, Math.round((W - SW * k) / 2 + (o.dx ?? 4) * k), Math.round((H - SH * k) / 2 + (o.dy || 0) * k), SW * k, SH * k);
@@ -1494,7 +1578,7 @@
       const a = { t: this.t, st: this.stateT, phase: this.phase, blink: this.blink, eyes: this.state === "happy" ? "happy" : this.eyes, peekEyes: null, look: this.look };
       POSES[this.pose()](R, a);
       const acc = this.wearing();
-      dress(R, acc);
+      mane(R, this.P); dress(R, acc);
       shade(R, this.P, this.img, accTones(acc));
       this.ctx.putImageData(this.img, 0, 0);
       const s = this.s, w = this.world, inbox = this.state === "inbox";
@@ -1513,6 +1597,23 @@
       ctx.restore();
       if ((this.profile && this.profile.showName || this.stray) && w.showNames !== false) this.drawTag(ctx, R, dy);
       this.drawDream(ctx);
+      if (this.profile && this.profile.wish && !this.hidden) this.drawWish(ctx, R, dy);
+    }
+    // 💭 a thought bubble with what the cat wishes for, bobbing beside its head
+    drawWish(ctx, R, dy) {
+      const s = this.s, w = this.world, wish = this.profile.wish;
+      let top = 0; find: for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) if (R.m[y * SW + x]) { top = y; break find; }
+      const named = this.profile.showName && w.showNames !== false, fs = Math.round(clamp(8 + w.scale * 2.4, 11, 20));
+      const r = Math.round(clamp(9 + w.scale * 2.6, 13, 24)), bob = Math.sin(performance.now() / 500) * 2;
+      const cx = clamp(this.x + (this.facing > 0 ? 1 : -1) * (SW * s * 0.22 + r), r + 4, w.W - r - 4), cy = this.y - GROUND * s + dy + top * s - (named ? fs * 1.5 + 14 : 6) - r + bob;
+      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.96)"; ctx.strokeStyle = "#5b3a29"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill(); ctx.stroke();
+      const tx = this.x + (this.facing > 0 ? 1 : -1) * SW * s * 0.12, ty = cy + r + 6;
+      for (const [k, rr] of [[0.35, 3.2], [0.75, 2.2]]) { ctx.beginPath(); ctx.arc(cx + (tx - cx) * k, ty + (k - 0.35) * 10, rr, 0, 7); ctx.fill(); ctx.stroke(); }
+      ctx.font = `${Math.round(r * 1.1)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(wish.e || "💭", cx, cy + 1);
+      if (wish.k === "pet" && wish.n > 1) { ctx.font = `700 ${Math.round(r * 0.6)}px "Pixelify Sans", monospace`; ctx.fillStyle = "#e2557a"; ctx.fillText(`${wish.got || 0}/${wish.n}`, cx + r * 0.9, cy + r * 0.85); }
+      ctx.restore();
     }
 
     // a little speech-bubble name tag floating above the cat
