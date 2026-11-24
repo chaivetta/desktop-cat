@@ -1202,6 +1202,7 @@
       }
       if (w.weather && ["rain", "storm", "drizzle"].includes(w.weather.kind)) { wt.sleep *= 1.6; wt.loaf = (wt.loaf || 0) * 1.6; wt.zoom = 0; }
       if (w.weather && w.weather.kind === "snow") { wt.snowSwat = 2.2; wt.shake *= 3; wt.sniffFloor *= 2; wt.pronk = (wt.pronk || 0) + 0.4; wt.sleep *= 1.2; }        // ❄️ snow is for playing in
+      if (w.isNight() && w.moonFull) { wt.zoom = (wt.zoom || 0) * 4 + 1.2; wt.pronk = (wt.pronk || 0) + 1; wt.chirp = (wt.chirp || 0) + 0.8; wt.sleep *= 0.25; }      // 🌕 full-moon madness
       if (w.isNight()) { wt.sideLie *= 1.6; wt.curlNap *= 2; wt.shake *= 0.3; wt.sniffFloor *= 0.4; wt.wiggle = 0; wt.sleep *= 3; wt.walk *= 0.4; wt.zoom = 0; wt.loaf *= 2; wt.tailChase = 0; wt.meerkat = 0; wt.pronk = 0; if (wt.fight) wt.fight *= 0.2; if (wt.shelf) wt.shelf *= 0.5; }
       const foe = this.fightCool <= 0 && w.cats.find((o) => o !== this && o.fightCool <= 0 && ["walk", "sit", "groom", "roll"].includes(o.state) && Math.abs(o.x - this.x) < 260 * this.s / 3 * 3);
       if (foe) wt.fight = 0.6;
@@ -1926,7 +1927,7 @@
       }
       ctx.save();
       ctx.imageSmoothingEnabled = false;
-      const swim = this.state === "swim" && this.inWater, dy = inbox ? Math.round((4 + this.peek * 14) * s) : swim ? Math.round((10 + Math.sin(this.t * 3)) * s) : 0;
+      const swim = this.state === "swim" && this.inWater, dy = (inbox ? Math.round((4 + this.peek * 14) * s) : swim ? Math.round((10 + Math.sin(this.t * 3)) * s) : 0) - Math.round(this.ufoLift || 0);
       if (swim) { ctx.beginPath(); ctx.rect(0, 0, w.W, w.floor - 3 * s); ctx.clip(); }
       if (inbox) { const rim = this.box ? this.box.y - 15 * w.toyScale : this.y - 6 * s; ctx.beginPath(); ctx.rect(0, 0, w.W, rim); ctx.clip(); }
       const kx = this.P.kx || 1, ky = this.P.ky || 1;
@@ -3435,6 +3436,7 @@
       } catch {}
     }
     hitTest(x, y) {
+      if (this.skyFx) { const h = this.skyFx.hit(x, y); if (h) return { toy: h }; }
       for (const d of this.dreams) if (d.hit(x, y)) return { toy: d };
       for (const c of this.critters) if (c.hit && c.hit(x, y)) return { toy: c };
       if (this.yarn && this.yarn.hit(x, y)) return { toy: this.yarn };
@@ -3521,12 +3523,14 @@
       this.critters.forEach((c) => c.update(dt)); this.critters = this.critters.filter((c) => !c.gone());
       this.shouts = this.shouts.filter((x) => (x.t += dt) < 1.6);
       if (this.park) { const sea = this.parkWater(); if (sea) for (const c of this.cats) if (!c.parkAway && c.state !== "swim" && !["held", "fall", "leap", "zoom", "inbox"].includes(c.state) && !c.perch && c.x > sea.x0 + 16 * c.s && c.y >= this.floor - 1) { c.inWater = true; c.set("swim", rnd(6, 14)); } }
+      if (this.skyFx) this.skyFx.update(dt);
       this.lastDt = dt; if (this.park) { this.parkSocial(dt); this.updateParkAnimals(dt); }
       this.updateGame(dt);
       if (this.strayOn && !this.isNight() && !this.stray()) { this.strayT -= dt; if (this.strayT <= 0) { this.strayT = rnd(1200, 2700); if (this.cats.filter((c) => c.profile).length < 8) this.addStray(); } }
       this.cats.forEach((c) => c.update(dt));
-      if (this.isNight()) this.renderNight(ctx, now);
+      if (this.isNight() || this.moonFull) this.renderNight(ctx, now);
       this.renderSky(ctx, dt);
+      if (this.skyFx) this.skyFx.render(ctx);
       if (this.seasonsOn !== false) this.renderSeason(ctx, dt, now); else if (this.renderWeather(ctx, dt, now) === false && this.seasonOverride === "winter") this.seasonOverride = null;   // real weather shows even with the seasons off
       if (this.park) this.renderPark(ctx, this.lastDt || 0.016);
       this.furniture.forEach((f) => f.render(ctx));
@@ -3771,7 +3775,13 @@
       ctx.save(); ctx.imageSmoothingEnabled = false;
       const g = ctx.createRadialGradient(x, y, 0, x, y, 16 * s); g.addColorStop(0, "rgba(255,240,180,.35)"); g.addColorStop(1, "rgba(255,240,180,0)");
       ctx.fillStyle = g; ctx.fillRect(x - 16 * s, y - 16 * s, 32 * s, 32 * s);
-      for (let yy = -6; yy <= 6; yy++) for (let xx = -6; xx <= 6; xx++) {
+      if (this.moonFull) {                                  // 🌕 a big round full moon with its craters
+        const R2 = 11; for (let yy = -R2; yy <= R2; yy++) for (let xx = -R2; xx <= R2; xx++) { const a = xx * xx + yy * yy; if (a > R2 * R2) continue;
+          const crater = ((xx + 4) ** 2 + (yy + 3) ** 2 < 6) || ((xx - 4) ** 2 + (yy - 4) ** 2 < 4) || ((xx - 2) ** 2 + (yy + 6) ** 2 < 3);
+          ctx.fillStyle = crater ? "#e8d48a" : a > (R2 - 1.5) ** 2 ? "#f2d77a" : "#fff4c8"; ctx.fillRect(Math.round(x + xx * s * 0.8), Math.round(y + yy * s * 0.8), Math.ceil(s * 0.8), Math.ceil(s * 0.8)); }
+        const g2 = ctx.createRadialGradient(x, y, 0, x, y, 30 * s); g2.addColorStop(0, "rgba(255,245,200,.28)"); g2.addColorStop(1, "rgba(255,245,200,0)"); ctx.fillStyle = g2; ctx.fillRect(x - 30 * s, y - 30 * s, 60 * s, 60 * s);
+      }
+      else for (let yy = -6; yy <= 6; yy++) for (let xx = -6; xx <= 6; xx++) {
         const a = xx * xx + yy * yy, b = (xx - 3) * (xx - 3) + (yy + 2) * (yy + 2);
         if (a <= 36 && b > 22) { ctx.fillStyle = a > 25 || b < 30 ? "#f2d77a" : "#fff1b5"; ctx.fillRect(Math.round(x + xx * s), Math.round(y + yy * s), s, s); }
       }

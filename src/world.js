@@ -59,7 +59,10 @@
       if (world.park) { toast(t().parkFirst); return; }
       L.wallet.coins -= price;
       const now = Date.now(); X().flight = { to: c.id, from: X().at, start: now, until: now + flightSecs(here(), c) * 1000 };
-      board(); const plane = document.createElement("div"); plane.className = "wm-plane"; plane.textContent = "✈️"; document.body.appendChild(plane); setTimeout(() => plane.remove(), 4200);
+      board(); // take-off: a drawn airliner climbs slowly across the top of the screen
+      const k = 3, plane = document.createElement("canvas"); plane.width = 70 * k + 40 * k; plane.height = 30 * k; plane.className = "wm-plane";
+      let pt = 0; const draw = () => { const g = plane.getContext("2d"); g.clearRect(0, 0, plane.width, plane.height); window.CatWorldArt.drawPlane(g, 34 * k, 2 * k, k, pt); pt += 0.1; };
+      draw(); const pi = setInterval(draw, 100); document.body.appendChild(plane); setTimeout(() => { clearInterval(pi); plane.remove(); }, 14200);
       L.changed(); save(); sel = c.id; mode = "flight"; key = ""; render();
     }
     function board() { const F = X().flight; if (!F || world.park) return; const ids = world.cats.filter((k) => k.profile && !k.profile.guest && !k.jobOff).map((k) => k.profile.id); world.enterPark(ids, 0, { biome: "plane", city: WD.byId[F.to] }); world.park.flight = F; }

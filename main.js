@@ -4,6 +4,7 @@
 // do we let the window catch the mouse, so the rest of the desktop keeps working.
 const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage, dialog, session, systemPreferences } = require("electron");
 const path = require("path");
+const fs = require("fs");
 
 if (process.platform === "linux") app.commandLine.appendSwitch("enable-transparent-visuals");
 if (!app.requestSingleInstanceLock()) app.quit();
@@ -67,6 +68,42 @@ function createTray() {
   if (process.platform !== "darwin") tray.on("click", () => { setPaused(false); send({ type: "settings" }); });   // on macOS a click just opens the menu
 }
 
+// ---- the save file: <userData>/save.json, written to a temp file first and then swapped in, with the last good one kept as save.bak.json
+const saveFile = () => path.join(app.getPath("userData"), "save.json");
+ipcMain.on("save:load", (e) => {
+  for (const f of [saveFile(), saveFile().replace("save.json", "save.bak.json")]) {
+    try { const s = fs.readFileSync(f, "utf8"); JSON.parse(s); e.returnValue = s; return; } catch {}
+  }
+  e.returnValue = null;
+});
+let lastSave = "";
+ipcMain.on("save:write", (_e, json) => {
+  if (typeof json !== "string" || json === lastSave || json.length > 20e6) return; lastSave = json;
+  try {
+    const f = saveFile(), tmp = f + ".tmp";
+    fs.writeFileSync(tmp, json);
+    if (fs.existsSync(f)) fs.copyFileSync(f, f.replace("save.json", "save.bak.json"));
+    fs.renameSync(tmp, f);
+  } catch {}
+});
+
+// ---- Steam (only when started from Steam and steamworks.js is installed: `npm i steamworks.js`, app id in STEAM_APP_ID or steam_appid.txt)
+let steam = null;
+function initSteam() {
+  try {
+    let id = +process.env.STEAM_APP_ID || 0;
+    if (!id) for (const d of [process.cwd(), path.dirname(process.execPath), __dirname]) { try { id = +fs.readFileSync(path.join(d, "steam_appid.txt"), "utf8").trim(); if (id) break; } catch {} }
+    if (!id) return;
+    steam = require("steamworks.js").init(id);
+  } catch { steam = null; }
+}
+const steamDone = new Set();
+ipcMain.on("steam:ach", (_e, id) => {
+  if (!steam || typeof id !== "string" || steamDone.has(id)) return;
+  try { const api = "ACH_" + id.toUpperCase(); if (!steam.achievement.isActivated(api)) steam.achievement.activate(api); steamDone.add(id); } catch {}
+});
+ipcMain.on("steam:on", (e) => { e.returnValue = !!steam; });
+
 ipcMain.on("ignore", (_e, ignore) => { if (win) win.setIgnoreMouseEvents(!!ignore, { forward: true }); });
 ipcMain.on("settings", (_e, o) => { if (o && T[o.lang]) lang = o.lang; refreshMenu(); });
 ipcMain.on("hide", () => setPaused(true));
@@ -77,6 +114,7 @@ ipcMain.handle("login", (_e, on) => {
 });
 
 app.whenReady().then(() => {
+  initSteam();
   // the microphone is only used when you press 🎤 to record a meow on a cat card
   session.defaultSession.setPermissionRequestHandler((_wc, perm, cb) => {
     if (perm !== "media") return cb(false);

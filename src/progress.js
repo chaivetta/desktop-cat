@@ -223,6 +223,8 @@
     let seen = null;
     setInterval(() => {
       const done = ACH.filter((a) => a[2](world) >= a[3] && !L.prog.claimed["a:" + a[0]]).map((a) => a[0]);
+      // on Steam: every goal reached is a Steam achievement too (ACH_<ID>)
+      if (window.deskcat && window.deskcat.achievement) ACH.forEach((a) => { if (a[2](world) >= a[3] || L.prog.claimed["a:" + a[0]]) window.deskcat.achievement(a[0]); });
       if (seen) done.filter((id) => !seen.includes(id)).forEach((id) => o.toast && o.toast(t().achNew(t().ach[id])));
       seen = done; document.querySelectorAll(".cc-top .cc-tab.tool")[4] && (done.length ? document.querySelectorAll(".cc-top .cc-tab.tool")[4].dataset.dot = done.length : delete document.querySelectorAll(".cc-top .cc-tab.tool")[4].dataset.dot);
     }, 5000);

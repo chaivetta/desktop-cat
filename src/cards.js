@@ -14,6 +14,12 @@
     { id: "m_zoom", r: 2, coat: "ginger", pose: "run", bg: ["#fff1b8", "#ffb36b"] },
     { id: "m_garden", r: 2, coat: "calico", pose: "sit", acc: { hat: "flowers:cherry" }, bg: ["#d9f5c9", "#7cc46a"] },
     { id: "m_cuddle", r: 2, coat: "tuxedo", pose: "sleepSide", bg: ["#ffe1ea", "#ff9fb5"] },
+    // the sky's moments: you get each one the first time it happens (and they turn up in packs too)
+    { id: "m_fullmoon", r: 3, coat: "black", pose: "sit", sky: "moon", bg: ["#1c2a5a", "#0a1030"] },
+    { id: "m_ufo", r: 3, coat: "ginger", pose: "meerkat", sky: "ufo", bg: ["#10183a", "#2a3a6a"] },
+    { id: "m_meteor", r: 2, coat: "grey", pose: "sit", sky: "meteor", bg: ["#141c44", "#3a2a6a"] },
+    { id: "m_rainbow", r: 2, coat: "calico", pose: "sit", sky: "rainbow", bg: ["#bfe6ff", "#e8f6ff"] },
+    { id: "m_aurora", r: 2, coat: "white", pose: "sit", sky: "aurora", bg: ["#0e1a3a", "#1a3a4a"] },
   ];
   const STR = {
     tr: {
@@ -22,7 +28,7 @@
       hint: "Her paket 3 kart. İkinci kez çıkan kart ✨ parıltıya dönüşür; parıltıyla eksik kartları yapabilirsin. Bir nadirlik sırasını bitirince ödül!",
       craft: (n) => `✨ ${n} ile yap`, have: (n) => `×${n}`, newC: "YENİ!", got: (n, e) => `🃏 ${n} kartı koleksiyonuna eklendi ${e}`, dupe: (n) => `+${n} ✨`,
       row: (r, w) => `🎉 ${r} kartların hepsi tamam! ${w}`, done: (a, b) => `${a} / ${b} kart`, tap: "Kartlara dokun",
-      m: { m_miss: "Miss Kedi", m_moon: "Ay Kedisi", m_roar: "Kükreyen Aslan", m_dream: "Tatlı Rüyalar", m_snow: "Kar Avcısı", m_zoom: "Zoomies", m_garden: "Bahçıvan", m_cuddle: "Sarılma Vakti" },
+      m: { m_miss: "Miss Kedi", m_moon: "Ay Kedisi", m_roar: "Kükreyen Aslan", m_dream: "Tatlı Rüyalar", m_snow: "Kar Avcısı", m_zoom: "Zoomies", m_garden: "Bahçıvan", m_cuddle: "Sarılma Vakti", m_fullmoon: "Dolunay Gecesi", m_ufo: "UFO Ziyareti", m_meteor: "Meteor Yağmuru", m_rainbow: "Gökkuşağı", m_aurora: "Kuzey Işıkları" },
     },
     en: {
       title: "Cat Cards", rar: { common: "Common", rare: "Rare", epic: "Epic", legend: "Legendary" }, dust: (n) => `✨ ${n} sparkle`,
@@ -30,7 +36,7 @@
       hint: "Three cards a pack. A card you already have turns into ✨ sparkle; use sparkle to make the cards you're missing. Finish a rarity row for a prize!",
       craft: (n) => `Make for ✨ ${n}`, have: (n) => `×${n}`, newC: "NEW!", got: (n, e) => `🃏 ${n} added to your collection ${e}`, dupe: (n) => `+${n} ✨`,
       row: (r, w) => `🎉 All your ${r} cards are done! ${w}`, done: (a, b) => `${a} / ${b} cards`, tap: "Tap the cards",
-      m: { m_miss: "Miss Cat", m_moon: "Moon Cat", m_roar: "The Roar", m_dream: "Sweet Dreams", m_snow: "Snow Catcher", m_zoom: "Zoomies", m_garden: "Gardener", m_cuddle: "Snuggle Time" },
+      m: { m_miss: "Miss Cat", m_moon: "Moon Cat", m_roar: "The Roar", m_dream: "Sweet Dreams", m_snow: "Snow Catcher", m_zoom: "Zoomies", m_garden: "Gardener", m_cuddle: "Snuggle Time", m_fullmoon: "Full Moon Night", m_ufo: "UFO Visit", m_meteor: "Meteor Shower", m_rainbow: "Rainbow", m_aurora: "Northern Lights" },
     },
   };
   const t = () => STR[L.lang] || STR.en;
@@ -55,6 +61,13 @@
       const g = cv.getContext("2d"), W = cv.width, H = cv.height, bg = c.bg || [["#fff7ec", "#f1e1cf"], ["#e4f1ff", "#a9c8f0"], ["#f1e4ff", "#b996e6"], ["#fff1b8", "#f0b84a"]][c.r];
       const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, bg[0]); gr.addColorStop(1, bg[1]); g.fillStyle = gr; g.fillRect(0, 0, W, H);
       if (c.biome) { const B = window.CatWorldArt.BIOMES[c.biome]; g.fillStyle = "#bfe6ff"; g.fillRect(0, 0, W, H); if (B.bg) B.bg(g, W, H, H - 12, 1, (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }, null); else { g.fillStyle = "#8fcf6b"; g.fillRect(0, H - 14, W, 14); } }
+      if (c.sky) { const p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); };
+        if (c.sky !== "rainbow") for (let i = 0; i < 22; i++) p((i * 37) % W, (i * 23) % (H / 2), 1, 1, "#fff6c8");
+        if (c.sky === "moon") { for (let yy = -14; yy <= 14; yy++) for (let xx = -14; xx <= 14; xx++) if (xx * xx + yy * yy <= 196) p(W / 2 + xx, 30 + yy, 1, 1, (xx + 5) ** 2 + (yy + 3) ** 2 < 10 ? "#e8d48a" : "#fff4c8"); }
+        else if (c.sky === "ufo") { p(W / 2 - 16, 22, 32, 5, "#b8c0cc"); p(W / 2 - 6, 15, 12, 7, "#9ae8c8"); p(W / 2 - 12, 27, 24, 2, "#7a8494"); g.fillStyle = "rgba(180,255,200,.3)"; g.beginPath(); g.moveTo(W / 2 - 8, 29); g.lineTo(W / 2 + 8, 29); g.lineTo(W / 2 + 26, H - 12); g.lineTo(W / 2 - 26, H - 12); g.fill(); }
+        else if (c.sky === "meteor") { for (const [x, y] of [[20, 12], [60, 24], [40, 40]]) for (let i = 0; i < 12; i++) p(x + i, y + i * 0.5, 2, 1, `rgba(255,240,200,${1 - i / 12})`); }
+        else if (c.sky === "rainbow") { ["#ff5a5a", "#ffa040", "#ffe060", "#70d070", "#58a8f0", "#8a70e0"].forEach((col, i) => { for (let a = Math.PI; a <= 2 * Math.PI; a += 0.02) p(W / 2 + Math.cos(a) * (44 - i * 4), 70 + Math.sin(a) * (44 - i * 4), 2, 3, col); }); }
+        else if (c.sky === "aurora") { for (let x = 0; x < W; x += 2) for (let i = 0; i < 8; i++) p(x, 14 + Math.sin(x / 12) * 6 + i * 3, 2, 3, `rgba(${90 + i * 10},${230 - i * 8},${170 + i * 6},${0.3 - i * 0.03})`); } }
       if (c.snow) { g.fillStyle = "#fff"; for (let i = 0; i < 26; i++) g.fillRect((i * 37) % W, (i * 53) % (H - 10), 2, 2); }
       if (c.glow) { g.fillStyle = "#fff6c8"; g.beginPath(); g.arc(W * 0.78, H * 0.2, 9, 0, Math.PI * 2); g.fill(); for (let i = 0; i < 14; i++) g.fillRect((i * 29) % W, (i * 17) % (H / 2), 1, 1); }
       const p = document.createElement("canvas"); p.width = 96; p.height = 84;

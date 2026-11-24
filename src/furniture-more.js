@@ -78,7 +78,7 @@
     });
   }
   // the seats in the plane's cabin (only on a flight, never sold): the cats curl up in them
-  { let img = null; DC.FURN.planeseat = { w: 26, h: 36, price: 0, nap: 11, event: "_park", draw: () => img || (img = pix(26, 36, (p) => { p(2, 0, 22, 4, "#f4ede2"); p(2, 4, 22, 22, "#2a4a8a"); p(4, 5, 18, 18, "#3a6ad8"); p(0, 22, 26, 7, "#2a4a8a"); p(2, 23, 22, 3, "#4a7ae8"); p(4, 29, 3, 7, "#8a8e9c"); p(19, 29, 3, 7, "#8a8e9c"); p(0, 14, 3, 9, "#2a4a8a"); p(23, 14, 3, 9, "#2a4a8a"); })) };
+  { let img = null; DC.FURN.planeseat = { w: 24, h: 26, price: 0, nap: 8, event: "_park", draw: () => img || (img = pix(24, 26, (p) => { p(2, 0, 20, 3, "#f4ede2"); p(2, 3, 20, 14, "#2a4a8a"); p(4, 4, 16, 11, "#3a6ad8"); p(0, 15, 24, 6, "#2a4a8a"); p(2, 16, 20, 2, "#4a7ae8"); p(4, 21, 3, 5, "#8a8e9c"); p(17, 21, 3, 5, "#8a8e9c"); p(0, 9, 3, 7, "#2a4a8a"); p(21, 9, 3, 7, "#2a4a8a"); })) };
     SF.tr.furn.planeseat = ["Uçak koltuğu", "Pencere kenarı, tabii ki"]; SF.en.furn.planeseat = ["Plane seat", "A window seat, of course"]; }
   window.CatFurnMore = { CAT_N, FAMN, COL, count: FAM.reduce((a, f) => a + f[2].length, 0) };
 })();

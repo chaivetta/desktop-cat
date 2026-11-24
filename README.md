@@ -79,7 +79,7 @@ Right-click a cat to open its card. Drag it anywhere; 📍 sends it back; 🔍 c
 
 Every country's capital is on a pixel map of the real world, **204 places** in all, plus a few special ones: Honolulu, the Amazon, the Galápagos, the Serengeti, the Sahara and a base in Antarctica. Parts of the world open as your level grows (Türkiye and the Balkans first, Oceania and Antarctica last).
 
-- **Fly** to a city for a few coins (the farther, the dearer; home is free). The flight takes time, from 30 seconds to 3 minutes depending on the distance: meanwhile the bottom of the screen turns into the **plane's cabin**, where your cats curl up in the seats while clouds rush past the windows and a little screen shows how far you've come. Your first visit stamps your **🛂 passport**.
+- **Fly** to a city for a few coins (the farther, the dearer; home is free). The flight takes time, from 30 seconds to 3 minutes depending on the distance: meanwhile a low strip at the bottom of the screen turns into the **plane's cabin**, where your cats curl up in the seats while clouds rush past the little windows, and above it the airliner itself crosses the screen slowly, as far along as the flight is. Your first visit stamps your **🛂 passport**.
 
   ![Cats in their seats on the plane](docs/plane.png)
 
@@ -131,22 +131,21 @@ Every cat has four genes (shine, colour, pattern, eyes) and a grade from D to S,
 
 ## ☰ The menu
 
-The card has a single **☰ Menu** button. It opens one panel with a strip of tabs on top, so everything is in one place:
+The card has a single **☰ Menu** button. Everything is sorted into five groups along the top; underneath are the pages of the group that's open (each group remembers the page you were on):
 
-<img src="docs/menu.png" width="320" alt="The menu: Market, Inventory, Games, Park, Events, Progress, Settings">
+<img src="docs/menu.png" width="320" alt="The menu: five groups on top, their pages underneath">
 
-| Tab | |
+| Group | Pages |
 | :-- | :-- |
-| **🛒 Market** | Cats (unlock coats with ⭐; the first cat is free), food, toys, seeds, furniture and luck (a daily gift chest and a wheel) |
-| **🎒 Inventory** | Your cupboard, toys and furniture as icons: take out, put away, repair, sell |
-| **🌍 World** | The world map, flights, the cities and their markets |
-| **🐾 Paw Path** | The monthly reward track and today's paw quests (see below) |
-| **🃏 Cards** | Your cat card collection and card packs |
-| **🎮 Games** | Scratch card, memory, whack-a-mouse and the laser hunt. Each costs coins and needs a 15-minute break before you play it again |
-| **🌳 Park** | Take cats out for 30 minutes to the park of the city you're in |
-| **🎪 Events** | Photo feed, weekly contest, festivals |
-| **🏅 Progress** | Your level, the skill tree, the album and achievements |
-| **⚙️ Settings** | Sizes, sounds, day and night, weather, language, and more |
+| **🛒 Shopping** | **Market**: cats (unlock coats with ⭐; the first cat is free), food, toys, seeds, furniture and luck (a daily gift chest and a wheel) · **Inventory**: your cupboard, toys and furniture as icons: take out, put away, repair, sell |
+| **🌍 World** | **Map**: flights, the cities and their markets · **Park**: take cats out to the park of the city you're in (once an hour, or buy a ticket) |
+| **🏆 Rewards** | **Paw Path**: the monthly reward track and paw quests · **Cards**: the collection and card packs · **Progress**: your level, the skill tree, the album and achievements |
+| **🎉 Fun** | **Games**: scratch card, memory, whack-a-mouse and the laser hunt · **Events**: photo feed, weekly contest, festivals |
+| **⚙️ Settings** | Sizes, sounds, day and night, weather, sky events, language, the tutorial |
+
+### 🎓 The tutorial
+
+The first time you play, a speech bubble with a glowing ring shows you around in ten short steps: petting, the card (right-click a cat), the ☰ menu and its groups, feeding, the world, the rewards and the pots. Some steps wait for you to try it. Skip it any time, or play it again from ⚙️ Settings. There's a little gift at the end: 50🪙 and a card pack.
 
 ![The market: food, the inventory, the wheel of luck and the daily gift chest](docs/market.png)
 
@@ -160,7 +159,7 @@ A reward track that starts again every month. Almost everything you do earns **�
 
 <img src="docs/card-pack.png" width="460" alt="Opening a card pack: the Moon Cat (legendary) and two black cats">
 
-Fifty-eight cards to collect: one for every coat (big cats are epic), eight "moments" (Miss Cat, the Moon Cat, the Roar, Sweet Dreams, Snow Catcher, Zoomies, the Gardener, Snuggle Time), fifteen **world-tour** cards (one for each kind of park, drawn on its own scenery; the first visit there gives you the card) and eleven seasonal-costume cards. They come in packs of three: a free pack every week, one on some steps of the Paw Path, or 80🪙 in the Cards tab. Tap the face-down cards to flip them. A card you already have turns into ✨ sparkle, and sparkle makes any card you're missing. Finishing a rarity row (common, rare, epic, legendary) pays coins or stars, and the whole set pays 10⭐.
+Sixty-three cards to collect: one for every coat (big cats are epic), thirteen "moments" (Miss Cat, the Moon Cat, the Roar, Sweet Dreams, Snow Catcher, Zoomies, the Gardener, Snuggle Time, and the sky's five: Full Moon Night, UFO Visit, Meteor Shower, Rainbow, Northern Lights), fifteen **world-tour** cards (one for each kind of park, drawn on its own scenery; the first visit there gives you the card) and eleven seasonal-costume cards. They come in packs of three: a free pack every week, one on some steps of the Paw Path, or 80🪙 in the Cards tab. Tap the face-down cards to flip them. A card you already have turns into ✨ sparkle, and sparkle makes any card you're missing. Finishing a rarity row (common, rare, epic, legendary) pays coins or stars, and the whole set pays 10⭐.
 
 ### 🫧 Dream bubbles
 
@@ -245,6 +244,17 @@ Plants grow in real hours, even with the app closed, but only while watered (wat
 
 - **Clouds:** little kawaii clouds drift along the top of the screen, sometimes in twos and threes, up to ten at a time (more on cloudy days). Some trail a rainbow; on rainy days they turn grey and grumpy and drip. On clear nights, a shooting star now and then.
 - **Real weather:** rain, drizzle, snow, fog and thunderstorms follow the weather where you are (from [Open-Meteo](https://open-meteo.com), free, no account; checked once a day). Rainy days make the cats sleepy and keep the birds away. In the snow, flakes drift, a white layer builds up on the floor and the furniture, the cats leave paw prints and swat at the flakes. Try any weather for a minute from ⚙️ Settings.
+- **🌌 Sky events:**
+  - **🌕 Full moon:** on real full-moon nights (worked out from the actual phase of the moon) a big round moon comes up and the cats go a little wild: zoomies, pouncing and chirping instead of sleep.
+  - **🛸 UFO:** a rare night-time saucer floats over, shines its beam on a cat and lifts it up for a moment, then puts it gently back down. Click the UFO before it leaves for coins, a star and paw points.
+  - **☄️ Meteor shower:** a couple of minutes of shooting stars.
+  - **🌈 Rainbow:** when the rain stops in the daytime, a big rainbow comes out and the cats stop to stare at it. Click it for luck.
+  - **🌌 Northern lights:** green and violet curtains on winter nights.
+
+  Each one gives you its own card the first time you see it. You can try them all from ⚙️ Settings.
+
+  <img src="docs/sky-events.png" width="640" alt="A rainbow, a full moon and shooting stars over the cats">
+
 - **Seasons:** snow in winter, blossom in spring, fireflies on summer nights, falling leaves in autumn.
 - **Critters:** squirrels and butterflies by day.
 - **Night visitors:** after dark a hedgehog snuffles past, a fox trots along the floor, bats flit overhead and fireflies blink. Very rarely the glowing **🌙 Moon Cat** pads by: click it before it goes for a star, coins and its own legendary card.
@@ -306,6 +316,8 @@ npm run dist
 ```
 
 On macOS the app isn't signed, so the first time, right-click it and choose **Open**.
+
+Your save is kept in the browser storage and also in a `save.json` file in the app's data folder, with a backup of the previous one, so it's ready for Steam Cloud. For the Steam build (a plain folder) and the Steam checklist, see [docs/STEAM.md](docs/STEAM.md).
 
 **Try it in a browser:** open `src/index.html` directly.
 

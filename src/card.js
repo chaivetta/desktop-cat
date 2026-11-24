@@ -397,7 +397,8 @@
       if (!drag) return;
       const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
       if (!drag.moved && Math.hypot(dx, dy) < 5) return;
-      if (!drag.moved) { drag.moved = true; root.classList.add("dragging"); root.style.bottom = "auto"; root.classList.remove("up"); try { root.setPointerCapture(drag.id); } catch {} }
+      // keep the card the way it is (avatars on top or underneath) while it moves: flipping it here made the spot you grabbed jump away
+      if (!drag.moved) { drag.moved = true; root.classList.add("dragging"); const r0 = root.getBoundingClientRect(); root.style.bottom = "auto"; root.style.top = `${r0.top}px`; drag.t = r0.top; try { root.setPointerCapture(drag.id); } catch {} }
       const r = root.getBoundingClientRect();
       root.style.left = `${Math.round(clamp(drag.l + dx, 6 - r.width * 0.6, innerWidth - r.width * 0.4))}px`;
       root.style.top = `${Math.round(clamp(drag.t + dy, 0, innerHeight - 40))}px`;
@@ -407,8 +408,11 @@
       const d = drag; drag = null;
       if (!d.moved) return;
       root.classList.remove("dragging"); swallowClick = true; setTimeout(() => { swallowClick = false; }, 0);
-      const r = root.getBoundingClientRect(), up = r.top + r.height / 2 > innerHeight / 2;
-      pinned = { x: Math.round(r.left), y: Math.round(up ? Math.min(r.bottom, innerHeight - 6) : Math.max(r.top, 6)), up };
+      // it only turns over when it's clearly moved to the other half of the screen
+      const r = root.getBoundingClientRect(), mid = (r.top + r.height / 2) / innerHeight, was = root.classList.contains("up"), up = was ? mid > 0.35 : mid > 0.65;
+      // anchor it at the avatar strip, so the strip stays under the mouse even if the card turns over
+      const tr = q(".cc-tabs").getBoundingClientRect();
+      pinned = { x: Math.round(r.left), y: Math.round(up ? Math.min(was ? r.bottom : tr.bottom, innerHeight - 6) : Math.max(was ? tr.top : r.top, 6)), up };
       place(); if (opts.onPos) opts.onPos(pinned);
     });
     root.addEventListener("click", (e) => { if (swallowClick) { e.stopPropagation(); e.preventDefault(); swallowClick = false; } }, true);

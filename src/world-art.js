@@ -323,6 +323,23 @@
   function acacia(px, x, f, k, s = 1) { const h = Math.round(22 * s); for (let i = 0; i < h; i++) px(x + Math.round(i > h * 0.6 ? (i - h * 0.6) * 0.5 : 0) * k, f - i * k, 2 * k, k, "#6a4a2a"); const tx = x + Math.round(h * 0.2) * k, ty = f - h * k; px(tx - 14 * k, ty - 3 * k, 30 * k, 4 * k, "#5a8a3a"); px(tx - 11 * k, ty - 5 * k, 24 * k, 2 * k, "#6fa84a"); px(tx - 14 * k, ty + k, 30 * k, k, "#3f6a2a"); }
   function cloudsOf(px, W, f, k, n, col = "#ffffff") { for (let i = 0; i < n; i++) { const x = hash(i * 7 + 3) * W, y = f - 230 - hash(i * 11) * 70, w = 18 + hash(i) * 20; px(x, y, w * k, 4 * k, col); px(x + 3 * k, y - 3 * k, (w - 8) * k, 3 * k, col); } }
 
+  // a pixel airliner, side view, nose to the right: white body, blue belly stripe, a red-tipped tail, a swept wing, an engine and a row of windows
+  function drawPlane(ctx, x, y, k, t = 0) {
+    const p = (dx, dy, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x + dx * k), Math.round(y + dy * k), Math.ceil(w * k), Math.ceil(h * k)); };
+    const O = "#3a3550";
+    ctx.globalAlpha = 0.5; for (let i = 0; i < 4; i++) p(-6 - i * 7, 11 + (i % 2), 5, 1, "#ffffff"); ctx.globalAlpha = 1;   // a little vapour trail
+    p(6, 8, 50, 10, O); p(56, 9, 4, 8, O); p(60, 11, 3, 5, O); p(3, 9, 3, 7, O);                    // outline
+    p(7, 9, 49, 8, "#f6f8fc"); p(56, 10, 4, 6, "#f6f8fc"); p(60, 12, 2, 3, "#e8ecf4"); p(4, 10, 3, 5, "#f6f8fc");
+    p(7, 15, 53, 2, "#2f63c8"); p(7, 17, 49, 1, "#d0d8e8");                                         // belly stripe, shadow
+    p(56, 10, 3, 2, "#2a3550"); p(58, 10, 2, 1, "#2a3550");                                       // cockpit window
+    for (let i = 0; i < 9; i++) p(16 + i * 4, 11, 2, 2, "#7ab8e8");                                 // passenger windows
+    p(12, 11, 2, 4, "#c8d0e0");                                                                    // a door
+    p(1, 0, 10, 10, O); p(2, 1, 8, 8, "#f6f8fc"); p(2, 1, 4, 4, "#e8504a"); p(6, 1, 3, 2, "#e8504a"); p(2, 5, 3, 3, "#2f63c8");   // tail fin
+    p(-1, 9, 9, 3, O); p(0, 10, 7, 1, "#dfe4ee");                                                  // tail plane
+    p(24, 16, 16, 3, O); p(26, 19, 14, 3, O); p(29, 22, 10, 2, O); p(25, 17, 14, 2, "#dfe4ee"); p(27, 19, 12, 2, "#cfd6e4"); p(30, 22, 8, 1, "#bfc8d8");   // wing
+    p(32, 19, 9, 5, O); p(33, 20, 7, 3, "#9aa4b8"); p(40, 20, 1, 3, "#2a2f3e");                    // engine
+    if (Math.floor(t * 2) % 2) { p(38, 24, 2, 2, "#ff4a5a"); p(1, 0, 1, 1, "#ff4a5a"); }             // blinking lights
+  }
   const BIOMES = {
     // 🌳 a city park (the one we had: the default when a city has nothing more special)
     city: { tr: "Şehir parkı", en: "City park", animals: ["dove", "fox", "swan"], bg: null },
@@ -472,31 +489,33 @@
     // ✈️ inside the plane, on the way to another city: windows with clouds rushing past, rows of seats, a screen with the flight's progress
     plane: { tr: "Uçak", en: "On the plane", animals: [], noAnimals: true, props: [0.05, 0.16, 0.27, 0.38, 0.49, 0.6, 0.71, 0.82, 0.93].map((x) => ["planeseat", x]),
       bg(g, W, H, f, k, px) {
-        const top = f - 110 * k;
-        px(0, top, W, 110 * k, "#f4ede2"); px(0, top, W, 14 * k, "#e2d8c8"); px(0, top + 14 * k, W, 2 * k, "#c8bca8");
-        for (let x = 0; x < W; x += 60 * k) { px(x, top + 2 * k, 58 * k, 11 * k, "#ebe2d4"); px(x + 26 * k, top + 9 * k, 6 * k, 2 * k, "#b8ac98"); }
+        // a low cabin (a quarter of the old height): the ceiling with the flight screen, small windows at head height, the blue stripe, the carpet
+        const top = f - 34 * k; this.top = top;
+        px(0, top, W, 34 * k, "#f4ede2"); px(0, top, W, 4 * k, "#e2d8c8"); px(0, top + 4 * k, W, k, "#c8bca8");
+        for (let x = 0; x < W; x += 50 * k) px(x + 20 * k, top + k, 6 * k, 2 * k, "#b8ac98");
         this.wins = [];
-        for (let x = 24 * k; x < W - 20 * k; x += 46 * k) {
-          const wx = x, wy = top + 26 * k, ww = 18 * k, wh = 24 * k; this.wins.push([wx + 2 * k, wy + 2 * k, ww - 4 * k, wh - 4 * k]);
+        for (let x = 14 * k; x < W - 14 * k; x += 34 * k) {
+          const wx = x, wy = top + 7 * k, ww = 10 * k, wh = 12 * k; this.wins.push([wx + 2 * k, wy + 2 * k, ww - 4 * k, wh - 4 * k]);
           px(wx, wy, ww, wh, "#c8bca8"); px(wx + k, wy + k, ww - 2 * k, wh - 2 * k, "#d8cfc0"); px(wx + 2 * k, wy + 2 * k, ww - 4 * k, wh - 4 * k, "#8ad0f4");
-          px(wx + 2 * k, wy + 2 * k, ww - 4 * k, 3 * k, "#6ab8e8");
+          px(wx + 2 * k, wy + 2 * k, ww - 4 * k, 2 * k, "#6ab8e8");
         }
-        px(0, top + 62 * k, W, 3 * k, "#3a6ad8"); px(0, top + 65 * k, W, k, "#ffd34d");
+        px(0, top + 22 * k, W, 2 * k, "#3a6ad8"); px(0, top + 24 * k, W, k, "#ffd34d");
         px(0, f - 2 * k, W, H - f + 2 * k, "#8a6a8a"); for (let x = 0; x < W; x += 8 * k) px(x, f - 2 * k, 4 * k, k, "#9a7a9a");
-        this.screen = [W * 0.5 - 40 * k, top + 18 * k, 80 * k, 6 * k];
+        this.screen = [W * 0.5 - 30 * k, top + k, 60 * k, 2 * k];
       },
       front(ctx, w, dt, S) {
         const k = Math.max(2, Math.round(w.toyScale)); S.t = (S.t || 0) + dt;
         for (const [x, y, ww, hh] of this.wins || []) {
           ctx.save(); ctx.beginPath(); ctx.rect(x, y, ww, hh); ctx.clip();
-          for (let i = 0; i < 3; i++) { const cx = x + ww - ((S.t * 70 * k / 2 + i * 37 * k + x) % (ww + 30 * k)), cy = y + (4 + i * 6) * k; ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.fillRect(cx, cy, 12 * k, 3 * k); ctx.fillRect(cx + 2 * k, cy - 2 * k, 7 * k, 2 * k); }
+          for (let i = 0; i < 2; i++) { const cx = x + ww - ((S.t * 25 * k + i * 23 * k + x) % (ww + 16 * k)), cy = y + (2 + i * 4) * k; ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.fillRect(cx, cy, 7 * k, 2 * k); ctx.fillRect(cx + k, cy - k, 4 * k, k); }
           ctx.restore();
         }
         const P = w.park, fl = P && P.flight; if (!fl || !this.screen) return;
         const [x, y, ww, hh] = this.screen, q = Math.max(0, Math.min(1, (Date.now() - fl.start) / (fl.until - fl.start)));
-        ctx.fillStyle = "#2a2f3e"; ctx.fillRect(x, y, ww, hh); ctx.fillStyle = "#4a6a9a"; ctx.fillRect(x + k, y + hh / 2 - k / 2, ww - 2 * k, k);
-        ctx.fillStyle = "#ffd34d"; ctx.fillRect(x + k, y + hh / 2 - k / 2, (ww - 2 * k) * q, k);
-        ctx.font = `${Math.round(5 * k)}px sans-serif`; ctx.textBaseline = "middle"; ctx.fillText("✈️", x + k + (ww - 8 * k) * q, y + hh / 2);
+        ctx.fillStyle = "#2a2f3e"; ctx.fillRect(x, y, ww, hh); ctx.fillStyle = "#ffd34d"; ctx.fillRect(x, y + hh / 2 - k / 2, ww * q, k);
+        // ✈️ above the cabin the plane itself crosses the screen slowly, as far along as the flight is
+        const bob = Math.sin(S.t * 1.3) * 2 * k, len = 64 * k, px2 = -len + (w.W + len) * q, py = (this.top || w.floor - 34 * k) - 36 * k + bob;
+        drawPlane(ctx, px2, py, k, S.t);
       } },
     // 🫒 the Mediterranean: olive trees, white houses, a blue sea behind
     med: { tr: "Akdeniz sahili", en: "Mediterranean coast", water: 0.35, props: ["parasol", "beachball", "towel"], animals: ["dolphin", "gull", "goat", "turtle", "fish"],
@@ -513,5 +532,5 @@
       front(ctx, w, dt, S) { const k = Math.max(2, Math.round(w.toyScale)), sx = w.W * 0.65; S.t = (S.t || 0) + dt; ctx.fillStyle = "rgba(255,255,255,.6)"; for (let i = 0; i < 7; i++) ctx.fillRect(Math.round(sx + ((i * 131 + S.t * 18) % (w.W - sx))), Math.round(w.floor - (1 + (i % 2)) * k), 5 * k, k); } },
   };
 
-  window.CatWorldArt = { ANIMALS, BIOMES, drawAnimal, animalThumb, hash };
+  window.CatWorldArt = { ANIMALS, BIOMES, drawAnimal, animalThumb, hash, drawPlane };
 })();

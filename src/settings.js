@@ -11,7 +11,7 @@
       sound: "Ses", purr: "Mırlama", meow: "Miyavlama",
       world: "Dünya", night: "Gece ve gündüz", auto: "Saate göre", day: "Gündüz", nightOn: "Gece",
       weather: "Hava durumu", weatherOn: "Gerçek hava durumuna göre", wxNone: "Hava durumu alınamadı (internet?)", wxOff: "Kapalı: mevsime göre",
-      wxTry: "Bir havayı 1 dakikalığına dene:", wxKind: { clear: "Açık", cloud: "Bulutlu", fog: "Sisli", drizzle: "Çiseliyor", rain: "Yağmurlu", snow: "Karlı", storm: "Fırtınalı" },
+      wxTry: "Bir havayı 1 dakikalığına dene:", skyTry: "Bir gökyüzü olayını şimdi gör:", tut: "Tanıtım", tutGo: "Tanıtımı yeniden oynat", wxKind: { clear: "Açık", cloud: "Bulutlu", fog: "Sisli", drizzle: "Çiseliyor", rain: "Yağmurlu", snow: "Karlı", storm: "Fırtınalı" },
       city: "Şehir yaz…", find: "Bul", auto: "📍 Otomatik", notFound: "Şehir bulunamadı",
       seasons: "Mevsimler (kar, yaprak…)", birds: "Geçen kuşlar", strays: "Gelen sokak kedileri", breed: "Yavrulama",
       lang: "Dil", app: "Uygulama", login: "Bilgisayarla birlikte başlat", hide: "Kedileri gizle", quit: "Çıkış",
@@ -27,7 +27,7 @@
       sound: "Sound", purr: "Purring", meow: "Meowing",
       world: "World", night: "Day & night", auto: "Follow the clock", day: "Day", nightOn: "Night",
       weather: "Weather", weatherOn: "Follow the real weather", wxNone: "Couldn't get the weather (offline?)", wxOff: "Off: following the seasons",
-      wxTry: "Try a weather for a minute:", wxKind: { clear: "Clear", cloud: "Cloudy", fog: "Foggy", drizzle: "Drizzle", rain: "Rain", snow: "Snow", storm: "Storm" },
+      wxTry: "Try a weather for a minute:", skyTry: "See a sky event now:", tut: "Tutorial", tutGo: "Play the tutorial again", wxKind: { clear: "Clear", cloud: "Cloudy", fog: "Foggy", drizzle: "Drizzle", rain: "Rain", snow: "Snow", storm: "Storm" },
       city: "Type a city…", find: "Find", auto: "📍 Auto", notFound: "City not found",
       seasons: "Seasons (snow, leaves…)", birds: "Birds flying past", strays: "Stray cats visiting", breed: "Kittens",
       lang: "Language", app: "App", login: "Start with my computer", hide: "Hide the cats", quit: "Quit",
@@ -72,8 +72,10 @@
           </section>
           ${o.weather ? `<section><h3>🌦️ ${esc(s.weather)}</h3>${sw("weather", s.weatherOn)}<p class="st-wx"></p>
             <form class="st-city"><input type="text" placeholder="${esc(s.city)}" maxlength="60"><button type="submit" class="st-b">${esc(s.find)}</button><button type="button" class="st-b ghost" data-a="wxAuto">${esc(s.auto)}</button></form>
-            <p class="st-sub">${esc(s.wxTry)}</p><div class="st-wxtry">${["clear", "cloud", "fog", "drizzle", "rain", "snow", "storm"].map((k) => `<button type="button" data-wx="${k}" title="${esc(s.wxKind[k])}">${o.weather.icon(k)}</button>`).join("")}</div></section>` : ""}
+            <p class="st-sub">${esc(s.wxTry)}</p><div class="st-wxtry">${["clear", "cloud", "fog", "drizzle", "rain", "snow", "storm"].map((k) => `<button type="button" data-wx="${k}" title="${esc(s.wxKind[k])}">${o.weather.icon(k)}</button>`).join("")}</div>
+            ${o.sky ? `<p class="st-sub">${esc(s.skyTry)}</p><div class="st-wxtry">${[["fullmoon", "🌕"], ["ufo", "🛸"], ["meteor", "☄️"], ["rainbow", "🌈"], ["aurora", "🌌"]].map(([k, e]) => `<button type="button" data-sky="${k}">${e}</button>`).join("")}</div>` : ""}</section>` : ""}
           <section><h3>🌐 ${esc(s.lang)}</h3><div class="st-seg" data-seg="lang"><button type="button" data-v="tr">Türkçe</button><button type="button" data-v="en">English</button></div></section>
+          ${o.tutorial ? `<section><h3>🎓 ${esc(s.tut)}</h3><div class="st-grid">${btn("tutorial", "▶ " + s.tutGo, "ghost")}</div></section>` : ""}
           ${bridge ? `<section><h3>💻 ${esc(s.app)}</h3>${sw("login", s.login)}<div class="st-grid">${btn("hide", "🙈 " + s.hide, "ghost")}${btn("quit", "⏻ " + s.quit, "ghost")}</div></section>` : ""}
         </div>`;
       sync();
@@ -119,10 +121,12 @@
     root.addEventListener("click", (e) => {
       const sg = e.target.closest("[data-seg] button");
       if (sg) { const k = sg.parentElement.dataset.seg; if (k === "night") act.night(sg.dataset.v); else act.lang(sg.dataset.v); return sync(); }
+      const sk = e.target.closest("[data-sky]"); if (sk && o.sky) { o.sky(sk.dataset.sky); return; }
       const wx = e.target.closest("[data-wx]"); if (wx && o.weather.preview) { o.weather.preview(wx.dataset.wx); root.querySelectorAll("[data-wx]").forEach((x) => x.classList.toggle("on", x === wx)); return; }
       const b = e.target.closest("[data-a]"); if (!b) return;
       const a = b.dataset.a;
       if (a === "close") return close();
+      if (a === "tutorial") { if (window.CatHub.now) window.CatHub.now.close(); else close(); return o.tutorial(); }
       if (a === "wxAuto") { wxMsg = ""; o.weather.auto().then(sync); return; }
       if (a === "removeAll") { if (sure) { sure = 0; act.removeAll(); } else { sure = 1; setTimeout(() => { sure = 0; sync(); }, 3000); } return sync(); }
       if (a === "games" || a === "cards" || a === "market" || a === "adopt") close();

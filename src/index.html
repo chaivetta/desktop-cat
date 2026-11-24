@@ -45,6 +45,8 @@
 <script src="world.js"></script>
 <script src="pass.js"></script>
 <script src="cards.js"></script>
+<script src="sky-events.js"></script>
+<script src="tutorial.js"></script>
 <script src="hub.js"></script>
 <script src="welcome.js"></script>
 <script>
@@ -79,6 +81,8 @@
 
   // saved cats are full profiles; an older save (just a list of coats) is brought over as grown-up cats
   let saved = read(KEY);
+  // no save in the browser storage (a new computer, or Steam Cloud brought one over): use the save file
+  if (!saved && bridge && bridge.loadSave) { try { const s = bridge.loadSave(); if (s) { saved = JSON.parse(s); localStorage.setItem(KEY, s); } } catch {} }
   if (!saved) {
     const old = read(OLD_KEY) || { cats: ["ginger"], scale: 3 };
     saved = { cats: L.migrate(old.cats || []), scale: old.scale || 3, toyScale: old.toyScale || old.scale || 3 };
@@ -120,11 +124,12 @@
   let world, cardPos = saved.cardPos || null, weatherOn = saved.weatherOn ?? true, weatherLoc = saved.weatherLoc || null, weatherCache = saved.weatherCache || null;
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
+      const json = JSON.stringify({ cats: world.cats.filter((c) => c.profile).map((c) => c.profile), scale: world.scale, toyScale: world.toyScale,
         lang: L.lang, cardSize: card ? card.size : saved.cardSize, cardPos, purrOn: world.purrOn, meowOn: world.meowOn, nightMode: world.nightMode,
         tasksOn: L.tasksOn, breedOn: L.breedOn, wallet: L.wallet, game: L.game, birdsOn: world.birdsOn, strayOn: world.strayOn, pantry: L.pantry, econ: L.econ, luck: L.luck, weatherOn, weatherLoc, weatherCache, toys: L.toys, toyCond: L.toyCond, seeds: L.seeds, guests: L.guests, prog: L.prog, extra: L.extra, seen: Date.now(),
         bowl: (() => { const B = world.park ? world.park.stash.bowl : world.bowl; return B ? { out: true, x: +(B.x / world.W).toFixed(4), food: +B.food.toFixed(3), kind: B.foodKind } : { out: false, food: bowlFood }; })(),
-        home: { items: L.home.items.map((it) => { const f = (world.park ? world.park.stash.furniture : world.furniture).find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn }));
+        home: { items: L.home.items.map((it) => { const f = (world.park ? world.park.stash.furniture : world.furniture).find((f) => f.item === it); return { ...it, cond: +it.cond.toFixed(2), x: f ? +(f.x / world.W).toFixed(4) : null }; }) }, since: L.since, togetherDone: L.togetherDone, lastDay: dayKey, seasonsOn: world.seasonsOn });
+      localStorage.setItem(KEY, json); if (bridge && bridge.writeSave) bridge.writeSave(json);
     } catch {}
   };
   let saveT = 0; L.onChange = () => { clearTimeout(saveT); saveT = setTimeout(save, 400); card && card.refresh(); };
@@ -421,6 +426,10 @@
   var pass = window.CatPass.now = window.CatPass.create({ world, save: () => save(), toast: (m) => toast(m), onClose: () => { overUI = false; syncIgnore(); } });
   // 🃏 cat cards
   var cards = window.CatCards.now = window.CatCards.create({ world, save: () => save(), toast: (m) => toast(m), onOpen: () => { overUI = true; syncIgnore(); }, onClose: () => { overUI = false; syncIgnore(); } });
+  // 🌌 sky events: full moon, UFO, meteors, rainbow, northern lights
+  window.CatSky.now = window.CatSky.create({ world, save: () => save(), toast: (m) => toast(m) });
+  // 🎓 the first-run guide
+  window.CatTutorial.now = window.CatTutorial.create({ world, save: () => save(), toast: (m) => toast(m) });
   // 🌍 the world map, the cities and their markets
   var worldP = window.CatWorld.now = window.CatWorld.create({ world, save: () => save(), toast: (m) => toast(m), placeItem: (it) => market.opts.placeItem(it), onOpen: () => { overUI = true; syncIgnore(); }, onClose: () => { overUI = false; syncIgnore(); } });
   window.CatHub.now = window.CatHub.create({ panels: () => ({ market, inventory, world: worldP, pass, cards, games, park: extras, events: extras, progress, settings }), badge: () => ({ pass: pass.readyCount(), cards: cards.packs() }) });
@@ -434,6 +443,8 @@
   });
   weather.refresh();
   var settings = window.CatSettings.create({
+    sky: (k) => window.CatSky.now && window.CatSky.now.trigger(k),
+    tutorial: () => window.CatTutorial.now && setTimeout(() => window.CatTutorial.now.start(), 300),
     world, act, bridge, card: () => card,
     weather: {
       isOn: () => weatherOn, now: () => weather.now, icon: (k) => weather.ICON[k] || "",
