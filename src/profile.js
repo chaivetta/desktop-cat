@@ -185,7 +185,7 @@
   // Turkish genitive: Pamuk'un, Toffee'nin, Duman'ın
   const nin = (n) => { const v = (String(n).toLocaleLowerCase("tr").match(/[aeıioöuü]/g) || ["e"]).pop();
     return `${n}'${/[aeıioöuüAEIİOÖUÜ]$/.test(n) ? "n" : ""}${{ a: "ın", ı: "ın", e: "in", i: "in", o: "un", u: "un", ö: "ün", ü: "ün" }[v]}`; };
-  const STR = {
+  const STR = window.CatLifeSTR = {
     tr: {
       love: "Sevgi", growth: "Büyüme", traits: "Karakteri", fav: "En sevdiği", diary: "Günlük", paneCat: "Durum", tasks: "Görevler", tasksToday: "Bugünün görevleri", newTasks: "Yeni görevler gece yarısı",
       allDone: "Hepsi bitti! Yarın yenileri gelecek 🌙", stars: (n) => `⭐ ${n} yıldız`, streak: (n) => `🔥 ${n} gün üst üste`, friend: "Yakın arkadaşı",
@@ -212,6 +212,7 @@
         pumpkin: ["Balkabağı evi", "İçine saklanıp uyurlar 🎃"], bathtub: ["Küvet", "Su yok, sadece köpük; içinde uyumaya bayılırlar"], tower: ["Dev kedi kulesi", "Üç katlı; en tepeye çıkıp ortalığı izlerler"],
         pillow: ["Yer yastığı", "Küçük, yumuşak bir uyku köşesi"], drum: ["Oyuncak davul", "Pati pati vururlar"], arcade: ["Atari makinesi", "Ekranda oyun döner, kediler büyülenmiş izler"],
         globe: ["Dünya küresi", "Oturup uzun uzun bakarlar"], monstera: ["Deve tabanı", "Kocaman yapraklı süs bitkisi"],
+        towel: ["Plaj havlusu", "Güneşlenmek için"], towel2: ["Plaj havlusu", "Güneşlenmek için"],
         pot: ["Saksı", "Masaüstüne koy, sağ tıkla: tohum ek, sula, hasat et 🌱"],
         wheel: ["Koşu tekerleği", "İçinde koşturup enerji atarlar"], castle: ["Karton şato", "İçinde gizlice uyurlar, tepesine çıkarlar"], teepee: ["Çadır", "Saklanıp uyuyacak gizli bir köşe"],
         beanbag: ["Armut koltuk", "Yumuşacık, içine gömülüp uyurlar"], scratcher: ["Karton tırmalama yatağı", "Hem tırmalar hem üstünde uyurlar"], rocker: ["Sallanan sandalye", "Minderinde uyumaya bayılırlar"],
@@ -282,6 +283,7 @@
         pumpkin: ["Pumpkin house", "They hide and nap inside 🎃"], bathtub: ["Bathtub", "No water, just bubbles; they love napping in it"], tower: ["Giant cat tower", "Three levels; they climb to the top and keep watch"],
         pillow: ["Floor pillow", "A small, soft napping spot"], drum: ["Toy drum", "They bat at it, pat pat"], arcade: ["Arcade machine", "A game plays on the screen; the cats watch, spellbound"],
         globe: ["Globe", "They sit and stare at it for ages"], monstera: ["Monstera", "A big-leafed house plant"],
+        towel: ["Beach towel", "For sunbathing"], towel2: ["Beach towel", "For sunbathing"],
         pot: ["Garden pot", "Put it on your desktop and right-click it: plant, water, harvest 🌱"],
         wheel: ["Cat wheel", "They run and run inside it"], castle: ["Cardboard castle", "They nap hidden inside and climb on top"], teepee: ["Teepee", "A secret corner to hide and nap"],
         beanbag: ["Beanbag", "Squishy; they sink in and sleep"], scratcher: ["Cardboard lounger", "For scratching and napping on"], rocker: ["Rocking chair", "They love napping on its cushion"],
@@ -359,7 +361,7 @@
       else if (FOOD[k]) { out.n = FOOD[k].n; L.pantry[k] = (L.pantry[k] || 0) + out.n; }
       else if (k === "star") { out.n = 1; L.wallet.stars += 1; }
       else if (k === "furniture") {
-        const kinds = Object.keys(window.DesktopCat.FURN).filter((k) => !window.DesktopCat.FURN[k].event), f = kinds[Math.floor(Math.random() * kinds.length)];      // never a festival-only piece
+        const kinds = Object.keys(window.DesktopCat.FURN).filter((k) => !window.DesktopCat.FURN[k].event && !window.DesktopCat.FURN[k].city), f = kinds[Math.floor(Math.random() * kinds.length)];      // never a festival-only piece
         out.item = { id: Math.random().toString(36).slice(2, 9), k: f, cond: 100, x: null }; L.home.items.push(out.item);
       } else if (k === "cloth") {
         const locked = []; for (const kind of Object.keys(PRICES)) for (const d of Object.keys(PRICES[kind])) if (L.price(kind, d)) locked.push([kind, d]);

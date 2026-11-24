@@ -31,7 +31,7 @@
         k1: ["Tamirci", "Tamir -%15 / kademe ucuz"], k2: ["Sağlam yapı", "Eşya ve oyuncaklar -%12 / kademe yavaş eskir"], k3: ["Hurdacı", "Satış fiyatı +%20 / kademe"], k4: ["Altın parmak", "Bilgisayar başında altın 2 dk / kademe daha sık gelir"],
       },
       you: "Sen", tapNode: "Bir dala dokun: ne işe yaradığını ve öğrenip öğrenemeyeceğini gör. Bir dalda puan harcadıkça alttakiler açılır.", learn: "Öğren", locked: (n) => `🔒 Bu dalda ${n} puan harca`, full: "Tamam", noPts: "Puan yok",
-      pages: { birds: "🐦 Kuşlar", critters: "🐿️ Ziyaretçiler", coats: "🐱 Kedi cinsleri", furn: "🛋️ Eşyalar" }, critN: { squirrel: "Sincap", hedgehog: "Kirpi", butterflies: "Kelebekler", fox: "Tilki", bats: "Yarasalar", fireflies: "Ateş böcekleri", mooncat: "Ay Kedisi" },
+      pages: { birds: "🐦 Kuşlar", critters: "🐿️ Ziyaretçiler", animals: "🦒 Dünyanın hayvanları", cities: "🛂 Pasaport damgaları", coats: "🐱 Kedi cinsleri", furn: "🛋️ Eşyalar" }, critN: { squirrel: "Sincap", hedgehog: "Kirpi", butterflies: "Kelebekler", fox: "Tilki", bats: "Yarasalar", fireflies: "Ateş böcekleri", mooncat: "Ay Kedisi" },
       birdN: { sparrow: "Serçe", pigeon: "Güvercin", bluebird: "Mavi kuş", robin: "Kızılgerdan", canary: "Kanarya", cardinal: "Kardinal", crow: "Karga", magpie: "Saksağan", parrot: "Papağan", owl: "Baykuş", swallow: "Kırlangıç", stork: "Leylek", duck: "Yaban ördeği", goose: "Yaban kazı" },
       claim: (r) => `🎁 Ödülü al: ${r}`, claimed: "✓ Ödül alındı", reward: (st, c) => `⭐${st} + ${c}🪙`, albumHint: "Bir sayfayı tamamlayınca ödülünü alırsın. Nadir kuşlar: papağan, gece de baykuş.",
       newEntry: (n) => `📖 Albüme eklendi: ${n}`,
@@ -54,7 +54,7 @@
         k1: ["Handy", "Repairs 15% cheaper per rank"], k2: ["Built to last", "Things and toys wear 12% slower per rank"], k3: ["Haggler", "Sell for 20% more per rank"], k4: ["Golden touch", "Computer-time coins come 2 minutes sooner per rank"],
       },
       you: "You", tapNode: "Tap a node to see what it does and whether you can learn it. Spending points in a branch opens the ones below.", learn: "Learn", locked: (n) => `🔒 Spend ${n} points in this branch`, full: "Maxed", noPts: "No points",
-      pages: { birds: "🐦 Birds", critters: "🐿️ Visitors", coats: "🐱 Cat coats", furn: "🛋️ Furniture" }, critN: { squirrel: "Squirrel", hedgehog: "Hedgehog", butterflies: "Butterflies", fox: "Fox", bats: "Bats", fireflies: "Fireflies", mooncat: "Moon Cat" },
+      pages: { birds: "🐦 Birds", critters: "🐿️ Visitors", animals: "🦒 Animals of the world", cities: "🛂 Passport stamps", coats: "🐱 Cat coats", furn: "🛋️ Furniture" }, critN: { squirrel: "Squirrel", hedgehog: "Hedgehog", butterflies: "Butterflies", fox: "Fox", bats: "Bats", fireflies: "Fireflies", mooncat: "Moon Cat" },
       birdN: { sparrow: "Sparrow", pigeon: "Pigeon", bluebird: "Bluebird", robin: "Robin", canary: "Canary", cardinal: "Cardinal", crow: "Crow", magpie: "Magpie", parrot: "Parrot", owl: "Owl", swallow: "Swallow", stork: "Stork", duck: "Mallard", goose: "Wild goose" },
       claim: (r) => `🎁 Claim: ${r}`, claimed: "✓ Claimed", reward: (st, c) => `⭐${st} + ${c}🪙`, albumHint: "Finish a page to claim its reward. Rare birds: the parrot, and the owl at night.",
       newEntry: (n) => `📖 New in the album: ${n}`,
@@ -64,7 +64,7 @@
       achClaim: (r) => `Claim: ${r}`, achDone: "✓", achNew: (n) => `🏆 Achievement done: ${n}`,
     },
   };
-  const PAGE_REWARD = { birds: [3, 150], critters: [1, 60], coats: [2, 100], furn: [5, 500] };
+  const PAGE_REWARD = { birds: [3, 150], critters: [1, 60], coats: [2, 100], furn: [5, 500], animals: [8, 400], cities: [12, 800] };
   // 🏆 achievements: [id, emoji, how far (from your state), goal, reward [coins, stars]]
   const own = (w) => w.cats.filter((c) => c.profile && !c.profile.guest);
   const ACH = [
@@ -116,8 +116,10 @@
     const t = () => STR[L.lang] || STR.en;
     const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
     const spentIn = (b) => SKILLS[b].reduce((a, k) => a + L.sk(k.id), 0);
-    const pageList = (pg) => (pg === "birds" ? BIRD_IDS : pg === "critters" ? CRITTERS : pg === "coats" ? DC.COAT_KEYS : Object.keys(DC.FURN));
-    const pageName = (pg, id) => (pg === "birds" ? t().birdN[id] : pg === "critters" ? t().critN[id] : pg === "coats" ? L.COAT_NAMES[id][L.lang] : (L.t("furn")[id] || [id])[0]);
+    const pageList = (pg) => (pg === "birds" ? BIRD_IDS : pg === "critters" ? CRITTERS : pg === "coats" ? DC.COAT_KEYS : pg === "animals" ? Object.keys(window.CatWorldArt.ANIMALS)
+      : pg === "cities" ? window.CatWorldData.CITIES.map((c) => c.id) : Object.keys(DC.FURN).filter((k) => !DC.FURN[k].city && DC.FURN[k].event !== "_park"));
+    const pageName = (pg, id) => (pg === "birds" ? t().birdN[id] : pg === "critters" ? t().critN[id] : pg === "coats" ? L.COAT_NAMES[id][L.lang] : pg === "animals" ? window.CatWorldArt.ANIMALS[id][L.lang]
+      : pg === "cities" ? `${window.CatWorldData.byId[id].name[L.lang]} · ${window.CatWorldData.byId[id].country[L.lang]}` : (L.t("furn")[id] || [id])[0]);
 
     function render() {
       const P = L.prog, s = t(), k = [L.lang, tab, tab === "ach" ? ACH.map((a) => Math.min(a[3], a[2](world))).join() : "", P.xp | 0, P.lvl, P.pts, JSON.stringify(P.skills), JSON.stringify(P.album), JSON.stringify(P.claimed), L.wallet.coins, L.wallet.stars].join("|");
@@ -154,12 +156,12 @@
           return `<div class="pg-a${done ? " done" : ""}${got ? " got" : ""}"><span class="pg-ic">${e}</span><div><b>${esc(s.ach[id])}</b><span class="pg-track"><i style="width:${(v / goal) * 100}%"></i></span><small>${v} / ${goal}</small></div>${got ? `<span class="pg-full">${s.achDone}</span>` : `<button type="button" data-ach="${id}"${done ? "" : " disabled"}>${esc(s.achClaim(rw))}</button>`}</div>`;
         }).join("")}</div>`;
       } else {
-        body = `<p class="mk-note">${esc(s.albumHint)}</p>` + ["birds", "critters", "coats", "furn"].map((pg) => {
+        body = `<p class="mk-note">${esc(s.albumHint)}</p>` + ["birds", "critters", "animals", "cities", "coats", "furn"].map((pg) => {
           const all = pageList(pg), have = P.album[pg] || [], n = all.filter((x) => have.includes(x)).length, done = n >= all.length, [st, c] = PAGE_REWARD[pg];
           const foot = P.claimed[pg] ? `<p class="pg-claimed">${esc(s.claimed)}</p>` : `<button type="button" class="mk-wide" data-claim="${pg}"${done ? "" : " disabled"}>${esc(s.claim(s.reward(st, c)))}</button>`;
           return `<h4 class="mk-h">${esc(s.pages[pg])} <small>${n} / ${all.length}</small></h4><div class="pg-album">${all.map((id) => {
             const got = have.includes(id);
-            return `<div class="pg-ent${got ? "" : " no"}" title="${got ? esc(pageName(pg, id)) : "?"}">${pg === "furn" ? `<canvas width="48" height="36" data-f="${id}"></canvas>` : `<canvas width="40" height="36" data-${pg === "birds" ? "b" : pg === "critters" ? "v" : "c"}="${id}"></canvas>`}${got ? "" : "<i>?</i>"}</div>`;
+            return `<div class="pg-ent${got ? "" : " no"}" title="${got ? esc(pageName(pg, id)) : "?"}">${pg === "furn" ? `<canvas width="48" height="36" data-f="${id}"></canvas>` : pg === "cities" ? `<span class="pg-flag" style="--f:${window.CatWorldData.byId[id].flag.map((c, i, a) => `${c} ${(i / a.length) * 100}% ${((i + 1) / a.length) * 100}%`).join(",")}"></span>` : `<canvas width="${pg === "animals" ? 48 : 40}" height="${pg === "animals" ? 40 : 36}" data-${pg === "birds" ? "b" : pg === "critters" ? "v" : pg === "animals" ? "an" : "c"}="${id}"></canvas>`}${got ? "" : "<i>?</i>"}</div>`;
           }).join("")}</div>${foot}`;
         }).join("");
       }
@@ -187,6 +189,7 @@
       root.querySelectorAll("canvas[data-c]").forEach((cv) => { DC.portrait(cv.getContext("2d"), cv.dataset.c, { scale: 0.75, dx: 1, dy: 2 }); });
       root.querySelectorAll("canvas[data-v]").forEach((cv) => { if (DC.critterThumb) DC.critterThumb(cv.getContext("2d"), cv.dataset.v); });
       root.querySelectorAll("canvas[data-b]").forEach((cv) => { if (DC.birdThumb) DC.birdThumb(cv.getContext("2d"), cv.dataset.b, cv.width, cv.height); });
+      root.querySelectorAll("canvas[data-an]").forEach((cv) => { cv.getContext("2d").drawImage(window.CatWorldArt.animalThumb(cv.dataset.an), 0, 0); });
     }
     root.addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return;

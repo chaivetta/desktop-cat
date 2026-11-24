@@ -1212,6 +1212,7 @@
       }
       const F = (k) => { const l = w.furniture.filter((f) => f.kind === k && f.usable); return l.length ? l[Math.floor(Math.random() * l.length)] : null; };
       if (w.landedBird()) wt.bird = 7;
+      if (w.park && w.parkWater && w.parkWater()) { wt.swim = 1.8; wt.sideLie = (wt.sideLie || 0) * 2.5 + 0.8; wt.sleep *= 0.6; }
       // 🫂 someone's asleep: go and snuggle up (friends especially; family always welcome)
       const mate = this.profile && !this.perch && w.cats.find((o) => o !== this && o.profile && o.state === "sleep" && !o.cuddleLead && !o.cuddler && !o.perch && !o.hidden && !o.jobOff && !o.parkAway
         && (!o.cushion || (!o.cushion.f.hide && o.cushion.f.w >= 26)) && (!o.bed || true));
@@ -1254,6 +1255,7 @@
         w.burst((this.x + foe.x) / 2, this.y - 30 * this.s, "spark", "#f7e48c", 1);
       }
       else if (n === "roll") this.set("roll", rnd(3, 5));
+      else if (n === "swim") { this.inWater = false; this.set("swim", rnd(12, 26)); }
       else if (n === "snowSwat") { this.facing = Math.random() < 0.5 ? -1 : 1; this.set("snowSwat", rnd(1.6, 2.8)); if (Math.random() < 0.3) w.meow(this); }
       else if (n === "pal") {
         const m = this.palMate, lv = this.palLv, acts = { groom: 1.4, sit: 1.2, ...(lv >= 2 ? { bonk: 1.2, race: 0.8 } : {}), ...(lv >= 3 ? { loaf: 1 } : {}) }, act = pick(acts);
@@ -1394,6 +1396,17 @@
           this.facing = Math.sign(dx); this.x += this.facing * 34 * s * dt; this.phase = (this.phase + dt * 1.4) % 1;
           this.tryBoop();
           if (this.stateT > this.dur) this.think();
+          break;
+        }
+        case "swim": {                                     // 🏊 into the sea, paddle about, come back out and shake it all off
+          const sea = w.parkWater && w.parkWater(); if (!sea) { this.inWater = false; this.think(); break; }
+          const edge = sea.x0 + 16 * s; this.phase = (this.phase + dt * (this.inWater ? 0.8 : 1.4)) % 1;
+          if (this.stateT < this.dur) {
+            if (this.x < edge) { this.facing = 1; this.x += 34 * s * dt; this.inWater = false; }
+            else { if (!this.inWater) { this.inWater = true; w.burst(this.x, floor - 8 * s, "spark", "#bfe6ff", 8); } this.x += this.facing * 13 * s * dt; if (this.x > w.W - 26 * s) this.facing = -1; else if (this.x < edge + 4 * s && this.facing < 0 && Math.random() < dt) this.facing = 1; else if (Math.random() < dt * 0.15) this.facing *= -1;
+              if (Math.random() < dt * 2.5) w.burst(this.x - this.facing * 10 * s, floor - 9 * s, "spark", "#e8f6ff", 1); }
+          } else if (this.x > sea.x0 - 10 * s) { this.facing = -1; this.x -= (this.inWater ? 18 : 34) * s * dt; if (this.x < edge) this.inWater = false; }
+          else { this.inWater = false; this.set("shake", rnd(1.6, 2)); w.burst(this.x, this.y - 16 * s, "spark", "#bfe6ff", 10); }
           break;
         }
         case "zoom": {
@@ -1872,6 +1885,7 @@
     pose() {
       switch (this.state) {
         case "walk": return "walk";
+        case "swim": return "walk";
         case "chase": return ["pal", "cuddle", "bowl", "box", "bed", "post", "shelf", "rug", "plant", "cushion", "fish", "you", "drink", "litter", "spot"].includes(this.goal) ? "walk" : "run";
         case "prep": return "crouch";
         case "stalk": return "crouch";
@@ -1905,13 +1919,15 @@
       this.ctx.putImageData(this.img, 0, 0);
       const s = this.s, w = this.world, inbox = this.state === "inbox";
       const ground = this.perch ? this.perch.top : w.floor, lift = Math.max(0, ground - this.y);
-      if (!inbox && !this.bed) {
+      if (this.state === "swim" && this.inWater) { ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = Math.max(1, s * 0.8); const r = (this.t * 9) % (12 * s); ctx.beginPath(); ctx.ellipse(this.x, w.floor - 3 * s, 10 * s + r, 2 * s + r / 5, 0, 0, Math.PI * 2); ctx.globalAlpha = 1 - r / (12 * s); ctx.stroke(); ctx.globalAlpha = 0.9; ctx.fillStyle = "#e8f6ff"; ctx.fillRect(this.x - 12 * s, w.floor - 3.5 * s, 24 * s, s); ctx.restore(); }
+      else if (!inbox && !this.bed) {
         ctx.save(); ctx.globalAlpha = Math.max(0.08, 0.28 - lift / 900); ctx.fillStyle = "#000";
         ctx.beginPath(); ctx.ellipse(this.x, ground + s, 13 * s * (1 - Math.min(lift, 300) / 600), 2.2 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       }
       ctx.save();
       ctx.imageSmoothingEnabled = false;
-      const dy = inbox ? Math.round((4 + this.peek * 14) * s) : 0;
+      const swim = this.state === "swim" && this.inWater, dy = inbox ? Math.round((4 + this.peek * 14) * s) : swim ? Math.round((10 + Math.sin(this.t * 3)) * s) : 0;
+      if (swim) { ctx.beginPath(); ctx.rect(0, 0, w.W, w.floor - 3 * s); ctx.clip(); }
       if (inbox) { const rim = this.box ? this.box.y - 15 * w.toyScale : this.y - 6 * s; ctx.beginPath(); ctx.rect(0, 0, w.W, rim); ctx.clip(); }
       const kx = this.P.kx || 1, ky = this.P.ky || 1;
       ctx.translate(Math.round(this.x), Math.round(this.y - GROUND * s * ky + dy));
@@ -2545,6 +2561,9 @@
     feeder:  { w: 22, h: 30, price: 400, role: "decor", durable: true },
     // a garden pot: put it anywhere, plant a seed in it, water it, harvest (garden.js)
     pot:     { w: 16, h: 11, price: 40, durable: true, garden: true },
+    // only at the park (never sold): beach towels to sunbathe on
+    towel:   { w: 34, h: 3, price: 0, nap: 1, event: "_park" },
+    towel2:  { w: 34, h: 3, price: 0, nap: 1, event: "_park" },
     // festival things: only sold while their festival is on (see extras.js)
     snowman: { w: 26, h: 38, price: 90, durable: true, event: "winter" },
     giftbox: { w: 24, h: 22, price: 70, nap: 0, hide: true, event: "winter" },
@@ -2619,6 +2638,7 @@
       R.rect(2, 26, 16, 10, 1); R.rect(1, 25, 18, 2, 1);
       R.ellipse(10, 19, 6, 6.5, 2); R.circle(10, 9, 4.6, 2); R.tri(6, 7, 8, 6, 6.5, 2, 2); R.tri(12, 6, 14, 7, 13.5, 2, 2); R.limb(15, 22, 18, 12, 1.4, 2); R.put(9, 9, 3); R.put(11, 9, 3);
     }
+    else if (kind === "towel" || kind === "towel2") { R.rect(0, 0, 34, 3, 1); for (let x = 0; x < 34; x += 6) R.rect(x, 0, 3, 3, 2); R.rect(0, 0, 34, 1, 3); }
     else if (kind === "pot") { R.rect(1, 0, 14, 3, 1); R.rect(2, 3, 12, 8, 2); R.rect(2, 6, 12, 1, 1); R.rect(3, 0, 10, 2, 3); }
     else if (kind === "snowman") {
       R.circle(13, 29, 9, 1); R.circle(13, 15, 7, 1); R.circle(13, 15, 7, 1); R.rect(6, 4, 14, 2, 2); R.rect(9, -2, 8, 6, 2);
@@ -2740,6 +2760,7 @@
     bed: { 1: { c: [92, 156, 214], lit: true }, 2: { c: [244, 226, 200] }, 3: { c: [255, 240, 222] } },
     house: { 1: { c: [214, 86, 86], lit: true }, 2: { c: [184, 64, 70] }, 3: { c: [222, 176, 120], lit: true }, 4: { c: [196, 148, 96] }, 5: { c: [58, 40, 34] }, 6: { c: [255, 210, 120] } },
     tree: { 1: { c: [218, 200, 176], lit: true }, 2: { c: [196, 166, 116] }, 3: { c: [166, 136, 92] }, 4: { c: [90, 70, 60] }, 5: { c: [255, 120, 160], lit: true } },
+    towel: { 1: { c: [255, 120, 150], lit: true }, 2: { c: [255, 255, 255], lit: true }, 3: { c: [255, 170, 190] } }, towel2: { 1: { c: [80, 170, 240], lit: true }, 2: { c: [255, 230, 90], lit: true }, 3: { c: [130, 200, 250] } },
     pot: { 1: { c: [214, 120, 80], lit: true }, 2: { c: [190, 100, 66], lit: true }, 3: { c: [96, 66, 46] } },
     snowman: { 1: { c: [250, 252, 255], lit: true }, 2: { c: [50, 50, 60] }, 3: { c: [30, 30, 40] }, 4: { c: [240, 140, 60] }, 5: { c: [220, 60, 70] } },
     giftbox: { 1: { c: [220, 60, 80], lit: true }, 2: { c: [240, 90, 110], lit: true }, 3: { c: [255, 214, 80], lit: true }, 4: { c: [255, 214, 80] } },
@@ -2777,9 +2798,34 @@
     clock: [70, 44, 26], tv: [30, 30, 36], lamp: [100, 80, 60], radio: [110, 50, 40], statue: [120, 90, 30], tunnel: [110, 60, 30], fountain: [60, 90, 120], litter: [50, 90, 70], house: [92, 52, 40], tree: [96, 74, 52], aquarium: [44, 52, 70],
     wheel: [70, 56, 46], castle: [110, 84, 60], teepee: [110, 80, 60], beanbag: [150, 90, 30], scratcher: [110, 80, 50], rocker: [90, 56, 34], fireplace: [80, 50, 36], window: [110, 86, 60],
     lavalamp: [80, 80, 90], xmastree: [30, 80, 40], cactus: [50, 90, 50], feeder: [90, 100, 110],
-    pot: [110, 54, 32], snowman: [120, 140, 170], giftbox: [110, 30, 40], candycane: [140, 40, 50], tulips: [90, 70, 50], birdhouse: [80, 56, 40], parasol: [120, 70, 70], beachball: [110, 70, 70], ghost: [120, 120, 150], cauldron: [20, 20, 26],
+    towel: [150, 60, 80], towel2: [40, 90, 140], pot: [110, 54, 32], snowman: [120, 140, 170], giftbox: [110, 30, 40], candycane: [140, 40, 50], tulips: [90, 70, 50], birdhouse: [80, 56, 40], parasol: [120, 70, 70], beachball: [110, 70, 70], ghost: [120, 120, 150], cauldron: [20, 20, 26],
     pumpkin: [120, 60, 20], bathtub: [110, 120, 140], tower: [90, 64, 44], pillow: [150, 80, 100], drum: [100, 40, 40], arcade: [40, 30, 80], globe: [80, 60, 40], monstera: [40, 70, 40] };
+  // an emoji drawn small and then blown up with hard edges: instant pixel art (with a soft dark outline like everything else)
+  const EPIX = new Map();
+  function emojiPix(e, size = 16, opt = {}) {
+    const key = e + size + (opt.outline === false ? "n" : ""); if (EPIX.has(key)) return EPIX.get(key);
+    const c = document.createElement("canvas"); c.width = size + 2; c.height = size + 2; const g = c.getContext("2d");
+    g.font = `${size - 1}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(e, (size + 2) / 2, (size + 2) / 2 + 1);
+    try {
+      const d = g.getImageData(0, 0, c.width, c.height), a = d.data, W = c.width, H = c.height, solid = new Uint8Array(W * H);
+      for (let i = 0; i < W * H; i++) { solid[i] = a[i * 4 + 3] > 110 ? 1 : 0; a[i * 4 + 3] = solid[i] ? 255 : 0; }
+      if (opt.outline !== false) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (solid[i]) continue;
+        if ((x > 0 && solid[i - 1]) || (x < W - 1 && solid[i + 1]) || (y > 0 && solid[i - W]) || (y < H - 1 && solid[i + W])) { a[i * 4] = 70; a[i * 4 + 1] = 46; a[i * 4 + 2] = 34; a[i * 4 + 3] = 200; } }
+      g.putImageData(d, 0, 0);
+    } catch (err) { /* a tainted canvas: keep the plain emoji */ }
+    EPIX.set(key, c); return c;
+  }
+  // furniture made from an emoji (the souvenirs from around the world)
+  function emojiFurniture(f) {
+    const c = document.createElement("canvas"); c.width = f.w; c.height = f.h; const g = c.getContext("2d"); g.imageSmoothingEnabled = false;
+    if (f.bed) {                                         // a bed: a soft cushion with the souvenir's pattern on it
+      const col = f.col || "#e2a06a"; g.fillStyle = "#5b3a29"; g.fillRect(1, f.h - 7, f.w - 2, 7); g.fillStyle = col; g.fillRect(2, f.h - 6, f.w - 4, 5); g.fillStyle = "rgba(255,255,255,.35)"; g.fillRect(3, f.h - 6, f.w - 6, 1);
+      const e = emojiPix(f.emoji, 10); g.drawImage(e, Math.round(f.w / 2 - 6), f.h - 13);
+    } else { const e = emojiPix(f.emoji, Math.min(f.w, f.h) - 2); g.drawImage(e, Math.round((f.w - e.width) / 2), f.h - e.height); }
+    return c;
+  }
   function furnitureThumb(kind, ctx) {
+    if (FURN[kind] && (FURN[kind].emoji || FURN[kind].draw)) { const f = FURN[kind], img = f.draw ? f.draw() : emojiFurniture(f), W = ctx.canvas.width, H = ctx.canvas.height, k = Math.min((W - 4) / f.w, (H - 4) / f.h); ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round((W - f.w * k) / 2), Math.round(H - f.h * k - 2), f.w * k, f.h * k); return; }
     const f = FURN[kind], sp = new Sprite(f.w, f.h); paintFurniture(kind, sp.R);
     const img = sp.paint(FURN_PAL[kind], FURN_OUTLINE[kind]), W = ctx.canvas.width, H = ctx.canvas.height, k = Math.min((W - 4) / f.w, (H - 4) / f.h);
     ctx.imageSmoothingEnabled = false; ctx.drawImage(img, Math.round((W - f.w * k) / 2), Math.round(H - f.h * k - 2), f.w * k, f.h * k);
@@ -2802,7 +2848,7 @@
       this.world = world; this.kind = kind; this.x = x; this.y = world.floor; this.held = false; this.occupant = null; this.f = FURN[kind];
       this.item = item || { k: kind, cond: 100 };
       if (this.f.durable) this.item.cond = 100;
-      this.sp = new Sprite(this.f.w, this.f.h); this.dirty = true; this.t = 0;
+      this.sp = this.f.emoji || this.f.draw ? null : new Sprite(this.f.w, this.f.h); this.dirty = true; this.t = 0;
       if (this.f.perch) this.platforms = this.f.perch.map(([dx, dy, hw]) => new Platform(this, dx, dy, hw));
       if (kind === "aquarium") this.fish = [{ x: 8, y: 9, d: 1, c: "#ff8a3d" }, { x: 20, y: 13, d: -1, c: "#ffd34d" }];
     }
@@ -2828,7 +2874,7 @@
     }
     render(ctx) {
       const w = this.world, s = w.toyScale, f = this.f;
-      if (this.dirty) { paintFurniture(this.kind, this.sp.R); this.img = this.sp.paint(FURN_PAL[this.kind], FURN_OUTLINE[this.kind]); this.dirty = false; }
+      if (this.dirty) { if (f.draw) this.img = f.draw(); else if (f.emoji) this.img = emojiFurniture(f); else { paintFurniture(this.kind, this.sp.R); this.img = this.sp.paint(FURN_PAL[this.kind], FURN_OUTLINE[this.kind]); } this.dirty = false; }
       const x0 = Math.round(this.x - f.w * s / 2), y0 = Math.round(this.y - f.h * s + (this.kind === "rug" ? 2 * s : 0));
       if (this.kind !== "rug") { ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.ellipse(this.x, w.floor + s, f.w * s * 0.45, 1.8 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
       ctx.save(); ctx.imageSmoothingEnabled = false;
@@ -3055,11 +3101,13 @@
     }
     landedBird() { return this.birds.find((b) => b.state === "peck"); }
     // ---------------- 🌳 the cat park: the home things are put away, a park appears along the floor, strange cats wander about
-    enterPark(ids, nStrangers = 4) {
+    enterPark(ids, nStrangers = 4, where = {}) {
       if (this.park) return;
-      const going = new Set(ids);
-      this.park = { stash: { furniture: this.furniture, platforms: this.shelves.filter((s) => s.isPlatform), bowl: this.bowl }, npcs: [], img: null, socialT: 3 };
+      const going = new Set(ids), A = window.CatWorldArt, B = A && where.biome ? A.BIOMES[where.biome] : null;
+      this.park = { stash: { furniture: this.furniture, platforms: this.shelves.filter((s) => s.isPlatform), bowl: this.bowl }, npcs: [], img: null, socialT: 3, biome: B ? where.biome : null, city: where.city || null, animals: [], animT: 2, S: {} };
       this.furniture = []; this.shelves = this.shelves.filter((s) => !s.isPlatform); this.bowl = null;
+      // the park's own things: beach towels, a parasol and a ball on the beach, an igloo at the pole…
+      if (B && B.props) B.props.forEach((k, i) => { if (FURN[k]) this.placeFurniture(k, this.W * ([0.12, 0.27, 0.36, 0.2][i] ?? 0.3 + i * 0.1) * (B.water ? (1 - B.water) / 0.5 : 1.6), { k, cond: 100, park: true }); });
       this.cats.forEach((c) => { c.cushion = null; c.perch = null; if (c.profile && !going.has(c.profile.id)) c.parkAway = true; else if (c.profile) { c.y = this.floor; c.set("walk", 4, { target: rnd(this.W * 0.15, this.W * 0.85) }); } });
       for (let i = 0; i < nStrangers; i++) { const c = this.addCat(COAT_KEYS[Math.floor(Math.random() * 17)]); c.npc = true; c.x = Math.random() < 0.5 ? -60 : this.W + 60; c.set("walk", 8, { target: rnd(this.W * 0.1, this.W * 0.9) }); this.park.npcs.push(c); }
     }
@@ -3067,8 +3115,8 @@
       const P = this.park; if (!P) return;
       P.npcs.forEach((c) => this.removeCat(c));
       this.furniture = P.stash.furniture; this.shelves.push(...P.stash.platforms); this.bowl = P.stash.bowl;
-      this.cats.forEach((c) => { c.parkAway = false; c.perch = null; c.y = this.floor; if (c.state !== "held") c.set("sit", 1); });
-      this.park = null;
+      this.cats.forEach((c) => { c.parkAway = false; c.perch = null; c.inWater = false; c.y = this.floor; if (c.state !== "held") c.set("sit", 1); });
+      this.park = null; this.snow = []; this.snowDepth = 0;
     }
     // now and then two cats in the park meet: a sniff, a boop, a little play
     parkSocial(dt) {
@@ -3080,8 +3128,18 @@
       a.set("walk", 3, { target: mid - gap }); b.set("walk", 3, { target: mid + gap });
       setTimeout(() => { if (!this.park) return; a.facing = 1; b.facing = -1; const play = Math.random() < 0.35; a.set(play ? "playBow" : "boop", 1.6); b.set(play ? "pronk" : "boop", 1.6); this.burst(mid, this.floor - 34 * a.s, "heart", "#e2557a", 3); if (this.onSocial) this.onSocial(a, b); }, 2600);
     }
-    renderPark(ctx) {
-      const P = this.park, W = this.W, H = this.H, k = Math.max(2, Math.round(this.toyScale)), f = this.floor;
+    // where the sea is in this park (null when there is none)
+    parkWater() { const P = this.park, B = P && P.biome && window.CatWorldArt.BIOMES[P.biome]; return B && B.water ? { x0: this.W * (1 - B.water) } : null; }
+    renderPark(ctx, dt = 0) {
+      const P = this.park, W = this.W, H = this.H, k = Math.max(2, Math.round(this.toyScale)), f = this.floor, B = P.biome && window.CatWorldArt.BIOMES[P.biome];
+      if (B && B.bg) {
+        if (!P.img || P.img.width !== W || P.imgF !== f) { const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); P.img = c; P.imgF = f;
+          const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }; B.bg(g, W, H, f, k, px, P.city); }
+        ctx.drawImage(P.img, 0, 0); if (B.front) B.front(ctx, this, dt, P.S);
+        this.renderParkAnimals(ctx);
+        if (B.snow) this.renderSnow(ctx, dt, k, 0.12);
+        return;
+      }
       if (!P.img || P.img.width !== W || P.imgF !== f) {
         const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); P.img = c; P.imgF = f;
         const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
@@ -3099,6 +3157,65 @@
         px(0, f - 2 * k, W, H - f + 2 * k, "#8fcf6b"); for (let x = 0; x < W; x += 5 * k) px(x + ((x / k) % 3) * k, f - 3 * k, k, 2 * k, "#6fb855");
       }
       ctx.drawImage(P.img, 0, 0);
+      this.renderParkAnimals(ctx);
+    }
+    // ---- the animals of the park's region (and the city's own animal): they walk by, graze, fly over, swim, jump out of the sea
+    updateParkAnimals(dt) {
+      const P = this.park, A = window.CatWorldArt; if (!P || !A) return;
+      const B = (P.biome && A.BIOMES[P.biome]) || A.BIOMES.city, water = this.parkWater();
+      P.animT -= dt;
+      if (P.animT <= 0 && P.animals.length < 6) {
+        P.animT = P.animals.length < 3 ? rnd(1, 4) : rnd(14, 32);
+        const pool = [...B.animals, ...(P.city && P.city.animal ? [P.city.animal, P.city.animal] : [])].filter((id) => { const a = A.ANIMALS[id]; return a && (!a.swim || water) && !(a.beach && !water && id === "crab"); });
+        const id = P.animals.length === 0 && P.city && A.ANIMALS[P.city.animal] && (!A.ANIMALS[P.city.animal].swim || water) ? P.city.animal : pool[Math.floor(Math.random() * pool.length)];
+        if (id) this.addParkAnimal(id);
+      }
+      for (const a of P.animals) {
+        a.t += dt; const k = a.k;
+        if (a.kind === "fly") { a.x += a.dir * a.v * dt; a.y = a.base + Math.sin(a.t * 1.5) * 12; }
+        else if (a.kind === "jump") { a.ph += dt * 0.9; if (a.ph > 1) { a.ph = 0; a.x = water.x0 + rnd(30, this.W - water.x0 - 30); a.dir = Math.random() < 0.5 ? 1 : -1; a.n--; } a.x += a.dir * 40 * dt * (a.ph < 0.6 ? 1 : 0); }
+        else if (a.kind === "drift" || a.kind === "fish") { a.x += a.dir * a.v * dt; if (a.x < water.x0 + 10 || a.x > this.W - 10) a.dir *= -1; }
+        else if (a.kind === "far") { a.x += a.dir * a.v * dt; }
+        else {                                                // walkers: stroll, stop to graze or look about
+          if (a.pause > 0) { a.pause -= dt; a.st = a.graze ? "graze" : "idle"; }
+          else { a.st = "walk"; a.x += a.dir * a.v * dt; if (Math.random() < dt * 0.12) { a.pause = rnd(2, 7); a.graze = Math.random() < 0.6; } }
+          if (water && a.kind === "walk" && a.x > water.x0 - 20 && a.dir > 0 && !A.ANIMALS[a.id].beach) a.dir = -1;
+        }
+        a.life -= dt;
+      }
+      P.animals = P.animals.filter((a) => a.life > 0 && a.x > -200 && a.x < this.W + 200 && !(a.n <= 0));
+    }
+    addParkAnimal(id) {
+      const P = this.park, A = window.CatWorldArt, D = A.ANIMALS[id], water = this.parkWater(), ts = this.toyScale;
+      const Z = { elephant: 2, giraffe: 1.8, rhino: 1.7, hippo: 1.6, moose: 1.7, bison: 1.6, camel: 1.7, horse: 1.6, polarbear: 1.6, bear: 1.5, yak: 1.5, buffalo: 1.6, kouprey: 1.5, aurochs: 1.6, bull: 1.5, cow: 1.5, zebra: 1.5, okapi: 1.4, ostrich: 1.6, emu: 1.5, rhea: 1.4, whale: 2.2, tapir: 1.3, gorilla: 1.5, crocodile: 1.4, lion: 1.5, tiger: 1.5, kangaroo: 1.5, llama: 1.4, reindeer: 1.4, deer: 1.3, takin: 1.4, flamingo: 1.3, stork: 1.2, eagle: 1.2, condor: 1.4, panda: 1.4, dolphin: 1.3 }[id] || 1;
+      const k = Math.max(1, Math.round(ts * Z * 0.95)), dir = Math.random() < 0.5 ? 1 : -1, f = this.floor;
+      if (D.swim && !water) return null;                    // no sea here: no fish
+      const a = { id, k, t: Math.random() * 5, dir, st: "walk", life: rnd(70, 160), pause: 0 };
+      if (D.fly) Object.assign(a, { kind: "fly", x: dir > 0 ? -60 : this.W + 60, base: f - rnd(150, Math.min(320, f - 60)), v: rnd(60, 110) });
+      else if (D.swim && water) {
+        if (D.swim === "jump") Object.assign(a, { kind: "jump", x: water.x0 + rnd(40, this.W - water.x0 - 40), ph: Math.random(), n: 6 + Math.floor(Math.random() * 6) });
+        else if (D.swim === "far") Object.assign(a, { kind: "far", k: Math.max(1, Math.round(ts * 0.7)), x: dir > 0 ? water.x0 + 40 : this.W - 40, v: 6, life: rnd(40, 70) });
+        else Object.assign(a, { kind: D.swim, x: water.x0 + rnd(20, this.W - water.x0 - 20), v: rnd(10, 22), y: f - rnd(6, 30) * Math.max(2, Math.round(ts)) });
+      } else {
+        const beach = D.beach && water; Object.assign(a, { kind: "walk", x: beach ? water.x0 - rnd(10, 120) : dir > 0 ? -50 : this.W + 50, v: (D.beach ? 12 : rnd(16, 30)) * ts / 3, pause: beach ? 3 : 0 });
+        if (id === "kangaroo") a.v *= 2.2; if (["sloth", "tortoise", "turtle", "koala"].includes(id)) a.v *= 0.35;
+      }
+      P.animals.push(a); if (this.onAnimalSeen) this.onAnimalSeen(id);
+      // the cats notice: a stare, and the kittens give chase
+      for (const c of this.cats) if (c.profile && !c.parkAway && ["sit", "walk", "groom", "loaf", "sphinx", "content"].includes(c.state) && Math.random() < 0.4) { c.facing = Math.sign(a.x - c.x) || c.facing; c.set("birdWatch", rnd(1.5, 3)); }
+      return a;
+    }
+    renderParkAnimals(ctx) {
+      const P = this.park, A = window.CatWorldArt; if (!P || !A) return; const f = this.floor, water = this.parkWater(), k0 = Math.max(2, Math.round(this.toyScale));
+      for (const a of P.animals) {
+        const fade = Math.min(1, a.life / 3); ctx.save(); ctx.globalAlpha = fade;
+        if (a.kind === "fly") A.drawAnimal(ctx, a.id, a.x, a.y, a.k, a.t, a.dir);
+        else if (a.kind === "jump") { if (a.ph < 0.6) { const q = a.ph / 0.6, y = f - 16 * k0 - Math.sin(q * Math.PI) * 26 * k0; ctx.translate(a.x, y); ctx.rotate(a.dir * (q - 0.5) * 1.2); A.drawAnimal(ctx, a.id, 0, 0, a.k, a.t, a.dir); ctx.setTransform(1, 0, 0, 1, 0, 0); if (q < 0.06 || q > 0.94) { ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.fillRect(a.x - 6 * k0, f - 16 * k0, 12 * k0, k0); } } }
+        else if (a.kind === "far") { if (a.x < water.x0 + 20 || a.x > this.W - 20) a.dir *= -1; const wy = f - 9 * k0; ctx.save(); ctx.beginPath(); ctx.rect(0, 0, this.W, wy + 2 * a.k); ctx.clip(); A.drawAnimal(ctx, a.id, a.x, wy + 4 * a.k, a.k, a.t, a.dir); ctx.restore(); if ((a.t % 6) < 1.4) { ctx.fillStyle = "rgba(255,255,255,.85)"; const sx = a.x + a.dir * 8 * a.k; for (let i = 0; i < 4; i++) ctx.fillRect(sx + (i - 1.5) * 2 * k0, wy - 4 * a.k - (a.t % 6) * 5 * k0 - i * k0, k0, k0 * 2); } }
+        else if (a.kind === "drift" || a.kind === "fish") { ctx.globalAlpha = fade * (a.kind === "drift" ? 0.75 : 0.9); A.drawAnimal(ctx, a.id, a.x, a.y, a.k, a.t, a.dir); }
+        else A.drawAnimal(ctx, a.id, a.x, f, a.k, a.t, a.dir, a.st);
+        ctx.restore();
+      }
     }
     shout(x, y, txt) { this.shouts.push({ x: clamp(x, 60, this.W - 60), y, txt, t: 0 }); }
     addCritter(kind) {
@@ -3384,14 +3501,15 @@
       if (this.birdsOn) { this.critterT -= dt; if (this.critterT <= 0) { this.critterT = rnd(360, 900); this.addCritter(); } }
       this.critters.forEach((c) => c.update(dt)); this.critters = this.critters.filter((c) => !c.gone());
       this.shouts = this.shouts.filter((x) => (x.t += dt) < 1.6);
-      if (this.park) this.parkSocial(dt);
+      if (this.park) { const sea = this.parkWater(); if (sea) for (const c of this.cats) if (!c.parkAway && c.state !== "swim" && !["held", "fall", "leap", "zoom", "inbox"].includes(c.state) && !c.perch && c.x > sea.x0 + 16 * c.s && c.y >= this.floor - 1) { c.inWater = true; c.set("swim", rnd(6, 14)); } }
+      this.lastDt = dt; if (this.park) { this.parkSocial(dt); this.updateParkAnimals(dt); }
       this.updateGame(dt);
       if (this.strayOn && !this.isNight() && !this.stray()) { this.strayT -= dt; if (this.strayT <= 0) { this.strayT = rnd(1200, 2700); if (this.cats.filter((c) => c.profile).length < 8) this.addStray(); } }
       this.cats.forEach((c) => c.update(dt));
       if (this.isNight()) this.renderNight(ctx, now);
       this.renderSky(ctx, dt);
       if (this.seasonsOn !== false) this.renderSeason(ctx, dt, now); else if (this.renderWeather(ctx, dt, now) === false && this.seasonOverride === "winter") this.seasonOverride = null;   // real weather shows even with the seasons off
-      if (this.park) this.renderPark(ctx);
+      if (this.park) this.renderPark(ctx, this.lastDt || 0.016);
       this.furniture.forEach((f) => f.render(ctx));
       if (this.post) this.post.render(ctx);
       this.shelves.forEach((sh) => sh.render(ctx));

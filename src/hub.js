@@ -4,7 +4,7 @@
   const L = window.CatLife;
   const NAV_H = 50;
   const TABS = [
-    ["market", "🛒", "Market", "Market"], ["inventory", "🎒", "Envanter", "Inventory"], ["pass", "🐾", "Pati Yolu", "Paw Path"], ["cards", "🃏", "Kartlar", "Cards"], ["games", "🎮", "Oyunlar", "Games"],
+    ["market", "🛒", "Market", "Market"], ["inventory", "🎒", "Envanter", "Inventory"], ["world", "🌍", "Dünya", "World"], ["pass", "🐾", "Pati Yolu", "Paw Path"], ["cards", "🃏", "Kartlar", "Cards"], ["games", "🎮", "Oyunlar", "Games"],
     ["park", "🌳", "Park", "Park"], ["events", "🎪", "Etkinlik", "Events"], ["progress", "🏅", "Gelişim", "Progress"], ["settings", "⚙️", "Ayarlar", "Settings"],
   ];
   function create(o) {

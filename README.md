@@ -4,7 +4,7 @@ Pixel cats that live along the bottom of your screen. They wander, groom, nap, s
 
 ![All seven coats in every pose](docs/preview.png)
 
-**Contents:** [The cats](#-the-cats) · [Every cat has a card](#-every-cat-has-a-card) · [Growing up and care](#-growing-up-and-care) · [The menu](#-the-menu) · [Home and garden](#-home-and-garden) · [The sky and visitors](#-the-sky-and-visitors) · [Guests, jobs and wishes](#-guests-jobs-and-wishes) · [Your progress](#-your-progress) · [Controls](#-controls) · [Run it](#-run-it)
+**Contents:** [The cats](#-the-cats) · [Every cat has a card](#-every-cat-has-a-card) · [The world](#-the-world) · [Growing up and care](#-growing-up-and-care) · [The menu](#-the-menu) · [Home and garden](#-home-and-garden) · [The sky and visitors](#-the-sky-and-visitors) · [Guests, jobs and wishes](#-guests-jobs-and-wishes) · [Your progress](#-your-progress) · [Controls](#-controls) · [Run it](#-run-it)
 
 ---
 
@@ -71,6 +71,43 @@ Right-click a cat to open its card. Drag it anywhere; 📍 sends it back; 🔍 c
 
 ![The seasonal costumes](docs/costumes-seasonal.png)
 
+## 🌍 The world
+
+<img src="docs/world-map.png" width="380" alt="The world map with a flag on every capital"> <img src="docs/world-city.png" width="380" alt="Paris: the city's buildings and its market">
+
+Every country's capital is on a pixel map of the real world, **204 places** in all, plus a few special ones: Honolulu, the Amazon, the Galápagos, the Serengeti, the Sahara and a base in Antarctica. Parts of the world open as your level grows (Türkiye and the Balkans first, Oceania and Antarctica last).
+
+- **Fly** to a city for a few coins (the farther, the dearer; home is free). A little plane crosses the screen, and your first visit stamps your **🛂 passport**.
+- **Enter the city**: its buildings stand in for the menu (🛒 market, 🌳 park, 🎪 square).
+- **The city's market** sells things you can't buy anywhere else: the flag rug, the national dish (a special meal with a buff), a plush of the country's animal and, in the famous cities, hand-made souvenirs. That's about 550 new things.
+- **The city's park**: take your cats to its park and the bottom of the screen turns into that part of the world, with its own animals.
+
+### Parks around the world
+
+![An island beach: cats swimming in the sea, a parasol, towels, a beach ball, a dolphin and a crab](docs/park-honolulu.png)
+
+On an island the cats run into the sea and **swim**, paddle about, come out and shake themselves dry; they sunbathe on the towels and bat the beach ball; dolphins leap, fish jump and crabs scuttle along the sand.
+
+![Antarctica: snow, igloos, a research base, penguins and a polar bear](docs/park-antarctica.png)
+
+![The Amazon: rainforest, lianas, a river, crocodiles, parrots and toucans](docs/park-amazon.png)
+
+![Cairo: dunes, the pyramids and the sphinx, camels and fennec foxes](docs/park-cairo.png)
+
+Fifteen kinds of park: 🏝️ island beach, 🫒 Mediterranean coast, 🛶 fjord (whales and leaping salmon), 🧊 polar (northern lights, igloos, wolves), 🌲 taiga, 🏔️ mountains, 🐎 steppe with yurts, 🌾 pampas, 🏜️ desert (pyramids and the sphinx in Cairo), 🦒 savanna, 🌴 rainforest, 🌸 sakura garden with a torii gate, 🎋 bamboo grove with pandas, 🦘 outback and 🌳 the city park. Cold parks always have snow; the rainforest has a drizzle; petals fall in the sakura garden.
+
+### Animals of the world
+
+![Over a hundred pixel animals](docs/world-animals.png)
+
+Over a hundred animals live in the parks, each in its own part of the world: lions, giraffes, zebras and elephants on the savanna, moose and bears in the taiga, pandas among the bamboo, kangaroos and koalas in the outback, llamas and condors in the Andes, penguins and seals at the pole, and many more. Every city's own animal is always in its park. Each new one goes into the album's **🦒 Animals of the world** page, next to the **🛂 passport stamps**.
+
+### Souvenirs
+
+![Souvenirs from around the world](docs/souvenirs.png)
+
+An Eiffel scratching tower and a croissant bed from Paris; a sphinx scratcher, a pyramid house, a mummy toy and a cat-goddess statue from Cairo; a Viking-ship bed from Oslo; a kotatsu, a lucky cat and a torii gate from Tokyo; a Colosseum bed and a leaning scratch tower from Rome; a windmill from Amsterdam; a pagoda cat tower from Beijing; a yurt from Ulaanbaatar; a tuk-tuk bed from Bangkok; a surfboard and a tiki from Honolulu; a moai from Santiago; a kilim, a tulip tea glass and an evil-eye bead from Ankara… over fifty of them.
+
 ## 🌱 Growing up and care
 
 - A new cat only grows while the app runs, it isn't hungry (a meal lasts 8 hours) and it feels loved. That takes about **350 hours**: kitten 🍼 → young cat 🐱 → grown-up 👑 → after a year, a wise old cat 🦉
@@ -97,10 +134,11 @@ The card has a single **☰ Menu** button. It opens one panel with a strip of ta
 | :-- | :-- |
 | **🛒 Market** | Cats (unlock coats with ⭐; the first cat is free), food, toys, seeds, furniture and luck (a daily gift chest and a wheel) |
 | **🎒 Inventory** | Your cupboard, toys and furniture as icons: take out, put away, repair, sell |
+| **🌍 World** | The world map, flights, the cities and their markets |
 | **🐾 Paw Path** | The monthly reward track and today's paw quests (see below) |
 | **🃏 Cards** | Your cat card collection and card packs |
 | **🎮 Games** | Scratch card, memory, whack-a-mouse and the laser hunt. Each costs coins and needs a 15-minute break before you play it again |
-| **🌳 Park** | Take cats out for 30 minutes (see below) |
+| **🌳 Park** | Take cats out for 30 minutes to the park of the city you're in |
 | **🎪 Events** | Photo feed, weekly contest, festivals |
 | **🏅 Progress** | Your level, the skill tree, the album and achievements |
 | **⚙️ Settings** | Sizes, sounds, day and night, weather, language, and more |
@@ -255,6 +293,8 @@ On macOS the app isn't signed, so the first time, right-click it and choose **Op
 ## 🎨 How it's drawn
 
 No sprite sheets. Every frame, each cat is rasterised from simple shapes into a 48×42 material buffer, then lit (top edges catch the light, undersides and far legs fall into shadow) and outlined. Scaled up with nearest-neighbour, that gives the chunky "pixel 3D" look and lets every coat pattern work in every pose. Toys, furniture, birds and clouds are drawn the same way.
+
+The world map is made from [Natural Earth](https://www.naturalearthdata.com) land data (public domain).
 
 ## License
 

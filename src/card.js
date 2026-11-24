@@ -247,7 +247,7 @@
     // ------------------------------------------------ furniture: buy with stars, place or put away
     function renderHome(t) {
       q(".cc-ht").textContent = `🏠 ${t.home}`; q(".cc-hwallet").textContent = t.wallet(L.wallet.stars); q(".cc-hhelp").textContent = t.homeHint;
-      const H = L.home, html = Object.keys(DC.FURN).map((k) => {
+      const H = L.home, html = Object.keys(DC.FURN).filter((k) => !DC.FURN[k].city && DC.FURN[k].event !== "_park" && t.furn[k]).map((k) => {
         const own = H.owned[k] || 0, out = world.furniture.filter((f) => f.kind === k).length, price = DC.FURN[k].price, [nm, ds] = t.furn[k];
         const btns = `<button type="button" class="cc-pill gold" data-fu="buy"${L.wallet.stars < price ? " disabled" : ""}>⭐ ${price}</button>`
           + (own ? `<span class="cc-fbtns"><button type="button" class="cc-pill" data-fu="place"${out >= own ? " disabled" : ""}>${esc(t.place)}</button><button type="button" class="cc-pill" data-fu="away"${out ? "" : " disabled"}>${esc(t.putAway)}</button></span>` : "");

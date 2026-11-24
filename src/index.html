@@ -37,6 +37,11 @@
 <script src="jobs.js"></script>
 <script src="extras.js"></script>
 <script src="garden.js"></script>
+<script src="world-data.js"></script>
+<script src="world-map.js"></script>
+<script src="world-art.js"></script>
+<script src="world-items.js"></script>
+<script src="world.js"></script>
 <script src="pass.js"></script>
 <script src="cards.js"></script>
 <script src="hub.js"></script>
@@ -399,7 +404,7 @@
   var progress = window.CatProgress.create({ world, toast: (m) => toast(m), onClose: () => { overUI = false; syncIgnore(); } });
   L.onLevelUp = (n) => { toast(progress.t().up(n)); world.confetti(world.W / 2, world.floor - 120, 70); };
   let albumQuiet = true;                                 // the first look around fills the album without a stream of notes
-  L.onAlbum = (page, id) => { if (albumQuiet) return; const nm = page === "birds" ? progress.t().birdN[id] : page === "critters" ? progress.t().critN[id] : page === "coats" ? L.COAT_NAMES[id][L.lang] : (L.t("furn")[id] || [id])[0]; toast(progress.t().newEntry(nm)); };
+  L.onAlbum = (page, id) => { if (albumQuiet) return; const nm = page === "birds" ? progress.t().birdN[id] : page === "critters" ? progress.t().critN[id] : page === "coats" ? L.COAT_NAMES[id][L.lang] : page === "animals" ? window.CatWorldArt.ANIMALS[id][L.lang] : page === "cities" ? null : (L.t("furn")[id] || [id])[0]; if (nm) toast(progress.t().newEntry(nm)); };
   world.onBirdSeen = (id) => L.albumAdd("birds", id);
   world.onCritterSeen = (id) => L.albumAdd("critters", id);
   const albumScan = () => { world.cats.forEach((c) => { if (c.profile && !c.profile.guest) L.albumAdd("coats", c.profile.coat); }); L.home.items.forEach((it) => L.albumAdd("furn", it.k)); };
@@ -415,7 +420,9 @@
   var pass = window.CatPass.now = window.CatPass.create({ world, save: () => save(), toast: (m) => toast(m), onClose: () => { overUI = false; syncIgnore(); } });
   // 🃏 cat cards
   var cards = window.CatCards.now = window.CatCards.create({ world, save: () => save(), toast: (m) => toast(m), onOpen: () => { overUI = true; syncIgnore(); }, onClose: () => { overUI = false; syncIgnore(); } });
-  window.CatHub.now = window.CatHub.create({ panels: () => ({ market, inventory, pass, cards, games, park: extras, events: extras, progress, settings }), badge: () => ({ pass: pass.readyCount(), cards: cards.packs() }) });
+  // 🌍 the world map, the cities and their markets
+  var worldP = window.CatWorld.now = window.CatWorld.create({ world, save: () => save(), toast: (m) => toast(m), placeItem: (it) => market.opts.placeItem(it), onOpen: () => { overUI = true; syncIgnore(); }, onClose: () => { overUI = false; syncIgnore(); } });
+  window.CatHub.now = window.CatHub.create({ panels: () => ({ market, inventory, world: worldP, pass, cards, games, park: extras, events: extras, progress, settings }), badge: () => ({ pass: pass.readyCount(), cards: cards.packs() }) });
   // 💞 friendships level up
   L.onFriendUp = (cat, arg, lv) => { const o = world.cats.find((c) => c.profile && c.profile.id === arg.oid); toast(`${L.FRIEND_E[lv]} ${cat.profile.name} & ${arg.o}: ${L.friendName(lv)}!`); if (o) world.burst((cat.x + o.x) / 2, world.floor - 60, "heart", "#e2557a", 6); };
   // the real weather outside: rain, snow, storms, fog, clouds (refreshed every 20 minutes)

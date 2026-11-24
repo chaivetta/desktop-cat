@@ -58,7 +58,7 @@
       if (j.fish) { L.pantry.fish = (L.pantry.fish || 0) + 1; got.push("🐟"); }
       if (j.food && Math.random() < j.food) { const f = Math.random() < 0.3 ? "fish" : Math.random() < 0.5 ? "wet" : "dry"; L.pantry[f] = (L.pantry[f] || 0) + 1; got.push(L.FOOD[f].e); }
       if (j.find && Math.random() < j.find) {
-        const cheap = Object.keys(DC.FURN).filter((k) => DC.FURN[k].price <= 90 && !DC.FURN[k].event);
+        const cheap = Object.keys(DC.FURN).filter((k) => DC.FURN[k].price <= 90 && !DC.FURN[k].event && !DC.FURN[k].city);
         const k = cheap[Math.floor(Math.random() * cheap.length)], id = "f" + Date.now().toString(36);
         L.home.items.push({ id, k, cond: rnd(40, 80), x: null }); got.push(s.found((L.t("furn")[k] || [k])[0]));
       }

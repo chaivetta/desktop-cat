@@ -168,7 +168,8 @@
     const PK = () => (X().park = X().park || { until: 0, ids: [], at: 0, next: 0 });
     function goPark(ids) {
       const S = PK(), now = Date.now(); if (world.park || now < S.next || !ids.length) return;
-      S.at = now; S.until = now + PARK_MIN * 60e3; S.ids = ids; world.enterPark(ids, 3 + Math.floor(Math.random() * 3)); close(); L.changed(); save();
+      S.at = now; S.until = now + PARK_MIN * 60e3; S.ids = ids; const where = window.CatWorld && window.CatWorld.now ? window.CatWorld.now.parkWhere() : {}; S.biome = where.biome || null; S.city = where.city ? where.city.id : null;
+      world.enterPark(ids, 3 + Math.floor(Math.random() * 3), where); close(); L.changed(); save();
     }
     function leavePark() {
       const S = PK(), now = Date.now(); if (!S.at) return;
@@ -211,11 +212,13 @@
         }).join("")}</div>` : `<p class="iv-empty">${esc(s.noPosts)}</p>`);
       } else if (tab === "park") {
         const S = PK(), own = world.cats.filter((c) => c.profile && !c.profile.job && !c.npc);
-        if (world.park) body = `<div class="ev-head">🌳<b>${esc(s.parkNow(Math.max(1, Math.ceil((S.until - now) / 60e3))))}</b><small>${esc(s.parkHint2)}</small></div><button type="button" class="mk-wide gold" data-leave="1">${esc(s.parkLeave)}</button>`;
-        else if (now < S.next) body = `<div class="ev-head">🌳<b>${esc(s.parkRest(Math.ceil((S.next - now) / 60e3)))}</b></div><p class="mk-note">${esc(s.parkHint)}</p>`;
+        const wc = window.CatWorld && window.CatWorld.now ? window.CatWorld.now.parkWhere() : null, B = wc && window.CatWorldArt.BIOMES[wc.biome];
+        const where = wc ? `<div class="ev-where"><i style="background:linear-gradient(180deg,${wc.city.flag.map((c, i, a) => `${c} ${(i / a.length) * 100}% ${((i + 1) / a.length) * 100}%`).join(",")})"></i><b>📍 ${esc(wc.city.name[L.lang])}</b><small>${esc(B ? B[L.lang] : "")}</small><button type="button" data-world="1">🌍</button></div>` : "";
+        if (world.park) body = where + `<div class="ev-head">🌳<b>${esc(s.parkNow(Math.max(1, Math.ceil((S.until - now) / 60e3))))}</b><small>${esc(s.parkHint2)}</small></div><button type="button" class="mk-wide gold" data-leave="1">${esc(s.parkLeave)}</button>`;
+        else if (now < S.next) body = where + `<div class="ev-head">🌳<b>${esc(s.parkRest(Math.ceil((S.next - now) / 60e3)))}</b></div><p class="mk-note">${esc(s.parkHint)}</p>`;
         else {
           if (!parkSel) parkSel = new Set(own.map((c) => c.profile.id));
-          body = `<p class="mk-note">${esc(s.parkHint)}</p><h4 class="mk-h">${esc(s.parkWho)}</h4><div class="ct-pick">${own.map((c) => `<button type="button" class="${parkSel.has(c.profile.id) ? "on" : ""}" data-ptog="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}" data-g="${c.profile.id}"></canvas>${esc(c.profile.name)}${parkSel.has(c.profile.id) ? " ✓" : ""}</button>`).join("")}</div>
+          body = where + `<p class="mk-note">${esc(s.parkHint)}</p><h4 class="mk-h">${esc(s.parkWho)}</h4><div class="ct-pick">${own.map((c) => `<button type="button" class="${parkSel.has(c.profile.id) ? "on" : ""}" data-ptog="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}" data-g="${c.profile.id}"></canvas>${esc(c.profile.name)}${parkSel.has(c.profile.id) ? " ✓" : ""}</button>`).join("")}</div>
             <button type="button" class="mk-wide gold" data-gopark="1"${parkSel.size ? "" : " disabled"}>${esc(s.parkGo(parkSel.size))}</button>`;
         }
       } else if (tab === "contest") {
@@ -262,6 +265,7 @@
       else if (d.enter) enter(d.enter);
       else if (d.gift) gift();
       else if (d.ptog) { if (!parkSel) parkSel = new Set(); parkSel.has(d.ptog) ? parkSel.delete(d.ptog) : parkSel.add(d.ptog); }
+      else if (d.world) { if (window.CatHub.now) window.CatHub.now.open("world"); return; }
       else if (d.gopark) { goPark([...(parkSel || [])]); parkSel = null; return; }
       else if (d.leave) leavePark();
       else if (d.share) { const c = world.cats.find((x) => x.profile && x.profile.id === d.share); if (c) { L.care(c, "photo"); L.remember(c.profile, "photo"); world.burst(c.x, c.y - 40 * c.s, "spark", "#fff", 6); } }

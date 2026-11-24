@@ -1,6 +1,6 @@
 // 🛒 The market: food and furniture for coins, your things (with how worn they are), and how to earn.
 (() => {
-  const STR = {
+  const STR = window.CatMarketSTR = {
     tr: {
       bowlN: "Mama kabı", bowlD: "Önce ortaya çıkar, sonra dolaptan mamayı koy. İşin bitince envantere geri koyabilirsin.", fillBowl: (n) => `Mamayı koy (${n} öğün)`, noMeal: "Dolapta mama yok",
       forever: "✨ Bir kere al, sonsuza kadar", inGarden: "Bahçede kullanılır 🌱", potNote: "Saksılar Eşyalar bölümünde: masaüstüne koy, sağ tıkla ve ek 🪴", potN: "Saksı", potD: "Bahçene yeni bir saksı (🌱 Bahçe & Etkinlik). En çok 6.", potHave: (n) => `${n} saksın var`,
@@ -157,7 +157,7 @@
       let body = "";
       if (tab === "food") {
         const foodCard = ([f, d]) => card(`<div class="mk-emo">${d.e}</div>`, s.foods[f][0], s.foods[f][1], s.inStock(L.pantry[f] || 0), `<button type="button" class="mk-buy" data-food="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`, d.n > 1 ? `×${d.n}` : d.buff ? L.BUFFS[d.buff[0]] : "");
-        const keys = Object.keys(L.FOOD), cut = keys.indexOf("chicken"), all = Object.entries(L.FOOD);
+        const keys = Object.keys(L.FOOD), cut = keys.indexOf("chicken"), all = Object.entries(L.FOOD).filter(([, d]) => !d.city);
         body = `<div class="mk-pantry"><b>🧺 ${esc(s.pantry)}</b>${keys.filter((f) => L.pantry[f]).map((f) => `<span title="${esc(s.foods[f][0])}">${L.FOOD[f].e} ${L.pantry[f]}</span>`).join("")}</div>`
           + `<h4 class="mk-h">🥣 ${esc(s.basics)}</h4><div class="mk-grid">${all.slice(0, cut).map(foodCard).join("")}</div>`
           + `<h4 class="mk-h">✨ ${esc(s.specials)}</h4><div class="mk-grid">${all.slice(cut).map(foodCard).join("")}</div>`;
@@ -170,7 +170,7 @@
             return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? (L.TOOLS.includes(k) ? s.forever : s.inInv(L.toyCondOf(k))) : L.TOOLS.includes(k) ? s.forever : "", btn); }).join("")}
             </div>${window.CatGarden && window.CatGarden.now ? `<h4 class="mk-h">${esc(L.gardenStr().seedsH)}</h4><p class="mk-note">${esc(s.potNote)}</p><div class="mk-grid">${window.CatGarden.now.seedCards(card, s.buy)}</div>` : ""}`;
       } else if (tab === "furniture") {
-        body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${(() => { const ev = window.CatExtras && window.CatExtras.eventNow(); return Object.entries(DC.FURN).filter(([, d]) => !d.event || (ev && ev.id === d.event)).sort((a, b) => (b[1].event ? 1 : 0) - (a[1].event ? 1 : 0)); })().map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
+        body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${(() => { const ev = window.CatExtras && window.CatExtras.eventNow(); return Object.entries(DC.FURN).filter(([, d]) => !d.city && (!d.event || (ev && ev.id === d.event))).sort((a, b) => (b[1].event ? 1 : 0) - (a[1].event ? 1 : 0)); })().map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
           return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", (L.furnLevel && L.prog.lvl < L.furnLevel(d.price) ? `<button type="button" class="mk-buy" disabled>🔒 ${L.lang === "tr" ? "Sv." : "Lv."} ${L.furnLevel(d.price)}</button>` : `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`)); }).join("")}</div>`;
       } else if (tab === "mine") {
         // icons in a grid: food, toys and things; tap one to see what you can do with it
