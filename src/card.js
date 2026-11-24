@@ -308,10 +308,11 @@
       if (q(".cc-buffs").dataset.v !== bh) { q(".cc-buffs").innerHTML = bh; q(".cc-buffs").dataset.v = bh; }
       if (window.CatJobs && window.CatJobs.now) window.CatJobs.now.fill(q(".cc-job"), cat);
       // 🧬 genes: a grade and four little bars
+      const ringCol = (v) => (v >= 80 ? "#3fbf7f" : v >= 60 ? "#8fd36b" : v >= 40 ? "#ffc840" : v >= 20 ? "#ff9a5a" : "#ff6a7a");
       const G = p.genes, gsec = q(".cc-genes"); gsec.hidden = !G;
       if (G) { const sc = L.geneScore(p), gr = L.geneGrade(sc), gk = [lang, sc, p.trend || 0, ...L.GENE_KEYS.map((k) => G[k])].join(",");
         if (gsec.dataset.k !== gk) { gsec.dataset.k = gk;
-          gsec.innerHTML = `<div class="cc-label"><span>🧬 ${esc(t.genesT)}</span><small><b class="cc-grade g${gr}">${gr}</b> ${sc}/100</small></div><div class="cc-gbars">${L.GENE_KEYS.map((k) => `<span><i>${esc(t.geneN[k])}</i><b><u style="width:${G[k]}%"></u></b><em>${G[k]}</em></span>`).join("")}</div><p class="cc-gtrend t${p.trend || 0}">${esc(t.geneTrend[p.trend || 0])}</p><small class="cc-ghint">${esc(t.geneHint)}</small>`; } }
+          gsec.innerHTML = `<div class="cc-label"><span>🧬 ${esc(t.genesT)}</span><small><b class="cc-grade g${gr}">${gr}</b> ${sc}/100</small></div><div class="cc-grings"><span class="cc-ring big g${gr}" style="--v:${sc};--c:${ringCol(sc)}"><b>${gr}</b><em>${sc}</em></span>${L.GENE_KEYS.map((k) => `<span class="cc-ring" style="--v:${G[k]};--c:${ringCol(G[k])}"><b>${G[k]}</b><i>${esc(t.geneN[k])}</i></span>`).join("")}</div><p class="cc-gtrend t${p.trend || 0}">${esc(t.geneTrend[p.trend || 0])}</p><small class="cc-ghint">${esc(t.geneHint)}</small>`; } }
       q('[data-c="brush"]').textContent = t.brushB; q('[data-c="bath"]').textContent = world.furniture.some((f) => f.kind === "bathtub" && f.usable) ? t.tubB : `${t.bathB} · ${L.pantry.shampoo || 0}`;
       q('[data-c="vet"]').textContent = t.vetB(p.sick ? 60 : 30);
       const mb = q('[data-c="med"]'); mb.hidden = !p.sick; mb.textContent = `${t.medB} · ${L.pantry.medicine || 0}`;

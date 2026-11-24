@@ -65,17 +65,20 @@
     ["starlamp", "decor", W5, 14, 20, 55, { role: "watch", fx: "spark", durable: true }, "Yıldız gece lambası", "Star night light", "Geceleri yumuşacık parlar", "Glows softly at night", (p, [m, d, l]) => { p(3, 16, 8, 4, d); p(6, 10, 2, 6, "#c8ced8"); p(5, 0, 4, 10, l); p(1, 3, 12, 4, l); p(3, 7, 3, 3, l); p(8, 7, 3, 3, l); p(6, 4, 2, 2, m); }],
     ["frame", "decor", W5, 22, 18, 50, { role: "watch", durable: true }, "Kedi tablosu", "Cat painting", "Duvarda zarif bir kedi portresi", "An elegant cat portrait for the wall", (p, [m, d]) => { p(0, 0, 22, 18, m); p(2, 2, 18, 14, "#fff7ec"); p(7, 7, 8, 7, "#5b3a29"); p(8, 5, 2, 3, "#5b3a29"); p(12, 5, 2, 3, "#5b3a29"); p(9, 9, 1, 1, "#ffd34d"); p(12, 9, 1, 1, "#ffd34d"); p(2, 13, 18, 3, d); }],
   ];
-  const CAT_N = { tr: { classic: "Klasik", bed: "Yataklar", house: "Evler", climb: "Tırmanma", toy: "Oyuncaklar", decor: "Süs ve ışık" }, en: { classic: "Classic", bed: "Beds", house: "Houses", climb: "Climbing", toy: "Toys", decor: "Lights & decor" } };
-  const SF = window.CatLifeSTR;
+  const CAT_N = { tr: { bed: "🛏️ Yataklar", house: "🏠 Evler", climb: "🧗 Tırmanma", toy: "🧸 Oyuncaklar", decor: "✨ Süs ve ışık" }, en: { bed: "🛏️ Beds", house: "🏠 Houses", climb: "🧗 Climbing", toy: "🧸 Toys", decor: "✨ Lights & decor" } };
+  const SF = window.CatLifeSTR, FAMN = {};
+  // the furniture we already had goes into the same groups: hide → house, climb → climbing, sleep → bed, play → toy, the rest → decor
+  for (const [k, d] of Object.entries(DC.FURN)) if (!d.cat && !d.city && d.event !== "_park") d.cat = d.hide ? "house" : d.perch ? "climb" : d.nap != null ? "bed" : d.role === "play" ? "toy" : "decor";
   for (const [key, cat, cols, w, h, price, extra, trN, enN, trD, enD, draw] of FAM) {
     cols.forEach((ck, i) => {
       const id = `x_${key}_${ck}`, C = COL[ck]; let img = null;
-      DC.FURN[id] = { w, h, price: price + i * 2, cat, ...extra, draw: () => img || (img = pix(w, h, (p) => draw(p, C.c))) };
+      DC.FURN[id] = { w, h, price: price + i * 2, cat, fam: key, col: ck, colHex: C.c[0], ...extra, draw: () => img || (img = pix(w, h, (p) => draw(p, C.c))) };
       SF.tr.furn[id] = [`${trN} (${C.tr})`, trD]; SF.en.furn[id] = [`${enN} (${C.en})`, enD];
+      FAMN[key] = { tr: [trN, trD], en: [enN, enD] };
     });
   }
   // the seats in the plane's cabin (only on a flight, never sold): the cats curl up in them
   { let img = null; DC.FURN.planeseat = { w: 26, h: 36, price: 0, nap: 11, event: "_park", draw: () => img || (img = pix(26, 36, (p) => { p(2, 0, 22, 4, "#f4ede2"); p(2, 4, 22, 22, "#2a4a8a"); p(4, 5, 18, 18, "#3a6ad8"); p(0, 22, 26, 7, "#2a4a8a"); p(2, 23, 22, 3, "#4a7ae8"); p(4, 29, 3, 7, "#8a8e9c"); p(19, 29, 3, 7, "#8a8e9c"); p(0, 14, 3, 9, "#2a4a8a"); p(23, 14, 3, 9, "#2a4a8a"); })) };
     SF.tr.furn.planeseat = ["Uçak koltuğu", "Pencere kenarı, tabii ki"]; SF.en.furn.planeseat = ["Plane seat", "A window seat, of course"]; }
-  window.CatFurnMore = { CAT_N, count: FAM.reduce((a, f) => a + f[2].length, 0) };
+  window.CatFurnMore = { CAT_N, FAMN, COL, count: FAM.reduce((a, f) => a + f[2].length, 0) };
 })();

@@ -127,7 +127,7 @@ An Eiffel scratching tower and a croissant bed from Paris; a sphinx scratcher, a
 
 ![The same coats with poor, average and great genes](docs/genes.png)
 
-Every cat has four genes (shine, colour, pattern, eyes) and a grade from D to S. They drift very slowly with care: a loved, fed, clean, healthy cat improves, a neglected one fades. Great genes give a vivid, glossy coat; poor ones a pale, washed-out cat. Kittens take after their parents. Genes count in beauty contests, photo likes and modelling jobs.
+Every cat has four genes (shine, colour, pattern, eyes) and a grade from D to S, shown on the card as round charts: a big ring for the overall score and grade, and a small ring for each gene. They drift very slowly with care: a loved, fed, clean, healthy cat improves, a neglected one fades. Great genes give a vivid, glossy coat; poor ones a pale, washed-out cat. Kittens take after their parents. Genes count in beauty contests, photo likes and modelling jobs.
 
 ## ☰ The menu
 
@@ -194,7 +194,11 @@ Take some cats out for 30 minutes. The bottom of the screen turns into a pixel p
 
 ![Rug, cat bed, cat house, tunnel, cat tree, water fountain, aquarium, litter box and plant](docs/home.png)
 
-Over 260 pieces of furniture to buy and drag anywhere, sorted in the market into classic, beds, houses, climbing, toys, and lights & decor. Besides the classics:
+Over 260 pieces of furniture to buy and drag anywhere. In the market they're sorted into 🛏️ beds, 🏠 houses, 🧗 climbing, 🧸 toys and ✨ lights & decor, cheapest first, and anything that comes in colours is a single card with colour dots to pick from.
+
+<img src="docs/market-furniture.png" width="300" alt="The market's furniture, sorted into groups">
+
+What's new:
 
 - **🛏️ Beds** in eight colours each: donut, cloud, heart, fish, seashell, cat-ear, a little pet sofa and a window hammock
 - **🏠 Houses**: a cardboard castle, a mushroom house, a barrel, a dome tent, a cottage with a sunny roof, a cat cube to sit on

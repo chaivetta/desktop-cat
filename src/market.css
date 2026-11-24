@@ -474,3 +474,7 @@
 .wm-track i { position: absolute; inset: 0 auto 0 0; border-radius: 5px; background: linear-gradient(90deg, #7cc6e8, #ffd34d); }
 .wm-track em { position: absolute; top: 50%; transform: translate(-50%, -55%); font-style: normal; font-size: 22px; }
 .wm-left { margin: 0; font-size: 15px; font-weight: 800; }
+.mk-chips button small { opacity: .6; font-size: 10px; }
+.mk-swatch { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 2px; }
+.mk-swatch button { width: 15px; height: 15px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; box-shadow: 0 0 0 1.5px #5b3a29; }
+.mk-swatch button.on { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #5b3a29; transform: scale(1.1); }
