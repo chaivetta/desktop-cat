@@ -435,7 +435,7 @@
   window.CatHub.now = window.CatHub.create({ panels: () => ({ market, inventory, world: worldP, pass, cards, games, park: extras, events: extras, progress, settings }), badge: () => ({ pass: pass.readyCount(), cards: cards.packs() }) });
   // 💞 friendships level up
   L.onFriendUp = (cat, arg, lv) => { const o = world.cats.find((c) => c.profile && c.profile.id === arg.oid); toast(`${L.FRIEND_E[lv]} ${cat.profile.name} & ${arg.o}: ${L.friendName(lv)}!`); if (o) world.burst((cat.x + o.x) / 2, world.floor - 60, "heart", "#e2557a", 6); };
-  // the real weather outside: rain, snow, storms, fog, clouds (refreshed every 20 minutes)
+  // the weather outside: rain, snow, storms, fog, clouds, worked out from your area's climate (no internet)
   const weather = window.CatWeather.create({
     world, isOn: () => weatherOn, getLoc: () => weatherLoc, setLoc: (l) => { weatherLoc = l; save(); },
     getCache: () => weatherCache, setCache: (c) => { weatherCache = c; save(); },
