@@ -1,4 +1,4 @@
-# Getting Desktop Cat onto Steam
+# Getting Pawsport onto Steam
 
 A checklist of what is already in the code and what is still left to do.
 

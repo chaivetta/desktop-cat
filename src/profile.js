@@ -1,4 +1,4 @@
-/* Desktop Cat — each cat's life: a name, a personality, growing up, love, and a little diary.
+/* Pawsport — each cat's life: a name, a personality, growing up, love, and a little diary.
  * Everything here is plain data so it can be saved between runs. The cats call
  * CatLife.care(cat, kind) whenever something nice happens to them. */
 (() => {

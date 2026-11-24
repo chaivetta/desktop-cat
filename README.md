@@ -1,6 +1,6 @@
-# Desktop Cat
+# Pawsport
 
-Pixel cats that live along the bottom of your screen. They wander, groom, nap, stretch, sit in boxes, eat and play with their toys. You can play with them too: look after them, dress them up, grow a little garden, take them to the park and watch them grow up.
+Desktop cats around the world. Pixel cats that live along the bottom of your screen, and travel the world with you. They wander, groom, nap, stretch, sit in boxes, eat and play with their toys. You can play with them too: look after them, dress them up, grow a little garden, take them to the park and watch them grow up.
 
 ![All seven coats in every pose](docs/preview.png)
 
@@ -79,7 +79,7 @@ Right-click a cat to open its card. Drag it anywhere; 📍 sends it back; 🔍 c
 
 Every country's capital is on a pixel map of the real world, **204 places** in all, plus a few special ones: Honolulu, the Amazon, the Galápagos, the Serengeti, the Sahara and a base in Antarctica. Parts of the world open as your level grows (Türkiye and the Balkans first, Oceania and Antarctica last).
 
-- **Fly** to a city for a few coins (the farther, the dearer; home is free). The flight takes time, from 30 seconds to 3 minutes depending on the distance: meanwhile a low strip at the bottom of the screen turns into the **plane's cabin**, where your cats curl up in the seats while clouds rush past the little windows, and above it the airliner itself crosses the screen slowly, as far along as the flight is. Your first visit stamps your **🛂 passport**.
+- **Fly** to a city for a few coins (the farther, the dearer; home is free). The flight takes time, from 30 seconds to 3 minutes depending on the distance: meanwhile a low strip at the bottom of the screen turns into the **plane's cabin**, where your cats curl up in the seats while clouds rush past the little windows, and above it the airliner itself crosses the screen slowly, as far along as the flight is. Your first visit stamps your **🛂 passport**. Every one of the 204 places also has a little **💡 Did you know?** postcard on its street, about its cats, animals, food or history; it pops up on your first visit and stays in the passport album.
 
   ![Cats in their seats on the plane](docs/plane.png)
 
@@ -329,4 +329,4 @@ The world map is made from [Natural Earth](https://www.naturalearthdata.com) lan
 
 ## License
 
-MIT
+All rights reserved. Pawsport, its code, art, music and text may not be copied, changed, shared or sold without the author's permission. See [LICENSE](LICENSE).

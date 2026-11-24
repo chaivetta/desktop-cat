@@ -161,7 +161,7 @@
           const foot = P.claimed[pg] ? `<p class="pg-claimed">${esc(s.claimed)}</p>` : `<button type="button" class="mk-wide" data-claim="${pg}"${done ? "" : " disabled"}>${esc(s.claim(s.reward(st, c)))}</button>`;
           return `<h4 class="mk-h">${esc(s.pages[pg])} <small>${n} / ${all.length}</small></h4><div class="pg-album">${all.map((id) => {
             const got = have.includes(id);
-            return `<div class="pg-ent${got ? "" : " no"}" title="${got ? esc(pageName(pg, id)) : "?"}">${pg === "furn" ? `<canvas width="48" height="36" data-f="${id}"></canvas>` : pg === "cities" ? `<span class="pg-flag" style="--f:${window.CatWorldData.byId[id].flag.map((c, i, a) => `${c} ${(i / a.length) * 100}% ${((i + 1) / a.length) * 100}%`).join(",")}"></span>` : `<canvas width="${pg === "animals" ? 48 : 40}" height="${pg === "animals" ? 40 : 36}" data-${pg === "birds" ? "b" : pg === "critters" ? "v" : pg === "animals" ? "an" : "c"}="${id}"></canvas>`}${got ? "" : "<i>?</i>"}</div>`;
+            return `<div class="pg-ent${got ? "" : " no"}" title="${got ? esc(pageName(pg, id) + (pg === "cities" && window.CatWorldFacts ? "\n💡 " + window.CatWorldFacts.get(id, L.lang) : "")) : "?"}">${pg === "furn" ? `<canvas width="48" height="36" data-f="${id}"></canvas>` : pg === "cities" ? `<span class="pg-flag" style="--f:${window.CatWorldData.byId[id].flag.map((c, i, a) => `${c} ${(i / a.length) * 100}% ${((i + 1) / a.length) * 100}%`).join(",")}"></span>` : `<canvas width="${pg === "animals" ? 48 : 40}" height="${pg === "animals" ? 40 : 36}" data-${pg === "birds" ? "b" : pg === "critters" ? "v" : pg === "animals" ? "an" : "c"}="${id}"></canvas>`}${got ? "" : "<i>?</i>"}</div>`;
           }).join("")}</div>${foot}`;
         }).join("");
       }

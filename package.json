@@ -4,7 +4,7 @@
   "description": "Pixel cats that live on the bottom of your screen: they walk, groom, nap, roll over and chase yarn.",
   "main": "main.js",
   "author": "chaivetta",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder",
@@ -15,8 +15,8 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "dev.chaivetta.desktopcat",
-    "productName": "Desktop Cat",
+    "appId": "dev.chaivetta.pawsport",
+    "productName": "Pawsport",
     "files": [
       "main.js",
       "preload.js",
@@ -31,7 +31,7 @@
       "target": "dmg",
       "icon": "assets/icon.png",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "Desktop Cat uses the microphone only when you record a meow for your cats."
+        "NSMicrophoneUsageDescription": "Pawsport uses the microphone only when you record a meow for your cats."
       }
     },
     "linux": {

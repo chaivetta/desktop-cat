@@ -70,7 +70,8 @@
       const F = X().flight; if (!F) return; const c = WD.byId[F.to]; X().flight = null; X().at = c.id;
       if (world.park && world.park.biome === "plane") world.exitPark();
       const s = t(); toast(s.landed(flagEmoji(c), c.name[L.lang]));
-      if (!X().visited.includes(c.id)) { X().visited.push(c.id); L.earn(10); setTimeout(() => toast(s.first(c.name[L.lang])), 900); }
+      if (!X().visited.includes(c.id)) { X().visited.push(c.id); L.earn(10); setTimeout(() => toast(s.first(c.name[L.lang])), 900);
+        const fact = window.CatWorldFacts && window.CatWorldFacts.get(c.id, L.lang); if (fact) setTimeout(() => toast(`💡 ${fact}`), 3200); }       // a postcard fact on your first visit
       if (L.albumAdd) L.albumAdd("cities", c.id); if (L.gainPXP) L.gainPXP(5);
       L.changed(); save(); mode = "city"; key = ""; if (!root.hidden) render();
     }
@@ -138,7 +139,8 @@
         <span class="wm-cityname"><i style="background:${flagCss(c)}"></i>${esc(c.name[L.lang])}</span>
         ${c.id !== HOME ? `<button type="button" class="wm-homebtn" data-b="home" title="${esc(s.b.home)}">🏠</button>` : ""}</div>
         <p class="mk-note">${esc(s.tapBld)}</p>
-        <ul class="wm-facts"><li>${esc(s.park((A.BIOMES[c.biome] || A.BIOMES.city)[L.lang]))}</li><li>${esc(s.famous(`${c.dishE} ${c.dish[L.lang]}`))}</li></ul>`;
+        <ul class="wm-facts"><li>${esc(s.park((A.BIOMES[c.biome] || A.BIOMES.city)[L.lang]))}</li><li>${esc(s.famous(`${c.dishE} ${c.dish[L.lang]}`))}</li></ul>
+        ${window.CatWorldFacts ? `<div class="wm-didyou"><b>💡 ${esc(L.lang === "tr" ? "Biliyor muydun?" : "Did you know?")}</b><p>${esc(window.CatWorldFacts.get(c.id, L.lang))}</p></div>` : ""}`;
     }
     function shopHtml(c, s) {
       const items = WI.itemsOf(c.id).map((id) => {

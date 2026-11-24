@@ -1,4 +1,4 @@
-/* Desktop Cat — pixel cats that live on the bottom edge of your screen.
+/* Pawsport — pixel cats that live on the bottom edge of your screen.
  * Each cat is rasterised every frame into a tiny material buffer, then lit
  * (top edges lighter, under-sides darker, far limbs in shadow) and outlined,
  * which gives the chunky "pixel 3D" look. Runs in Electron or a plain browser. */

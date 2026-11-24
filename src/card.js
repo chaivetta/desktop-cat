@@ -1,4 +1,4 @@
-/* Desktop Cat — the cat card: who they are, how they're doing, what they're wearing and what they've been up to. */
+/* Pawsport — the cat card: who they are, how they're doing, what they're wearing and what they've been up to. */
 (() => {
   "use strict";
   const L = window.CatLife, DC = window.DesktopCat, W = DC.WARDROBE;

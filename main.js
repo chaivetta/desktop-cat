@@ -1,4 +1,4 @@
-// Desktop Cat — Electron shell.
+// Pawsport — Electron shell.
 // A transparent, click-through window spans the screen above the taskbar.
 // The page tells us when the pointer is over a cat or the yarn, and only then
 // do we let the window catch the mouse, so the rest of the desktop keeps working.
@@ -63,7 +63,7 @@ function createTray() {
   const icon = nativeImage.createFromPath(path.join(__dirname, "assets", process.platform === "darwin" ? "trayTemplate.png" : "tray.png"));
   if (process.platform === "darwin") icon.setTemplateImage(true);
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
-  tray.setToolTip("Desktop Cat");
+  tray.setToolTip("Pawsport");
   tray.setContextMenu(buildMenu());
   if (process.platform !== "darwin") tray.on("click", () => { setPaused(false); send({ type: "settings" }); });   // on macOS a click just opens the menu
 }
