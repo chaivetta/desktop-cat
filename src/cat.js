@@ -3205,7 +3205,7 @@
       else if (D.swim && water) {
         if (D.swim === "jump") Object.assign(a, { kind: "jump", x: water.x0 + rnd(40, this.W - water.x0 - 40), ph: Math.random(), n: 6 + Math.floor(Math.random() * 6) });
         else if (D.swim === "far") Object.assign(a, { kind: "far", k: Math.max(1, Math.round(ts * 0.7)), x: dir > 0 ? water.x0 + 40 : this.W - 40, v: 6, life: rnd(40, 70) });
-        else Object.assign(a, { kind: D.swim, x: water.x0 + rnd(20, this.W - water.x0 - 20), v: rnd(10, 22), y: f - rnd(1, 5) * Math.max(2, Math.round(ts)) });
+        else Object.assign(a, { kind: D.swim, x: water.x0 + rnd(20, this.W - water.x0 - 20), v: rnd(10, 22), y: f + rnd(0, 1) * Math.max(2, Math.round(ts)) });
       } else {
         const beach = D.beach && water; Object.assign(a, { kind: "walk", x: beach ? water.x0 - rnd(10, 120) : water ? -50 : dir > 0 ? -50 : this.W + 50, v: (D.beach ? 12 : rnd(16, 30)) * ts / 3, pause: beach ? 3 : 0 });
         if (water && !beach) a.dir = 1;
@@ -3221,8 +3221,8 @@
       for (const a of P.animals) {
         const fade = Math.min(1, a.life / 3); ctx.save(); ctx.globalAlpha = fade;
         if (a.kind === "fly") A.drawAnimal(ctx, a.id, a.x, a.y, a.k, a.t, a.dir);
-        else if (a.kind === "jump") { if (a.ph < 0.6) { const q = a.ph / 0.6, y = f - 7 * k0 - Math.sin(q * Math.PI) * 26 * k0; ctx.translate(a.x, y); ctx.rotate(a.dir * (q - 0.5) * 1.2); A.drawAnimal(ctx, a.id, 0, 0, a.k, a.t, a.dir); ctx.setTransform(1, 0, 0, 1, 0, 0); if (q < 0.06 || q > 0.94) { ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.fillRect(a.x - 6 * k0, f - 8 * k0, 12 * k0, k0); } } }
-        else if (a.kind === "far") { if (a.x < water.x0 + 20 || a.x > this.W - 20) a.dir *= -1; const wy = f - 4 * k0; ctx.save(); ctx.beginPath(); ctx.rect(0, 0, this.W, wy + 2 * a.k); ctx.clip(); A.drawAnimal(ctx, a.id, a.x, wy + 4 * a.k, a.k, a.t, a.dir); ctx.restore(); if ((a.t % 6) < 1.4) { ctx.fillStyle = "rgba(255,255,255,.85)"; const sx = a.x + a.dir * 8 * a.k; for (let i = 0; i < 4; i++) ctx.fillRect(sx + (i - 1.5) * 2 * k0, wy - 4 * a.k - (a.t % 6) * 5 * k0 - i * k0, k0, k0 * 2); } }
+        else if (a.kind === "jump") { if (a.ph < 0.6) { const q = a.ph / 0.6, y = f - 2 * k0 - Math.sin(q * Math.PI) * 26 * k0; ctx.translate(a.x, y); ctx.rotate(a.dir * (q - 0.5) * 1.2); A.drawAnimal(ctx, a.id, 0, 0, a.k, a.t, a.dir); ctx.setTransform(1, 0, 0, 1, 0, 0); if (q < 0.06 || q > 0.94) { ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.fillRect(a.x - 6 * k0, f - 3 * k0, 12 * k0, k0); } } }
+        else if (a.kind === "far") { if (a.x < water.x0 + 20 || a.x > this.W - 20) a.dir *= -1; const wy = f - 2 * k0; ctx.save(); ctx.beginPath(); ctx.rect(0, 0, this.W, wy + 2 * a.k); ctx.clip(); A.drawAnimal(ctx, a.id, a.x, wy + 4 * a.k, a.k, a.t, a.dir); ctx.restore(); if ((a.t % 6) < 1.4) { ctx.fillStyle = "rgba(255,255,255,.85)"; const sx = a.x + a.dir * 8 * a.k; for (let i = 0; i < 4; i++) ctx.fillRect(sx + (i - 1.5) * 2 * k0, wy - 4 * a.k - (a.t % 6) * 5 * k0 - i * k0, k0, k0 * 2); } }
         else if (a.kind === "drift" || a.kind === "fish") { ctx.globalAlpha = fade * (a.kind === "drift" ? 0.75 : 0.9); A.drawAnimal(ctx, a.id, a.x, a.y, a.k, a.t, a.dir); }
         else A.drawAnimal(ctx, a.id, a.x, f, a.k, a.t, a.dir, a.st);
         ctx.restore();
