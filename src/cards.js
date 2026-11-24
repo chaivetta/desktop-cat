@@ -40,15 +40,21 @@
   function create(o) {
     const { world, save, toast } = o, DC = window.DesktopCat;
     // the cards: every coat (big cats are epic, the fancier house cats rare), then the moments
-    const CARDS = [...DC.COAT_KEYS.map((k, i) => ({ id: "c_" + k, coat: k, r: DC.COATS[k].wild ? 2 : i < 9 ? 0 : 1, pose: "sit" })), ...MOMENTS];
+    // world-tour cards (one for each kind of park: you also get it the first time you take your cats there) and seasonal-costume cards
+    const TOUR = { city: [1, "ginger"], med: [1, "white"], steppe: [1, "cream"], pampas: [1, "calico"], island: [2, "tortie"], desert: [2, "siamese"], savanna: [2, "lion"], jungle: [2, "leopard"],
+      taiga: [2, "maine"], mountain: [2, "snowleo"], fjord: [2, "grey"], bamboo: [2, "tuxedo"], sakura: [3, "white"], outback: [2, "ginger"], polar: [3, "silver"] };
+    const WORLD = window.CatWorldArt ? Object.entries(TOUR).map(([b, [r, coat]], i) => ({ id: "w_" + b, r, coat, biome: b, pose: ["sit", "walk", "sideLie", "stand", "sphinx"][i % 5] })) : [];
+    const SEASONAL = Object.keys(DC.WARDROBE.outfit).filter((d) => DC.WARDROBE.outfit[d].season).map((d, i) => ({ id: "k_" + d, r: 1, coat: DC.COAT_KEYS[(i * 5) % 17], pose: "sit", acc: { outfit: d + ":cherry" }, bg: { winter: ["#e8f1ff", "#a9c2e6"], spring: ["#ffe8f0", "#ffb8d0"], summer: ["#fff1b8", "#ffc870"], autumn: ["#ffe2c0", "#e8945a"] }[DC.WARDROBE.outfit[d].season] }));
+    const CARDS = [...DC.COAT_KEYS.map((k, i) => ({ id: "c_" + k, coat: k, r: DC.COATS[k].wild ? 2 : i < 9 ? 0 : 1, pose: "sit" })), ...MOMENTS, ...WORLD, ...SEASONAL];
     const byId = Object.fromEntries(CARDS.map((c) => [c.id, c]));
     const C = () => { const x = (L.extra.cards = L.extra.cards || { own: {}, dust: 0, packs: 1, week: "", rows: [] }); if (x.week !== weekKey()) { if (x.week) x.packs++; x.week = weekKey(); } return x; };
-    const nameOf = (c) => (c.coat && c.id.startsWith("c_") ? L.COAT_NAMES[c.coat][L.lang] : t().m[c.id]);
+    const nameOf = (c) => (c.id.startsWith("c_") ? L.COAT_NAMES[c.coat][L.lang] : c.id.startsWith("w_") ? `${L.lang === "tr" ? "Dünya turu" : "World tour"}: ${window.CatWorldArt.BIOMES[c.biome][L.lang]}` : c.id.startsWith("k_") ? (DC.WARDROBE.outfit[c.id.slice(2)][L.lang]).replace(/^./, (x) => x.toLocaleUpperCase(L.lang)) : t().m[c.id]);
     const owned = () => Object.keys(C().own).filter((k) => C().own[k] > 0).length;
 
     function drawCard(cv, c, have) {
       const g = cv.getContext("2d"), W = cv.width, H = cv.height, bg = c.bg || [["#fff7ec", "#f1e1cf"], ["#e4f1ff", "#a9c8f0"], ["#f1e4ff", "#b996e6"], ["#fff1b8", "#f0b84a"]][c.r];
       const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, bg[0]); gr.addColorStop(1, bg[1]); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      if (c.biome) { const B = window.CatWorldArt.BIOMES[c.biome]; g.fillStyle = "#bfe6ff"; g.fillRect(0, 0, W, H); if (B.bg) B.bg(g, W, H, H - 12, 1, (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }, null); else { g.fillStyle = "#8fcf6b"; g.fillRect(0, H - 14, W, 14); } }
       if (c.snow) { g.fillStyle = "#fff"; for (let i = 0; i < 26; i++) g.fillRect((i * 37) % W, (i * 53) % (H - 10), 2, 2); }
       if (c.glow) { g.fillStyle = "#fff6c8"; g.beginPath(); g.arc(W * 0.78, H * 0.2, 9, 0, Math.PI * 2); g.fill(); for (let i = 0; i < 14; i++) g.fillRect((i * 29) % W, (i * 17) % (H / 2), 1, 1); }
       const p = document.createElement("canvas"); p.width = 96; p.height = 84;
@@ -92,6 +98,8 @@
       return got;
     }
     L.giveCardPack = (n = 1) => { C().packs += n; L.changed(); };
+    // a card you earn by doing something (the first visit to each kind of park)
+    L.giveCard = (id) => { const c = byId[id]; if (!c || C().own[id]) return; add(c); setTimeout(() => toast(t().got(nameOf(c), "✈️")), 1500); L.changed(); save(); };
     // the Moon Cat leaves its own card (and a star) when you catch it
     world.onMoonCat = () => {
       const X = C(), c = byId.m_moon, isNew = add(c); L.wallet.stars++; L.earn(20); if (L.addPawPoints) L.addPawPoints(60); if (L.gainPXP) L.gainPXP(25);

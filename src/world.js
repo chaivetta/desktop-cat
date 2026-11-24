@@ -25,7 +25,7 @@
       lv: (n) => `🐾 Seviye ${n}`, here: "📍 Buradasın", fly: (c) => `✈️ Uç · ${c}🪙`, flyHome: "🏠 Eve uç · ücretsiz", locked: (n) => `🔒 Seviye ${n} olunca açılır`, enter: "🏙️ Şehre gir",
       park: (b) => `🌳 Park: ${b}`, famous: (d) => `🍽️ Meşhur: ${d}`, animal: (a) => `🐾 Hayvanı: ${a}`, items: (n) => `🛍️ ${n} şehre özel ürün`, stamps: (a, b) => `🛂 ${a} / ${b} damga`,
       landed: (f, n) => `✈️ ${f} ${n}'e vardın!`, first: (n) => `🛂 Pasaportuna yeni damga: ${n}! +10🪙`, home: "Ev", pick: "Haritada bir şehre dokun.",
-      b: { shop: "🛒 Pazar", park: "🌳 Park", square: "🎪 Meydan", map: "🌍 Harita", home: "🏠 Eve dön" },
+      b: { shop: "🛒 Pazar", park: "🌳 Park", square: "🎪 Meydan", airport: "✈️ Havalimanı", map: "🌍 Harita", home: "🏠 Eve dön" }, tapBld: "Bir binanın tabelasına dokun, içeri gir.",
       shopH: "Şehre özel pazar", shopNote: "Bu eşyalar sadece bu şehrin pazarında satılır.", bought: (n) => `🛍️ ${n} alındı!`, have: (n) => `Sende: ${n}`, cityPark: (c, b) => `${c} parkı · ${b}`,
       search: "Şehir ara…", none: "Bulunamadı",
     },
@@ -34,7 +34,7 @@
       lv: (n) => `🐾 Level ${n}`, here: "📍 You are here", fly: (c) => `✈️ Fly · ${c}🪙`, flyHome: "🏠 Fly home · free", locked: (n) => `🔒 Opens at level ${n}`, enter: "🏙️ Enter the city",
       park: (b) => `🌳 Park: ${b}`, famous: (d) => `🍽️ Famous for: ${d}`, animal: (a) => `🐾 Its animal: ${a}`, items: (n) => `🛍️ ${n} things sold only here`, stamps: (a, b) => `🛂 ${a} / ${b} stamps`,
       landed: (f, n) => `✈️ ${f} You've landed in ${n}!`, first: (n) => `🛂 A new passport stamp: ${n}! +10🪙`, home: "Home", pick: "Tap a city on the map.",
-      b: { shop: "🛒 Market", park: "🌳 Park", square: "🎪 Square", map: "🌍 Map", home: "🏠 Go home" },
+      b: { shop: "🛒 Market", park: "🌳 Park", square: "🎪 Square", airport: "✈️ Airport", map: "🌍 Map", home: "🏠 Go home" }, tapBld: "Tap a building's sign to go in.",
       shopH: "This city's market", shopNote: "These are sold only in this city's market.", bought: (n) => `🛍️ Bought: ${n}`, have: (n) => `You have ${n}`, cityPark: (c, b) => `${c} park · ${b}`,
       search: "Find a city…", none: "Not found",
     },
@@ -86,10 +86,10 @@
     }
     function render() {
       const s = t(), x = X(), cur = here();
-      const k = [L.lang, mode, view, sel, x.at, x.visited.length, lvl(), L.wallet.coins, q, mode === "city" ? JSON.stringify(L.pantry) + L.home.items.length : ""].join("|"); if (k === key) return; key = k;
+      const k = [L.lang, mode, view, sel, x.at, x.visited.length, lvl(), L.wallet.coins, q, mode !== "map" ? JSON.stringify(L.pantry) + L.home.items.length : ""].join("|"); if (k === key) return; key = k;
       const sc = root.querySelector(".mk-body"), keep = sc ? sc.scrollTop : 0;
       const head = `<div class="mk-head"><b>🌍 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">🪙 ${L.wallet.coins}</span><span class="star">${esc(s.lv(lvl()))}</span></span><button type="button" class="st-x" data-a="close">×</button></div>`;
-      if (mode === "city") { root.innerHTML = head + `<div class="mk-body">${cityHtml(cur, s)}</div>`; afterCity(cur); }
+      if (mode === "city" || mode === "shop") { root.innerHTML = head + `<div class="mk-body">${mode === "shop" ? shopHtml(cur, s) : cityHtml(cur, s)}</div>`; afterCity(cur); }
       else {
         const { proj } = drawMap(), [lo0, lo1, la0, la1] = VIEWS[view];
         const vis = WD.CITIES.filter((c) => c.lon >= lo0 - 1 && c.lon <= lo1 + 1 && c.lat <= la0 + 1 && c.lat >= la1 - 1);
@@ -117,27 +117,91 @@
           : atHere ? `<button type="button" class="mk-wide gold" data-enter="1">${esc(s.enter)}</button>`
           : `<button type="button" class="mk-wide gold" data-fly="${c.id}"${L.wallet.coins < price ? " disabled" : ""}>${esc(c.id === HOME ? s.flyHome : s.fly(price))}</button>`}`;
     }
+    // ---- the city: a pixel street with its buildings; each building has a sign you tap to go in
+    const BLD = [["shop", 6, 66, 68], ["park", 148, 50, 84], ["airport", 204, 52, 60]];      // id, x, width, where its sign hangs
     function cityHtml(c, s) {
-      const B = A.BIOMES[c.biome] || A.BIOMES.city;
+      return `<div class="wm-street"><canvas width="260" height="170" data-street="${c.id}"></canvas>
+        ${BLD.map(([b, x, w, y]) => `<button type="button" class="wm-bld" data-b="${b}" style="left:${(x / 260) * 100}%;width:${(w / 260) * 100}%;--sy:${(y / 170) * 100}%"><span>${esc(s.b[b])}</span></button>`).join("")}
+        <span class="wm-cityname"><i style="background:${flagCss(c)}"></i>${esc(c.name[L.lang])}</span>
+        ${c.id !== HOME ? `<button type="button" class="wm-homebtn" data-b="home" title="${esc(s.b.home)}">🏠</button>` : ""}</div>
+        <p class="mk-note">${esc(s.tapBld)}</p>
+        <ul class="wm-facts"><li>${esc(s.park((A.BIOMES[c.biome] || A.BIOMES.city)[L.lang]))}</li><li>${esc(s.famous(`${c.dishE} ${c.dish[L.lang]}`))}</li></ul>`;
+    }
+    function shopHtml(c, s) {
       const items = WI.itemsOf(c.id).map((id) => {
         const f = DC.FURN[id], food = L.FOOD[id], names = food ? window.CatMarketSTR[L.lang].foods[id] : L.t("furn")[id], price = f ? f.price : food.price;
         const have = food ? L.pantry[id] || 0 : L.home.items.filter((i) => i.k === id).length;
         return `<div class="mk-card"><div class="mk-pic">${food ? `<div class="mk-emo">${food.e}</div>` : `<canvas width="96" height="72" data-f="${id}"></canvas>`}</div><b>${esc(names[0])}</b><small>${esc(names[1])}</small>
           <div class="mk-foot"><em>${have ? esc(s.have(have)) : ""}</em><button type="button" class="mk-buy" data-buy="${id}"${L.wallet.coins < price ? " disabled" : ""}>🪙 ${price}</button></div></div>`;
       }).join("");
-      return `<div class="wm-sky"><canvas width="520" height="150" data-sky="${c.id}"></canvas><span class="wm-cityname"><i style="background:${flagCss(c)}"></i>${esc(c.name[L.lang])}</span></div>
-        <div class="wm-builds">${["shop", "park", "square", "map", ...(c.id !== HOME ? ["home"] : [])].map((b) => `<button type="button" data-b="${b}">${esc(s.b[b])}</button>`).join("")}</div>
-        <p class="mk-note">${esc(s.cityPark(c.name[L.lang], B[L.lang]))}</p>
-        <h4 class="mk-h" id="wm-shop">🛒 ${esc(s.shopH)}</h4><p class="mk-note">${esc(s.shopNote)}</p><div class="mk-grid">${items}</div>`;
+      return `<div class="wm-shophead"><button type="button" data-b="back">← ${esc(c.name[L.lang])}</button><b>🛒 ${esc(s.shopH)}</b></div>
+        <div class="wm-shopsign"><canvas width="260" height="60" data-shopsign="${c.id}"></canvas></div>
+        <p class="mk-note">${esc(s.shopNote)}</p><div class="mk-grid">${items}</div>`;
+    }
+    // building styles by the part of the world
+    const STYLE = {
+      desert: { wall: "#e8cf98", dk: "#c8a868", roof: "dome", rc: "#e0b866" }, savanna: { wall: "#d8a870", dk: "#b8884a", roof: "thatch", rc: "#c8a050" },
+      jungle: { wall: "#c8a070", dk: "#a8804a", roof: "thatch", rc: "#a88a3a" }, island: { wall: "#f4e4c4", dk: "#d8c49a", roof: "thatch", rc: "#c8a050" },
+      polar: { wall: "#c8463a", dk: "#9a3228", roof: "snow", rc: "#4a3a3a" }, taiga: { wall: "#8a5a32", dk: "#6a4426", roof: "snow", rc: "#4a2e1e" }, fjord: { wall: "#b8342a", dk: "#8a2420", roof: "snow", rc: "#3a3a3a" },
+      sakura: { wall: "#f4ece0", dk: "#d8cbb8", roof: "pagoda", rc: "#3a4a5a" }, bamboo: { wall: "#f4ece0", dk: "#d8cbb8", roof: "pagoda", rc: "#2a6a5a" },
+      med: { wall: "#fbfbfd", dk: "#d8dce4", roof: "flat", rc: "#2a6ad8" }, mountain: { wall: "#f0e6d4", dk: "#c8b898", roof: "chalet", rc: "#6a4426" },
+      steppe: { wall: "#f4ece0", dk: "#d8c8b0", roof: "yurt", rc: "#c8402a" }, pampas: { wall: "#f0e0c8", dk: "#d0b890", roof: "tile", rc: "#c86a3a" },
+      outback: { wall: "#e8d4b8", dk: "#c8a888", roof: "tin", rc: "#9aa2b0" }, city: { wall: "#e8b088", dk: "#c88a62", roof: "tile", rc: "#a8483a" },
+    };
+    function drawStreet(cv, c) {
+      const g = cv.getContext("2d"), W = 260, H = 170, f = 128, B = A.BIOMES[c.biome], st = STYLE[c.biome] || STYLE.city;
+      const p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); };
+      g.fillStyle = "#bfe6ff"; g.fillRect(0, 0, W, H);
+      if (B && B.bg) B.bg(g, W, H, f + 2, 1, p, c); else { p(0, 0, W, f, "#cdeefe"); for (let i = 0; i < 5; i++) p(20 + i * 52, 20 + (i % 2) * 10, 22, 4, "#fff"); }
+      // the city's landmark behind the buildings (its first souvenir, drawn big), or a flag on a tall pole
+      const sv = WI.itemsOf(c.id).find((id) => id.startsWith("sv_") && DC.FURN[id].draw && DC.FURN[id].h >= 26);
+      if (sv) { const img = DC.FURN[sv].draw(), sc = Math.min(1.6, 80 / img.height); g.imageSmoothingEnabled = false; g.drawImage(img, Math.round(140 - img.width * sc / 2), Math.round(f - img.height * sc - 26), Math.round(img.width * sc), Math.round(img.height * sc)); }
+      // a building in the local style
+      const bld = (x, w, h, kind) => {
+        const y = f - h; p(x, y, w, h, st.wall); p(x, y + h - 3, w, 3, st.dk); for (let i = x + 4; i < x + w - 4; i += 10) { p(i, y + 8, 6, 7, "#9ad4f4"); p(i, y + 8, 6, 1, "#ffffff"); p(i, y + 15, 6, 1, st.dk); }
+        p(x + w / 2 - 5, f - 14, 10, 14, "#6a4426"); p(x + w / 2 - 4, f - 13, 8, 13, "#8a5a32"); p(x + w / 2 + 2, f - 7, 1, 1, "#ffd34d");
+        if (st.roof === "dome") { for (let i = 0; i < 12; i++) { const ww = Math.round(Math.sqrt(144 - (12 - i) * (12 - i)) * 1.6); p(x + w / 2 - ww / 2, y - 12 + i, ww, 1, st.rc); } p(x + w / 2, y - 15, 1, 3, "#ffd34d"); }
+        else if (st.roof === "thatch") { for (let i = 0; i < 10; i++) p(x - 4 + i, y - 10 + i, w + 8 - i * 2, 1, i % 2 ? st.rc : "#d8b868"); }
+        else if (st.roof === "snow") { for (let i = 0; i < 12; i++) p(x + w / 2 - (i * w / 22) - 2, y - 12 + i, (i * w / 11) + 4, 1, st.rc); p(x + w / 2 - 6, y - 13, 12, 2, "#f4f8ff"); for (let i = 0; i < 12; i += 3) p(x + w / 2 - (i * w / 22) - 3, y - 12 + i, 3, 1, "#f4f8ff"); }
+        else if (st.roof === "pagoda") { p(x - 6, y - 4, w + 12, 4, st.rc); p(x - 8, y - 5, 4, 2, st.rc); p(x + w + 4, y - 5, 4, 2, st.rc); p(x + 4, y - 9, w - 8, 5, "#c8323c"); p(x, y - 12, w, 3, st.rc); }
+        else if (st.roof === "chalet") { for (let i = 0; i < 14; i++) p(x + w / 2 - i * (w / 26) - 3, y - 14 + i, i * (w / 13) + 6, 1, st.rc); p(x + w / 2 - 4, y - 10, 8, 6, "#ffe9a0"); }
+        else if (st.roof === "yurt") { for (let i = 0; i < 10; i++) p(x + 4 - i * 0.4, y - 10 + i, w - 8 + i * 0.8, 1, i % 3 ? "#f4ece0" : st.rc); }
+        else if (st.roof === "flat") { p(x - 2, y - 3, w + 4, 3, st.rc); }
+        else if (st.roof === "tin") { p(x - 3, y - 6, w + 6, 6, st.rc); for (let i = x - 3; i < x + w + 3; i += 3) p(i, y - 6, 1, 6, "#c8ced8"); }
+        else { for (let i = 0; i < 10; i++) p(x + w / 2 - i * (w / 18) - 2, y - 10 + i, i * (w / 9) + 4, 1, i % 2 ? st.rc : "#c85a48"); }
+      };
+      // 🛒 the market: an awning, crates of fruit
+      bld(6, 66, 40); for (let i = 0; i < 66; i += 6) p(6 + i, f - 46, 6, 6, (i / 6) % 2 ? "#ffffff" : "#e2414e"); for (let i = 0; i < 66; i += 6) p(7 + i, f - 40, 4, 2, (i / 6) % 2 ? "#ffffff" : "#e2414e");
+      for (const [cx, col] of [[10, "#ff6a3a"], [52, "#ffd34d"], [60, "#7cc46a"]]) { p(cx, f - 8, 8, 8, "#a8743a"); p(cx + 1, f - 10, 6, 3, col); }
+      // the street is the square: a house in the local style, bunting, a fountain and the country's flag
+      p(80, f - 3, 60, 3, "#d8c8b0"); bld(96, 34, 30);
+      for (let x = 80; x < 140; x += 5) { p(x, f - 42 + Math.round(Math.sin(x / 7) * 2), 3, 3, ["#e2414e", "#ffd34d", "#3aa6e0", "#7cc46a"][(x / 5) % 4]); }
+      p(132, f - 50, 1, 50, "#6a6a72"); c.flag.forEach((col, i) => p(133, f - 50 + i * (10 / c.flag.length), 14, Math.ceil(10 / c.flag.length), col));
+      p(82, f - 10, 12, 7, "#c8ced8"); p(84, f - 12, 8, 2, "#7ac0f0"); p(87, f - 17, 2, 5, "#bfe6ff");
+      // 🌳 the park gate with trees behind
+      for (const tx of [152, 166, 186]) { p(tx + 2, f - 16, 3, 16, "#6a4a2a"); p(tx - 4, f - 30, 16, 14, "#4f9a45"); p(tx - 2, f - 34, 12, 5, "#6fb855"); }
+      p(148, f - 26, 4, 26, "#8a5a32"); p(194, f - 26, 4, 26, "#8a5a32"); p(146, f - 30, 54, 5, "#8a5a32"); p(150, f - 29, 46, 3, "#a8743a"); for (let x = 152; x < 194; x += 4) p(x, f - 10, 2, 10, "#e8d6b8"); p(150, f - 8, 44, 2, "#e8d6b8");
+      // ✈️ the airport: a control tower, a hangar and a plane
+      p(206, f - 18, 34, 18, "#c8ced8"); for (let i = 0; i < 6; i++) p(206 + i * 2, f - 24 + i, 34 - i * 4 + 0, 1, "#9aa2b0"); p(212, f - 12, 22, 12, "#5a6474");
+      p(242, f - 46, 8, 46, "#e8ecf2"); p(239, f - 54, 14, 8, "#3a4a6a"); p(240, f - 53, 12, 5, "#9ad4f4"); p(245, f - 58, 2, 4, "#e2414e");
+      p(212, f - 34, 22, 4, "#fbfbfd"); p(220, f - 40, 4, 16, "#fbfbfd"); p(212, f - 37, 3, 4, "#fbfbfd"); p(231, f - 34, 3, 2, "#3aa6e0");
+      // the street
+      p(0, f, W, 5, "#d8d0c4"); p(0, f + 5, W, 22, "#6a6e78"); for (let x = 4; x < W; x += 14) p(x, f + 15, 7, 2, "#f4f0e6"); p(0, f + 27, W, H - f - 27, "#d8d0c4");
+      // the city's animal and a couple of cats out for a walk
+      if (A.ANIMALS[c.animal] && !A.ANIMALS[c.animal].swim) A.drawAnimal(g, c.animal, 200, A.ANIMALS[c.animal].fly ? 26 : f + 40, 1, 0.5, -1, "idle");
+      const mine = world.cats.filter((k) => k.profile).slice(0, 2);
+      mine.forEach((k, i) => { const t2 = document.createElement("canvas"); t2.width = 48; t2.height = 42; DC.portrait(t2.getContext("2d"), k.coat, { scale: 1, dx: 0, dy: 0, acc: k.profile.acc || {}, genes: k.profile.genes, pose: i ? "sit" : "walk", phase: 0.3, t: 1 }); g.imageSmoothingEnabled = false; g.drawImage(t2, 0, 0, 48, 42, 40 + i * 56, f + 40 - 26, 30, 26); });
+    }
+    function drawShopSign(cv, c) {
+      const g = cv.getContext("2d"), st = STYLE[c.biome] || STYLE.city, p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+      p(0, 0, 260, 60, st.wall); for (let i = 0; i < 260; i += 10) p(i, 0, 10, 10, (i / 10) % 2 ? "#ffffff" : "#e2414e"); for (let i = 0; i < 260; i += 10) p(i + 2, 10, 6, 3, (i / 10) % 2 ? "#ffffff" : "#e2414e");
+      p(0, 52, 260, 8, st.dk); const ids = WI.itemsOf(c.id).filter((id) => DC.FURN[id]).slice(0, 6);
+      ids.forEach((id, i) => { const img = DC.FURN[id].draw ? DC.FURN[id].draw() : null; if (!img) return; const sc = Math.min(1, 36 / img.height, 38 / img.width); g.imageSmoothingEnabled = false; g.drawImage(img, Math.round(14 + i * 42 + (38 - img.width * sc) / 2), Math.round(52 - img.height * sc), Math.round(img.width * sc), Math.round(img.height * sc)); });
     }
     function afterCity(c) {
-      const cv = root.querySelector("canvas[data-sky]"); if (cv) { const g = cv.getContext("2d"), B = A.BIOMES[c.biome]; g.fillStyle = "#bfe6ff"; g.fillRect(0, 0, 520, 150);
-        if (B && B.bg) B.bg(g, 520, 150, 140, 2, (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }, c);
-        else { g.fillStyle = "#8fcf6b"; g.fillRect(0, 120, 520, 30); for (let i = 0; i < 8; i++) { const h = 30 + A.hash(i + 3) * 60; g.fillStyle = ["#f4ece0", "#e8dcc8", "#d8c8b0"][i % 3]; g.fillRect(i * 66 + 6, 120 - h, 50, h); g.fillStyle = "#7cc6e8"; for (let y = 120 - h + 6; y < 114; y += 12) g.fillRect(i * 66 + 14, y, 8, 6), g.fillRect(i * 66 + 34, y, 8, 6); } }
-        // a few of the region's animals in the picture
-        const list = [c.animal, ...(B ? B.animals : [])].filter((id) => A.ANIMALS[id] && !A.ANIMALS[id].swim).slice(0, 3);
-        list.forEach((id, i) => A.drawAnimal(g, id, 90 + i * 150, A.ANIMALS[id].fly ? 40 : 140, 2, 0.4 + i, i % 2 ? -1 : 1, "idle")); }
-      root.querySelectorAll("canvas[data-f]").forEach((cv) => DC.furnitureThumb(cv.dataset.f, cv.getContext("2d")));
+      const cv = root.querySelector("canvas[data-street]"); if (cv) drawStreet(cv, c);
+      const sg = root.querySelector("canvas[data-shopsign]"); if (sg) drawShopSign(sg, c);
+      root.querySelectorAll("canvas[data-f]").forEach((cv2) => DC.furnitureThumb(cv2.dataset.f, cv2.getContext("2d")));
     }
     root.addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
@@ -146,9 +210,10 @@
       else if (d.city) { sel = d.city; q = ""; }
       else if (d.fly) { fly(WD.byId[d.fly]); return; }
       else if (d.enter) mode = "city";
-      else if (d.b === "map") mode = "map";
+      else if (d.b === "map" || d.b === "airport") mode = "map";
+      else if (d.b === "back") mode = "city";
       else if (d.b === "home") { fly(WD.byId[HOME]); mode = "map"; return; }
-      else if (d.b === "shop") { const h = root.querySelector("#wm-shop"); if (h) h.scrollIntoView({ behavior: "smooth" }); return; }
+      else if (d.b === "shop") { mode = "shop"; const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = 0; }
       else if (d.b === "park") { if (window.CatHub.now) window.CatHub.now.open("park"); return; }
       else if (d.b === "square") { if (window.CatHub.now) window.CatHub.now.open("events"); return; }
       else if (d.buy) { buy(d.buy, b); }

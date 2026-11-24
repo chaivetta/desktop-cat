@@ -331,10 +331,11 @@
       bg(g, W, H, f, k, px) {
         sky(g, W, f, "rgba(110,200,255,0)", "rgba(140,215,255,.75)"); cloudsOf(px, W, f, k, 5);
         const sx = W * (1 - this.water);
-        px(sx, f - 40 * k, W - sx, 40 * k + H - f, "#2a9ad8"); for (let i = 0; i < 6; i++) px(sx, f - (40 - i * 6) * k, W - sx, 3 * k, ["#4ab4ea", "#3aa6e0", "#2a9ad8", "#2490cc", "#1f86c0", "#1a7cb4"][i]);
-        px(sx, f - 42 * k, W - sx, 2 * k, "#8ad4f4");
-        // far island with a palm, the sand, a few shells and starfish
-        px(W * 0.86, f - 46 * k, 40 * k, 6 * k, "#f0d690"); palm(px, W * 0.87, f - 46 * k, k, 14, 1);
+        // the sea comes right up to the sand: its surface is just a little above the beach
+        px(sx, f - 8 * k, W - sx, 8 * k + H - f, "#2a9ad8"); for (let i = 0; i < 4; i++) px(sx, f - (8 - i * 2) * k, W - sx, k, ["#4ab4ea", "#3aa6e0", "#2490cc", "#1f86c0"][i]);
+        px(sx, f - 9 * k, W - sx, k, "#8ad4f4");
+        // the little far island with its palm, sitting on the horizon
+        px(W * 0.84, f - 12 * k, 44 * k, 4 * k, "#f0d690"); px(W * 0.84 + 4 * k, f - 14 * k, 36 * k, 2 * k, "#f4dc9a"); palm(px, W * 0.86, f - 14 * k, k, 16, 1); palm(px, W * 0.84 + 30 * k, f - 13 * k, k, 11, -1);
         px(0, f - 3 * k, sx + 30 * k, H - f + 3 * k, "#f4dc9a"); for (let x = 0; x < sx; x += 7 * k) px(x + ((x / k) % 5) * k, f - 2 * k, 2 * k, k, "#e8c880");
         for (let i = 0; i < 6; i++) { const x = hash(i + 40) * (sx - 20 * k); px(x, f - k, 2 * k, k, i % 2 ? "#ff8a6a" : "#ffd0e0"); }
         px(sx - 30 * k, f - 4 * k, 60 * k, 2 * k, "#e8d090"); for (let x = sx - 26 * k; x < sx + 30 * k; x += 6 * k) px(x, f - 4 * k, 3 * k, k, "#fff");
@@ -342,7 +343,7 @@
       },
       front(ctx, w, dt, S) {
         const k = Math.max(2, Math.round(w.toyScale)), f = w.floor, sx = w.W * (1 - this.water); S.t = (S.t || 0) + dt;
-        ctx.fillStyle = "rgba(255,255,255,.75)"; for (let i = 0; i < 9; i++) { const x = sx + ((i * 97 + S.t * 24) % (w.W - sx)), y = f - (8 + (i % 4) * 9) * k; ctx.fillRect(Math.round(x), Math.round(y), 5 * k, k); }
+        ctx.fillStyle = "rgba(255,255,255,.75)"; for (let i = 0; i < 9; i++) { const x = sx + ((i * 97 + S.t * 24) % (w.W - sx)), y = f - (2 + (i % 3) * 2) * k; ctx.fillRect(Math.round(x), Math.round(y), 5 * k, k); }
         const foam = Math.sin(S.t * 1.3) * 4 * k; ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.fillRect(sx - 14 * k + foam, f - 3 * k, 22 * k, k);
       } },
     // 🧊 the poles: snowy hills, igloos, an old hut, northern lights at night; it always snows a little
@@ -417,12 +418,12 @@
       bg(g, W, H, f, k, px) {
         sky(g, W, f, "rgba(150,190,230,0)", "rgba(170,205,235,.6)"); cloudsOf(px, W, f, k, 4);
         for (let x = 0; x < W; x += k) { const edge = Math.abs(x / W - 0.6) * 2, v = 30 + edge * 70 + Math.sin(x / k / 9) * 6; px(x, f - v * k, k, v * k, "#6a7a8a"); if (v > 75) px(x, f - v * k, k, 6 * k, "#f4f8ff"); px(x, f - v * k + 6 * k, k, 2 * k, "#5a8a5a"); }
-        const sx = W * 0.6; px(sx, f - 14 * k, W - sx, 14 * k + H - f, "#2a5a7a"); for (let i = 0; i < 3; i++) px(sx, f - (14 - i * 4) * k, W - sx, 2 * k, ["#4a7aa0", "#3a6a90", "#2f6084"][i]);
+        const sx = W * 0.6; px(sx, f - 8 * k, W - sx, 8 * k + H - f, "#2a5a7a"); for (let i = 0; i < 3; i++) px(sx, f - (8 - i * 2) * k, W - sx, k, ["#4a7aa0", "#3a6a90", "#2f6084"][i]);
         for (let i = 0; i < 6; i++) pine(px, W * 0.04 + i * 30 * k, f, k, 22 + hash(i) * 10, false);
         const bx = W * 0.4; px(bx, f - 14 * k, 22 * k, 14 * k, "#b8342a"); px(bx - 2 * k, f - 19 * k, 26 * k, 5 * k, "#3a3a3a"); px(bx + 4 * k, f - 10 * k, 5 * k, 4 * k, "#fff"); px(bx + 13 * k, f - 9 * k, 5 * k, 9 * k, "#5a2a22");
         grass(px, sx, f, k, "#6aa85a", "#4f8a45", H); px(sx - 6 * k, f - 2 * k, 10 * k, 2 * k, "#9aa2b0");
       },
-      front(ctx, w, dt, S) { const k = Math.max(2, Math.round(w.toyScale)), sx = w.W * 0.6; S.t = (S.t || 0) + dt; ctx.fillStyle = "rgba(255,255,255,.4)"; for (let i = 0; i < 6; i++) ctx.fillRect(Math.round(sx + ((i * 151 + S.t * 14) % (w.W - sx))), Math.round(w.floor - (4 + (i % 3) * 4) * k), 6 * k, k); } },
+      front(ctx, w, dt, S) { const k = Math.max(2, Math.round(w.toyScale)), sx = w.W * 0.6; S.t = (S.t || 0) + dt; ctx.fillStyle = "rgba(255,255,255,.4)"; for (let i = 0; i < 6; i++) ctx.fillRect(Math.round(sx + ((i * 151 + S.t * 14) % (w.W - sx))), Math.round(w.floor - (2 + (i % 3) * 2) * k), 6 * k, k); } },
     // 🐎 steppe: endless grass, a yurt, big sky
     steppe: { tr: "Bozkır", en: "Steppe", animals: ["horse", "camel", "eagle", "sheep", "wolf", "yak"],
       bg(g, W, H, f, k, px) {
@@ -472,7 +473,7 @@
     med: { tr: "Akdeniz sahili", en: "Mediterranean coast", water: 0.35, props: ["parasol", "beachball", "towel"], animals: ["dolphin", "gull", "goat", "turtle", "fish"],
       bg(g, W, H, f, k, px) {
         sky(g, W, f, "rgba(110,190,250,0)", "rgba(140,205,255,.6)");
-        const sx = W * 0.65; px(sx, f - 26 * k, W - sx, 26 * k + H - f, "#2a7ad8"); px(sx, f - 26 * k, W - sx, 3 * k, "#5aa6ea");
+        const sx = W * 0.65; px(sx, f - 8 * k, W - sx, 8 * k + H - f, "#2a7ad8"); px(sx, f - 8 * k, W - sx, k, "#5aa6ea"); px(sx, f - 9 * k, W - sx, k, "#8ac4f4");
         for (let i = 0; i < 5; i++) { const x = W * 0.04 + i * 34 * k, h = 14 + (i % 3) * 5; px(x, f - (8 + h) * k, 24 * k, h * k, "#fbfbfd"); px(x, f - (10 + h) * k, 24 * k, 2 * k, i % 2 ? "#2a6ad8" : "#d86a3a"); px(x + 4 * k, f - (4 + h) * k, 4 * k, 4 * k, "#2a6ad8"); px(x + 14 * k, f - (4 + h) * k, 4 * k, 4 * k, "#2a6ad8"); }
         hills(g, W * 0.7, f, k, "#a8b878", 10, 4, 8);
         const olive = (x) => { for (let i = 0; i < 14; i++) px(x + Math.round(Math.sin(i / 3) * 2) * k, f - i * k, 3 * k, k, "#7a6a5a"); for (let i = 0; i < 30; i++) px(x + (hash(i + x) * 24 - 12) * k, f - (14 + hash(i * 3 + x) * 8) * k, 4 * k, 2 * k, i % 2 ? "#7a9a6a" : "#9ab88a"); };
@@ -480,7 +481,7 @@
         px(0, f - 3 * k, sx + 20 * k, H - f + 3 * k, "#f0dcaa"); for (let x = 0; x < sx; x += 6 * k) px(x + ((x / k) % 4) * k, f - 2 * k, 2 * k, k, "#e0c890");
         px(sx - 8 * k, f - 4 * k, 30 * k, 2 * k, "#e8d090");
       },
-      front(ctx, w, dt, S) { const k = Math.max(2, Math.round(w.toyScale)), sx = w.W * 0.65; S.t = (S.t || 0) + dt; ctx.fillStyle = "rgba(255,255,255,.6)"; for (let i = 0; i < 7; i++) ctx.fillRect(Math.round(sx + ((i * 131 + S.t * 18) % (w.W - sx))), Math.round(w.floor - (6 + (i % 4) * 5) * k), 5 * k, k); } },
+      front(ctx, w, dt, S) { const k = Math.max(2, Math.round(w.toyScale)), sx = w.W * 0.65; S.t = (S.t || 0) + dt; ctx.fillStyle = "rgba(255,255,255,.6)"; for (let i = 0; i < 7; i++) ctx.fillRect(Math.round(sx + ((i * 131 + S.t * 18) % (w.W - sx))), Math.round(w.floor - (2 + (i % 3) * 2) * k), 5 * k, k); } },
   };
 
   window.CatWorldArt = { ANIMALS, BIOMES, drawAnimal, animalThumb, hash };

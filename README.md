@@ -73,12 +73,14 @@ Right-click a cat to open its card. Drag it anywhere; 📍 sends it back; 🔍 c
 
 ## 🌍 The world
 
-<img src="docs/world-map.png" width="380" alt="The world map with a flag on every capital"> <img src="docs/world-city.png" width="380" alt="Paris: the city's buildings and its market">
+<img src="docs/world-map.png" width="380" alt="The world map with a flag on every capital"> <img src="docs/world-shop.png" width="380" alt="Inside Cairo's market">
+
+![Cairo's street: the market, the park gate, the airport, the pyramids behind](docs/world-city.png)
 
 Every country's capital is on a pixel map of the real world, **204 places** in all, plus a few special ones: Honolulu, the Amazon, the Galápagos, the Serengeti, the Sahara and a base in Antarctica. Parts of the world open as your level grows (Türkiye and the Balkans first, Oceania and Antarctica last).
 
 - **Fly** to a city for a few coins (the farther, the dearer; home is free). A little plane crosses the screen, and your first visit stamps your **🛂 passport**.
-- **Enter the city**: its buildings stand in for the menu (🛒 market, 🌳 park, 🎪 square).
+- **Enter the city**: a pixel street in the local style (domes in the desert, pagoda roofs in East Asia, snowy wooden houses up north, thatched huts in the tropics), with the city's landmark behind it and its flag on the square. Each building has a sign: tap 🛒 the market to go in, 🌳 the park gate to take your cats out, ✈️ the airport to fly on.
 - **The city's market** sells things you can't buy anywhere else: the flag rug, the national dish (a special meal with a buff), a plush of the country's animal and, in the famous cities, hand-made souvenirs. That's about 550 new things.
 - **The city's park**: take your cats to its park and the bottom of the screen turns into that part of the world, with its own animals.
 
@@ -94,7 +96,7 @@ On an island the cats run into the sea and **swim**, paddle about, come out and 
 
 ![Cairo: dunes, the pyramids and the sphinx, camels and fennec foxes](docs/park-cairo.png)
 
-Fifteen kinds of park: 🏝️ island beach, 🫒 Mediterranean coast, 🛶 fjord (whales and leaping salmon), 🧊 polar (northern lights, igloos, wolves), 🌲 taiga, 🏔️ mountains, 🐎 steppe with yurts, 🌾 pampas, 🏜️ desert (pyramids and the sphinx in Cairo), 🦒 savanna, 🌴 rainforest, 🌸 sakura garden with a torii gate, 🎋 bamboo grove with pandas, 🦘 outback and 🌳 the city park. Cold parks always have snow; the rainforest has a drizzle; petals fall in the sakura garden.
+Every city's landmark stands behind its park, with its flag. Fifteen kinds of park: 🏝️ island beach, 🫒 Mediterranean coast, 🛶 fjord (whales and leaping salmon), 🧊 polar (northern lights, igloos, wolves), 🌲 taiga, 🏔️ mountains, 🐎 steppe with yurts, 🌾 pampas, 🏜️ desert (pyramids and the sphinx in Cairo), 🦒 savanna, 🌴 rainforest, 🌸 sakura garden with a torii gate, 🎋 bamboo grove with pandas, 🦘 outback and 🌳 the city park. Cold parks always have snow; the rainforest has a drizzle; petals fall in the sakura garden.
 
 ### Animals of the world
 
@@ -155,7 +157,7 @@ A reward track that starts again every month. Almost everything you do earns **�
 
 <img src="docs/card-pack.png" width="460" alt="Opening a card pack: the Moon Cat (legendary) and two black cats">
 
-Thirty-two cards to collect: one for every coat (big cats are epic) and eight "moments" (Miss Cat, the Moon Cat, the Roar, Sweet Dreams, Snow Catcher, Zoomies, the Gardener, Snuggle Time). They come in packs of three: a free pack every week, one on some steps of the Paw Path, or 80🪙 in the Cards tab. Tap the face-down cards to flip them. A card you already have turns into ✨ sparkle, and sparkle makes any card you're missing. Finishing a rarity row (common, rare, epic, legendary) pays coins or stars, and the whole set pays 10⭐.
+Fifty-eight cards to collect: one for every coat (big cats are epic), eight "moments" (Miss Cat, the Moon Cat, the Roar, Sweet Dreams, Snow Catcher, Zoomies, the Gardener, Snuggle Time), fifteen **world-tour** cards (one for each kind of park, drawn on its own scenery; the first visit there gives you the card) and eleven seasonal-costume cards. They come in packs of three: a free pack every week, one on some steps of the Paw Path, or 80🪙 in the Cards tab. Tap the face-down cards to flip them. A card you already have turns into ✨ sparkle, and sparkle makes any card you're missing. Finishing a rarity row (common, rare, epic, legendary) pays coins or stars, and the whole set pays 10⭐.
 
 ### 🫧 Dream bubbles
 
@@ -224,7 +226,7 @@ Plants grow in real hours, even with the app closed, but only while watered (wat
 
   <img src="docs/storks.png" width="320" alt="A V of storks migrating">
 
-- **Clouds:** little kawaii clouds drift along the top of the screen, more on cloudy days. Some trail a rainbow; on rainy days they turn grey and grumpy and drip. On clear nights, a shooting star now and then.
+- **Clouds:** little kawaii clouds drift along the top of the screen, sometimes in twos and threes, up to ten at a time (more on cloudy days). Some trail a rainbow; on rainy days they turn grey and grumpy and drip. On clear nights, a shooting star now and then.
 - **Real weather:** rain, drizzle, snow, fog and thunderstorms follow the weather where you are (from [Open-Meteo](https://open-meteo.com), free, no account; checked once a day). Rainy days make the cats sleepy and keep the birds away. In the snow, flakes drift, a white layer builds up on the floor and the furniture, the cats leave paw prints and swat at the flakes. Try any weather for a minute from ⚙️ Settings.
 - **Seasons:** snow in winter, blossom in spring, fireflies on summer nights, falling leaves in autumn.
 - **Critters:** squirrels and butterflies by day.

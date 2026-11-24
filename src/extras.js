@@ -169,7 +169,7 @@
     function goPark(ids) {
       const S = PK(), now = Date.now(); if (world.park || now < S.next || !ids.length) return;
       S.at = now; S.until = now + PARK_MIN * 60e3; S.ids = ids; const where = window.CatWorld && window.CatWorld.now ? window.CatWorld.now.parkWhere() : {}; S.biome = where.biome || null; S.city = where.city ? where.city.id : null;
-      world.enterPark(ids, 3 + Math.floor(Math.random() * 3), where); close(); L.changed(); save();
+      world.enterPark(ids, 3 + Math.floor(Math.random() * 3), where); if (where.biome && L.giveCard) L.giveCard("w_" + where.biome); close(); L.changed(); save();
     }
     function leavePark() {
       const S = PK(), now = Date.now(); if (!S.at) return;

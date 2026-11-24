@@ -225,7 +225,7 @@
     ["honolulu", "Honolulu (Hawaii)", "ABD · Hawaii|USA · Hawaii", 21.31, -157.86, "spe", "#ffffff #cc0000 #00247d", "Poke", "🍣", "turtle", "island"],
     ["amazon", "Manaus (Amazon)", "Brezilya · Amazon|Brazil · Amazon", -3.12, -60.02, "spe", "#009c3b #ffdf00 #002776", "Tacacá", "🥣", "crocodile", "jungle"],
     ["galapagos", "Galápagos", "Ekvador · Galápagos|Ecuador · Galápagos", -0.95, -90.97, "spe", "#ffd100 #0072ce #ef3340", "Encebollado", "🐟", "tortoise", "island"],
-    ["antarctica", "Antarktika Üssü|Antarctic Base", "Antarktika|Antarctica", -75.0, 0.0, "spe", "#ffffff #0f4c81", "Kakao|Hot cocoa", "☕", "penguin", "polar"],
+    ["antarctica", "Antarktika Üssü|Antarctic Base", "Antarktika|Antarctica", -57.5, 0.0, "spe", "#ffffff #0f4c81", "Kakao|Hot cocoa", "☕", "penguin", "polar"],
     ["sahara", "Sahra Vahası|Sahara Oasis", "Sahra|Sahara", 23.4, 8.0, "spe", "#e8c886 #3f8a3a", "Hurma|Dates", "🌴", "fennec", "desert"],
     ["serengeti", "Serengeti", "Tanzanya · Serengeti|Tanzania · Serengeti", -2.33, 34.83, "spe", "#1eb53a #fcd116 #00a3dd", "Mandazi", "🍩", "zebra", "savanna"],
   ];

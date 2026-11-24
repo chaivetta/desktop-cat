@@ -3128,13 +3128,22 @@
       a.set("walk", 3, { target: mid - gap }); b.set("walk", 3, { target: mid + gap });
       setTimeout(() => { if (!this.park) return; a.facing = 1; b.facing = -1; const play = Math.random() < 0.35; a.set(play ? "playBow" : "boop", 1.6); b.set(play ? "pronk" : "boop", 1.6); this.burst(mid, this.floor - 34 * a.s, "heart", "#e2557a", 3); if (this.onSocial) this.onSocial(a, b); }, 2600);
     }
+    // the city's famous landmark, big, in the background of its park (the Eiffel tower in Paris, a torii in Tokyo…), and its flag
+    parkLandmark(g, k) {
+      const P = this.park, c = P && P.city, WI = window.CatWorldItems; if (!c || !WI) return;
+      const sv = WI.itemsOf(c.id).find((id) => id.startsWith("sv_") && FURN[id].draw && FURN[id].h >= 26 && !(c.id === "cairo" && id === "sv_pyramid")), f = this.floor, water = this.parkWater();
+      const x = water ? water.x0 * 0.62 : this.W * 0.42;
+      if (sv) { const img = FURN[sv].draw(), m = Math.max(1, Math.round(k * Math.min(1.6, 70 / img.height))); g.save(); g.globalAlpha = 0.92; g.imageSmoothingEnabled = false; g.drawImage(img, Math.round(x - img.width * m / 2), Math.round(f - img.height * m), img.width * m, img.height * m); g.restore(); }
+      const fx = x + (sv ? 60 * k : 0), fl = c.flag; g.fillStyle = "#6a6a72"; g.fillRect(fx, f - 56 * k, k, 56 * k);
+      fl.forEach((col, i) => { g.fillStyle = col; g.fillRect(fx + k, f - 56 * k + Math.floor(i * 10 / fl.length) * k, 16 * k, Math.ceil(10 / fl.length) * k); });
+    }
     // where the sea is in this park (null when there is none)
     parkWater() { const P = this.park, B = P && P.biome && window.CatWorldArt.BIOMES[P.biome]; return B && B.water ? { x0: this.W * (1 - B.water) } : null; }
     renderPark(ctx, dt = 0) {
       const P = this.park, W = this.W, H = this.H, k = Math.max(2, Math.round(this.toyScale)), f = this.floor, B = P.biome && window.CatWorldArt.BIOMES[P.biome];
       if (B && B.bg) {
         if (!P.img || P.img.width !== W || P.imgF !== f) { const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); P.img = c; P.imgF = f;
-          const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }; B.bg(g, W, H, f, k, px, P.city); }
+          const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }; B.bg(g, W, H, f, k, px, P.city); this.parkLandmark(g, k); }
         ctx.drawImage(P.img, 0, 0); if (B.front) B.front(ctx, this, dt, P.S);
         this.renderParkAnimals(ctx);
         if (B.snow) this.renderSnow(ctx, dt, k, 0.12);
@@ -3147,6 +3156,7 @@
         const gr = g.createLinearGradient(0, f - 260, 0, f); gr.addColorStop(0, "rgba(170,225,160,0)"); gr.addColorStop(1, "rgba(150,210,130,.55)"); g.fillStyle = gr; g.fillRect(0, f - 260, W, 260);
         for (let x = 0; x < W; x += 14 * k) { px(x, f - 26 * k, 3 * k, 24 * k, "#e8d6b8"); px(x, f - 28 * k, 3 * k, 2 * k, "#c9b08a"); }
         px(0, f - 20 * k, W, 2 * k, "#d9c29c"); px(0, f - 12 * k, W, 2 * k, "#d9c29c");
+        this.parkLandmark(g, k);                           // the city's landmark stands behind the trees
         // pixel-art trees: a lumpy canopy lit from the top left, a dark outline, a few leaf clusters, a trunk with bark and roots
         const tree = (x, sz, seed) => { const t = parkTree(seed), m = Math.max(2, Math.round(k * sz)); g.imageSmoothingEnabled = false; g.drawImage(t, Math.round(x - (t.width * m) / 2), Math.round(f - t.height * m + m), t.width * m, t.height * m); };
         for (const [x, sz, seed] of [[0.06, 1.25, 1], [0.27, 0.95, 2], [0.52, 1.35, 3], [0.76, 1.05, 4], [0.95, 1.2, 5]]) tree(W * x, sz, seed);
@@ -3179,7 +3189,7 @@
         else {                                                // walkers: stroll, stop to graze or look about
           if (a.pause > 0) { a.pause -= dt; a.st = a.graze ? "graze" : "idle"; }
           else { a.st = "walk"; a.x += a.dir * a.v * dt; if (Math.random() < dt * 0.12) { a.pause = rnd(2, 7); a.graze = Math.random() < 0.6; } }
-          if (water && a.kind === "walk" && a.x > water.x0 - 20 && a.dir > 0 && !A.ANIMALS[a.id].beach) a.dir = -1;
+          if (water && a.kind === "walk" && a.x > water.x0 - 30 && a.dir > 0) { a.dir = -1; a.pause = rnd(1, 3); }
         }
         a.life -= dt;
       }
@@ -3195,9 +3205,10 @@
       else if (D.swim && water) {
         if (D.swim === "jump") Object.assign(a, { kind: "jump", x: water.x0 + rnd(40, this.W - water.x0 - 40), ph: Math.random(), n: 6 + Math.floor(Math.random() * 6) });
         else if (D.swim === "far") Object.assign(a, { kind: "far", k: Math.max(1, Math.round(ts * 0.7)), x: dir > 0 ? water.x0 + 40 : this.W - 40, v: 6, life: rnd(40, 70) });
-        else Object.assign(a, { kind: D.swim, x: water.x0 + rnd(20, this.W - water.x0 - 20), v: rnd(10, 22), y: f - rnd(6, 30) * Math.max(2, Math.round(ts)) });
+        else Object.assign(a, { kind: D.swim, x: water.x0 + rnd(20, this.W - water.x0 - 20), v: rnd(10, 22), y: f - rnd(1, 5) * Math.max(2, Math.round(ts)) });
       } else {
-        const beach = D.beach && water; Object.assign(a, { kind: "walk", x: beach ? water.x0 - rnd(10, 120) : dir > 0 ? -50 : this.W + 50, v: (D.beach ? 12 : rnd(16, 30)) * ts / 3, pause: beach ? 3 : 0 });
+        const beach = D.beach && water; Object.assign(a, { kind: "walk", x: beach ? water.x0 - rnd(10, 120) : water ? -50 : dir > 0 ? -50 : this.W + 50, v: (D.beach ? 12 : rnd(16, 30)) * ts / 3, pause: beach ? 3 : 0 });
+        if (water && !beach) a.dir = 1;
         if (id === "kangaroo") a.v *= 2.2; if (["sloth", "tortoise", "turtle", "koala"].includes(id)) a.v *= 0.35;
       }
       P.animals.push(a); if (this.onAnimalSeen) this.onAnimalSeen(id);
@@ -3210,8 +3221,8 @@
       for (const a of P.animals) {
         const fade = Math.min(1, a.life / 3); ctx.save(); ctx.globalAlpha = fade;
         if (a.kind === "fly") A.drawAnimal(ctx, a.id, a.x, a.y, a.k, a.t, a.dir);
-        else if (a.kind === "jump") { if (a.ph < 0.6) { const q = a.ph / 0.6, y = f - 16 * k0 - Math.sin(q * Math.PI) * 26 * k0; ctx.translate(a.x, y); ctx.rotate(a.dir * (q - 0.5) * 1.2); A.drawAnimal(ctx, a.id, 0, 0, a.k, a.t, a.dir); ctx.setTransform(1, 0, 0, 1, 0, 0); if (q < 0.06 || q > 0.94) { ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.fillRect(a.x - 6 * k0, f - 16 * k0, 12 * k0, k0); } } }
-        else if (a.kind === "far") { if (a.x < water.x0 + 20 || a.x > this.W - 20) a.dir *= -1; const wy = f - 9 * k0; ctx.save(); ctx.beginPath(); ctx.rect(0, 0, this.W, wy + 2 * a.k); ctx.clip(); A.drawAnimal(ctx, a.id, a.x, wy + 4 * a.k, a.k, a.t, a.dir); ctx.restore(); if ((a.t % 6) < 1.4) { ctx.fillStyle = "rgba(255,255,255,.85)"; const sx = a.x + a.dir * 8 * a.k; for (let i = 0; i < 4; i++) ctx.fillRect(sx + (i - 1.5) * 2 * k0, wy - 4 * a.k - (a.t % 6) * 5 * k0 - i * k0, k0, k0 * 2); } }
+        else if (a.kind === "jump") { if (a.ph < 0.6) { const q = a.ph / 0.6, y = f - 7 * k0 - Math.sin(q * Math.PI) * 26 * k0; ctx.translate(a.x, y); ctx.rotate(a.dir * (q - 0.5) * 1.2); A.drawAnimal(ctx, a.id, 0, 0, a.k, a.t, a.dir); ctx.setTransform(1, 0, 0, 1, 0, 0); if (q < 0.06 || q > 0.94) { ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.fillRect(a.x - 6 * k0, f - 8 * k0, 12 * k0, k0); } } }
+        else if (a.kind === "far") { if (a.x < water.x0 + 20 || a.x > this.W - 20) a.dir *= -1; const wy = f - 4 * k0; ctx.save(); ctx.beginPath(); ctx.rect(0, 0, this.W, wy + 2 * a.k); ctx.clip(); A.drawAnimal(ctx, a.id, a.x, wy + 4 * a.k, a.k, a.t, a.dir); ctx.restore(); if ((a.t % 6) < 1.4) { ctx.fillStyle = "rgba(255,255,255,.85)"; const sx = a.x + a.dir * 8 * a.k; for (let i = 0; i < 4; i++) ctx.fillRect(sx + (i - 1.5) * 2 * k0, wy - 4 * a.k - (a.t % 6) * 5 * k0 - i * k0, k0, k0 * 2); } }
         else if (a.kind === "drift" || a.kind === "fish") { ctx.globalAlpha = fade * (a.kind === "drift" ? 0.75 : 0.9); A.drawAnimal(ctx, a.id, a.x, a.y, a.k, a.t, a.dir); }
         else A.drawAnimal(ctx, a.id, a.x, f, a.k, a.t, a.dir, a.st);
         ctx.restore();
@@ -3598,12 +3609,17 @@
       this.cloudT -= dt;
       if (this.cloudT <= 0) {
         // how long until the next one: rare on clear days, often when it's cloudy, rainy or stormy
-        const gap = { clear: [300, 720], "": [240, 600], cloud: [45, 140], drizzle: [40, 110], rain: [25, 80], storm: [18, 55], snow: [50, 150], fog: [120, 300] }[kind] || [240, 600];
+        // how many can be up at once: a random handful, up to ten (more when it's cloudy)
+        const gap = { clear: [70, 220], "": [60, 200], cloud: [14, 45], drizzle: [12, 40], rain: [10, 30], storm: [8, 24], snow: [18, 55], fog: [40, 120] }[kind] || [60, 200];
         this.cloudT = rnd(gap[0], gap[1]);
-        const q = Math.random(), bow = !grey && !night && kind !== "fog" && kind !== "snow";
-        const c = { w: Math.round(rnd(18, 27)), seed: Math.random(), bob: rnd(0, 6), mood: night || Math.random() < 0.25 ? "sleepy" : "happy", deco: bow && q < 0.2 ? "drip" : bow && q < 0.32 ? "arc" : "", grey };
-        c.x = dir > 0 ? -(c.w + 40) * k : this.W + 10 * k; c.y = rnd(4, 60); c.v = (12 + 24 * Math.abs(wind) + rnd(0, 8)) * dir;
-        if (this.sky.length < 6) this.sky.push(c);
+        if (!this.cloudCap || Math.random() < 0.15) this.cloudCap = Math.round(rnd(["cloud", "rain", "storm", "drizzle"].includes(kind) ? 6 : 3, 10));
+        const group = Math.random() < 0.35 ? 2 + Math.floor(Math.random() * 2) : 1;
+        for (let gi = 0; gi < group && this.sky.length < this.cloudCap; gi++) {
+          const q = Math.random(), bow = !grey && !night && kind !== "fog" && kind !== "snow";
+          const c = { w: Math.round(rnd(16, 28)), seed: Math.random(), bob: rnd(0, 6), mood: night || Math.random() < 0.25 ? "sleepy" : "happy", deco: bow && q < 0.2 ? "drip" : bow && q < 0.32 ? "arc" : "", grey };
+          c.x = (dir > 0 ? -(c.w + 40) * k : this.W + 10 * k) - dir * gi * rnd(60, 160) * k; c.y = rnd(4, 80); c.v = (12 + 24 * Math.abs(wind) + rnd(0, 8)) * dir;
+          this.sky.push(c);
+        }
         if (this.cloudImgs.size > 40) this.cloudImgs.clear();
       }
       for (const c of this.sky) {

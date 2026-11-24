@@ -449,3 +449,18 @@
 .wm-map.v-all .wm-pin { width: 8px; height: 6px; margin: -3px 0 0 -4px; border-radius: 2px; box-shadow: 0 0 0 1px #5b3a29; }
 .wm-map.v-all .wm-pin.lock { width: 5px; height: 4px; margin: -2px 0 0 -2px; }
 .wm-map.v-all .wm-pin:hover, .wm-map.v-all .wm-pin.sel { transform: scale(2.2); }
+.wm-street { position: relative; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 3px #5b3a29; }
+.wm-street canvas { display: block; width: 100%; image-rendering: pixelated; }
+.wm-bld { position: absolute; top: 0; bottom: 24%; --sy: 6%; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; justify-content: center; align-items: flex-start; }
+.wm-bld span { position: absolute; top: var(--sy); transform: translateY(-50%); padding: 4px 9px; border-radius: 10px; background: #fff7ec; color: #5b3a29; font: 800 12px "Nunito", sans-serif; white-space: nowrap; box-shadow: 0 0 0 2.5px #5b3a29, 0 3px 0 2.5px #5b3a29; transition: transform .12s; animation: wm-sign 2.4s ease-in-out infinite; }
+.wm-bld:nth-of-type(2) span { animation-delay: -.6s; } .wm-bld:nth-of-type(3) span { animation-delay: -1.2s; } .wm-bld:nth-of-type(4) span { animation-delay: -1.8s; }
+@keyframes wm-sign { 50% { transform: translateY(calc(-50% - 3px)); } }
+.wm-bld:hover span { background: #ffd34d; transform: translateY(calc(-50% - 4px)) scale(1.06); animation: none; }
+.wm-bld:hover { background: rgba(255, 255, 255, .12); }
+.wm-street .wm-cityname { top: auto; bottom: 8px; left: 8px; }
+.wm-homebtn { position: absolute; right: 8px; bottom: 8px; border: 0; border-radius: 12px; padding: 4px 9px; font-size: 18px; background: #fff7ec; cursor: pointer; box-shadow: 0 0 0 2.5px #5b3a29; }
+.wm-shophead { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.wm-shophead button { border: 0; border-radius: 12px; padding: 6px 11px; background: #fff; color: #5b3a29; font: 800 13px "Nunito", sans-serif; cursor: pointer; box-shadow: 0 0 0 2px #5b3a29, 0 3px 0 2px #5b3a29; }
+.wm-shophead b { font: 700 16px "Pixelify Sans", monospace; }
+.wm-shopsign { border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 3px #5b3a29; margin-bottom: 6px; }
+.wm-shopsign canvas { display: block; width: 100%; image-rendering: pixelated; }
