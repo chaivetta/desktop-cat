@@ -180,7 +180,7 @@ Sleeping cats blow dream bubbles now and then: a little fish, a yarn ball, a mou
 
 ![Cats at the park, with strange cats, trees, a bench and a pond](docs/park.png)
 
-Take some cats out for 30 minutes. The bottom of the screen turns into a pixel park with trees, a bench, flowers and a pond. Strange cats wander in, sniff, boop and play. Back home your cats get the 🤝 Social buff: their genes improve twice as fast. Once every 3 hours.
+Take some cats out for 30 minutes. The bottom of the screen turns into a pixel park with trees, a bench, flowers and a pond. Strange cats wander in, sniff, boop and play. Back home your cats get the 🤝 Social buff: their genes improve twice as fast. Once an hour, or buy a ticket (5 to 30 coins, by how long is left to wait) to go in right away.
 
 ### 🎪 Events
 

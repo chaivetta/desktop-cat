@@ -28,9 +28,9 @@
   const STR = {
     tr: {
       title: "Park & Etkinlik", evTitle: "Etkinlik", tabs: { garden: "Bahçe", park: "Park", feed: "Akış", contest: "Yarışma", event: "Etkinlik" },
-      parkHint: "Kedilerini 30 dakikalığına parka götür. Eşyalar evde kalır, ekranın altı parka döner; başka kediler de gelir, koklaşıp oynarlar. Dönünce 🤝 Sosyal buff'ı alırlar: genleri iki kat hızlı iyileşir, sevgi kazanırlar. 3 saatte bir gidilebilir.",
+      parkHint: "Kedilerini 30 dakikalığına parka götür. Eşyalar evde kalır, ekranın altı parka döner; başka kediler de gelir, koklaşıp oynarlar. Dönünce 🤝 Sosyal buff'ı alırlar: genleri iki kat hızlı iyileşir, sevgi kazanırlar. Saatte bir gidilebilir; beklemek istemezsen bilet alıp hemen girebilirsin.",
       parkHint2: "Kediler geziniyor, yeni arkadaşlar ediniyor. Ne kadar kalırsanız buff o kadar uzun olur.", parkWho: "Kimler gelsin?", parkGo: (n) => `🌳 Parka git (${n} kedi · 30 dk)`, parkNow: (m) => `Parktasınız! ${m} dk kaldı`,
-      parkLeave: "🏠 Eve dön", parkRest: (m) => `Kediler dinleniyor; ${m} dk sonra yine gidebilirsiniz`, parkBack: (m, h) => `🌳 Parktan döndünüz (${m} dk): 🤝 Sosyal buff'ı ${h} saat, sevgi arttı`,
+      parkLeave: "🏠 Eve dön", parkSkip: (c) => `🎟️ Beklemeden gir · ${c}🪙`, parkRest: (m) => `Kediler dinleniyor; ${m} dk sonra yine gidebilirsiniz`, parkBack: (m, h) => `🌳 Parktan döndünüz (${m} dk): 🤝 Sosyal buff'ı ${h} saat, sevgi arttı`,
       crops: { catnip: "Kedi otu", mint: "Nane", strawberry: "Çilek", sunflower: "Ayçiçeği" },
       give: { catnip: "1 kedi nanesi", mint: "15🪙", strawberry: "1 özel yemek", sunflower: "52🪙 (+ nadiren ⭐)" },
       plant: (n, p) => `${n} ek · ${p}🪙`, water: "💧 Sula", harvest: "🧺 Topla", dry: "Kurudu! Sula", dead: "Soldu 🥀 · Temizle", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " sa " : ""}${m % 60} dk`,
@@ -49,9 +49,9 @@
     },
     en: {
       title: "Park & Events", evTitle: "Events", tabs: { garden: "Garden", park: "Park", feed: "Feed", contest: "Contest", event: "Event" },
-      parkHint: "Take your cats to the park for 30 minutes. Your things stay home and the bottom of the screen becomes a park; other cats come too, and they sniff and play. Back home they get the 🤝 Social buff: genes improve twice as fast and they gain love. Once every 3 hours.",
+      parkHint: "Take your cats to the park for 30 minutes. Your things stay home and the bottom of the screen becomes a park; other cats come too, and they sniff and play. Back home they get the 🤝 Social buff: genes improve twice as fast and they gain love. Once an hour; or buy a ticket to go in right away.",
       parkHint2: "The cats are wandering about and making friends. The longer you stay, the longer the buff.", parkWho: "Who's coming?", parkGo: (n) => `🌳 Go to the park (${n} cats · 30 min)`, parkNow: (m) => `At the park! ${m} min left`,
-      parkLeave: "🏠 Go home", parkRest: (m) => `The cats are resting; you can go again in ${m} min`, parkBack: (m, h) => `🌳 Back from the park (${m} min): 🤝 Social buff for ${h} h, more love`,
+      parkLeave: "🏠 Go home", parkSkip: (c) => `🎟️ Go in now · ${c}🪙`, parkRest: (m) => `The cats are resting; you can go again in ${m} min`, parkBack: (m, h) => `🌳 Back from the park (${m} min): 🤝 Social buff for ${h} h, more love`,
       crops: { catnip: "Catnip", mint: "Mint", strawberry: "Strawberry", sunflower: "Sunflower" },
       give: { catnip: "1 catnip", mint: "15🪙", strawberry: "1 special meal", sunflower: "52🪙 (+ rarely ⭐)" },
       plant: (n, p) => `Plant ${n} · ${p}🪙`, water: "💧 Water", harvest: "🧺 Harvest", dry: "Dry! Water it", dead: "Wilted 🥀 · Clear", grow: (m) => `${m >= 60 ? Math.floor(m / 60) + " h " : ""}${m % 60} min`,
@@ -163,7 +163,9 @@
     function enter(id) { if (X().contest || L.wallet.coins < 20) return; L.wallet.coins -= 20; X().contest = { week: weekKey(), cat: id }; picking = false; L.changed(); }
 
     // ---------------- 🌳 the cat park: take some cats out for 30 minutes; meeting other cats gives them the "social" buff
-    const PARK_MIN = 30, PARK_COOL = 3 * H;
+    const PARK_MIN = 30, PARK_COOL = 1 * H;
+    // don't want to wait? a ticket gets you in now: half a coin a minute still to wait (5 to 30 coins)
+    const skipCost = () => { const m = Math.ceil(Math.max(0, PK().next - Date.now()) / 60e3); return Math.max(5, Math.min(30, Math.ceil(m / 2))); };
     let parkSel = null;
     const PK = () => (X().park = X().park || { until: 0, ids: [], at: 0, next: 0 });
     function goPark(ids) {
@@ -216,7 +218,8 @@
         const where = wc ? `<div class="ev-where"><i style="background:linear-gradient(180deg,${wc.city.flag.map((c, i, a) => `${c} ${(i / a.length) * 100}% ${((i + 1) / a.length) * 100}%`).join(",")})"></i><b>📍 ${esc(wc.city.name[L.lang])}</b><small>${esc(B ? B[L.lang] : "")}</small><button type="button" data-world="1">🌍</button></div>` : "";
         if (world.park && world.park.biome === "plane") body = `<div class="ev-head">✈️<b>${esc(L.lang === "tr" ? "Kediler uçakta! İnince parka gidebiliriz." : "The cats are on the plane! We can go to the park after landing.")}</b></div>`;
         else if (world.park) body = where + `<div class="ev-head">🌳<b>${esc(s.parkNow(Math.max(1, Math.ceil((S.until - now) / 60e3))))}</b><small>${esc(s.parkHint2)}</small></div><button type="button" class="mk-wide gold" data-leave="1">${esc(s.parkLeave)}</button>`;
-        else if (now < S.next) body = where + `<div class="ev-head">🌳<b>${esc(s.parkRest(Math.ceil((S.next - now) / 60e3)))}</b></div><p class="mk-note">${esc(s.parkHint)}</p>`;
+        else if (now < S.next) body = where + `<div class="ev-head">🌳<b>${esc(s.parkRest(Math.ceil((S.next - now) / 60e3)))}</b></div>
+          <button type="button" class="mk-wide gold" data-skippark="1"${L.wallet.coins < skipCost() ? " disabled" : ""}>${esc(s.parkSkip(skipCost()))}</button><p class="mk-note">${esc(s.parkHint)}</p>`;
         else {
           if (!parkSel) parkSel = new Set(own.map((c) => c.profile.id));
           body = where + `<p class="mk-note">${esc(s.parkHint)}</p><h4 class="mk-h">${esc(s.parkWho)}</h4><div class="ct-pick">${own.map((c) => `<button type="button" class="${parkSel.has(c.profile.id) ? "on" : ""}" data-ptog="${c.profile.id}"><canvas width="52" height="46" data-av="${c.profile.coat}" data-g="${c.profile.id}"></canvas>${esc(c.profile.name)}${parkSel.has(c.profile.id) ? " ✓" : ""}</button>`).join("")}</div>
@@ -266,6 +269,7 @@
       else if (d.enter) enter(d.enter);
       else if (d.gift) gift();
       else if (d.ptog) { if (!parkSel) parkSel = new Set(); parkSel.has(d.ptog) ? parkSel.delete(d.ptog) : parkSel.add(d.ptog); }
+      else if (d.skippark) { const c = skipCost(); if (L.wallet.coins >= c) { L.wallet.coins -= c; PK().next = 0; L.changed(); save(); } key = ""; return render(); }
       else if (d.world) { if (window.CatHub.now) window.CatHub.now.open("world"); return; }
       else if (d.gopark) { goPark([...(parkSel || [])]); parkSel = null; return; }
       else if (d.leave) leavePark();
