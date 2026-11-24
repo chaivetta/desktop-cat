@@ -214,7 +214,8 @@
         const S = PK(), own = world.cats.filter((c) => c.profile && !c.profile.job && !c.npc);
         const wc = window.CatWorld && window.CatWorld.now ? window.CatWorld.now.parkWhere() : null, B = wc && window.CatWorldArt.BIOMES[wc.biome];
         const where = wc ? `<div class="ev-where"><i style="background:linear-gradient(180deg,${wc.city.flag.map((c, i, a) => `${c} ${(i / a.length) * 100}% ${((i + 1) / a.length) * 100}%`).join(",")})"></i><b>📍 ${esc(wc.city.name[L.lang])}</b><small>${esc(B ? B[L.lang] : "")}</small><button type="button" data-world="1">🌍</button></div>` : "";
-        if (world.park) body = where + `<div class="ev-head">🌳<b>${esc(s.parkNow(Math.max(1, Math.ceil((S.until - now) / 60e3))))}</b><small>${esc(s.parkHint2)}</small></div><button type="button" class="mk-wide gold" data-leave="1">${esc(s.parkLeave)}</button>`;
+        if (world.park && world.park.biome === "plane") body = `<div class="ev-head">✈️<b>${esc(L.lang === "tr" ? "Kediler uçakta! İnince parka gidebiliriz." : "The cats are on the plane! We can go to the park after landing.")}</b></div>`;
+        else if (world.park) body = where + `<div class="ev-head">🌳<b>${esc(s.parkNow(Math.max(1, Math.ceil((S.until - now) / 60e3))))}</b><small>${esc(s.parkHint2)}</small></div><button type="button" class="mk-wide gold" data-leave="1">${esc(s.parkLeave)}</button>`;
         else if (now < S.next) body = where + `<div class="ev-head">🌳<b>${esc(s.parkRest(Math.ceil((S.next - now) / 60e3)))}</b></div><p class="mk-note">${esc(s.parkHint)}</p>`;
         else {
           if (!parkSel) parkSel = new Set(own.map((c) => c.profile.id));

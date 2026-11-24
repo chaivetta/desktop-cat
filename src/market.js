@@ -141,7 +141,7 @@
     const root = document.createElement("div");
     root.className = "ui mk"; root.hidden = true;
     document.body.append(fab, root);
-    let tab = o.only || "cats", coatSel = "ginger", sel = "", note = "", key = "", result = "", spinning = false, wheelAngle = 0;
+    let furnCat = "classic", tab = o.only || "cats", coatSel = "ginger", sel = "", note = "", key = "", result = "", spinning = false, wheelAngle = 0;
     const t = () => STR[L.lang] || STR.en;
 
     const repairCost = (it) => Math.ceil(DC.FURN[it.k].price * 0.5 * (1 - it.cond / 100) * (1 - 0.15 * (L.sk ? L.sk("k1") : 0)));
@@ -170,7 +170,8 @@
             return card(`<div class="mk-emo">${s.toyE[k]}</div>`, nm, ds, own ? (L.TOOLS.includes(k) ? s.forever : s.inInv(L.toyCondOf(k))) : L.TOOLS.includes(k) ? s.forever : "", btn); }).join("")}
             </div>${window.CatGarden && window.CatGarden.now ? `<h4 class="mk-h">${esc(L.gardenStr().seedsH)}</h4><p class="mk-note">${esc(s.potNote)}</p><div class="mk-grid">${window.CatGarden.now.seedCards(card, s.buy)}</div>` : ""}`;
       } else if (tab === "furniture") {
-        body = `<h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${(() => { const ev = window.CatExtras && window.CatExtras.eventNow(); return Object.entries(DC.FURN).filter(([, d]) => !d.city && (!d.event || (ev && ev.id === d.event))).sort((a, b) => (b[1].event ? 1 : 0) - (a[1].event ? 1 : 0)); })().map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
+        const FM = window.CatFurnMore, cats = ["classic", "bed", "house", "climb", "toy", "decor"];
+        body = `<div class="mk-chips">${cats.map((c) => `<button type="button" data-fcat="${c}" class="${furnCat === c ? "on" : ""}">${esc(FM ? FM.CAT_N[L.lang][c] : c)}</button>`).join("")}</div><h4 class="mk-h">🛋️ ${esc(s.homeH)}</h4><div class="mk-grid">${(() => { const ev = window.CatExtras && window.CatExtras.eventNow(); return Object.entries(DC.FURN).filter(([, d]) => !d.city && d.event !== "_park" && (d.cat || "classic") === furnCat && (!d.event || (ev && ev.id === d.event))).sort((a, b) => (b[1].event ? 1 : 0) - (a[1].event ? 1 : 0)); })().map(([f, d]) => { const n = H.items.filter((i) => i.k === f).length, [nm, ds] = L.t("furn")[f];
           return card(`<canvas width="96" height="72" data-f="${f}"></canvas>`, nm, ds, n ? s.owned(n) : "", (L.furnLevel && L.prog.lvl < L.furnLevel(d.price) ? `<button type="button" class="mk-buy" disabled>🔒 ${L.lang === "tr" ? "Sv." : "Lv."} ${L.furnLevel(d.price)}</button>` : `<button type="button" class="mk-buy" data-furn="${f}"${L.wallet.coins < d.price ? " disabled" : ""}>${s.buy(d.price)}</button>`)); }).join("")}</div>`;
       } else if (tab === "mine") {
         // icons in a grid: food, toys and things; tap one to see what you can do with it
@@ -359,6 +360,7 @@
       if (b.dataset.clear) { o.clearToys && o.clearToys(); key = ""; return render(); }
       if (b.dataset.food) { if (L.buyFood(b.dataset.food)) { pop(b, `+${L.FOOD[b.dataset.food].n} ${L.FOOD[b.dataset.food].e}`); note = ""; } }
       else if (b.dataset.toy) { if (L.buyToy(b.dataset.toy)) { pop(b, "🎉"); o.onToy && o.onToy(b.dataset.toy); } }
+      else if (b.dataset.fcat) { furnCat = b.dataset.fcat; key = ""; const nb = root.querySelector(".mk-body"); if (nb) nb.scrollTop = 0; return render(); }
       else if (b.dataset.furn) {
         const k = b.dataset.furn, price = DC.FURN[k].price; if (L.wallet.coins < price) return;
         L.wallet.coins -= price; const it = { id: Math.random().toString(36).slice(2, 9), k, cond: 100, x: null };

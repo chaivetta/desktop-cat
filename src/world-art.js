@@ -469,6 +469,35 @@
         gum(W * 0.15); gum(W * 0.4);
         px(0, f - 2 * k, W, H - f + 2 * k, "#d8784a"); for (let x = 0; x < W; x += 13 * k) { px(x + ((x / k) % 7) * k, f - 4 * k, 5 * k, 3 * k, "#a8b060"); px(x + ((x / k) % 7) * k + k, f - 6 * k, k, 2 * k, "#a8b060"); }
       } },
+    // ✈️ inside the plane, on the way to another city: windows with clouds rushing past, rows of seats, a screen with the flight's progress
+    plane: { tr: "Uçak", en: "On the plane", animals: [], noAnimals: true, props: [0.05, 0.16, 0.27, 0.38, 0.49, 0.6, 0.71, 0.82, 0.93].map((x) => ["planeseat", x]),
+      bg(g, W, H, f, k, px) {
+        const top = f - 110 * k;
+        px(0, top, W, 110 * k, "#f4ede2"); px(0, top, W, 14 * k, "#e2d8c8"); px(0, top + 14 * k, W, 2 * k, "#c8bca8");
+        for (let x = 0; x < W; x += 60 * k) { px(x, top + 2 * k, 58 * k, 11 * k, "#ebe2d4"); px(x + 26 * k, top + 9 * k, 6 * k, 2 * k, "#b8ac98"); }
+        this.wins = [];
+        for (let x = 24 * k; x < W - 20 * k; x += 46 * k) {
+          const wx = x, wy = top + 26 * k, ww = 18 * k, wh = 24 * k; this.wins.push([wx + 2 * k, wy + 2 * k, ww - 4 * k, wh - 4 * k]);
+          px(wx, wy, ww, wh, "#c8bca8"); px(wx + k, wy + k, ww - 2 * k, wh - 2 * k, "#d8cfc0"); px(wx + 2 * k, wy + 2 * k, ww - 4 * k, wh - 4 * k, "#8ad0f4");
+          px(wx + 2 * k, wy + 2 * k, ww - 4 * k, 3 * k, "#6ab8e8");
+        }
+        px(0, top + 62 * k, W, 3 * k, "#3a6ad8"); px(0, top + 65 * k, W, k, "#ffd34d");
+        px(0, f - 2 * k, W, H - f + 2 * k, "#8a6a8a"); for (let x = 0; x < W; x += 8 * k) px(x, f - 2 * k, 4 * k, k, "#9a7a9a");
+        this.screen = [W * 0.5 - 40 * k, top + 18 * k, 80 * k, 6 * k];
+      },
+      front(ctx, w, dt, S) {
+        const k = Math.max(2, Math.round(w.toyScale)); S.t = (S.t || 0) + dt;
+        for (const [x, y, ww, hh] of this.wins || []) {
+          ctx.save(); ctx.beginPath(); ctx.rect(x, y, ww, hh); ctx.clip();
+          for (let i = 0; i < 3; i++) { const cx = x + ww - ((S.t * 70 * k / 2 + i * 37 * k + x) % (ww + 30 * k)), cy = y + (4 + i * 6) * k; ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.fillRect(cx, cy, 12 * k, 3 * k); ctx.fillRect(cx + 2 * k, cy - 2 * k, 7 * k, 2 * k); }
+          ctx.restore();
+        }
+        const P = w.park, fl = P && P.flight; if (!fl || !this.screen) return;
+        const [x, y, ww, hh] = this.screen, q = Math.max(0, Math.min(1, (Date.now() - fl.start) / (fl.until - fl.start)));
+        ctx.fillStyle = "#2a2f3e"; ctx.fillRect(x, y, ww, hh); ctx.fillStyle = "#4a6a9a"; ctx.fillRect(x + k, y + hh / 2 - k / 2, ww - 2 * k, k);
+        ctx.fillStyle = "#ffd34d"; ctx.fillRect(x + k, y + hh / 2 - k / 2, (ww - 2 * k) * q, k);
+        ctx.font = `${Math.round(5 * k)}px sans-serif`; ctx.textBaseline = "middle"; ctx.fillText("✈️", x + k + (ww - 8 * k) * q, y + hh / 2);
+      } },
     // 🫒 the Mediterranean: olive trees, white houses, a blue sea behind
     med: { tr: "Akdeniz sahili", en: "Mediterranean coast", water: 0.35, props: ["parasol", "beachball", "towel"], animals: ["dolphin", "gull", "goat", "turtle", "fish"],
       bg(g, W, H, f, k, px) {

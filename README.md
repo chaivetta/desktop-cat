@@ -79,7 +79,10 @@ Right-click a cat to open its card. Drag it anywhere; 📍 sends it back; 🔍 c
 
 Every country's capital is on a pixel map of the real world, **204 places** in all, plus a few special ones: Honolulu, the Amazon, the Galápagos, the Serengeti, the Sahara and a base in Antarctica. Parts of the world open as your level grows (Türkiye and the Balkans first, Oceania and Antarctica last).
 
-- **Fly** to a city for a few coins (the farther, the dearer; home is free). A little plane crosses the screen, and your first visit stamps your **🛂 passport**.
+- **Fly** to a city for a few coins (the farther, the dearer; home is free). The flight takes time, from 30 seconds to 3 minutes depending on the distance: meanwhile the bottom of the screen turns into the **plane's cabin**, where your cats curl up in the seats while clouds rush past the windows and a little screen shows how far you've come. Your first visit stamps your **🛂 passport**.
+
+  ![Cats in their seats on the plane](docs/plane.png)
+
 - **Enter the city**: a pixel street in the local style (domes in the desert, pagoda roofs in East Asia, snowy wooden houses up north, thatched huts in the tropics), with the city's landmark behind it and its flag on the square. Each building has a sign: tap 🛒 the market to go in, 🌳 the park gate to take your cats out, ✈️ the airport to fly on.
 - **The city's market** sells things you can't buy anywhere else: the flag rug, the national dish (a special meal with a buff), a plush of the country's animal and, in the famous cities, hand-made souvenirs. That's about 550 new things.
 - **The city's park**: take your cats to its park and the bottom of the screen turns into that part of the world, with its own animals.
@@ -191,7 +194,17 @@ Take some cats out for 30 minutes. The bottom of the screen turns into a pixel p
 
 ![Rug, cat bed, cat house, tunnel, cat tree, water fountain, aquarium, litter box and plant](docs/home.png)
 
-Over fifty pieces of furniture to buy and drag anywhere: beds, cushions, hammocks and sofas to nap on; a cat house, igloo, castle, teepee and pumpkin to hide in; trees, shelves and a giant tower to climb; a wheel, track ball, ball pit, piano and drum to play with; a TV, fan, clock, window, lava lamp and arcade machine to stare at; a fireplace, a fountain, a litter box, a bathtub and an automatic feeder. Some wear out with use and can be repaired.
+Over 260 pieces of furniture to buy and drag anywhere, sorted in the market into classic, beds, houses, climbing, toys, and lights & decor. Besides the classics:
+
+- **🛏️ Beds** in eight colours each: donut, cloud, heart, fish, seashell, cat-ear, a little pet sofa and a window hammock
+- **🏠 Houses**: a cardboard castle, a mushroom house, a barrel, a dome tent, a cottage with a sunny roof, a cat cube to sit on
+- **🧗 Climbing**: scratching posts, a cactus scratcher, a wave scratcher to nap on, a giant three-floor tower, wall steps, a cat condo
+- **🧸 Toys**: plush mice, kicker fish, crinkle balls, springs, a feather stand, a rocking boat, a paper bag, a cardboard box, a butterfly spinner, a laser robot
+- **✨ Lights & decor** that put on a little show: fairy lights that twinkle, a bubble machine blowing bubbles for the cats to pop, a music box playing notes, a fish bowl, a star night light
+
+![New furniture on the desktop](docs/furniture-new2.png)
+
+The classics: beds, cushions, hammocks and sofas to nap on; a cat house, igloo, castle, teepee and pumpkin to hide in; trees, shelves and a giant tower to climb; a wheel, track ball, ball pit, piano and drum to play with; a TV, fan, clock, window, lava lamp and arcade machine to stare at; a fireplace, a fountain, a litter box, a bathtub and an automatic feeder. Some wear out with use and can be repaired.
 
 ![More furniture](docs/furniture-new.png)
 

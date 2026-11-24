@@ -464,3 +464,13 @@
 .wm-shophead b { font: 700 16px "Pixelify Sans", monospace; }
 .wm-shopsign { border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 3px #5b3a29; margin-bottom: 6px; }
 .wm-shopsign canvas { display: block; width: 100%; image-rendering: pixelated; }
+.mk-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+.mk-chips button { border: 0; border-radius: 99px; padding: 4px 10px; background: #fff; color: #5b3a29; font: 800 12px "Nunito", sans-serif; cursor: pointer; box-shadow: 0 0 0 2px #e6d3bf; }
+.mk-chips button.on { background: #ff9fb5; color: #fff; box-shadow: 0 0 0 2px #5b3a29; }
+.wm-flight { display: grid; gap: 10px; padding: 6px 2px; }
+.wm-flight > b { font: 700 18px "Pixelify Sans", monospace; }
+.wm-route { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-weight: 800; }
+.wm-track { position: relative; height: 10px; border-radius: 5px; background: #e6d3bf; box-shadow: inset 0 0 0 2px #5b3a29; }
+.wm-track i { position: absolute; inset: 0 auto 0 0; border-radius: 5px; background: linear-gradient(90deg, #7cc6e8, #ffd34d); }
+.wm-track em { position: absolute; top: 50%; transform: translate(-50%, -55%); font-style: normal; font-size: 22px; }
+.wm-left { margin: 0; font-size: 15px; font-weight: 800; }

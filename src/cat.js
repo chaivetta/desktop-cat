@@ -2870,6 +2870,11 @@
       if (this.held) this.x += (clamp(w.pointer.x, this.f.w * s / 2, w.W - this.f.w * s / 2) - this.x) * Math.min(1, dt * 14);
       if (this.occupant && (!w.cats.includes(this.occupant) || this.occupant.cushion !== this)) this.occupant = null;
       if (this.f.hide && this.occupant && Math.random() < dt * 0.5) w.burst(this.x + 3 * s, this.y - 16 * s, "z", "#8a6b55", 1, { rise: true });
+      // the little shows: bubbles, music notes, twinkles
+      if (this.f.fx && !this.held && Math.random() < dt * (this.f.fx === "bubble" ? 1.4 : 0.45)) {
+        const top = this.y - this.f.h * s, fx = this.f.fx;
+        w.burst(this.x + rnd(-4, 4) * s, top - 2 * s, fx === "note" ? "note" : "spark", fx === "bubble" ? "#bfe6ff" : fx === "note" ? "#5b3a29" : ["#ffd34d", "#ff9fb5", "#bfe6ff"][Math.floor(Math.random() * 3)], fx === "bubble" ? 3 : 1, { rise: true });
+      }
       if (this.fish) for (const f of this.fish) { f.x += f.d * dt * 4; if (f.x < 4 || f.x > 25) f.d *= -1; f.y += Math.sin(this.t * 2 + f.x) * dt * 1.5; f.y = clamp(f.y, 7, 15); }
     }
     render(ctx) {
@@ -3107,7 +3112,9 @@
       this.park = { stash: { furniture: this.furniture, platforms: this.shelves.filter((s) => s.isPlatform), bowl: this.bowl }, npcs: [], img: null, socialT: 3, biome: B ? where.biome : null, city: where.city || null, animals: [], animT: 2, S: {} };
       this.furniture = []; this.shelves = this.shelves.filter((s) => !s.isPlatform); this.bowl = null;
       // the park's own things: beach towels, a parasol and a ball on the beach, an igloo at the pole…
-      if (B && B.props) B.props.forEach((k, i) => { if (FURN[k]) this.placeFurniture(k, this.W * ([0.12, 0.27, 0.36, 0.2][i] ?? 0.3 + i * 0.1) * (B.water ? (1 - B.water) / 0.5 : 1.6), { k, cond: 100, park: true }); });
+      if (B && B.props) B.props.forEach((k, i) => { const at = Array.isArray(k) ? k[1] : null; if (Array.isArray(k)) k = k[0]; if (FURN[k]) this.placeFurniture(k, at != null ? this.W * at : this.W * ([0.12, 0.27, 0.36, 0.2][i] ?? 0.3 + i * 0.1) * (B.water ? (1 - B.water) / 0.5 : 1.6), { k, cond: 100, park: true }); });
+      // on the plane everyone takes a seat
+      if (B && B.noAnimals) setTimeout(() => { const seats = this.furniture.filter((f) => f.kind === "planeseat"); this.cats.filter((c) => c.profile && !c.parkAway).forEach((c, i) => { const s2 = seats[i % seats.length]; if (s2 && !s2.occupant) c.set("chase", 12, { goal: "cushion", fRef: s2 }); }); }, 1500);
       this.cats.forEach((c) => { c.cushion = null; c.perch = null; if (c.profile && !going.has(c.profile.id)) c.parkAway = true; else if (c.profile) { c.y = this.floor; c.set("walk", 4, { target: rnd(this.W * 0.15, this.W * 0.85) }); } });
       for (let i = 0; i < nStrangers; i++) { const c = this.addCat(COAT_KEYS[Math.floor(Math.random() * 17)]); c.npc = true; c.x = Math.random() < 0.5 ? -60 : this.W + 60; c.set("walk", 8, { target: rnd(this.W * 0.1, this.W * 0.9) }); this.park.npcs.push(c); }
     }
@@ -3143,7 +3150,7 @@
       const P = this.park, W = this.W, H = this.H, k = Math.max(2, Math.round(this.toyScale)), f = this.floor, B = P.biome && window.CatWorldArt.BIOMES[P.biome];
       if (B && B.bg) {
         if (!P.img || P.img.width !== W || P.imgF !== f) { const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); P.img = c; P.imgF = f;
-          const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }; B.bg(g, W, H, f, k, px, P.city); this.parkLandmark(g, k); }
+          const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }; B.bg(g, W, H, f, k, px, P.city); if (!B.noAnimals) this.parkLandmark(g, k); }
         ctx.drawImage(P.img, 0, 0); if (B.front) B.front(ctx, this, dt, P.S);
         this.renderParkAnimals(ctx);
         if (B.snow) this.renderSnow(ctx, dt, k, 0.12);
@@ -3173,6 +3180,7 @@
     updateParkAnimals(dt) {
       const P = this.park, A = window.CatWorldArt; if (!P || !A) return;
       const B = (P.biome && A.BIOMES[P.biome]) || A.BIOMES.city, water = this.parkWater();
+      if (B.noAnimals) return;                               // no animals on the plane
       P.animT -= dt;
       if (P.animT <= 0 && P.animals.length < 6) {
         P.animT = P.animals.length < 3 ? rnd(1, 4) : rnd(14, 32);

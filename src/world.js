@@ -27,7 +27,7 @@
       landed: (f, n) => `✈️ ${f} ${n}'e vardın!`, first: (n) => `🛂 Pasaportuna yeni damga: ${n}! +10🪙`, home: "Ev", pick: "Haritada bir şehre dokun.",
       b: { shop: "🛒 Pazar", park: "🌳 Park", square: "🎪 Meydan", airport: "✈️ Havalimanı", map: "🌍 Harita", home: "🏠 Eve dön" }, tapBld: "Bir binanın tabelasına dokun, içeri gir.",
       shopH: "Şehre özel pazar", shopNote: "Bu eşyalar sadece bu şehrin pazarında satılır.", bought: (n) => `🛍️ ${n} alındı!`, have: (n) => `Sende: ${n}`, cityPark: (c, b) => `${c} parkı · ${b}`,
-      search: "Şehir ara…", none: "Bulunamadı",
+      search: "Şehir ara…", none: "Bulunamadı", parkFirst: "🌳 Önce kedilerin parktan dönsün, sonra uçalım.", flying: (n) => `${n} yolundayız`, left: (t2) => `⏳ İnişe ${t2} kaldı`, cabin: "Kedilerin uçakta, ekranın altındaki kabinde: koltuklarda kıvrılıyor, pencereden bulutları izliyorlar.",
     },
     en: {
       title: "World", views: { all: "🌍 All", europe: "Europe", asia: "Asia", africa: "Africa", americas: "Americas", oceania: "Oceania" },
@@ -36,7 +36,7 @@
       landed: (f, n) => `✈️ ${f} You've landed in ${n}!`, first: (n) => `🛂 A new passport stamp: ${n}! +10🪙`, home: "Home", pick: "Tap a city on the map.",
       b: { shop: "🛒 Market", park: "🌳 Park", square: "🎪 Square", airport: "✈️ Airport", map: "🌍 Map", home: "🏠 Go home" }, tapBld: "Tap a building's sign to go in.",
       shopH: "This city's market", shopNote: "These are sold only in this city's market.", bought: (n) => `🛍️ Bought: ${n}`, have: (n) => `You have ${n}`, cityPark: (c, b) => `${c} park · ${b}`,
-      search: "Find a city…", none: "Not found",
+      search: "Find a city…", none: "Not found", parkFirst: "🌳 Let the cats come back from the park first, then we'll fly.", flying: (n) => `On our way to ${n}`, left: (t2) => `⏳ Landing in ${t2}`, cabin: "Your cats are on the plane, in the cabin at the bottom of the screen: curled up in the seats, watching the clouds go by.",
     },
   };
   const t = () => STR[L.lang] || STR.en;
@@ -52,20 +52,27 @@
     const open = (c) => lvl() >= c.lv;
     const cost = (c) => (c.id === HOME ? 0 : Math.min(90, 8 + Math.round(km(here(), c) / 450)));
 
-    // ---- flying
+    // ---- flying: it takes a while (30 seconds to 3 minutes, by distance); the cats ride in the cabin at the bottom of the screen
+    const flightSecs = (a, b) => Math.round(Math.min(180, Math.max(30, 30 + km(a, b) / 20000 * 150)));
     function fly(c) {
-      if (!open(c) || c.id === X().at) return; const price = cost(c); if (L.wallet.coins < price) return;
-      L.wallet.coins -= price; X().at = c.id;
-      const plane = document.createElement("div"); plane.className = "wm-plane"; plane.textContent = "✈️"; document.body.appendChild(plane); setTimeout(() => plane.remove(), 4200);
-      setTimeout(() => {
-        const s = t(); toast(s.landed(flagEmoji(c), c.name[L.lang]));
-        if (!X().visited.includes(c.id)) { X().visited.push(c.id); L.earn(10); setTimeout(() => toast(s.first(c.name[L.lang])), 900); }
-        if (L.albumAdd) L.albumAdd("cities", c.id);
-        L.changed(); save(); mode = "city"; key = ""; render();
-      }, 2600);
-      L.changed(); save(); sel = c.id; key = ""; render();
+      if (!open(c) || c.id === X().at || X().flight) return; const price = cost(c); if (L.wallet.coins < price) return;
+      if (world.park) { toast(t().parkFirst); return; }
+      L.wallet.coins -= price;
+      const now = Date.now(); X().flight = { to: c.id, from: X().at, start: now, until: now + flightSecs(here(), c) * 1000 };
+      board(); const plane = document.createElement("div"); plane.className = "wm-plane"; plane.textContent = "✈️"; document.body.appendChild(plane); setTimeout(() => plane.remove(), 4200);
+      L.changed(); save(); sel = c.id; mode = "flight"; key = ""; render();
     }
-    const flagEmoji = (c) => "🛬";
+    function board() { const F = X().flight; if (!F || world.park) return; const ids = world.cats.filter((k) => k.profile && !k.profile.guest && !k.jobOff).map((k) => k.profile.id); world.enterPark(ids, 0, { biome: "plane", city: WD.byId[F.to] }); world.park.flight = F; }
+    function land() {
+      const F = X().flight; if (!F) return; const c = WD.byId[F.to]; X().flight = null; X().at = c.id;
+      if (world.park && world.park.biome === "plane") world.exitPark();
+      const s = t(); toast(s.landed(flagEmoji(c), c.name[L.lang]));
+      if (!X().visited.includes(c.id)) { X().visited.push(c.id); L.earn(10); setTimeout(() => toast(s.first(c.name[L.lang])), 900); }
+      if (L.albumAdd) L.albumAdd("cities", c.id); if (L.gainPXP) L.gainPXP(5);
+      L.changed(); save(); mode = "city"; key = ""; if (!root.hidden) render();
+    }
+    setInterval(() => { const F = X().flight; if (!F) return; if (Date.now() >= F.until) land(); else if (!world.park) board(); if (!root.hidden && mode === "flight") { key = ""; render(); } }, 1000);
+    const flagEmoji = () => "🛬";
 
     // ---- the panel
     const root = document.createElement("div"); root.className = "ui mk wm"; root.hidden = true; document.body.appendChild(root);
@@ -86,9 +93,12 @@
     }
     function render() {
       const s = t(), x = X(), cur = here();
-      const k = [L.lang, mode, view, sel, x.at, x.visited.length, lvl(), L.wallet.coins, q, mode !== "map" ? JSON.stringify(L.pantry) + L.home.items.length : ""].join("|"); if (k === key) return; key = k;
+      const k = [L.lang, mode, view, sel, x.at, x.flight ? Math.floor(Date.now() / 1000) : 0, x.visited.length, lvl(), L.wallet.coins, q, mode !== "map" ? JSON.stringify(L.pantry) + L.home.items.length : ""].join("|"); if (k === key) return; key = k;
       const sc = root.querySelector(".mk-body"), keep = sc ? sc.scrollTop : 0;
       const head = `<div class="mk-head"><b>🌍 ${esc(s.title)}</b><span class="mk-wal"><span class="coin">🪙 ${L.wallet.coins}</span><span class="star">${esc(s.lv(lvl()))}</span></span><button type="button" class="st-x" data-a="close">×</button></div>`;
+      if (x.flight) { const F = x.flight, to = WD.byId[F.to], from = WD.byId[F.from] || cur, left = Math.max(0, Math.ceil((F.until - Date.now()) / 1000)), q = Math.min(1, (Date.now() - F.start) / (F.until - F.start));
+        root.innerHTML = head + `<div class="mk-body"><div class="wm-flight"><b>✈️ ${esc(s.flying(to.name[L.lang]))}</b><div class="wm-route"><span>${esc(from.name[L.lang])}</span><div class="wm-track"><i style="width:${q * 100}%"></i><em style="left:${q * 100}%">✈️</em></div><span>${esc(to.name[L.lang])}</span></div>
+          <p class="wm-left">${esc(s.left(`${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`))}</p><p class="mk-note">${esc(s.cabin)}</p></div></div>`; return; }
       if (mode === "city" || mode === "shop") { root.innerHTML = head + `<div class="mk-body">${mode === "shop" ? shopHtml(cur, s) : cityHtml(cur, s)}</div>`; afterCity(cur); }
       else {
         const { proj } = drawMap(), [lo0, lo1, la0, la1] = VIEWS[view];
@@ -188,7 +198,6 @@
       // the street
       p(0, f, W, 5, "#d8d0c4"); p(0, f + 5, W, 22, "#6a6e78"); for (let x = 4; x < W; x += 14) p(x, f + 15, 7, 2, "#f4f0e6"); p(0, f + 27, W, H - f - 27, "#d8d0c4");
       // the city's animal and a couple of cats out for a walk
-      if (A.ANIMALS[c.animal] && !A.ANIMALS[c.animal].swim) A.drawAnimal(g, c.animal, 200, A.ANIMALS[c.animal].fly ? 26 : f + 40, 1, 0.5, -1, "idle");
       const mine = world.cats.filter((k) => k.profile).slice(0, 2);
       mine.forEach((k, i) => { const t2 = document.createElement("canvas"); t2.width = 48; t2.height = 42; DC.portrait(t2.getContext("2d"), k.coat, { scale: 1, dx: 0, dy: 0, acc: k.profile.acc || {}, genes: k.profile.genes, pose: i ? "sit" : "walk", phase: 0.3, t: 1 }); g.imageSmoothingEnabled = false; g.drawImage(t2, 0, 0, 48, 42, 40 + i * 56, f + 40 - 26, 30, 26); });
     }
@@ -206,6 +215,7 @@
     root.addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
       if (d.a === "close") return close();
+      if (X().flight && !d.a) return;
       if (d.view) { view = d.view; sel = null; }
       else if (d.city) { sel = d.city; q = ""; }
       else if (d.fly) { fly(WD.byId[d.fly]); return; }
@@ -234,13 +244,13 @@
       root.style.height = ""; root.style.left = "auto"; root.style.right = "14px"; root.style.top = "auto"; root.style.bottom = `${bottom + 52}px`;
       root.style.setProperty("--maxh", `${Math.max(300, innerHeight - bottom - 80)}px`);
     }
-    function openP() { root.hidden = false; key = ""; if (mode === "map" && !sel) sel = X().at; render(); place(); clearInterval(placeT); placeT = setInterval(() => { place(); render(); }, 600); o.onOpen && o.onOpen(); }
+    function openP() { root.hidden = false; key = ""; if (X().flight) mode = "flight"; else if (mode === "flight") mode = "city"; if (mode === "map" && !sel) sel = X().at; render(); place(); clearInterval(placeT); placeT = setInterval(() => { place(); render(); }, 600); o.onOpen && o.onOpen(); }
     function close() { root.hidden = true; clearInterval(placeT); o.onClose && o.onClose(); }
     addEventListener("keydown", (e) => { if (e.key === "Escape" && !root.hidden) close(); });
     // where the park is today: the city you're in
     const parkWhere = () => { const c = here(); return { biome: c.biome, city: c }; };
     world.onAnimalSeen = (id) => L.albumAdd && L.albumAdd("animals", id);
-    setTimeout(() => { if (L.albumAdd) L.albumAdd("cities", X().at); }, 2000);
+    setTimeout(() => { if (L.albumAdd) L.albumAdd("cities", X().at); const F = X().flight; if (F) { if (Date.now() >= F.until) land(); else board(); } }, 2500);
     return { open: openP, close, get isOpen() { return !root.hidden; }, here, parkWhere, fly, t };
   }
   window.CatWorld = { create };
