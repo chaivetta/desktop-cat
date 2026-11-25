@@ -71,9 +71,7 @@
             ${sw("seasons", s.seasons)}${sw("birds", s.birds)}${sw("strays", s.strays)}${sw("breed", s.breed)}
           </section>
           ${o.weather ? `<section><h3>🌦️ ${esc(s.weather)}</h3>${sw("weather", s.weatherOn)}<p class="st-wx"></p>
-            <form class="st-city"><input type="text" placeholder="${esc(s.city)}" maxlength="60"><button type="submit" class="st-b">${esc(s.find)}</button><button type="button" class="st-b ghost" data-a="wxAuto">${esc(s.auto)}</button></form>
-            <p class="st-sub">${esc(s.wxTry)}</p><div class="st-wxtry">${["clear", "cloud", "fog", "drizzle", "rain", "snow", "storm"].map((k) => `<button type="button" data-wx="${k}" title="${esc(s.wxKind[k])}">${o.weather.icon(k)}</button>`).join("")}</div>
-            ${o.sky ? `<p class="st-sub">${esc(s.skyTry)}</p><div class="st-wxtry">${[["fullmoon", "🌕"], ["ufo", "🛸"], ["meteor", "☄️"], ["rainbow", "🌈"], ["aurora", "🌌"]].map(([k, e]) => `<button type="button" data-sky="${k}">${e}</button>`).join("")}</div>` : ""}</section>` : ""}
+            <form class="st-city"><input type="text" placeholder="${esc(s.city)}" maxlength="60"><button type="submit" class="st-b">${esc(s.find)}</button><button type="button" class="st-b ghost" data-a="wxAuto">${esc(s.auto)}</button></form></section>` : ""}
           <section><h3>🌐 ${esc(s.lang)}</h3><div class="st-seg" data-seg="lang"><button type="button" data-v="tr">Türkçe</button><button type="button" data-v="en">English</button></div></section>
           ${o.tutorial ? `<section><h3>🎓 ${esc(s.tut)}</h3><div class="st-grid">${btn("tutorial", "▶ " + s.tutGo, "ghost")}</div></section>` : ""}
           ${bridge ? `<section><h3>💻 ${esc(s.app)}</h3>${sw("login", s.login)}<div class="st-grid">${btn("hide", "🙈 " + s.hide, "ghost")}${btn("quit", "⏻ " + s.quit, "ghost")}</div></section>` : ""}

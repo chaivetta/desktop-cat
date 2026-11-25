@@ -141,7 +141,7 @@ The card has a single **☰ Menu** button. Everything is sorted into five groups
 | **🌍 World** | **Map**: flights, the cities and their markets · **Park**: take cats out to the park of the city you're in (once an hour, or buy a ticket) |
 | **🏆 Rewards** | **Paw Path**: the monthly reward track and paw quests · **Cards**: the collection and card packs · **Progress**: your level, the skill tree, the album and achievements |
 | **🎉 Fun** | **Games**: scratch card, memory, whack-a-mouse and the laser hunt · **Events**: photo feed, weekly contest, festivals |
-| **⚙️ Settings** | Sizes, sounds, day and night, weather, sky events, language, the tutorial |
+| **⚙️ Settings** | Sizes, sounds, day and night, weather, language, the tutorial |
 
 ### 🎓 The tutorial
 
@@ -243,7 +243,7 @@ Plants grow in real hours, even with the app closed, but only while watered (wat
   <img src="docs/storks.png" width="320" alt="A V of storks migrating">
 
 - **Clouds:** little kawaii clouds drift along the top of the screen, sometimes in twos and threes, up to ten at a time (more on cloudy days). Some trail a rainbow; on rainy days they turn grey and grumpy and drip. On clear nights, a shooting star now and then.
-- **Weather from your area's climate:** rain, drizzle, snow, fog and thunderstorms, worked out by the game itself, with no internet and no outside service. The place comes from your computer's time zone (or any capital you pick in ⚙️ Settings). The weather follows that place's climate: the season (the right way round south of the equator), how warm it is at that latitude, and how rainy that kind of land is (jungle, desert, steppe, fjord…). Every day is different, and the weather can change every six hours. Rainy days make the cats sleepy and keep the birds away. In the snow, flakes drift, a white layer builds up on the floor and the furniture, the cats leave paw prints and swat at the flakes. Try any weather for a minute from ⚙️ Settings.
+- **Weather from your area's climate:** rain, drizzle, snow, fog and thunderstorms, worked out by the game itself, with no internet and no outside service. The place comes from your computer's time zone (or any capital you pick in ⚙️ Settings). The weather follows that place's climate: the season (the right way round south of the equator), how warm it is at that latitude, and how rainy that kind of land is (jungle, desert, steppe, fjord…). Every day is different, and the weather can change every six hours. Rainy days make the cats sleepy and keep the birds away. In the snow, flakes drift, a white layer builds up on the floor and the furniture, the cats leave paw prints and swat at the flakes.
 - **🌌 Sky events:**
   - **🌕 Full moon:** on real full-moon nights (worked out from the actual phase of the moon) a big round moon comes up and the cats go a little wild: zoomies, pouncing and chirping instead of sleep.
   - **🛸 UFO:** a rare night-time saucer floats over, shines its beam on a cat and lifts it up for a moment, then puts it gently back down. Click the UFO before it leaves for coins, a star and paw points.
@@ -251,7 +251,7 @@ Plants grow in real hours, even with the app closed, but only while watered (wat
   - **🌈 Rainbow:** when the rain stops in the daytime, a big rainbow comes out and the cats stop to stare at it. Click it for luck.
   - **🌌 Northern lights:** green and violet curtains on winter nights.
 
-  Each one gives you its own card the first time you see it. You can try them all from ⚙️ Settings.
+  Each one gives you its own card the first time you see it. They come when they come: keep an eye on the sky.
 
   <img src="docs/sky-events.png" width="640" alt="A rainbow, a full moon and shooting stars over the cats">
 
