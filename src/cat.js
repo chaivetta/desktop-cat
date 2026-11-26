@@ -3150,7 +3150,7 @@
     renderPark(ctx, dt = 0) {
       const P = this.park, W = this.W, H = this.H, k = Math.max(2, Math.round(this.toyScale)), f = this.floor, B = P.biome && window.CatWorldArt.BIOMES[P.biome];
       if (B && B.bg) {
-        if (!P.img || P.img.width !== W || P.imgF !== f) { const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); P.img = c; P.imgF = f;
+        if (!P.img || P.img.width !== W || P.imgF !== f || P.imgK !== k) { const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); P.img = c; P.imgF = f; P.imgK = k;      // drawn again when the toy size changes too
           const px = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.ceil(w), Math.ceil(h)); }; B.bg(g, W, H, f, k, px, P.city); if (!B.noAnimals) this.parkLandmark(g, k); }
         ctx.drawImage(P.img, 0, 0); if (B.front) B.front(ctx, this, dt, P.S);
         this.renderParkAnimals(ctx);

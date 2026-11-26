@@ -490,16 +490,16 @@
     plane: { tr: "Uçak", en: "On the plane", animals: [], noAnimals: true, props: [0.05, 0.16, 0.27, 0.38, 0.49, 0.6, 0.71, 0.82, 0.93].map((x) => ["planeseat", x]),
       bg(g, W, H, f, k, px) {
         // a low cabin (a quarter of the old height): the ceiling with the flight screen, small windows at head height, the blue stripe, the carpet
-        const top = f - 34 * k; this.top = top;
-        px(0, top, W, 34 * k, "#f4ede2"); px(0, top, W, 4 * k, "#e2d8c8"); px(0, top + 4 * k, W, k, "#c8bca8");
+        const top = f - 30 * k; this.top = top;
+        px(0, top, W, 30 * k, "#f4ede2"); px(0, top, W, 4 * k, "#e2d8c8"); px(0, top + 4 * k, W, k, "#c8bca8");
         for (let x = 0; x < W; x += 50 * k) px(x + 20 * k, top + k, 6 * k, 2 * k, "#b8ac98");
         this.wins = [];
         for (let x = 14 * k; x < W - 14 * k; x += 34 * k) {
-          const wx = x, wy = top + 7 * k, ww = 10 * k, wh = 12 * k; this.wins.push([wx + 2 * k, wy + 2 * k, ww - 4 * k, wh - 4 * k]);
+          const wx = x, wy = top + 6 * k, ww = 10 * k, wh = 11 * k; this.wins.push([wx + 2 * k, wy + 2 * k, ww - 4 * k, wh - 4 * k]);
           px(wx, wy, ww, wh, "#c8bca8"); px(wx + k, wy + k, ww - 2 * k, wh - 2 * k, "#d8cfc0"); px(wx + 2 * k, wy + 2 * k, ww - 4 * k, wh - 4 * k, "#8ad0f4");
           px(wx + 2 * k, wy + 2 * k, ww - 4 * k, 2 * k, "#6ab8e8");
         }
-        px(0, top + 22 * k, W, 2 * k, "#3a6ad8"); px(0, top + 24 * k, W, k, "#ffd34d");
+        px(0, top + 19 * k, W, 2 * k, "#3a6ad8"); px(0, top + 21 * k, W, k, "#ffd34d");
         px(0, f - 2 * k, W, H - f + 2 * k, "#8a6a8a"); for (let x = 0; x < W; x += 8 * k) px(x, f - 2 * k, 4 * k, k, "#9a7a9a");
         this.screen = [W * 0.5 - 30 * k, top + k, 60 * k, 2 * k];
       },
@@ -514,8 +514,9 @@
         const [x, y, ww, hh] = this.screen, q = Math.max(0, Math.min(1, (Date.now() - fl.start) / (fl.until - fl.start)));
         ctx.fillStyle = "#2a2f3e"; ctx.fillRect(x, y, ww, hh); ctx.fillStyle = "#ffd34d"; ctx.fillRect(x, y + hh / 2 - k / 2, ww * q, k);
         // ✈️ above the cabin the plane itself crosses the screen slowly, as far along as the flight is
-        const bob = Math.sin(S.t * 1.3) * 2 * k, len = 64 * k, px2 = -len + (w.W + len) * q, py = (this.top || w.floor - 34 * k) - 36 * k + bob;
-        drawPlane(ctx, px2, py, k, S.t);
+        // a small airliner (about half the toy size) so it doesn't fill the screen
+        const ka = Math.max(1, Math.round(k * 0.5)), bob = Math.sin(S.t * 1.3) * 2 * ka, len = 64 * ka, px2 = -len + (w.W + len) * q, py = (this.top || w.floor - 30 * k) - 34 * ka + bob;
+        drawPlane(ctx, px2, py, ka, S.t);
       } },
     // 🫒 the Mediterranean: olive trees, white houses, a blue sea behind
     med: { tr: "Akdeniz sahili", en: "Mediterranean coast", water: 0.35, props: ["parasol", "beachball", "towel"], animals: ["dolphin", "gull", "goat", "turtle", "fish"],
